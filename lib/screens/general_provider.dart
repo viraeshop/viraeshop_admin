@@ -1,0 +1,31 @@
+import 'package:flutter/foundation.dart';
+
+class GeneralProvider extends ChangeNotifier {
+  List advertSelected = [];
+  List<bool> addedToCart = List.generate(10, (index) => false);
+  bool isStarted = false;
+  void addAdvert(String value) {
+    advertSelected.add(value);
+    notifyListeners();
+  }
+  void removeAdvert(String value) {
+    advertSelected.remove(value);
+    notifyListeners();
+  }
+  void updateAdList(List value){
+    advertSelected = value;
+    notifyListeners();
+  }
+  void animationTrigger(bool value, int index){
+    addedToCart[index] = value;
+    notifyListeners();
+  }
+  void animationTracker (bool value){
+    isStarted = value;
+    notifyListeners();
+  }
+  void updateAnimationTrigger (List<bool> value){
+    addedToCart = value;
+    notifyListeners();
+  }
+}

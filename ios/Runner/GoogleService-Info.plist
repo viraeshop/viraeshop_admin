@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>903623659021-9mtmuvq0kbp5k5vr2b95k9jo5nphjjiu.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.903623659021-9mtmuvq0kbp5k5vr2b95k9jo5nphjjiu</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>903623659021-3hoqcrcc9atab8t3i282si16l6e9gmu6.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAVIx4JdhHhemzMCbGWLXLsGqD8kgUpuIc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>903623659021</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.viraeshop.admin</string>
+	<key>PROJECT_ID</key>
+	<string>vira-eshop</string>
+	<key>STORAGE_BUCKET</key>
+	<string>vira-eshop.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:903623659021:ios:8b235ac56323c9e53d8f44</string>
+</dict>
+</plist>

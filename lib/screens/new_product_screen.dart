@@ -54,8 +54,8 @@ class _NewProductState extends State<NewProduct>
     with SingleTickerProviderStateMixin {
   ImagePicker _picker = ImagePicker();
   File? _imageFile;
-  List images = Hive.box('images').get('imagesBytes');
-  List productImage = Hive.box('images').get('productImages');
+  List images = Hive.box('images').get('imagesBytes', defaultValue: []);
+  List productImage = Hive.box('images').get('productImages', defaultValue: []);
   AdminCrud adminCrud = AdminCrud();
   GeneralCrud generalCrud = GeneralCrud();
   String _uniqueCode = randomAlphaNumeric(10);
@@ -183,7 +183,7 @@ class _NewProductState extends State<NewProduct>
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: loading,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: SafeArea(
@@ -192,7 +192,7 @@ class _NewProductState extends State<NewProduct>
           child: Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: true,
-              iconTheme: IconThemeData(color: kSelectedTileColor),
+              iconTheme: const  IconThemeData(color: kSelectedTileColor),
               elevation: 0.0,
               backgroundColor: kBackgroundColor,
               title: Text(

@@ -68,7 +68,7 @@ dependencies:
   network_info_plus: ^2.1.2
   printing: ^5.6.6
   pdf: ^3.6.5
-  share_plus: ^3.0.4
+  share_plus: ^4.0.10
   tuple: ^2.0.0
   carousel_slider: ^4.0.0
   chat_bubbles: ^1.2.0

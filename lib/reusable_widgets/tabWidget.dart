@@ -272,7 +272,7 @@ class _TabWidgetState extends State<TabWidget> {
                   productsList = ads.products;
                   return Container(
                     padding: EdgeInsets.all(10.0),
-                    height: MediaQuery.of(context).size.height * 0.51,
+                    height: deviceSize.height < 741 ? deviceSize.height * 0.51 : deviceSize.height * 0.55,
                     child: GridView.builder(
                       // physics:
                       //     ScrollableScrollPhysics(),

@@ -170,8 +170,7 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
-<<<<<<< Updated upstream
-      home: BluetoothTester(),
+      home: BluetoothPrinter(),
       // initialRoute: SplashScreen.path,
       // routes: {
       //   SplashScreen.path: (context) => SplashScreen(),
@@ -185,22 +184,6 @@ class _MyAppState extends State<MyApp> {
       //   ShoppingCart.path: (context) => ShoppingCart(),
       //   NotificationScreen.path: (context) => NotificationScreen(),
       // },
-=======
-      //home: AboutUsPage(),
-      initialRoute: SplashScreen.path,
-      routes: {
-        SplashScreen.path: (context) => SplashScreen(),
-        HomeScreen.path: (context) => HomeScreen(),
-        GeneralProducts.path: (context) => GeneralProducts(),
-        AgentProducts.agentProducts: (context) => AgentProducts(),
-        ArchitectProducts.architectProducts: (context) => ArchitectProducts(),
-        Products.productsPath: (context) => Products(),
-        LoginPage.path: (context) => LoginPage(),
-        TransactionDetails.path: (context) => TransactionDetails(),
-        ShoppingCart.path: (context) => ShoppingCart(),
-        NotificationScreen.path: (context) => NotificationScreen(),
-      },
->>>>>>> Stashed changes
     );
   }
 }

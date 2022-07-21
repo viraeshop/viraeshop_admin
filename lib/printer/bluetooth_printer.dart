@@ -4,13 +4,12 @@ import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart';
 
-
-class BluetoothTester extends StatefulWidget {
+class BluetoothPrinter extends StatefulWidget {
   @override
-  _BluetoothTesterState createState() => _BluetoothTesterState();
+  _BluetoothPrinterState createState() => _BluetoothPrinterState();
 }
 
-class _BluetoothTesterState extends State<BluetoothTester> {
+class _BluetoothPrinterState extends State<BluetoothPrinter> {
   @override
   void initState() {
     super.initState();

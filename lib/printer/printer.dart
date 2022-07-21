@@ -147,7 +147,7 @@ class _PrintState extends State<Print> {
     final Image? image = decodeImage(imageBytes);
     bytes += receipt.image(image!, align: PosAlign.left);
     bytes += receipt.text(
-      'Tel: 01710735425 01715041368',
+      'Tel: +880 1710735425 01324430921',
       styles: PosStyles(align: PosAlign.left),
     );
     bytes += receipt.text(

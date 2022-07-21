@@ -1,10 +1,38 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:image/image.dart';
 
 class BluetoothPrinter extends StatefulWidget {
+  final List items;
+  final String invoiceId,
+      name,
+      mobile,
+      address,
+      discountAmount,
+      subTotal,
+      advance,
+      paid,
+      quantity,
+      due;
+  BluetoothPrinter(
+      {required this.items,
+        required this.invoiceId,
+        required this.name,
+        required this.mobile,
+        required this.address,
+        required this.advance,
+        required this.discountAmount,
+        required this.due,
+        required this.paid,
+        required this.subTotal,
+        required this.quantity,
+      });
   @override
   _BluetoothPrinterState createState() => _BluetoothPrinterState();
 }
@@ -38,8 +66,9 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
 
   Future<void> printTicket() async {
     String? isConnected = await BluetoothThermalPrinter.connectionStatus;
+    print(isConnected);
     if (isConnected == "true") {
-      List<int> bytes = await getTicket();
+      List<int> bytes = await printDemoReceipt();
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
       print("Print $result");
     } else {
@@ -77,7 +106,143 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
 
     return bytes;
   }
+  Future<List<int>> printDemoReceipt() async {
+    CapabilityProfile profile = await CapabilityProfile.load();
+    final Generator receipt = Generator(PaperSize.mm80, profile);
+    List<int> bytes = [];
+    // Print image
+    final ByteData data = await rootBundle.load('assets/images/DONE.png');
+    final Uint8List imageBytes = data.buffer.asUint8List();
+    final Image? image = decodeImage(imageBytes);
+    bytes += receipt.image(image!, align: PosAlign.left);
+    bytes += receipt.text(
+      'Tel: +880 1710735425 01324430921',
+      styles: PosStyles(align: PosAlign.left),
+    );
+    bytes += receipt.text(
+      'Email: viraeshop@gmail.com',
+      styles: PosStyles(align: PosAlign.left),
+    );
+    bytes += receipt.text(
+      'H-65, New Airport, Amtoli,Mohakhali,',
+      styles: PosStyles(align: PosAlign.left),
+    );
+    bytes += receipt.text(
+      'Dhaka-1212, Bangladesh.',
+      styles: PosStyles(align: PosAlign.center),
+    );
+    bytes += receipt.text(
+      'Web: www.viraeshop.com',
+      styles: PosStyles(align: PosAlign.center),
+    );
+    bytes += receipt.text(
+      'Invoice No. ${widget.invoiceId}',
+      linesAfter: 1,
+      styles: PosStyles(
+        align: PosAlign.right,
+      ),
+    );
+    bytes += receipt.text(
+      '${widget.name}',
+      styles: PosStyles(
+        align: PosAlign.left,
+        bold: true,
+        height: PosTextSize.size2,
+        width: PosTextSize.size2,
+      ),
+    );
+    bytes += receipt.text(
+      '${widget.mobile}',
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
+    );
+    bytes += receipt.text(
+      '${widget.address}',
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
+    );
+    bytes += receipt.hr();
+    bytes += receipt.row([
+      PosColumn(
+        text: 'Quantity',
+        width: 2,
+        styles: PosStyles(),
+      ),
+      PosColumn(text: '${widget.items.length.toString()} Items (QTY ${widget.quantity})', width: 6, styles: PosStyles()),
+      PosColumn(
+        text: 'Price(BDT)',
+        width: 2,
+        styles: PosStyles(align: PosAlign.right),
+      ),
+      PosColumn(
+        text: 'Amount(BDT)',
+        width: 2,
+        styles: PosStyles(align: PosAlign.right),
+      ),
+    ]);
+   widget.items.forEach((element) {
+      bytes += receipt.row([
+        PosColumn(text: '${element['quantity'].toString()}', width: 1),
+        PosColumn(text: '${element['product_name']}', width: 7),
+        PosColumn(
+          text: '${element['unit_price'].toString()}', width: 2, styles: PosStyles(align: PosAlign.right),),
+        PosColumn(
+          text: '${element['product_price'].toString()}', width: 2, styles: PosStyles(align: PosAlign.right),),
+      ]);
+    });
+    bytes += receipt.hr();
+    bytes += receipt.text(
+      'VAT: %',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Discount: ${widget.discountAmount}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Sub-Total: ${widget.subTotal}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Advance: ${widget.advance}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Due: ${widget.due}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Paid: ${widget.paid}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.feed(2);
+    bytes += receipt.text('Thank you!',
+        styles: PosStyles(align: PosAlign.center, bold: true));
 
+    final now = DateTime.now();
+    final formatter = DateFormat('MM/dd/yyyy H:m');
+    final String timestamp = formatter.format(now);
+    bytes += receipt.text(timestamp,
+        styles: PosStyles(align: PosAlign.center), linesAfter: 2);
+    receipt.feed(1);
+    receipt.cut();
+
+    return bytes;
+  }
   Future<List<int>> getTicket() async {
     List<int> bytes = [];
     CapabilityProfile profile = await CapabilityProfile.load();

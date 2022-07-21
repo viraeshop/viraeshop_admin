@@ -117,11 +117,8 @@ class _PrintState extends State<Print> {
   void initPrinter() {
     _printerManager.startScan(Duration(seconds: 2));
     _printerManager.scanResults.listen((val) {
-<<<<<<< Updated upstream
       if (!mounted) return;
       print('devices: $val');
-=======
->>>>>>> Stashed changes
       setState(() => _devices = val);
       if (_devices.isEmpty) setState(() => _devicesMsg = 'No Devices');
     });

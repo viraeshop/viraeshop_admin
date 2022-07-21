@@ -6,6 +6,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/invoice.dart';
 import 'package:viraeshop_admin/configs/pos_printer.dart';
 import 'package:viraeshop_admin/configs/share_invoice.dart';
+import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
 
 import '../printer/printer.dart';
 
@@ -329,7 +330,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return PosPrinter(
+                          return BluetoothPrinter(
                             quantity: quantity,
                             subTotal: widget.data['price'].toString(),
                             items: items,

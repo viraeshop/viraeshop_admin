@@ -5,7 +5,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:viraeshop_admin/animation_testing.dart';
-import 'package:viraeshop_admin/bluetooth_test.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
@@ -170,20 +169,20 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
-      home: BluetoothPrinter(),
-      // initialRoute: SplashScreen.path,
-      // routes: {
-      //   SplashScreen.path: (context) => SplashScreen(),
-      //   HomeScreen.path: (context) => HomeScreen(),
-      //   GeneralProducts.path: (context) => GeneralProducts(),
-      //   AgentProducts.agentProducts: (context) => AgentProducts(),
-      //   ArchitectProducts.architectProducts: (context) => ArchitectProducts(),
-      //   Products.productsPath: (context) => Products(),
-      //   LoginPage.path: (context) => LoginPage(),
-      //   TransactionDetails.path: (context) => TransactionDetails(),
-      //   ShoppingCart.path: (context) => ShoppingCart(),
-      //   NotificationScreen.path: (context) => NotificationScreen(),
-      // },
+      //home: BluetoothPrinter(),
+      initialRoute: SplashScreen.path,
+      routes: {
+        SplashScreen.path: (context) => SplashScreen(),
+        HomeScreen.path: (context) => HomeScreen(),
+        GeneralProducts.path: (context) => GeneralProducts(),
+        AgentProducts.agentProducts: (context) => AgentProducts(),
+        ArchitectProducts.architectProducts: (context) => ArchitectProducts(),
+        Products.productsPath: (context) => Products(),
+        LoginPage.path: (context) => LoginPage(),
+        TransactionDetails.path: (context) => TransactionDetails(),
+        ShoppingCart.path: (context) => ShoppingCart(),
+        NotificationScreen.path: (context) => NotificationScreen(),
+      },
     );
   }
 }

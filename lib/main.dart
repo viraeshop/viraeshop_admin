@@ -163,7 +163,7 @@ class _MyAppState extends State<MyApp> {
       ),
       theme: ThemeData.light().copyWith(
         backgroundColor: kBackgroundColor,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           color: kBackgroundColor,
           elevation: 0.0,
           titleTextStyle: kAppBarTitleTextStyle,

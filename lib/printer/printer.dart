@@ -46,34 +46,50 @@ class _PrintState extends State<Print> {
   List<PrinterBluetooth> _devices = [];
   String? _devicesMsg;
   BluetoothManager bluetoothManager = BluetoothManager.instance;
-
+ // @override
+  //void initState() {
+   // bluetoothManager.scan(timeout: Duration(seconds: 5)).listen((event) {
+    //  print('name: ${event.name}');
+   // });
+  //  super.initState();
+ // }
   @override
-  void initState() {
-    if (Platform.isAndroid) {
-      bluetoothManager.state.listen((val) {
-        print('state = $val');
-        if (!mounted) return;
-        if (val == 12) {
-          print('on');
-          initPrinter();
-        } else if (val == 10) {
-          print('off');
-          setState(() => _devicesMsg = 'Bluetooth Disconnect!');
-        }
-      });
-    } else {
-      initPrinter();
-    }
-
-    super.initState();
-  }
+  // void didChangeDependencies() {
+  //   // TODO: implement didChangeDependencies
+  //   if (Platform.isAndroid) {
+  //
+  //     // bluetoothManager.state.listen((val) {
+  //     //   print('state = $val');
+  //     //   //if (!mounted) return;
+  //     //   if (val == 12) {
+  //     //     print('on');
+  //     //     initPrinter();
+  //     //   } else if (val == 10) {
+  //     //     print('off');
+  //     //     setState(() => _devicesMsg = 'Bluetooth Disconnect!');
+  //     //   }
+  //     // });
+  //   } else {
+  //     initPrinter();
+  //   }
+  //
+  //   super.didChangeDependencies();
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: ()=> Navigator.pop(context),
+          onPressed: (){
+           // _printerManager.startScan(Duration(seconds: 4));
+            _printerManager.scanResults.listen((event) {
+              debugPrint('Devices found: ${event.length}');
+            }).onError((error){
+              debugPrint('Error: $error');
+            });
+            // Navigator.pop(context)
+          },
           icon: Icon(FontAwesomeIcons.chevronLeft),
           color: kSubMainColor,
           iconSize: 20.0,
@@ -101,8 +117,11 @@ class _PrintState extends State<Print> {
   void initPrinter() {
     _printerManager.startScan(Duration(seconds: 2));
     _printerManager.scanResults.listen((val) {
+<<<<<<< Updated upstream
       if (!mounted) return;
       print('devices: $val');
+=======
+>>>>>>> Stashed changes
       setState(() => _devices = val);
       if (_devices.isEmpty) setState(() => _devicesMsg = 'No Devices');
     });

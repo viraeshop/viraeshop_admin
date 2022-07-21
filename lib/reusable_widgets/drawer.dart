@@ -47,6 +47,7 @@ import 'package:viraeshop_admin/screens/user_list.dart';
 import 'package:viraeshop_admin/screens/user_profile.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 
+import '../screens/about_us_page.dart';
 import '../screens/new_non_inventory.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -113,17 +114,17 @@ class _AppDrawerState extends State<AppDrawer> {
                               border: Border.all(width: 5.0, color: kMainColor),
                               color: kBackgroundColor),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 7.0,
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Vira Eshop',
                               style: kDrawerTextStyle1,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 5.0,
                             ),
                             Text(
@@ -134,7 +135,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     Align(
@@ -144,24 +145,24 @@ class _AppDrawerState extends State<AppDrawer> {
                           if (widget.isBigScreen == true) {
                             Provider.of<Configs>(context, listen: false)
                                 .updateWidget(
-                              UserProfile(),
+                              const UserProfile(),
                             );
                           } else {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => UserProfile(),
+                                builder: (context) => const UserProfile(),
                               ),
                             );
                           }
                         },
                         child: Container(
                           width: 150.0,
-                          padding: EdgeInsets.symmetric(vertical: 5.0),
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
                           decoration: BoxDecoration(
                               color: kMainColor,
                               borderRadius: BorderRadius.circular(30.0)),
-                          child: Center(
+                          child: const Center(
                             child: Text(
                               'Admin',
                               style: kDrawerTextStyle2,
@@ -196,7 +197,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     ticker: widget.newOrders != '0'
                         ? NotificationTicker(value: widget.newOrders)
-                        : SizedBox(),
+                        : const SizedBox(),
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Orders',
                     onTap: () {
@@ -209,7 +210,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Orders(),
+                            builder: (context) => const Orders(),
                           ),
                         );
                       //}
@@ -228,7 +229,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Products(),
+                            builder: (context) => const Products(),
                           ),
                         );
                       //}
@@ -251,7 +252,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CategoryScreen(),
+                            builder: (context) => const CategoryScreen(),
                           ),
                         );
                      // }
@@ -267,13 +268,13 @@ class _AppDrawerState extends State<AppDrawer> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) {
-                                  return TransactionDetails();
+                                  return const TransactionDetails();
                                 },
                               ),
                             );
                           },
                   ),
-                  ReusableTile(
+                  const ReusableTile(
                     icon: FontAwesomeIcons.users,
                     title: 'Customers',
                   ),
@@ -292,7 +293,7 @@ class _AppDrawerState extends State<AppDrawer> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => CustomersPage(),
+                                  builder: (context) => const CustomersPage(),
                                 ),
                               );
                            // }
@@ -311,7 +312,7 @@ class _AppDrawerState extends State<AppDrawer> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => AgentsPage(),
+                                  builder: (context) => const AgentsPage(),
                                 ),
                               );
                         //    }
@@ -332,7 +333,7 @@ class _AppDrawerState extends State<AppDrawer> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ArchitectsPage(),
+                                  builder: (context) => const ArchitectsPage(),
                                 ),
                               );
                             //}
@@ -346,7 +347,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         : () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => CustomerRequests(),
+                                builder: (context) => const CustomerRequests(),
                               ),
                             ),
                     padding: true,
@@ -355,7 +356,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     ticker: newMessages != '0'
                         ? NotificationTicker(value: newMessages)
-                        : SizedBox(),
+                        : const SizedBox(),
                     icon: Icons.message,
                     title: 'Messages',
                     onTap: () {
@@ -401,7 +402,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ReturnHistory(),
+                            builder: (context) => const ReturnHistory(),
                           ),
                         );
                       //}
@@ -415,7 +416,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ReturnProduct(),
+                        builder: (context) => const ReturnProduct(),
                       ),
                     ),
                   ),
@@ -425,11 +426,11 @@ class _AppDrawerState extends State<AppDrawer> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ReturnHistory(),
+                        builder: (context) => const ReturnHistory(),
                       ),
                     ),
                   ),
-                  ReusableTile(
+                  const ReusableTile(
                     icon: Icons.bar_chart,
                     title: 'Expenses',
                   ),
@@ -446,7 +447,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => NewExpense(),
+                            builder: (context) => const NewExpense(),
                           ),
                         );
                       //}
@@ -465,7 +466,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ExpenseHistory(),
+                            builder: (context) => const ExpenseHistory(),
                           ),
                         );
                       //}
@@ -505,7 +506,7 @@ class _AppDrawerState extends State<AppDrawer> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AllUserScreen(),
+                                    builder: (context) => const AllUserScreen(),
                                   ),
                                 );
                               //}
@@ -523,7 +524,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SettingsScreen(),
+                            builder: (context) => const SettingsScreen(),
                           ),
                         );
                       //}
@@ -554,6 +555,21 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                 ],
               ),
+             const  SizedBox(
+               width: double.infinity,
+                child: Divider(
+                  color: Colors.black38,
+                ),
+              ),
+              ReusableTile(
+                title: 'About Us & Privacy',
+                icon: Icons.info,
+                onTap: (){
+                  Navigator.push(
+                    context, MaterialPageRoute(builder: (context)=> AboutUsPage()),
+                  );
+                },
+              )
             ],
           ),
         ),

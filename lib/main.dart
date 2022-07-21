@@ -10,6 +10,7 @@ import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/reusable_widgets/transaction_details.dart';
+import 'package:viraeshop_admin/screens/about_us_page.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
 import 'package:viraeshop_admin/screens/agent_products.dart';
@@ -169,6 +170,7 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
+<<<<<<< Updated upstream
       home: BluetoothTester(),
       // initialRoute: SplashScreen.path,
       // routes: {
@@ -183,6 +185,22 @@ class _MyAppState extends State<MyApp> {
       //   ShoppingCart.path: (context) => ShoppingCart(),
       //   NotificationScreen.path: (context) => NotificationScreen(),
       // },
+=======
+      //home: AboutUsPage(),
+      initialRoute: SplashScreen.path,
+      routes: {
+        SplashScreen.path: (context) => SplashScreen(),
+        HomeScreen.path: (context) => HomeScreen(),
+        GeneralProducts.path: (context) => GeneralProducts(),
+        AgentProducts.agentProducts: (context) => AgentProducts(),
+        ArchitectProducts.architectProducts: (context) => ArchitectProducts(),
+        Products.productsPath: (context) => Products(),
+        LoginPage.path: (context) => LoginPage(),
+        TransactionDetails.path: (context) => TransactionDetails(),
+        ShoppingCart.path: (context) => ShoppingCart(),
+        NotificationScreen.path: (context) => NotificationScreen(),
+      },
+>>>>>>> Stashed changes
     );
   }
 }

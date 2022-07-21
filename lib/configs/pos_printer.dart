@@ -56,8 +56,8 @@ class _PosPrinterState extends State<PosPrinter> {
   void initState() {
     // TODO: implement initState
     items = widget.items;
-    printerManager.scanResults.listen((devices) async {
-      // print('UI: Devices found ${devices.length}');
+    printerManager.scanResults.listen((devices){
+      print('UI: Devices found ${devices.length}');
       setState(() {
         _devices = devices;
       });

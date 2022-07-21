@@ -102,6 +102,7 @@ class _PrintState extends State<Print> {
     _printerManager.startScan(Duration(seconds: 2));
     _printerManager.scanResults.listen((val) {
       if (!mounted) return;
+      print('devices: $val');
       setState(() => _devices = val);
       if (_devices.isEmpty) setState(() => _devicesMsg = 'No Devices');
     });

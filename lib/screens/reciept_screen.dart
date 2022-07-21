@@ -329,7 +329,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) {
-                          return Print(
+                          return PosPrinter(
                             quantity: quantity,
                             subTotal: widget.data['price'].toString(),
                             items: items,

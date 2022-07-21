@@ -23,7 +23,7 @@ class _DoneScreenState extends State<DoneScreen> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    num prices = Hive.box('cartDetails').get('totalPrice');
+    num prices = Hive.box('cartDetails')?.get('totalPrice');
     int quants = Hive.box('cartDetails').get('totalItems');
     num discounts =
         Hive.box('cartDetails').get('discountAmount', defaultValue: 0.0);

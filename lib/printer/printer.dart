@@ -145,23 +145,33 @@ class _PrintState extends State<Print> {
     bytes += receipt.image(image!, align: PosAlign.left);
     bytes += receipt.text(
       'Tel: +880 1710735425 01324430921',
-      styles: PosStyles(align: PosAlign.left),
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
     );
     bytes += receipt.text(
       'Email: viraeshop@gmail.com',
-      styles: PosStyles(align: PosAlign.left),
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
     );
     bytes += receipt.text(
       'H-65, New Airport, Amtoli,Mohakhali,',
-      styles: PosStyles(align: PosAlign.left),
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
     );
     bytes += receipt.text(
       'Dhaka-1212, Bangladesh.',
-      styles: PosStyles(align: PosAlign.center),
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
     );
     bytes += receipt.text(
       'Web: www.viraeshop.com',
-      styles: PosStyles(align: PosAlign.center),
+      styles: PosStyles(
+        align: PosAlign.left,
+      ),
     );
     bytes += receipt.text(
       'Invoice No. ${widget.invoiceId}',
@@ -175,8 +185,8 @@ class _PrintState extends State<Print> {
       styles: PosStyles(
         align: PosAlign.left,
         bold: true,
-        height: PosTextSize.size2,
-        width: PosTextSize.size2,
+        height: PosTextSize.size1,
+        width: PosTextSize.size1,
       ),
     );
     bytes += receipt.text(

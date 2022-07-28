@@ -50,3 +50,12 @@ initSearch({required String value,required BuildContext context,required List te
     Provider.of<AdsProvider>(context, listen: false).updateProductList(filteredList);
   }
 
+List searchEngine({required String value,required String key,required List temps,}) {
+  final filteredList = temps.where((element) {
+    final String invoiceId = element[key].toLowerCase();
+    final valueLower = value.toLowerCase();
+    return invoiceId.contains(valueLower);
+  }).toList();
+  return filteredList;
+}
+

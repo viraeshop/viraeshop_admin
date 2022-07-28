@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,8 +19,10 @@ import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/new_product_screen.dart';
 
+import '../components/home_screen_components/decision_components.dart';
 import '../screens/advert/ads_provider.dart';
 import 'category/categories.dart';
+
 extension GlobalKeyExtension on GlobalKey {
   Rect? get globalPaintBounds {
     final renderObject = currentContext?.findRenderObject();
@@ -33,6 +36,7 @@ extension GlobalKeyExtension on GlobalKey {
     }
   }
 }
+
 class TabWidget extends StatefulWidget {
   final String category;
   final bool isAll;
@@ -52,7 +56,9 @@ class _TabWidgetState extends State<TabWidget> {
   double aspectRatio = 0.0, childAspectRatio = 0.0;
   int crossAxisCount = 3;
   final globalKey = GlobalKey();
-  List<GlobalKey> globalKeys = List.generate(productsList.isEmpty ? products.length : productsList.length, (index) => GlobalKey());
+  List<GlobalKey> globalKeys = List.generate(
+      productsList.isEmpty ? products.length : productsList.length,
+      (index) => GlobalKey());
   OverlayEntry? entry;
   @override
   void initState() {
@@ -63,16 +69,23 @@ class _TabWidgetState extends State<TabWidget> {
       //     .localToGlobal(Offset.zero);
     });
   }
+
   void showOverlay(Offset offset, int index, String url) {
     entry = OverlayEntry(builder: (context) {
       return Consumer<AdsProvider>(builder: (context, animation, childs) {
         print('show overlay $index');
         final size = MediaQuery.of(context).size.height;
         return AnimatedPositioned(
-            height: animation.addedToCart[index] && animation.isStarted ? 0 : 100.0,
-            width: animation.addedToCart[index] && animation.isStarted ? 0 : 150.0,
+            height:
+                animation.addedToCart[index] && animation.isStarted ? 0 : 100.0,
+            width:
+                animation.addedToCart[index] && animation.isStarted ? 0 : 150.0,
             left: offset.dx,
-            bottom: animation.addedToCart[index] ? 0 :  (size - (offset.dy.round() + (offset.dy.round()/2))).round().toDouble(),
+            bottom: animation.addedToCart[index]
+                ? 0
+                : (size - (offset.dy.round() + (offset.dy.round() / 2)))
+                    .round()
+                    .toDouble(),
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -84,7 +97,7 @@ class _TabWidgetState extends State<TabWidget> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            duration: Duration(milliseconds: 200));
+            duration: const Duration(milliseconds: 200));
       });
     });
     final overlay = Overlay.of(context);
@@ -97,10 +110,11 @@ class _TabWidgetState extends State<TabWidget> {
       entry = null;
     });
   }
+
   Offset calculateWidgetPosition(GlobalKey? key) {
-    Offset? offset = Offset(0, 0);
+    Offset? offset = const Offset(0, 0);
     final RenderBox? box =
-    key!.currentContext?.findRenderObject() as RenderBox?;
+        key!.currentContext?.findRenderObject() as RenderBox?;
     //print('Render Box: $box');
     offset = box?.localToGlobal(Offset.zero);
     print(offset);
@@ -113,22 +127,24 @@ class _TabWidgetState extends State<TabWidget> {
     // });
     return offset!;
   }
-  void cartAnimation(){
-    setState((){
+
+  void cartAnimation() {
+    setState(() {
       addedToCart = true;
     });
-    Future.delayed(Duration(milliseconds: 200), (){
-      setState((){
+    Future.delayed(const Duration(milliseconds: 200), () {
+      setState(() {
         addedToCart = false;
       });
     });
   }
+
   void cartMotionAnimation(int index) {
     Provider.of<AdsProvider>(context, listen: false)
         .animationTrigger(true, index);
     Future.delayed(
-      Duration(milliseconds: 200),
-          () {
+      const Duration(milliseconds: 200),
+      () {
         unShowOverlay();
         Provider.of<AdsProvider>(context, listen: false)
             .animationTrigger(false, index);
@@ -140,12 +156,13 @@ class _TabWidgetState extends State<TabWidget> {
     //   unShowOverlay();
     // });
   }
+
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
     if (deviceSize.width <= 480) {
       // mobile screen sizes
-      aspectRatio = 3/1.90;
+      aspectRatio = 3 / 1.90;
       childAspectRatio = 1;
       crossAxisCount = 3;
     } else if (deviceSize.width > 480 && deviceSize.width <= 768) {
@@ -191,28 +208,28 @@ class _TabWidgetState extends State<TabWidget> {
                 Container(
                   height: 35.0,
                   // width: double.infinity,
-                  margin: EdgeInsets.all(10.0),
+                  margin: const EdgeInsets.all(10.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       DropdownButton(
                         value: dropdownValue,
                         items: [
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                             value: 'general',
-                            child: Text(
+                            child: const Text(
                               'General',
                               style: kProductNameStylePro,
                             ),
                           ),
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                             value: 'agents',
-                            child: Text(
+                            child: const Text(
                               'Agents',
                               style: kProductNameStylePro,
                             ),
                           ),
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                             value: 'architect',
                             child: Text(
                               'Architect',
@@ -232,12 +249,12 @@ class _TabWidgetState extends State<TabWidget> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {
-                              return NonInventoryScreen();
+                              return const NonInventoryScreen();
                             }),
                           );
                         },
-                        child: ImageIcon(
-                          AssetImage('assets/icons/flash.png'),
+                        child: const ImageIcon(
+                          const AssetImage('assets/icons/flash.png'),
                           color: kSubMainColor,
                           size: 25.0,
                         ),
@@ -245,15 +262,16 @@ class _TabWidgetState extends State<TabWidget> {
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 15.0,
                 ),
                 Consumer<AdsProvider>(builder: (consumerContext, ads, childs) {
                   if (widget.isAll) {
                     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                      if(!ads.isSearch && !ads.isStarted){
+                      if (!ads.isSearch && !ads.isStarted) {
                         ads.updateProductList(products);
-                        List<bool> booleans = List.generate(products.length, (index) => false);
+                        List<bool> booleans =
+                            List.generate(products.length, (index) => false);
                         ads.updateAddedToCart(booleans);
                       }
                     });
@@ -262,17 +280,20 @@ class _TabWidgetState extends State<TabWidget> {
                       return element['category'] == widget.category;
                     }).toList();
                     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                      if(!ads.isSearch){
+                      if (!ads.isSearch) {
                         ads.updateProductList(classifiedProducts);
-                        List<bool> booleans = List.generate(classifiedProducts.length, (index) => false);
+                        List<bool> booleans = List.generate(
+                            classifiedProducts.length, (index) => false);
                         ads.updateAddedToCart(booleans);
                       }
                     });
                   }
                   productsList = ads.products;
                   return Container(
-                    padding: EdgeInsets.all(10.0),
-                    height: deviceSize.height < 741 ? deviceSize.height * 0.51 : deviceSize.height * 0.55,
+                    padding: const EdgeInsets.all(10.0),
+                    height: deviceSize.height < 741
+                        ? deviceSize.height * 0.51
+                        : deviceSize.height * 0.55,
                     child: GridView.builder(
                       // physics:
                       //     ScrollableScrollPhysics(),
@@ -291,320 +312,293 @@ class _TabWidgetState extends State<TabWidget> {
                       itemBuilder: (gridContext, index) {
                         if (index == 0) {
                           final bool isProduct =
-                          Hive.box('adminInfo').get('isProducts');
+                              Hive.box('adminInfo').get('isProducts');
                           return InkWell(
                             onTap: isProduct == false
                                 ? null
                                 : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => NewProduct(),
-                                ),
-                              );
-                            },
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => NewProduct(),
+                                      ),
+                                    );
+                                  },
                             child: LayoutBuilder(
                               builder: (context, constraints) => Container(
                                 decoration: BoxDecoration(
                                   color: kMainColor,
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
-                                child: Center(
+                                child: const Center(
                                     child: Icon(
-                                      FontAwesomeIcons.plus,
-                                      size: 50.0,
-                                      color: kBackgroundColor,
-                                    )),
+                                  FontAwesomeIcons.plus,
+                                  size: 50.0,
+                                  color: kBackgroundColor,
+                                )),
                               ),
                             ),
                           );
                         }
                         List images = productsList[index - 1]['image'];
-                        num currentPrice = 0;
+                        num currentPrice = getCurrentPrice(
+                            productsList[index - 1], dropdownValue);
                         Tuple3<num, num, bool> discountData =
-                        Tuple3<num, num, bool>(0, 0, false);
-                        if (dropdownValue == 'general') {
-                          currentPrice = productsList[index - 1]['generalPrice'];
-                          bool isDiscount =
-                          productsList[index - 1]['isGeneralDiscount'];
-                          if (isDiscount) {
-                            num discountPercent = percent(
-                                productsList[index - 1]['generalDiscount'],
-                                productsList[index - 1]['generalPrice']);
-                            num discountPrice = productsList[index - 1]
-                            ['generalPrice'] -
-                                productsList[index - 1]['generalDiscount'];
-                            discountData = Tuple3<num, num, bool>(
-                                discountPrice, discountPercent, isDiscount);
-                          }
-                        } else if (dropdownValue == 'agents') {
-                          currentPrice = productsList[index - 1]['agentsPrice'];
-                          bool isDiscount =
-                          productsList[index - 1]['isAgentDiscount'];
-                          if (isDiscount) {
-                            num discountPercent = percent(
-                                productsList[index - 1]['agentsDiscount'],
-                                currentPrice);
-                            num discountPrice = currentPrice -
-                                productsList[index - 1]['agentsDiscount'];
-                            discountData = Tuple3<num, num, bool>(
-                                discountPrice, discountPercent, isDiscount);
-                          }
-                        } else {
-                          currentPrice =
-                          productsList[index - 1]['architectPrice'];
-                          bool isDiscount =
-                          productsList[index - 1]['isArchitectDiscount'];
-                          if (isDiscount) {
-                            num discountPercent = percent(
-                                productsList[index - 1]['architectDiscount'],
-                                currentPrice);
-                            num discountPrice = currentPrice -
-                                productsList[index - 1]['architectDiscount'];
-                            discountData = Tuple3<num, num, bool>(
-                                discountPrice, discountPercent, isDiscount);
-                          }
-                        }
+                            computeDiscountData(productsList[index - 1],
+                                dropdownValue, currentPrice);
                         return InkWell(
-                          key: globalKeys[index-1],
-                              onLongPress: () {
-                                print('longggg hawwa\'u i love you');
-                                showDialog<void>(
-                                  context: context,
-                                  // barrierColor: Colors.transparent,
-                                  builder: (context) => popWidget(
-                                    image: productsList[index - 1]['image'],
-                                    productName: productsList[index - 1]['name'],
-                                    price: currentPrice.toString(),
-                                    description: productsList[index - 1]
+                          key: globalKeys[index - 1],
+                          onLongPress: () {
+                            if (kDebugMode) {
+                              print('longggg hawwa\'u i love you');
+                            }
+                            showDialog<void>(
+                              context: context,
+                              // barrierColor: Colors.transparent,
+                              builder: (context) => popWidget(
+                                image: productsList[index - 1]['image'],
+                                productName: productsList[index - 1]['name'],
+                                price: currentPrice.toString(),
+                                description: productsList[index - 1]
                                     ['description'],
-                                    category: productsList[index - 1]['category'],
-                                    quantity: productsList[index - 1]['quantity']
-                                        .toString(),
-                                    context: context,
-                                    info: productsList[index - 1],
-                                    routeName: HomeScreen.path,
-                                    isDiscount: discountData.item3,
-                                    discountPrice: discountData.item1,
-                                    sellBy: productsList[index - 1]['sell_by'],
-                                  ),
-                                );
-                              },
-                              onTap: () {
+                                category: productsList[index - 1]['category'],
+                                quantity: productsList[index - 1]['quantity']
+                                    .toString(),
+                                context: context,
+                                info: productsList[index - 1],
+                                routeName: HomeScreen.path,
+                                isDiscount: discountData.item3,
+                                discountPrice: discountData.item1,
+                                sellBy: productsList[index - 1]['sell_by'],
+                              ),
+                            );
+                          },
+                          onTap: () {
                             print('start');
                             if (!ads.isStarted) {
                               cartAnimation();
                               ads.animationTracker(true);
-                              Offset offset = calculateWidgetPosition(globalKeys[index-1]);
-                              showOverlay(offset, index-1, '${images.isNotEmpty ? images[0] : ''}');
-                              Future.delayed(Duration(milliseconds: 20), () {
-                                cartMotionAnimation(index-1);
+                              Offset offset = calculateWidgetPosition(
+                                  globalKeys[index - 1]);
+                              showOverlay(offset, index - 1,
+                                  '${images.isNotEmpty ? images[0] : ''}');
+                              Future.delayed(const Duration(milliseconds: 20),
+                                  () {
+                                cartMotionAnimation(index - 1);
                               });
                             }
-                                Box cartDetailsBox = Hive.box('cartDetails');
-                                num price = discountData.item3
-                                    ? discountData.item1
-                                    : currentPrice;
-                                int totalItems =
-                                cartDetailsBox.get('totalItems', defaultValue: 0);
-                                num totalPrice =
-                                cartDetailsBox.get('totalPrice', defaultValue: 0.0);
-                                cartDetailsBox.put('totalItems', ++totalItems);
-                                cartDetailsBox.put(
-                                  'totalPrice',
-                                  totalPrice + price,
-                                );
-                                // print('keys: ${Hive.box<Cart>('cart').keys}');
-                                cartDetailsBox.put('isAdded', true);
-                                List<Cart> cart =
+                            Box cartDetailsBox = Hive.box('cartDetails');
+                            num price = discountData.item3
+                                ? discountData.item1
+                                : currentPrice;
+                            int totalItems = cartDetailsBox.get('totalItems',
+                                defaultValue: 0);
+                            num totalPrice = cartDetailsBox.get('totalPrice',
+                                defaultValue: 0.0);
+                            cartDetailsBox.put('totalItems', ++totalItems);
+                            cartDetailsBox.put(
+                              'totalPrice',
+                              totalPrice + price,
+                            );
+                            // print('keys: ${Hive.box<Cart>('cart').keys}');
+                            cartDetailsBox.put('isAdded', true);
+                            List<Cart> cart =
                                 Hive.box<Cart>('cart').values.toList();
-                                List<String> keys = [];
-                                cart.forEach((element) {
-                                  keys.add(element.productId);
-                                });
+                            List<String> keys = [];
+                            cart.forEach((element) {
+                              keys.add(element.productId);
+                            });
 
-                                if (keys
-                                    .contains(productsList[index - 1]['productId'])) {
-                                  print('move');
-                                  Cart? item = Hive.box<Cart>('cart')
-                                      .get(productsList[index - 1]['productId']);
-                                  item!.quantity += 1;
-                                  item.price += price;
-                                  Hive.box<Cart>('cart').put(
-                                      productsList[index - 1]['productId'], item);
-                                } else {
-                                  print('we move');
-                                  Box<Cart> cart = Hive.box<Cart>('cart');
-                                  cart
-                                      .put(
+                            if (keys.contains(
+                                productsList[index - 1]['productId'])) {
+                              print('move');
+                              Cart? item = Hive.box<Cart>('cart')
+                                  .get(productsList[index - 1]['productId']);
+                              item!.quantity += 1;
+                              item.price += price;
+                              Hive.box<Cart>('cart').put(
+                                  productsList[index - 1]['productId'], item);
+                            } else {
+                              print('we move');
+                              Box<Cart> cart = Hive.box<Cart>('cart');
+                              cart
+                                  .put(
                                     productsList[index - 1]['productId'],
                                     Cart(
                                       productName: productsList[index - 1]
-                                      ['name'],
+                                          ['name'],
                                       productId: productsList[index - 1]
-                                      ['productId'],
+                                          ['productId'],
                                       price: price,
                                       quantity: 1,
                                       unitPrice: price,
                                     ),
                                   )
-                                      .whenComplete(() => print('completed'))
-                                      .onError(
-                                        (error, stackTrace) => print(error),
+                                  .whenComplete(() => print('completed'))
+                                  .onError(
+                                    (error, stackTrace) => print(error),
                                   );
-                                }
-                              },
-                              child: Container(
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.topCenter,
-                                      heightFactor: double.infinity,
-                                      widthFactor: double.infinity,
-                                      child: Column(
-                                        children: [
-                                          AspectRatio(
-                                            aspectRatio: aspectRatio,
-                                            child: Container(
-                                              //height: 85.0,
-                                              width: double.infinity,
-                                              decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                  image: FadeInImage(
-                                                    image: NetworkImage(
-                                                        '${images.isNotEmpty ? images[0] : ''}'),
-                                                    placeholder: AssetImage(
-                                                        "assets/default.jpg"),
-                                                    imageErrorBuilder:
-                                                        (context, error, stackTrace) {
-                                                      return Image.asset(
-                                                          'assets/default.jpg',
-                                                          fit: BoxFit.fitWidth);
-                                                    },
-                                                    fit: BoxFit.cover,
-                                                  ).image,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(10.0),
-                                                  topRight: Radius.circular(10.0),
-                                                ),
-                                              ),
-                                              // child: CachedNetworkImage(
-                                              //   imageUrl:
-                                              //       '${images.isNotEmpty ? images[0] : ''}',
-                                              //   placeholder: (context, url) {
-                                              //     return Image.asset("assets/default.jpg");
-                                              //   },
-                                              //   errorWidget: (context, url, childs) {
-                                              //     return Image.asset(
-                                              //       'assets/default.jpg',
-                                              //       fit: BoxFit.cover,
-                                              //     );
-                                              //   },
-                                              //   fit: BoxFit.cover,
-                                              // ),
+                            }
+                          },
+                          child: Container(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Align(
+                                  alignment: Alignment.topCenter,
+                                  heightFactor: double.infinity,
+                                  widthFactor: double.infinity,
+                                  child: Column(
+                                    children: [
+                                      AspectRatio(
+                                        aspectRatio: aspectRatio,
+                                        child: Container(
+                                          //height: 85.0,
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              image: FadeInImage(
+                                                image: NetworkImage(
+                                                    '${images.isNotEmpty ? images[0] : ''}'),
+                                                placeholder: const AssetImage(
+                                                    "assets/default.jpg"),
+                                                imageErrorBuilder: (context,
+                                                    error, stackTrace) {
+                                                  return Image.asset(
+                                                      'assets/default.jpg',
+                                                      fit: BoxFit.fitWidth);
+                                                },
+                                                fit: BoxFit.cover,
+                                              ).image,
+                                              fit: BoxFit.cover,
+                                            ),
+                                            borderRadius:
+                                                const BorderRadius.only(
+                                              topLeft:
+                                                  const Radius.circular(10.0),
+                                              topRight: Radius.circular(10.0),
                                             ),
                                           ),
-                                          Container(
-                                            height: 50.0,
-                                            child: Padding(
-                                              padding: EdgeInsets.only(
-                                                left: 5.0,
-                                                right: 5.0,
-                                                top: 2.0,
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment:
+                                          // child: CachedNetworkImage(
+                                          //   imageUrl:
+                                          //       '${images.isNotEmpty ? images[0] : ''}',
+                                          //   placeholder: (context, url) {
+                                          //     return Image.asset("assets/default.jpg");
+                                          //   },
+                                          //   errorWidget: (context, url, childs) {
+                                          //     return Image.asset(
+                                          //       'assets/default.jpg',
+                                          //       fit: BoxFit.cover,
+                                          //     );
+                                          //   },
+                                          //   fit: BoxFit.cover,
+                                          // ),
+                                        ),
+                                      ),
+                                      Container(
+                                        height: 50.0,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 5.0,
+                                            right: 5.0,
+                                            top: 2.0,
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
                                                 CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    '${productsList[index - 1]['name']} (${productsList[index - 1]['productId']})',
-                                                    style: TextStyle(
-                                                      color: kBackgroundColor,
-                                                      fontSize: 12.0,
-                                                      fontFamily: 'Montserrat',
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding: EdgeInsets.symmetric(
-                                                      horizontal: 4.0,
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisAlignment:
+                                            children: [
+                                              Text(
+                                                '${productsList[index - 1]['name']} (${productsList[index - 1]['productId']})',
+                                                style: const TextStyle(
+                                                  color: kBackgroundColor,
+                                                  fontSize: 12.0,
+                                                  fontFamily: 'Montserrat',
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 4.0,
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
                                                       MainAxisAlignment
                                                           .spaceBetween,
-                                                      children: [
-                                                        Text(
-                                                          discountData.item3
-                                                              ? '${currentPrice.toString()}৳'
-                                                              : '${currentPrice.toString()}৳/${productsList[index - 1]['sell_by']}',
-                                                          style: TextStyle(
-                                                            decoration: discountData
-                                                                .item3
+                                                  children: [
+                                                    Text(
+                                                      discountData.item3
+                                                          ? '${currentPrice.toString()}৳'
+                                                          : '${currentPrice.toString()}৳/${productsList[index - 1]['sell_by']}',
+                                                      style: TextStyle(
+                                                        decoration:
+                                                            discountData.item3
                                                                 ? TextDecoration
-                                                                .lineThrough
-                                                                : TextDecoration.none,
-                                                            color: discountData.item3
-                                                                ? kIconColor2
-                                                                : Colors.teal[100],
-                                                            fontSize: 12.0,
-                                                            fontFamily: 'Montserrat',
-                                                          ),
-                                                        ),
-                                                        discountData.item3
-                                                            ? Text(
-                                                          '${discountData.item1.toString()}৳/${productsList[index - 1]['sell_by']}',
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .teal[100],
-                                                            fontSize: 12.0,
-                                                            fontFamily:
+                                                                    .lineThrough
+                                                                : TextDecoration
+                                                                    .none,
+                                                        color: discountData
+                                                                .item3
+                                                            ? kIconColor2
+                                                            : Colors.teal[100],
+                                                        fontSize: 12.0,
+                                                        fontFamily:
                                                             'Montserrat',
-                                                          ),
-                                                        )
-                                                            : SizedBox(),
-                                                      ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                    discountData.item3
+                                                        ? Text(
+                                                            '${discountData.item1.toString()}৳/${productsList[index - 1]['sell_by']}',
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .teal[100],
+                                                              fontSize: 12.0,
+                                                              fontFamily:
+                                                                  'Montserrat',
+                                                            ),
+                                                          )
+                                                        : const SizedBox(),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            width: double.infinity,
-                                            decoration: BoxDecoration(
-                                              color: kSubMainColor,
-                                              borderRadius: BorderRadius.only(
-                                                bottomLeft: Radius.circular(10),
-                                                bottomRight: Radius.circular(10),
-                                              ),
-                                            ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: kSubMainColor,
+                                          borderRadius: BorderRadius.only(
+                                            bottomLeft:
+                                                const Radius.circular(10),
+                                            bottomRight:
+                                                const Radius.circular(10),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topRight,
-                                      child: discountData.item3
-                                          ? discountPercentWidget(
-                                        discountData.item2.toString(),
-                                      )
-                                          : SizedBox(),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                                //
-                                decoration: BoxDecoration(
-                                  color: kProductCardColor,
-                                  borderRadius: BorderRadius.circular(10.0),
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: discountData.item3
+                                      ? discountPercentWidget(
+                                          discountData.item2.toString(),
+                                        )
+                                      : const SizedBox(),
                                 ),
-                              ),
-                            );
+                              ],
+                            ),
+                            //
+                            decoration: BoxDecoration(
+                              color: kProductCardColor,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                        );
                       },
                     ),
                   );
                 }),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
               ],
@@ -627,7 +621,7 @@ class _TabWidgetState extends State<TabWidget> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ShoppingCart(),
+                            builder: (context) => const ShoppingCart(),
                           ),
                         );
                       } else {
@@ -637,19 +631,26 @@ class _TabWidgetState extends State<TabWidget> {
                     child: ValueListenableBuilder(
                         valueListenable: Hive.box('cartDetails').listenable(),
                         builder: (context, Box box, childs) {
-                          int totalItems = box.get('totalItems', defaultValue: 0);
-                          var totalPrice = box.get('totalPrice', defaultValue: 0.0);
-                          bool isAdded = box.get('isAdded', defaultValue: false);
+                          int totalItems =
+                              box.get('totalItems', defaultValue: 0);
+                          var totalPrice =
+                              box.get('totalPrice', defaultValue: 0.0);
+                          bool isAdded =
+                              box.get('isAdded', defaultValue: false);
                           return AnimatedContainer(
                             height: addedToCart ? 47.0 : 45.0,
-                            width: addedToCart ? deviceSize.width - 20 : deviceSize.width - 30,
+                            width: addedToCart
+                                ? deviceSize.width - 20
+                                : deviceSize.width - 30,
                             decoration: BoxDecoration(
                               border: Border.all(color: kMainColor, width: 2.0),
-                              borderRadius: BorderRadius.circular(addedToCart ? 10 : 7.0),
-                              color:
-                                  isAdded != true ? kBackgroundColor : kMainColor,
+                              borderRadius:
+                                  BorderRadius.circular(addedToCart ? 10 : 7.0),
+                              color: isAdded != true
+                                  ? kBackgroundColor
+                                  : kMainColor,
                             ),
-                            duration: Duration(milliseconds: 200),
+                            duration: const Duration(milliseconds: 200),
                             curve: Curves.fastOutSlowIn,
                             child: Center(
                               child: Text(

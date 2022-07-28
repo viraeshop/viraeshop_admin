@@ -4,22 +4,26 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class OrderTranzCard extends StatelessWidget {
   final String price, employeeName, date, desc, customerName;
+  final String? invoiceId;
   final Function()? onTap;
-  OrderTranzCard(
+  const OrderTranzCard(
       {required this.price,
       required this.employeeName,
       required this.desc,
       required this.date,
       required this.customerName,
-      required this.onTap});
+      required this.onTap,
+      this.invoiceId,
+      }
+  );
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.all(20.0),
+        decoration: const BoxDecoration(
           color: kBackgroundColor,
           border: Border(
             bottom: BorderSide(color: kStrokeColor),
@@ -33,17 +37,17 @@ class OrderTranzCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.payments,
                       size: 30.0,
                       color: kSubMainColor,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 15.0,
                     ),
                     Text(
                       '$price৳',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: kSubMainColor,
                         fontSize: 15.0,
                         fontFamily: 'Montserrat',
@@ -51,14 +55,14 @@ class OrderTranzCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10.0,
                     ),
                     Column(
                       children: [
                         Text(
                           'by $employeeName',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: kProductCardColor,
                             fontSize: 15.0,
                             fontFamily: 'Montserrat',
@@ -66,7 +70,7 @@ class OrderTranzCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 5.0,
                         ),
                       ],
@@ -74,44 +78,57 @@ class OrderTranzCard extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  '$date',
+                  date,
                   style: kProductNameStylePro,
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             Row(
               children: [
-                SizedBox(
+                const SizedBox(
               width: 10.0,
             ),
-                Text(
-                  '$desc',
-                  overflow: TextOverflow.ellipsis,
-                  style: kProductNameStylePro,
+                Expanded(
+                  child: Text(
+                    desc,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
+                    style: kProductNameStylePro,
+                  ),
                 ),
               ],
             ),
-            SizedBox(
-              width: 10.0,
+            const SizedBox(
+             height: 10.0,
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(
-                  Icons.person,
-                  color: kSubMainColor,
-                  size: 30,
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person,
+                      color: kSubMainColor,
+                      size: 30,
+                    ),
+                    const SizedBox(
+                      width: 10.0,
+                    ),
+                    Text(
+                      customerName,
+                      overflow: TextOverflow.ellipsis,
+                      style: kProductNameStylePro,
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  width: 10.0,
-                ),
-                Text(
-                  '$customerName',
+                invoiceId != null ? Text(
+                  'Invoice No: $invoiceId',
                   overflow: TextOverflow.ellipsis,
-                  style: kProductNameStylePro,
-                ),
+                  style: kTableCellStyle,
+                ) : const SizedBox()
               ],
             ),
           ],

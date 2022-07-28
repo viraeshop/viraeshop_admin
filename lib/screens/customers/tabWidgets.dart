@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -31,10 +32,12 @@ class _SalesTabState extends State<SalesTab> {
         .get()
         .then((snapshot) {
       final data = snapshot.docs;
-      data.forEach((element) {
+      for (var element in data) {
         transactions.add(element.data());
-        print('running');
-      });
+        if (kDebugMode) {
+          print('running');
+        }
+      }
       setState(() {
         isLoading = false;
       });
@@ -57,10 +60,10 @@ class _SalesTabState extends State<SalesTab> {
               itemBuilder: (BuildContext context, int i) {
                 List items = transactions[i]['items'];
                 String description = '';
-                items.forEach((element) {
+                for (var element in items) {
                   description +=
                       '${element['quantity']} X ${element['product_name']}, ';
-                });
+                }
                 Timestamp timestamp = transactions[i]['date'];
                 String date = DateFormat.yMMMd().format(timestamp.toDate());
                 return OrderTranzCard(
@@ -119,11 +122,11 @@ class _OrdersTabState extends State<OrdersTab> {
         .get()
         .then((snapshot) {
       final data = snapshot.docs;
-      data.forEach((element) {
+      for (var element in data) {
         orders.add(
           element.data(),
         );
-      });
+      }
       setState(() {
         isLoading = false;
       });
@@ -147,10 +150,10 @@ class _OrdersTabState extends State<OrdersTab> {
               itemBuilder: (BuildContext context, int i) {
                 List items = orders[i]['items'];
                 String description = '';
-                items.forEach((element) {
+                for (var element in items) {
                   description +=
                       '${element['quantity']}x ${element['product_name']} ';
-                });
+                }
                 Timestamp timestamp = orders[i]['date'];
                 String date = DateFormat.yMMMd().format(timestamp.toDate());                
                 return OrderTranzCard(

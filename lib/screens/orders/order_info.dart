@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -6,21 +7,27 @@ import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:random_string/random_string.dart';
+import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
+import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/orders/customer_order_history.dart';
 import 'package:viraeshop_admin/screens/orders/order_configs.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 
+import '../../components/home_screen_components/decision_components.dart';
 import '../../configs/configs.dart';
 import '../../settings/admin_CRUD.dart';
 
 class OrderInfo extends StatefulWidget {
+  static const String path = '/order_info';
   final String orderId;
   final String customerName;
-  OrderInfo({required this.orderId, required this.customerName});
+  const OrderInfo({required this.orderId, required this.customerName});
 
   @override
   _OrderInfoState createState() => _OrderInfoState();
@@ -41,7 +48,7 @@ class _OrderInfoState extends State<OrderInfo>
     tabController = TabController(length: 4, initialIndex: 0, vsync: this);
     adminCrud.getSingleOrder(widget.orderId).then((snapshot) {
       // print(snapshot.data());
-      order = snapshot.data() != null ? snapshot.data() : {};
+      order = snapshot.data() ?? {};
       Timestamp dateTime = snapshot.get('date');
       DateTime date = dateTime.toDate();
       dateFormat = DateFormat.yMMMd().format(date);
@@ -49,6 +56,7 @@ class _OrderInfoState extends State<OrderInfo>
         'items': snapshot.get('items'),
         'totalPrice': snapshot.get('price'),
         'totalItems': snapshot.get('quantity'),
+        'role': snapshot.get('role'),
       }).catchError((error) {
         print(error);
       });
@@ -75,7 +83,7 @@ class _OrderInfoState extends State<OrderInfo>
       create: (context) => OrderConfigs(),
       child: ModalProgressHUD(
         inAsyncCall: isLoading,
-        progressIndicator: CircularProgressIndicator(
+        progressIndicator: const CircularProgressIndicator(
           color: kMainColor,
         ),
         child: GestureDetector(
@@ -92,7 +100,7 @@ class _OrderInfoState extends State<OrderInfo>
                       Hive.box('orderItems').clear();
                     }
                   },
-                  icon: Icon(FontAwesomeIcons.chevronLeft),
+                  icon: const Icon(FontAwesomeIcons.chevronLeft),
                   iconSize: 20.0,
                   color: kSubMainColor,
                 ),
@@ -121,113 +129,109 @@ class _OrderInfoState extends State<OrderInfo>
                                     String totalItems =
                                         box.get('totalItems').toString();
                                     return Container(
-                                      padding: EdgeInsets.all(15.0),
+                                      padding: const EdgeInsets.all(15.0),
                                       width: size.width,
                                       color: kBackgroundColor,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            child: ListTile(
-                                              leading: Text(
-                                                'Total Price:',
-                                                style: TextStyle(
-                                                  color: kBlueColor,
-                                                  fontFamily: 'Montserrat',
-                                                  fontSize: 20,
-                                                  letterSpacing: 1.3,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                          ListTile(
+                                            leading: const Text(
+                                              'Total Price:',
+                                              style: TextStyle(
+                                                color: kBlueColor,
+                                                fontFamily: 'Montserrat',
+                                                fontSize: 20,
+                                                letterSpacing: 1.3,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                              trailing: Text(
-                                                '$totalPrice৳',
-                                                style: TextStyle(
-                                                  color: kNewTextColor,
-                                                  fontFamily: 'Montserrat',
-                                                  fontSize: 20,
-                                                  letterSpacing: 1.3,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                            ),
+                                            trailing: Text(
+                                              '$totalPrice৳',
+                                              style: const TextStyle(
+                                                color: kNewTextColor,
+                                                fontFamily: 'Montserrat',
+                                                fontSize: 20,
+                                                letterSpacing: 1.3,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(
+                                              Icons.schedule,
+                                              size: 20.0,
+                                              color: kBlackColor,
+                                            ),
+                                            trailing: isCancelOrConfirm
+                                                ? const SizedBox()
+                                                : Text(
+                                                    '$totalItems QYT ${box.get('items').length} Items',
+                                                    style: kTotalSalesStyle,
+                                                  ),
+                                            title: Consumer<OrderConfigs>(
+                                              builder: (context, order, childs) =>
+                                                  DropdownButton(
+                                                underline: const SizedBox(),
+                                                value: order.orderStats,
+                                                items: const [
+                                                  DropdownMenuItem(
+                                                    value: 'pending',
+                                                    child: Text(
+                                                      'Pending',
+                                                      style: TextStyle(
+                                                        color: kYellowColor,
+                                                        fontFamily: 'Montserrat',
+                                                        fontSize: 18,
+                                                        letterSpacing: 1.3,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  DropdownMenuItem(
+                                                    value: 'confirm',
+                                                    child: Text(
+                                                      'Confirm',
+                                                      style: TextStyle(
+                                                        color: kNewTextColor,
+                                                        fontFamily: 'Montserrat',
+                                                        fontSize: 18,
+                                                        letterSpacing: 1.3,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  DropdownMenuItem(
+                                                    value: 'cancel',
+                                                    child: Text(
+                                                      'Cancel',
+                                                      style: TextStyle(
+                                                        color: kRedColor,
+                                                        fontFamily: 'Montserrat',
+                                                        fontSize: 18,
+                                                        letterSpacing: 1.3,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                                onChanged: (value) {
+                                                  Provider.of<OrderConfigs>(
+                                                          context,
+                                                          listen: false)
+                                                      .updateOrderStats(
+                                                          value.toString());
+                                                },
                                               ),
                                             ),
                                           ),
                                           Container(
                                             child: ListTile(
-                                              leading: Icon(
-                                                Icons.schedule,
-                                                size: 20.0,
-                                                color: kBlackColor,
-                                              ),
-                                              trailing: isCancelOrConfirm
-                                                  ? SizedBox()
-                                                  : Text(
-                                                      '$totalItems QYT ${box.get('items').length} Items',
-                                                      style: kTotalSalesStyle,
-                                                    ),
-                                              title: Consumer<OrderConfigs>(
-                                                builder: (context, order, childs) =>
-                                                    DropdownButton(
-                                                  underline: SizedBox(),
-                                                  value: order.orderStats,
-                                                  items: [
-                                                    DropdownMenuItem(
-                                                      child: Text(
-                                                        'Pending',
-                                                        style: TextStyle(
-                                                          color: kYellowColor,
-                                                          fontFamily: 'Montserrat',
-                                                          fontSize: 18,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      value: 'pending',
-                                                    ),
-                                                    DropdownMenuItem(
-                                                      child: Text(
-                                                        'Confirm',
-                                                        style: TextStyle(
-                                                          color: kNewTextColor,
-                                                          fontFamily: 'Montserrat',
-                                                          fontSize: 18,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      value: 'confirm',
-                                                    ),
-                                                    DropdownMenuItem(
-                                                      child: Text(
-                                                        'Cancel',
-                                                        style: TextStyle(
-                                                          color: kRedColor,
-                                                          fontFamily: 'Montserrat',
-                                                          fontSize: 18,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      value: 'cancel',
-                                                    ),
-                                                  ],
-                                                  onChanged: (value) {
-                                                    Provider.of<OrderConfigs>(
-                                                            context,
-                                                            listen: false)
-                                                        .updateOrderStats(
-                                                            value.toString());
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            child: ListTile(
-                                              leading: Icon(
+                                              leading: const Icon(
                                                 Icons.local_shipping_outlined,
                                                 size: 20.0,
                                                 color: kBlackColor,
@@ -235,10 +239,11 @@ class _OrderInfoState extends State<OrderInfo>
                                               title: Consumer<OrderConfigs>(
                                                 builder: (context, order, childs) =>
                                                     DropdownButton(
-                                                  underline: SizedBox(),
+                                                  underline: const SizedBox(),
                                                   value: order.deliverStats,
-                                                  items: [
+                                                  items: const [
                                                     DropdownMenuItem(
+                                                      value: 'Pending',
                                                       child: Text(
                                                         'Pending',
                                                         style: TextStyle(
@@ -250,9 +255,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                      value: 'Pending',
                                                     ),
                                                     DropdownMenuItem(
+                                                      value: 'Delivered',
                                                       child: Text(
                                                         'Delivered',
                                                         style: TextStyle(
@@ -264,9 +269,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                      value: 'Delivered',
                                                     ),
                                                     DropdownMenuItem(
+                                                      value: 'Cancel',
                                                       child: Text(
                                                         'Cancel',
                                                         style: TextStyle(
@@ -278,7 +283,6 @@ class _OrderInfoState extends State<OrderInfo>
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                      value: 'Cancel',
                                                     ),
                                                   ],
                                                   onChanged: order.orderStats == 'pending' || order.orderStats == 'cancel' ? null : (value) {
@@ -296,7 +300,7 @@ class _OrderInfoState extends State<OrderInfo>
                                             child: Consumer<OrderConfigs>(
                                               builder: (context, order, childs) =>
                                                   ListTile(
-                                                leading: Icon(
+                                                leading: const Icon(
                                                   Icons.payments,
                                                   size: 20.0,
                                                   color: kBlackColor,
@@ -317,7 +321,7 @@ class _OrderInfoState extends State<OrderInfo>
                                                           style:
                                                               kProductNameStylePro,
                                                           decoration:
-                                                              InputDecoration(
+                                                              const InputDecoration(
                                                             border:
                                                                 UnderlineInputBorder(
                                                               borderSide:
@@ -330,10 +334,11 @@ class _OrderInfoState extends State<OrderInfo>
                                                       )
                                                     : null,
                                                 title: DropdownButton(
-                                                  underline: SizedBox(),
+                                                  underline: const SizedBox(),
                                                   value: order.payStats,
-                                                  items: [
+                                                  items: const [
                                                     DropdownMenuItem(
+                                                      value: 'Due',
                                                       child: Text(
                                                         'Due',
                                                         style: TextStyle(
@@ -345,9 +350,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                      value: 'Due',
                                                     ),
                                                     DropdownMenuItem(
+                                                      value: 'Advance',
                                                       child: Text(
                                                         'Advance',
                                                         style: TextStyle(
@@ -359,9 +364,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                      value: 'Advance',
                                                     ),
                                                     DropdownMenuItem(
+                                                      value: 'Paid',
                                                       child: Text(
                                                         'Paid',
                                                         style: TextStyle(
@@ -373,7 +378,6 @@ class _OrderInfoState extends State<OrderInfo>
                                                               FontWeight.bold,
                                                         ),
                                                       ),
-                                                      value: 'Paid',
                                                     ),
                                                   ],
                                                   onChanged: order.orderStats == 'pending' || order.orderStats == 'cancel' ? null : (value) {
@@ -400,13 +404,13 @@ class _OrderInfoState extends State<OrderInfo>
                                   // crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(10.0),
+                                      padding: const EdgeInsets.all(10.0),
                                       color: kStrokeColor,
                                       child: Center(
                                         child: Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
-                                          children: [
+                                          children: const [
                                             Icon(
                                               Icons.info,
                                               size: 25.0,
@@ -429,38 +433,36 @@ class _OrderInfoState extends State<OrderInfo>
                                         ),
                                       ),
                                     ),
-                                    Container(
-                                      child: TabBar(
-                                       // isScrollable: true,
-                                        controller: tabController,
-                                        indicatorColor: kMainColor,
-                                        labelColor: kMainColor,
-                                        indicatorWeight: 3.0,
-                                        unselectedLabelColor: Colors.black45,
-                                        unselectedLabelStyle: TextStyle(
-                                          fontFamily: 'Montserrat',
-                                          fontSize: 15,
-                                          letterSpacing: 1.3,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        labelStyle: TextStyle(
-                                          color: kMainColor,
-                                          fontFamily: 'Montserrat',
-                                          fontSize: 15,
-                                          letterSpacing: 1.3,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        isScrollable: true,
-                                        // indicatorPadding:
-                                        //     EdgeInsets.symmetric(horizontal: 21),
-                                        // labelPadding: EdgeInsets.all(6),
-                                        tabs: [
-                                          Tab(text: 'Items'),
-                                          Tab(text: 'Details'),
-                                          Tab(text: 'Customer Info'),
-                                          Tab(text: 'History'),
-                                        ],
+                                    TabBar(
+                                     // isScrollable: true,
+                                      controller: tabController,
+                                      indicatorColor: kMainColor,
+                                      labelColor: kMainColor,
+                                      indicatorWeight: 3.0,
+                                      unselectedLabelColor: Colors.black45,
+                                      unselectedLabelStyle: const TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 15,
+                                        letterSpacing: 1.3,
+                                        fontWeight: FontWeight.bold,
                                       ),
+                                      labelStyle: const TextStyle(
+                                        color: kMainColor,
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 15,
+                                        letterSpacing: 1.3,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      isScrollable: true,
+                                      // indicatorPadding:
+                                      //     EdgeInsets.symmetric(horizontal: 21),
+                                      // labelPadding: EdgeInsets.all(6),
+                                      tabs: const [
+                                        Tab(text: 'Items'),
+                                        Tab(text: 'Details'),
+                                        Tab(text: 'Customer Info'),
+                                        Tab(text: 'History'),
+                                      ],
                                     ),
                                     // Text('data'),
                                     LimitedBox(
@@ -503,7 +505,7 @@ class _OrderInfoState extends State<OrderInfo>
                                 alignment: Alignment.bottomCenter,
                                 child: Consumer<OrderConfigs>(
                                   builder: (context, orders, childs) => Padding(
-                                    padding: EdgeInsets.all(10.0),
+                                    padding: const EdgeInsets.all(10.0),
                                     child: sendButton(
                                       title: 'Confirm',
                                       onTap: () async {
@@ -548,7 +550,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                 ['mobile'],
                                           },
                                         };
-                                        print('Map finished');
+                                        if (kDebugMode) {
+                                          print('Map finished');
+                                        }
                                         await FirebaseFirestore.instance
                                             .collection('order')
                                             .doc(widget.orderId)
@@ -564,13 +568,17 @@ class _OrderInfoState extends State<OrderInfo>
                                           'isFromCustomer': false,
                                           'customerToken' : order['customerToken'],
                                         }).then((value) async {
-                                          print('order updated');
+                                          if (kDebugMode) {
+                                            print('order updated');
+                                          }
                                           if (order['seen'] == false) {
                                             OrderConfigs().updateNewOrders();
                                           }
                                           if (orders.orderStats == 'confirm') {
                                             if (order['role'] == 'agents') {
-                                              print('isAgent');
+                                              if (kDebugMode) {
+                                                print('isAgent');
+                                              }
                                               if (orders.payStats == 'Paid' ||
                                                   orders.payStats == 'Advance') {
                                                 adminCrud
@@ -627,7 +635,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                   });                                            
                                                 });
                                               } else {
-                                                print('making transaction');
+                                                if (kDebugMode) {
+                                                  print('making transaction');
+                                                }
                                                 await adminCrud
                                                     .createTransaction(
                                                         invoiceNo, transInfo)
@@ -642,7 +652,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                     );
                                                   },
                                                 ).catchError((error) {
-                                                  print(error);
+                                                  if (kDebugMode) {
+                                                    print(error);
+                                                  }
                                                   setState(() {
                                                     isLoading = false;
                                                   });
@@ -653,7 +665,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                 });
                                               }
                                             } else {
-                                              print('making transaction');
+                                              if (kDebugMode) {
+                                                print('making transaction');
+                                              }
                                               await adminCrud
                                                   .createTransaction(
                                                       invoiceNo, transInfo)
@@ -668,7 +682,9 @@ class _OrderInfoState extends State<OrderInfo>
                                                   );
                                                 },
                                               ).catchError((error) {
-                                                print(error);
+                                                if (kDebugMode) {
+                                                  print(error);
+                                                }
                                                 setState(() {
                                                   isLoading = false;
                                                 });
@@ -711,7 +727,7 @@ class _OrderInfoState extends State<OrderInfo>
                       ],
                     ),
                   )                 
-                  : Center(
+                  : const Center(
                       child: Text(
                         '',
                         style: kProductNameStylePro,
@@ -730,7 +746,7 @@ Widget customerInfo({required Map info}) {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.person,
             size: 20.0,
             color: kSubMainColor,
@@ -748,7 +764,7 @@ Widget customerInfo({required Map info}) {
               await launch(url);
             }
           },
-          leading: Icon(
+          leading: const Icon(
             Icons.call,
             size: 20.0,
             color: kSubMainColor,
@@ -759,7 +775,7 @@ Widget customerInfo({required Map info}) {
           ),
         ),
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.place,
             size: 20.0,
             color: kSubMainColor,
@@ -767,7 +783,7 @@ Widget customerInfo({required Map info}) {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Location',
                 style: kProductNameStyle,
               ),
@@ -783,85 +799,88 @@ Widget customerInfo({required Map info}) {
   );
 }
 
-Widget orderProduct({required Map product, onPress,bool isWithButton = true}) {
+Widget orderProduct({required Map product, onPress,bool isWithButton = true, void  Function()? onLongPress}) {
   return Container(
-    padding: EdgeInsets.all(10.0),
+    padding: const EdgeInsets.all(10.0),
     height: 60.0,
-    decoration: BoxDecoration(
+    decoration: const BoxDecoration(
       border: Border(
         bottom: BorderSide(
           color: kStrokeColor,
         ),
       ),
     ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.inventory_2_outlined,
-              color: kBlueColor,
-              size: 25.0,
-            ),
-            SizedBox(
-              width: 4.0,
-            ),
-            Text(
-              '${product['quantity'].toString()} X',
-              style: kProductNameStylePro,
-            ),
-            SizedBox(
-              width: 7.0,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${product['product_name']} (${product['product_id']})',
-                  style: TextStyle(
-                    color: kSubMainColor,
-                    fontFamily: 'Montserrat',
-                    fontSize: 15,
-                    letterSpacing: 1.3,
-                    fontWeight: FontWeight.bold,
+    child: GestureDetector(
+      onLongPress: onLongPress,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.inventory_2_outlined,
+                color: kBlueColor,
+                size: 25.0,
+              ),
+              const SizedBox(
+                width: 4.0,
+              ),
+              Text(
+                '${product['quantity'].toString()} X',
+                style: kProductNameStylePro,
+              ),
+              const SizedBox(
+                width: 7.0,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${product['product_name']} (${product['product_id']})',
+                    style: const TextStyle(
+                      color: kSubMainColor,
+                      fontFamily: 'Montserrat',
+                      fontSize: 15,
+                      letterSpacing: 1.3,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  '${product['unit_price'].toString()}৳',
-                  style: kTotalTextStyle,
-                ),
-              ],
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Text(
-              '${product['product_price'].toString()}৳',
-              style: kTotalTextStyle,
-            ),
-            SizedBox(
-              width: 5.0,
-            ),
-            isWithButton ?
-            IconButton(
-              onPressed: onPress,
-              icon: Icon(Icons.delete),
-              color: kRedColor,
-              iconSize: 25.0,
-            ) : SizedBox(),
-          ],
-        ),
-      ],
+                  Text(
+                    '${product['unit_price'].toString()}৳',
+                    style: kTotalTextStyle,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Text(
+                '${product['product_price'].toString()}৳',
+                style: kTotalTextStyle,
+              ),
+              const SizedBox(
+                width: 5.0,
+              ),
+              isWithButton ?
+              IconButton(
+                onPressed: onPress,
+                icon: const Icon(Icons.delete),
+                color: kRedColor,
+                iconSize: 25.0,
+              ) : const SizedBox(),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }
 
 class OrderProducts extends StatelessWidget {
   final bool isCancelOrConfirm;
-  OrderProducts({required this.isCancelOrConfirm});
+  const OrderProducts({required this.isCancelOrConfirm});
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -870,13 +889,40 @@ class OrderProducts extends StatelessWidget {
         List items =
             isCancelOrConfirm ? [] : box.get('items', defaultValue: []);
         return Container(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           child: SingleChildScrollView(
             child: Column(
               children: List.generate(
                 items.length,
                 (index) {
                   return orderProduct(
+                    onLongPress: (){
+                      final List items = Hive.box(productsBox).get(productsKey);
+                      final Map item = items.firstWhere((element) => element['product_id'] == items[index]['product_id']);
+                      num currentPrice = getCurrentPrice(
+                          item, box.get('role'));
+                      Tuple3<num, num, bool> discountData =
+                      computeDiscountData(item,
+                          box.get('role'), currentPrice);
+                      showDialog<void>(context: context, builder: (context){
+                        return popWidget(
+                          image: item['image'],
+                          productName: item['name'],
+                          price: currentPrice.toString(),
+                          description: item
+                          ['description'],
+                          category: item['category'],
+                          quantity: item['quantity']
+                              .toString(),
+                          context: context,
+                          info: item,
+                          routeName: HomeScreen.path,
+                          isDiscount: discountData.item3,
+                          discountPrice: discountData.item1,
+                          sellBy: item['sell_by'],
+                        );
+                      });
+                    },
                     product: items[index],
                     onPress: () {
                       num price = box.get('totalPrice'),
@@ -903,7 +949,7 @@ class OrderProducts extends StatelessWidget {
 
 class OrderInformation extends StatelessWidget {
   final String totalPrice, paymentStatus, deliveryStatus, date;
-  OrderInformation(
+  const OrderInformation(
       {required this.paymentStatus,
       required this.date,
       required this.deliveryStatus,
@@ -913,12 +959,12 @@ class OrderInformation extends StatelessWidget {
     return Column(
       children: [
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.payments,
             color: kSubMainColor,
             size: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Total Price',
             style: kProductNameStyle,
           ),
@@ -928,47 +974,47 @@ class OrderInformation extends StatelessWidget {
           ),
         ),
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.payment,
             color: kSubMainColor,
             size: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Payment Status',
             style: kProductNameStyle,
           ),
           trailing: Text(
-            '$paymentStatus',
+            paymentStatus,
             style: kTotalTextStyle,
           ),
         ),
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.local_shipping_outlined,
             color: kSubMainColor,
             size: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Delivery Status',
             style: kProductNameStyle,
           ),
           trailing: Text(
-            '$deliveryStatus',
+            deliveryStatus,
             style: kTotalTextStyle,
           ),
         ),
         ListTile(
-          leading: Icon(
+          leading: const Icon(
             Icons.event_outlined,
             color: kSubMainColor,
             size: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Date',
             style: kProductNameStyle,
           ),
           trailing: Text(
-            '$date',
+            date,
             style: kTotalTextStyle,
           ),
         ),

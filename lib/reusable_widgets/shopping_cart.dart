@@ -58,13 +58,13 @@ class _ShoppingCartState extends State<ShoppingCart> {
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       inAsyncCall: isProcessing,
       child: Scaffold(
         appBar: AppBar(
-          shape: Border(
+          shape: const Border(
             bottom: BorderSide(
               color: Colors.black12,
             ),
@@ -73,12 +73,12 @@ class _ShoppingCartState extends State<ShoppingCart> {
           backgroundColor: kBackgroundColor,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(
+            icon: const Icon(
               FontAwesomeIcons.chevronLeft,
               color: kSubMainColor,
             ),
           ),
-          title: Text(
+          title: const Text(
             'Cart',
             style: kAppBarTitleTextStyle,
           ),
@@ -94,9 +94,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => CustomersScreen()));
+                                  builder: (context) => const CustomersScreen()));
                         },
-                        icon: Icon(FontAwesomeIcons.userPlus),
+                        icon: const Icon(FontAwesomeIcons.userPlus),
                       );
                     }
                     return Padding(
@@ -106,26 +106,26 @@ class _ShoppingCartState extends State<ShoppingCart> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CustomersScreen(),
+                              builder: (context) => const CustomersScreen(),
                             ),
                           );
                         },
                         child: Container(
-                          padding: EdgeInsets.all(6.0),
+                          padding: const EdgeInsets.all(6.0),
                           decoration: BoxDecoration(
                             border: Border.all(color: kSubMainColor),
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 FontAwesomeIcons.userPlus,
                                 color: kSubMainColor,
                                 size: 10.0,
                               ),
-                              SizedBox(width: 7.0),
+                              const SizedBox(width: 7.0),
                               Text(
                                 username,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: kSubMainColor,
                                   fontFamily: 'Montserrat',
                                   fontSize: 10,
@@ -149,14 +149,14 @@ class _ShoppingCartState extends State<ShoppingCart> {
                         title: 'Empty cart',
                         context: context,
                         widget: SingleChildScrollView(
-                          padding: EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(10.0),
                           child: Column(
                             children: [
-                              Text('Are you sure you want to clear your cart?'),
-                              SizedBox(height: 20),
+                              const Text('Are you sure you want to clear your cart?'),
+                              const SizedBox(height: 20),
                               InkWell(
                                 child: Container(
-                                  padding: EdgeInsets.all(15),
+                                  padding: const EdgeInsets.all(15),
                                   decoration: BoxDecoration(
                                       color:
                                           kMainColor, //Theme.of(context).accentColor,
@@ -166,9 +166,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      Text(
+                                      const Text(
                                         "Clear Cart",
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 20, color: Colors.white),
                                       )
                                     ],
@@ -186,7 +186,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                           ),
                         ));
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.cancel,
                     color: Colors.red,
                   )),
@@ -218,11 +218,11 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     carts.length,
                                     (int i) {
                                       return Container(
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           color: kBackgroundColor,
                                           border: Border(
                                             bottom: BorderSide(
-                                              color: Color(0xffF7F7F7),
+                                              color: const Color(0xffF7F7F7),
                                             ),
                                           ),
                                         ),
@@ -242,7 +242,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                 ),
                                 Padding(
                                   padding:
-                                      EdgeInsets.only(right: 10.0, top: 10.0),
+                                      const EdgeInsets.only(right: 10.0, top: 10.0),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -269,7 +269,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                 discounts != null
                                                     ? Text(
                                                         'Total: ${(prices + discounts).toString()}',
-                                                        style: TextStyle(
+                                                        style: const TextStyle(
                                                           color: kSubMainColor,
                                                           fontFamily:
                                                               'Montserrat',
@@ -279,8 +279,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                               FontWeight.bold,
                                                         ),
                                                       )
-                                                    : SizedBox(),
-                                                SizedBox(height: 3.0),
+                                                    : const SizedBox(),
+                                                const SizedBox(height: 3.0),
                                                 TextButton(
                                                   onPressed: () {
                                                     Navigator.push(context,
@@ -294,7 +294,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                             'discountAmount')
                                                         ? 'Discount(${discountPercent.round().toString()}%): -${discounts.toString()}৳'
                                                         : 'Add Discount',
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                       color: kIconColor1,
                                                       fontFamily: 'Montserrat',
                                                       fontSize: 14,
@@ -310,9 +310,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 3.0),
+                                const SizedBox(height: 3.0),
                                 Padding(
-                                  padding: EdgeInsets.all(10.0),
+                                  padding: const EdgeInsets.all(10.0),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -326,7 +326,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
 
                                             return Text(
                                               'Sub-Total: ${totalPrice.toString()}',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: kSubMainColor,
                                                 fontFamily: 'Montserrat',
                                                 fontSize: 15,
@@ -343,14 +343,14 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Padding(
-                                      padding: EdgeInsets.all(10.0),
+                                      padding: const EdgeInsets.all(10.0),
                                       child: TypableText(
                                         isDesc: isDesc,
                                         controller: descController,
                                         switchOn: () {
                                           setState(() {
                                             isDesc = true;
-                                            paid = 0;
+                                           // paid = 0;
                                           });
                                         },
                                         switchOff: () {
@@ -362,6 +362,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                           setState(() {
                                             due = totalPrice - num.parse(e);
                                             advance = num.parse(e);
+                                            paid = advance;
                                           });
                                         },
                                         keyboardType:
@@ -371,11 +372,11 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   ],
                                 ),
                                 Padding(
-                                    padding: EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(10),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Text('Due: ${due.toString()}', style: TextStyle(
+                                      Text('Due: ${due.toString()}', style: const TextStyle(
                                         color: kSubMainColor,
                                         fontFamily: 'Montserrat',
                                         fontSize: 15,
@@ -386,7 +387,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -399,7 +400,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                             descController.text = '0';
                                           });
                                         },
-                                        child: Text('Paid: ${paid.toString()}', style: TextStyle(
+                                        child: Text('Paid: ${paid.toString()}', style: const TextStyle(
                                           color: kSubMainColor,
                                           fontFamily: 'Montserrat',
                                           fontSize: 15,
@@ -549,8 +550,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                 color: kBackgroundColor,
                                 child: InkWell(
                                   child: Container(
-                                    padding: EdgeInsets.all(15),
-                                    margin: EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.all(15),
+                                    margin: const EdgeInsets.all(8.0),
                                     decoration: BoxDecoration(
                                         color:
                                             kMainColor, //Theme.of(context).accentColor,
@@ -572,7 +573,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                 box.get('totalItems');
                                             return Text(
                                               'Order ${totalItems.toString()} Items at ${totalPrice.toString()}৳',
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 color: kBackgroundColor,
                                                 fontFamily: 'Montserrat',
                                                 fontSize: 14,
@@ -608,8 +609,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
               } else {
                 return Center(
                   child: Container(
-                    color: Color(0xfff7f7f7),
-                    child: Text(
+                    color: const Color(0xfff7f7f7),
+                    child: const Text(
                       'Cart is empty',
                       style: kProductNameStyle,
                     ),
@@ -651,7 +652,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
               children: [
                 Text(
                   widget.quantity,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: kSubMainColor,
                     fontFamily: 'Montserrat',
                     fontSize: 14,
@@ -659,7 +660,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
+                const Text(
                   ' X',
                   style: TextStyle(
                     color: Colors.black12,
@@ -678,7 +679,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
           trailing: Text(
             /// To add product price here
             '${widget.price}৳',
-            style: TextStyle(
+            style: const TextStyle(
               color: kSubMainColor,
               fontFamily: 'Montserrat',
               fontSize: 14,
@@ -693,16 +694,16 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
           },
         ),
         AnimatedContainer(
-          duration: Duration(milliseconds: 0),
+          duration: const Duration(milliseconds: 0),
           height: isVisible ? 100 : 0,
           width: double.infinity,
           //padding: EdgeInsets.all(0.0),
-          decoration: BoxDecoration(
-            border: Border(
+          decoration: const BoxDecoration(
+            border: const Border(
               bottom: BorderSide(
                 color: kStrokeColor,
               ),
-              top: BorderSide(
+              top: const BorderSide(
                 color: kStrokeColor,
               ),
             ),
@@ -725,7 +726,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                           );
                         }));
                       },
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.inventory,
                         size: 20.0,
                         color: kSubMainColor,
@@ -736,7 +737,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                   ],
                 ),
               ),
-              VerticalDivider(
+              const VerticalDivider(
                 color: kStrokeColor,
                 thickness: 2.0,
               ),
@@ -772,14 +773,14 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                           },
                         );
                       },
-                      icon: Icon(FontAwesomeIcons.dollarSign,
+                      icon: const Icon(FontAwesomeIcons.dollarSign,
                           size: 20.0, color: Colors.red),
                     ),
                     Text('BDT ${widget.unitPrice}',
                         style: kProductNameStylePro),
-                    Text(
+                    const Text(
                       'Unit',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black38,
                         fontSize: 12.0,
                         fontFamily: 'Montserrat',
@@ -790,7 +791,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                   ],
                 ),
               ),
-              VerticalDivider(
+              const VerticalDivider(
                 color: kStrokeColor,
                 thickness: 4.0,
               ),
@@ -802,7 +803,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                   return Container(
                     color: isDiscount ? kRedColor : kBackgroundColor,
                     //width: double.infinity,
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -851,7 +852,7 @@ Widget alert(
         onPressed: () {
           Navigator.pop(context);
         },
-        child: Text(
+        child: const Text(
           'CANCEL',
           softWrap: true,
           style: kSourceSansStyle,
@@ -859,7 +860,7 @@ Widget alert(
       ),
       TextButton(
         onPressed: onTap,
-        child: Text(
+        child: const Text(
           'YES',
           softWrap: true,
           style: kSourceSansStyle,

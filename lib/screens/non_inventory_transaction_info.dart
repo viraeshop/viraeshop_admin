@@ -44,18 +44,18 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(FontAwesomeIcons.chevronLeft),
+          icon: const Icon(FontAwesomeIcons.chevronLeft),
           color: kSubMainColor,
           iconSize: 20.0,
         ),
-        title: Text(
+        title: const Text(
           'Non Inventory',
           style: kAppBarTitleTextStyle,
         ),
       ),
       body: Container(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(15.0),
           child: Column(
             children: [
               Column(
@@ -89,13 +89,13 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                     '${widget.data['address']}',
                     style: kProductNameStylePro,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10.0,
                   ),
                   Row(
                     children: [
                       textContainer('Invoice No.'),
-                      SizedBox(
+                      const SizedBox(
                         width: 5.0,
                       ),
 
@@ -108,7 +108,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               Column(
@@ -140,7 +140,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                             });
                           }
                         }),
-                    SizedBox(
+                    const SizedBox(
                       width: 10.0,
                     ),
                     buttons(
@@ -153,7 +153,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           }
                         }),
                   ]),
-                  SizedBox(
+                  const SizedBox(
                     height: 7.0,
                   ),
                   Column(
@@ -163,11 +163,11 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 textContainer('Pay'),
-                                SizedBox(
+                                const SizedBox(
                                   width: 3.0,
                                 ),
                                 textContainer('        '),
-                                SizedBox(
+                                const SizedBox(
                                   width: 3.0,
                                 ),
                                 textContainer('        '),
@@ -184,11 +184,11 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 textContainer('Pay'),
-                                SizedBox(
+                                const SizedBox(
                                   width: 3.0,
                                 ),
                                 textContainer('$dateTime'),
-                                SizedBox(
+                                const SizedBox(
                                   width: 3.0,
                                 ),
                                 textContainer(
@@ -209,7 +209,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
 
 Widget textContainer(String text) {
   return Container(
-    padding: EdgeInsets.all(3.0),
+    padding: const EdgeInsets.all(3.0),
     decoration: BoxDecoration(
       border: Border.all(
         color: kBlackColor,

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:viraeshop_admin/components/home_screen_components/product_pop_widget_supplier_info.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/new_product_screen.dart';
@@ -22,20 +23,20 @@ Widget popWidget(
     AlertDialog(
       // shape: RoundedRectangleBorder().,
       backgroundColor: Colors.black12.withOpacity(0.1),
-      contentPadding: EdgeInsets.all(0.0),
-      titlePadding: EdgeInsets.all(20.0),
+      contentPadding: const EdgeInsets.all(0.0),
+      titlePadding: const EdgeInsets.all(20.0),
       title: IconButton(
         onPressed: () {
           Navigator.pop(context);
         },
-        icon: Icon(
+        icon: const Icon(
           Icons.close_sharp,
           color: kBackgroundColor,
           size: 35.0,
         ),
       ),
       content: Container(
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.6,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           color: kBackgroundColor,
@@ -44,14 +45,14 @@ Widget popWidget(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Container(
+              SizedBox(
                 height: 200,
                 // width: double.infinity,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(10.0),
                         topRight: Radius.circular(10.0),
                       ),
@@ -72,7 +73,7 @@ Widget popWidget(
                             ),
                           );
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.crop_free_outlined,
                           size: 20.0,
                           color: kBackgroundColor,
@@ -82,11 +83,11 @@ Widget popWidget(
                   ],
                 ),
               ),
-              Container(
+              SizedBox(
                 // heightFactor: 0.45,
                 width: double.infinity,
                 child: Padding(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -99,7 +100,7 @@ Widget popWidget(
                         category,
                         style: kProductNameStylePro,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10.0,
                       ),
                       Text(
@@ -123,14 +124,18 @@ Widget popWidget(
                                 fontFamily: 'Montserrat',
                               ),
                             )
-                          : SizedBox(),
-                      SizedBox(
+                          : const SizedBox(),
+                      const SizedBox(
                         height: 10.0,
                       ),
                       Text(
                         description,
                         style: kProductNameStylePro,
                       ),
+                      const SizedBox(
+                        height: 10.0,
+                      ),
+                      const SupplierInfo(),
                     ],
                   ),
                 ),
@@ -139,7 +144,7 @@ Widget popWidget(
           ),
         ),
       ),
-      actionsPadding: EdgeInsets.all(25.0),
+      actionsPadding: const EdgeInsets.all(25.0),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
         InkWell(
@@ -162,7 +167,7 @@ Widget popWidget(
         Container(
           height: quantity.length <= 6 ? 50.0 : null,
           width: quantity.length <= 6 ? null : 100.0,
-          padding: EdgeInsets.only(top: 8.0, left: 3.0, right: 3.0),
+          padding: const EdgeInsets.only(top: 8.0, left: 3.0, right: 3.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30.0),
             color: kMainColor,
@@ -171,7 +176,7 @@ Widget popWidget(
           child: Text(
             quantity,
             softWrap: true,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20.0,
               color: kBackgroundColor,
               fontFamily: 'Montserrat',

@@ -23,6 +23,7 @@ import 'package:viraeshop_admin/screens/catalog.dart';
 import 'package:viraeshop_admin/screens/category_screen.dart';
 import 'package:viraeshop_admin/screens/customers/customer_request.dart';
 import 'package:viraeshop_admin/screens/customers_list.dart';
+import 'package:viraeshop_admin/screens/due/due_screen.dart';
 import 'package:viraeshop_admin/screens/expense_history.dart';
 import 'package:viraeshop_admin/screens/general_products.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
@@ -188,9 +189,9 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     ModalWidget(),
                       //   );
                       // } else {
-                        Provider.of<AdsProvider>(context, listen: false)
-                            .updateDrawerWidget('Tab Widget');
-                            Navigator.pop(context);
+                      Provider.of<AdsProvider>(context, listen: false)
+                          .updateDrawerWidget('Tab Widget');
+                      Navigator.pop(context);
                       //}
                     },
                   ),
@@ -207,12 +208,12 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     DesktopOrders(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Orders(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Orders(),
+                        ),
+                      );
                       //}
                     },
                   ),
@@ -226,12 +227,12 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     Products(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const Products(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const Products(),
+                        ),
+                      );
                       //}
                     },
                   ),
@@ -249,13 +250,13 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     ),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const CategoryScreen(),
-                          ),
-                        );
-                     // }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CategoryScreen(),
+                        ),
+                      );
+                      // }
                     },
                   ),
                   ReusableTile(
@@ -290,32 +291,32 @@ class _AppDrawerState extends State<AppDrawer> {
                             //     CustomersPage(),
                             //   );
                             // } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const CustomersPage(),
-                                ),
-                              );
-                           // }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CustomersPage(),
+                              ),
+                            );
+                            // }
                           },
                   ),
                   ReusableTile(
                     onTap: isMakeCustomer == false
                         ? null
                         : () {
-                        //     if (widget.isBigScreen == true) {
-                        //       Provider.of<Configs>(context, listen: false)
-                        //           .updateWidget(
-                        //         AgentsPage(),
-                        //       );
-                        //     } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const AgentsPage(),
-                                ),
-                              );
-                        //    }
+                            //     if (widget.isBigScreen == true) {
+                            //       Provider.of<Configs>(context, listen: false)
+                            //           .updateWidget(
+                            //         AgentsPage(),
+                            //       );
+                            //     } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AgentsPage(),
+                              ),
+                            );
+                            //    }
                           },
                     padding: true,
                     title: 'Agent',
@@ -330,12 +331,12 @@ class _AppDrawerState extends State<AppDrawer> {
                             //     ArchitectsPage(),
                             //   );
                             // } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ArchitectsPage(),
-                                ),
-                              );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ArchitectsPage(),
+                              ),
+                            );
                             //}
                           },
                     padding: true,
@@ -366,12 +367,12 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     UsersMessagesScreen(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => UsersMessagesScreen(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UsersMessagesScreen(),
+                        ),
+                      );
                       //}
                     },
                   ),
@@ -383,9 +384,9 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     AdvertScreen(),
                       //   );
                       // } else {
-                        Provider.of<AdsProvider>(context, listen: false)
-                            .updateDrawerWidget('Advert');
-                            Navigator.pop(context);
+                      Provider.of<AdsProvider>(context, listen: false)
+                          .updateDrawerWidget('Advert');
+                      Navigator.pop(context);
                       //}
                     },
                     icon: FontAwesomeIcons.ad,
@@ -393,18 +394,18 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   ReusableTile(
                     onTap: () {
-                     // if (widget.isBigScreen == true) {
+                      // if (widget.isBigScreen == true) {
                       //   Provider.of<Configs>(context, listen: false)
                       //       .updateWidget(
                       //     ReturnHistory(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ReturnHistory(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReturnHistory(),
+                        ),
+                      );
                       //}
                     },
                     icon: Icons.inventory,
@@ -444,12 +445,12 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     NewExpense(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NewExpense(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NewExpense(),
+                        ),
+                      );
                       //}
                     },
                   ),
@@ -463,12 +464,12 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     ExpenseHistory(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ExpenseHistory(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExpenseHistory(),
+                        ),
+                      );
                       //}
                     },
                   ),
@@ -482,14 +483,24 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     NewNonInventoryProduct(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NewNonInventoryProduct(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NewNonInventoryProduct(),
+                        ),
+                      );
                       //}
                     },
+                  ),
+                  ReusableTile(
+                    icon: Icons.attach_money,
+                    title: 'Due',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DueScreen(),
+                      ),
+                    ),
                   ),
                   ReusableTile(
                       icon: FontAwesomeIcons.userCog,
@@ -503,12 +514,12 @@ class _AppDrawerState extends State<AppDrawer> {
                               //     AllUserScreen(),
                               //   );
                               // } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const AllUserScreen(),
-                                  ),
-                                );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AllUserScreen(),
+                                ),
+                              );
                               //}
                             }),
                   ReusableTile(
@@ -521,12 +532,12 @@ class _AppDrawerState extends State<AppDrawer> {
                       //     SettingsScreen(),
                       //   );
                       // } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SettingsScreen(),
-                          ),
-                        );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
                       //}
                     },
                   ),
@@ -555,8 +566,8 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                 ],
               ),
-             const  SizedBox(
-               width: double.infinity,
+              const SizedBox(
+                width: double.infinity,
                 child: Divider(
                   color: Colors.black38,
                 ),
@@ -564,9 +575,10 @@ class _AppDrawerState extends State<AppDrawer> {
               ReusableTile(
                 title: 'About Us & Privacy',
                 icon: Icons.info,
-                onTap: (){
+                onTap: () {
                   Navigator.push(
-                    context, MaterialPageRoute(builder: (context)=> AboutUsPage()),
+                    context,
+                    MaterialPageRoute(builder: (context) => AboutUsPage()),
                   );
                 },
               )

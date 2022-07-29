@@ -48,7 +48,8 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
             ),
           ],
         ),
-        body: SizedBox(
+        body: Container(
+          padding: const EdgeInsets.all(10.0),
           height: size.height,
           width: size.width,
           child: Column(
@@ -88,18 +89,22 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 height: 10.0,
               ),
               TextField(
+                textAlign: TextAlign.center,
                 enabled: !isLoading,
                 style: kProductNameStylePro,
                 keyboardType: TextInputType.number,
                 onChanged: (String value) async{
                   if(value.length == 6){
+                    setState((){
+                      isLoading = true;
+                    });
                     final credentials = PhoneAuthProvider.credential(
                       smsCode: value,
                       verificationId: widget.verificationId,
                     );
                     await _auth.signInWithCredential(credentials);
                     setState((){
-                      isLoading = true;
+                      isLoading = false;
                     });
                     toast(context: context, title: 'Verified');
                   }

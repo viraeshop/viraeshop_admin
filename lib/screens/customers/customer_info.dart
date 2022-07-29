@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
@@ -10,12 +11,13 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 
 class CustomerInfoScreen extends StatefulWidget {
-  final Map<String, dynamic> info;
-  bool isNew;
-  CustomerInfoScreen({required this.info, this.isNew = false});
+  final Map info;
+  final bool isNew;
+  const CustomerInfoScreen({required this.info, this.isNew = false});
 
   @override
   _CustomerInfoScreenState createState() => _CustomerInfoScreenState();
@@ -23,20 +25,7 @@ class CustomerInfoScreen extends StatefulWidget {
 
 class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
   late UserCredential user;
-  List<TextEditingController> controllers =
-      List.generate(4, (index) => TextEditingController());
-  List<String> hintTexts = [
-    'Name',
-    'Mobile',
-    'Email',
-    'Address',
-  ];
-  List<IconData> iconData = [
-    Icons.person,
-    Icons.phone_android,
-    Icons.email,
-    Icons.room,
-  ];
+  final CustomerPreferences _preferences = CustomerPreferences();
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
   Map<String, String> strings = {};
@@ -50,32 +39,28 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
     strings['currentName'] = userInfo['name'];
     strings['currentAddress'] = userInfo['address'];
     strings['currentMobile'] = userInfo['mobile'];
-    controllers[0].text = userInfo['name'];
-    controllers[1].text = userInfo['mobile'];
-    controllers[2].text = userInfo['email'];
-    controllers[3].text = userInfo['address'];
+    _preferences.getControllers[0].text = userInfo['name'];
+    _preferences.getControllers[1].text = userInfo['mobile'];
+    _preferences.getControllers[2].text = userInfo['email'];
+    _preferences.getControllers[3].text = userInfo['address'];
     if (userInfo['role'] == 'architect') {
       if (userInfo['idType'] == 'IAB') {
-        hintTexts.add(
-          'IAB ID',
-        );
+        _preferences.addHint = 'IAB ID';
       } else {
-        hintTexts.add('BSC ID');
+        _preferences.addHint = 'BSC ID';
       }
-      controllers.add(
-        TextEditingController(text: userInfo['idNumber']),
-      );
-      iconData.add(Icons.badge_outlined);
+      _preferences.addControllers =  TextEditingController(text: userInfo['idNumber']);
+      _preferences.addIconData = Icons.badge_outlined;
       strings['idImage'] = userInfo['idImage'];
     } else if (userInfo['role'] == 'agents') {
-      hintTexts.addAll([
+      _preferences.addAll(hints: [
         'BIN Number',
         'Trade License Number',
-      ]);
-      iconData.addAll([Icons.badge_outlined, Icons.badge_outlined]);
-      controllers.addAll([
+      ], controller: [
         TextEditingController(text: userInfo['binNumber']),
         TextEditingController(text: userInfo['tinNumber']),
+      ], icons: [
+        Icons.badge_outlined, Icons.badge_outlined
       ]);
       strings['binImage'] = userInfo['binImage'];
       strings['tinImage'] = userInfo['tinImage'];
@@ -88,37 +73,37 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
     final screenSize = MediaQuery.of(context).size;
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(color: kMainColor,),
+      progressIndicator: const CircularProgressIndicator(color: kMainColor,),
       child: Container(
         color: kBackgroundColor,
-        padding: EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(15.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
               Column(
-                children: List.generate(hintTexts.length, (i) {
+                children: List.generate(_preferences.getHint.length, (i) {
                   return Column(
                     children: [
                       NewTextField(
-                        controller: controllers[i],
+                        controller: _preferences.getControllers[i],
                         prefixIcon: Icon(
-                          iconData[i],
-                          color: kNewTextColor,
+                          _preferences.getIconData[i],
+                          color: kNewMainColor,
                           size: 20,
                         ),
-                        labelText: hintTexts[i],
+                        labelText: _preferences.getHint[i],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10.0,
                       ),
                     ],
                   );
                 }),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
               userInfo['role'] == 'agents'
@@ -127,7 +112,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                       children: [
                         Expanded(
                           child: Container(
-                            margin: EdgeInsets.all(10.0),
+                            margin: const EdgeInsets.all(10.0),
                             height: screenSize.height * 0.23,
                             // width: screenSize.width,
                             decoration: BoxDecoration(
@@ -147,7 +132,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                         ),
                         Expanded(
                           child: Container(
-                            margin: EdgeInsets.all(10.0),
+                            margin: const EdgeInsets.all(10.0),
                             height: screenSize.height * 0.23,
                             // width: screenSize.width,
                             decoration: BoxDecoration(
@@ -185,8 +170,8 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                             ),
                           ),
                         )
-                      : SizedBox(),
-              SizedBox(
+                      : const SizedBox(),
+              const SizedBox(
                 height: 20.0,
               ),
               widget.isNew == true
@@ -232,7 +217,9 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                   context,
                                 );
                               }).catchError((error) {
-                                print(error);
+                                if (kDebugMode) {
+                                  print(error);
+                                }
                                 setState(() {
                                   isLoading = false;
                                 });
@@ -255,7 +242,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                           radius: 10.0,
                           color: kNewTextColor,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 15.0,
                         ),
                         DialogButton(
@@ -264,7 +251,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
-                                    content: Text(
+                                    content: const Text(
                                       'Are you sure you want to decline this request?',
                                       style: kProductNameStylePro,
                                     ),
@@ -308,8 +295,10 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                                 'Customer account created successfully',
                                                 context);
                                           }).catchError((error) {
-                                            print(
+                                            if (kDebugMode) {
+                                              print(
                                                 'Customer Request deleting error: $error');
+                                            }
                                             setState(() {
                                               isLoading = false;
                                             });
@@ -318,7 +307,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                                 context);
                                           });
                                         },
-                                        child: Text(
+                                        child: const Text(
                                           'Yes',
                                           style: kProductNameStylePro,
                                         ),
@@ -327,7 +316,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                         onPressed: () {
                                           Navigator.pop(context);
                                         },
-                                        child: Text(
+                                        child: const Text(
                                           'No',
                                           style: kProductNameStylePro,
                                         ),
@@ -345,7 +334,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                         ),
                       ],
                     )
-                  : SizedBox(),
+                  : const SizedBox(),
             ],
           ),
         ),

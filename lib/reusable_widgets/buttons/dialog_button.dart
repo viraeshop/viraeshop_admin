@@ -7,7 +7,7 @@ class DialogButton extends StatelessWidget {
   final String title;
   Color color, borderColor;
   bool isBorder;
-  double radius, width;
+  double? radius, width, height;
   DialogButton(
       {required this.onTap,
       required this.title,
@@ -16,6 +16,7 @@ class DialogButton extends StatelessWidget {
       this.borderColor = kBackgroundColor,
       this.radius = 3.0,
       this.width = 135.0,
+        this.height,
       });
 
   @override
@@ -24,9 +25,10 @@ class DialogButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: width,
+        height: height,
         padding: EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
+          borderRadius: BorderRadius.circular(radius!),
           color: color,
           border: isBorder
               ? Border.all(

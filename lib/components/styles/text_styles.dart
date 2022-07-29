@@ -173,3 +173,17 @@ const TextStyle kShadowStyle = TextStyle(
   fontFamily: 'Montserrat',
   letterSpacing: 1.3,
 );
+const TextStyle kSansTextStyle = TextStyle(
+  color: kSubMainColor,
+  fontFamily: 'Montserrat',
+  fontSize: 20,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);
+const TextStyle kSansTextStyle1 = TextStyle(
+  color: kSubMainColor,
+  fontFamily: 'Montserrat',
+  fontSize: 14,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);

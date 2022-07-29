@@ -15,7 +15,7 @@ class UserProfileInfo extends StatelessWidget {
   UserProfileInfo({required this.userInfo, required this.docId});
   @override
   Widget build(BuildContext context) {
-    return UpdateUser(userInfo: userInfo, user_id: docId);  
+    return UpdateUser(userInfo: userInfo, userId: docId);
   }
 }
 
@@ -37,11 +37,11 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
   List<DropdownMenuItem> userTypesDropdown = List.generate(
     userType.length,
     (index) => DropdownMenuItem(
+      value: userType[index],
       child: Text(
         userType[index],
         style: kCategoryNameStyle,
       ),
-      value: userType[index],
     ),
   );
   String? selectedUserType;
@@ -51,30 +51,30 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController _nameController =
+    TextEditingController nameController =
         TextEditingController(text: widget.userInfo['name']);
-    TextEditingController _mobileController =
+    TextEditingController mobileController =
         TextEditingController(text: widget.userInfo['mobile']);
-    TextEditingController _addressController =
+    TextEditingController addressController =
         TextEditingController(text: widget.userInfo['address']);
-    TextEditingController _emailController =
+    TextEditingController emailController =
         TextEditingController(text: widget.userInfo['email']);
-    TextEditingController _workPhoneController =
+    TextEditingController workPhoneController =
         TextEditingController(text: widget.userInfo['work_phone']);
-    TextEditingController _iDController =
+    TextEditingController iDController =
         TextEditingController(text: widget.userInfo['id']);
-    TextEditingController _passwordController =
+    TextEditingController passwordController =
         TextEditingController(text: widget.userInfo['password']);
-    TextEditingController _notesController =
+    TextEditingController notesController =
         TextEditingController(text: widget.userInfo['notes']);
     return Scaffold(
       backgroundColor: kScaffoldBackgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'User profile',
           style: kAppBarTitleTextStyle,
         ),
@@ -85,8 +85,8 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
             onPressed: () {
              showDialog(context: context, builder: (context){
                return AlertDialog(
-                title: Text('Delete Customer'),
-                content: Text(
+                title: const Text('Delete Customer'),
+                content: const Text(
                   'Are you sure you want to remove this customer?',
                   softWrap: true,
                   style: kSourceSansStyle,
@@ -99,7 +99,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                           .doc(widget.docId)
                           .delete();
                     },
-                    child: Text(
+                    child: const Text(
                       'Yes',
                       softWrap: true,
                       style: kSourceSansStyle,
@@ -109,7 +109,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text(
+                    child: const Text(
                       'No',
                       softWrap: true,
                       style: kSourceSansStyle,
@@ -119,7 +119,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
               );
              },);
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.delete,
             ),
             color: kSubMainColor,
@@ -129,7 +129,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.all(40.0),
+          padding: const EdgeInsets.all(40.0),
           child: Row(
             // mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,38 +147,38 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                     width: MediaQuery.of(context).size.width * 0.6,
                     child: Column(
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(left: 15.0, top: 15.0),
                           child: Text(
                             'User Info',
                             style: kCategoryNameStyle,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: double.infinity,
                           child: Divider(
                             color: kScaffoldBackgroundColor,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 15.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
                           child: Column(
                             children: [
                               HeadingTextField(
                                 onMaxLine: false,
-                                controller: _nameController,
+                                controller: nameController,
                                 heading: 'Name: ',
                                 keyboardType: TextInputType.name,
                               ),
                               HeadingTextField(
                                 onMaxLine: false,
-                                controller: _mobileController,
+                                controller: mobileController,
                                 heading: 'Mobile #: ',
                                 keyboardType: TextInputType.number,
                               ),
                               HeadingTextField(
                                 onMaxLine: false,
-                                controller: _addressController,
+                                controller: addressController,
                                 heading: 'Address: ',
                                 keyboardType: TextInputType.streetAddress,
                               ),
@@ -188,7 +188,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10.0,
                   ),
                   Container(
@@ -201,28 +201,28 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                     width: MediaQuery.of(context).size.width * 0.6,
                     child: Column(
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(left: 15.0, top: 15.0),
                           child: Text(
                             'Details',
                             style: kCategoryNameStyle,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: double.infinity,
                           child: Divider(
                             color: kScaffoldBackgroundColor,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 15.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
                           child: Column(
                             children: [
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Email:',
                                     style: kProductNameStylePro,
                                   ),
@@ -230,10 +230,10 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                                     height: 40.0,
                                     width:
                                         MediaQuery.of(context).size.width * 0.4,
-                                    margin: EdgeInsets.all(10.0),
+                                    margin: const EdgeInsets.all(10.0),
                                     child: Center(
                                       child: TextFormField(
-                                        controller: _emailController,
+                                        controller: emailController,
                                         cursorColor: kMainColor,
                                         style: kProductNameStylePro,
                                         keyboardType: TextInputType.text,
@@ -245,7 +245,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                                         //   else
                                         //     return 'Enter a valid email address';
                                         // },
-                                        decoration: InputDecoration(
+                                        decoration: const InputDecoration(
                                           focusedBorder: OutlineInputBorder(
                                             borderSide:
                                                 BorderSide(color: kMainColor),
@@ -270,20 +270,20 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                               ),
                               HeadingTextField(
                                 onMaxLine: false,
-                                controller: _workPhoneController,
+                                controller: workPhoneController,
                                 heading: 'Work phone: ',
                                 keyboardType: TextInputType.number,
                               ),
                               HeadingTextField(
                                 onMaxLine: false,
-                                controller: _iDController,
+                                controller: iDController,
                                 heading: 'ID #: ',
                               ),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Password:',
                                     style: kProductNameStylePro,
                                   ),
@@ -291,10 +291,10 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                                     height: 60.0,
                                     width:
                                         MediaQuery.of(context).size.width * 0.4,
-                                    margin: EdgeInsets.all(10.0),
+                                    margin: const EdgeInsets.all(10.0),
                                     child: Center(
                                       child: TextFormField(
-                                        controller: _passwordController,
+                                        controller: passwordController,
                                         cursorColor: kMainColor,
                                         style: kProductNameStylePro,
                                         keyboardType: TextInputType.text,
@@ -307,7 +307,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                                         //   }
                                         //   return null;
                                         // },
-                                        decoration: InputDecoration(
+                                        decoration: const InputDecoration(
                                           focusedBorder: OutlineInputBorder(
                                             borderSide:
                                                 BorderSide(color: kMainColor),
@@ -334,7 +334,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'User Type: ',
                                     style: kProductPriceStylePro,
                                   ),
@@ -343,11 +343,11 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                                       height: 46.0,
                                       width: MediaQuery.of(context).size.width *
                                           0.4,
-                                      margin: EdgeInsets.all(10.0),
+                                      margin: const EdgeInsets.all(10.0),
                                       child: DropdownButtonFormField(
                                         items: userTypesDropdown,
                                         value: selectedUserType,
-                                        decoration: InputDecoration(
+                                        decoration: const InputDecoration(
                                           focusedBorder: OutlineInputBorder(
                                             borderSide:
                                                 BorderSide(color: kMainColor),
@@ -376,7 +376,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 30.0,
               ),
               Column(
@@ -384,7 +384,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                 children: [
                   profilePic(
                       imageUrl: widget.userInfo['image'], context: context),
-                  SizedBox(height: 10.0),
+                  const SizedBox(height: 10.0),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.35,
                     width: MediaQuery.of(context).size.width * 0.25,
@@ -395,14 +395,14 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(top: 15.0, left: 15.0),
                           child: Text(
                             'Notes',
                             style: kCategoryNameStyle,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: double.infinity,
                           child: Divider(
                             color: kScaffoldBackgroundColor,
@@ -412,8 +412,8 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                         //   height: 10.0,
                         // ),
                         Container(
-                          margin: EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
+                          margin: const EdgeInsets.all(10.0),
+                          decoration: const BoxDecoration(
                               // border: Border.all(
                               //   color: kScaffoldBackgroundColor,
                               // ),
@@ -422,12 +422,12 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                           width: MediaQuery.of(context).size.width * 0.25,
                           child: Center(
                             child: TextFormField(
-                              controller: _notesController,
+                              controller: notesController,
                               cursorColor: kMainColor,
                               style: kProductNameStylePro,
                               textInputAction: TextInputAction.done,
                               maxLines: 10,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(color: kMainColor),
                                 ),
@@ -445,11 +445,11 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20.0),
+                  const SizedBox(height: 20.0),
                   widget.userInfo['role'] == 'agents'
                       ? walletWidget()
-                      : SizedBox(),
-                  SizedBox(height: 20.0),
+                      : const SizedBox(),
+                  const SizedBox(height: 20.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -463,7 +463,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                               color:
                                   kMainColor, //Theme.of(context).accentColor,
                               borderRadius: BorderRadius.circular(8)),
-                          child: Center(
+                          child: const Center(
                             child: Text(
                               "update",
                               style:
@@ -473,13 +473,13 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                         ),
                         onTap: () {
                           bool isNotEmpty() {
-                            if (_nameController.text.isNotEmpty &&
-                                _mobileController.text.isNotEmpty &&
-                                _addressController.text.isNotEmpty &&
-                                _workPhoneController.text.isNotEmpty &&
-                                _iDController.text.isNotEmpty &&
-                                _passwordController.text.isNotEmpty &&
-                                _emailController.text.isNotEmpty &&
+                            if (nameController.text.isNotEmpty &&
+                                mobileController.text.isNotEmpty &&
+                                addressController.text.isNotEmpty &&
+                                workPhoneController.text.isNotEmpty &&
+                                iDController.text.isNotEmpty &&
+                                passwordController.text.isNotEmpty &&
+                                emailController.text.isNotEmpty &&
                                 selectedUserType != null) {
                               return true;
                             } else {
@@ -494,17 +494,17 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                               isLoading = true;
                             });
                             Map<String, dynamic> fields = {
-                              'name': _nameController.text,
-                              'mobile': _mobileController.text,
-                              'address': _addressController.text,
-                              'work_phone': _workPhoneController.text,
-                              'email': _emailController.text,
-                              'notes': _notesController.text,
+                              'name': nameController.text,
+                              'mobile': mobileController.text,
+                              'address': addressController.text,
+                              'work_phone': workPhoneController.text,
+                              'email': emailController.text,
+                              'notes': notesController.text,
                             };
                             GeneralCrud generalCrud = GeneralCrud();
                             generalCrud
                                 .getUser(
-                                    _emailController.text, selectedUserType)
+                                    emailController.text, selectedUserType)
                                 .then((value) {
                               if (value) {
                                 setState(() {
@@ -577,14 +577,14 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.only(left: 15.0, top: 15.0),
                     child: Text(
                       'Profile Picture',
                       style: kCategoryNameStyle,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: double.infinity,
                     child: Divider(
                       color: kScaffoldBackgroundColor,
@@ -597,7 +597,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
           Align(
             alignment: Alignment.center,
             child: Container(
-              margin: EdgeInsets.all(10.0),
+              margin: const EdgeInsets.all(10.0),
               height: MediaQuery.of(context).size.height * 0.3,
               width: MediaQuery.of(context).size.width * 0.25,
               decoration: BoxDecoration(
@@ -616,7 +616,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
   Future<void> walletDialog({
     required BuildContext buildContext,
   }) async {
-    TextEditingController _controller = TextEditingController();
+    TextEditingController controller = TextEditingController();
     AdminCrud adminCrud = AdminCrud();
     String indicatorText = 'Update';
     return showDialog<void>(
@@ -627,25 +627,25 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
-          title: Text('Update Wallet'),
+          title: const Text('Update Wallet'),
           titleTextStyle: kProductNameStyle,
           // ignore: dead_code
           content: SingleChildScrollView(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10.0),
             child: ListBody(
               children: <Widget>[
                 Container(
                   height: 40.0,
                   // width: MediaQuery.of(context).size.width * 0.4,
-                  margin: EdgeInsets.all(15.0),
+                  margin: const EdgeInsets.all(15.0),
                   child: Center(
                     child: TextFormField(
-                      controller: _controller,
+                      controller: controller,
                       cursorColor: kMainColor,
                       style: kProductNameStylePro,
                       textInputAction: TextInputAction.done,
                       maxLines: 1,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: kMainColor),
                         ),
@@ -668,7 +668,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
               onTap: () {
                 // Provider.of<Configs>(context, listen: false)
                 //     .updateText('Upating...');
-                double amount = double.parse(_controller.text);
+                double amount = double.parse(controller.text);
                 adminCrud
                     .wallet(widget.docId, amount)
                     .then((value) {
@@ -687,7 +687,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
               },
               child: Container(
                 width: 100.0,
-                padding: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(10.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3.0),
                   color: kMainColor,
@@ -696,7 +696,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                   child: Consumer<Configs>(
                     builder: (context, configs, childs) => Text(
                       configs.indicatorText,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 15.0,
                         color: kBackgroundColor,
                         fontFamily: 'Montserrat',
@@ -725,29 +725,29 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          const Padding(
             padding: EdgeInsets.only(left: 15.0, top: 15.0),
             child: Text(
               'Wallet',
               style: kCategoryNameStyle,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: double.infinity,
             child: Divider(
               color: kScaffoldBackgroundColor,
             ),
           ),
           Container(
-            margin: EdgeInsets.all(15.0),
+            margin: const EdgeInsets.all(15.0),
             child: Center(
                 child: Column(
               children: [
-                Text(
+                const Text(
                   'Current Account Balance',
                   style: kProductNameStyle,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
                 StreamBuilder<DocumentSnapshot>(
@@ -757,7 +757,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator(
+                        return const CircularProgressIndicator(
                           color: kMainColor,
                         );
                       }
@@ -766,7 +766,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                         print(data);
                         return Text(
                           data.toString(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: kSubMainColor,
                             fontSize: 30.0,
                             fontFamily: 'Montserrat',
@@ -774,7 +774,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                           ),
                         );
                       }
-                      return Text(
+                      return const Text(
                         '0.0',
                         style: TextStyle(
                           color: kSubMainColor,
@@ -784,7 +784,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                         ),
                       );
                     }),
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
                 InkWell(
@@ -800,7 +800,7 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                       color: kMainColor, //Theme.of(context).accentColor,
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         "Update Balance",
                         style: TextStyle(

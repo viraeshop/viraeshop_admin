@@ -79,7 +79,7 @@ dependencies:
   flutter_bluetooth_basic: ^0.1.7
   flutter_linkify: ^5.0.2
   bluetooth_thermal_printer: ^0.0.6
-  readmore: ^2.2.0
+  flutter_styled_toast: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

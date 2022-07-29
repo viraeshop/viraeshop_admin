@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
+import 'package:viraeshop_admin/screens/customers/register_customer.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
 import 'add_user.dart';
@@ -16,7 +18,7 @@ class CustomersScreen extends StatefulWidget {
 }
 
 class _CustomersScreenState extends State<CustomersScreen> {
-  List<Tab> tabs = [
+  List<Tab> tabs = const [
     Tab(text: 'General'),
     Tab(text: 'Agent'),
     Tab(text: 'Architect'),
@@ -32,13 +34,13 @@ class _CustomersScreenState extends State<CustomersScreen> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(
+            icon: const Icon(
               FontAwesomeIcons.chevronLeft,
               color: kSubMainColor,
             ),
             iconSize: 15.0,
           ),
-          title: Text(
+          title: const Text(
             'Customers',
             style: kProductNameStylePro,
           ),
@@ -48,7 +50,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
             indicatorColor: kMainColor,
             labelColor: kMainColor,
             unselectedLabelColor: kSubMainColor,
-            labelStyle: TextStyle(
+            labelStyle: const TextStyle(
               color: kMainColor,
               fontSize: 15.0,
               letterSpacing: 1.3,
@@ -62,17 +64,17 @@ class _CustomersScreenState extends State<CustomersScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CreateUser(),
+                    builder: (context) => const RegisterCustomer(),
                   ),
                 );
               },
-              icon: Icon(Icons.add),
+              icon: const Icon(Icons.add),
               iconSize: 20.0,
               color: kSubMainColor,
             ),
           ],
         ),
-        body: TabBarView(
+        body: const TabBarView(
           children: [
             Customers(
               role: 'general',
@@ -92,7 +94,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
 class Customers extends StatefulWidget {
   final String role;
-  Customers({required this.role});
+  const Customers({Key? key, required this.role}) : super(key: key);
   @override
   _CustomersState createState() => _CustomersState();
 }
@@ -103,7 +105,7 @@ class _CustomersState extends State<Customers> {
   List customersList = [];
   List tempStore = [];
   initSearch(String value) {
-    if (value.length == 0) {
+    if (value.isEmpty) {
       setState(
         () {
           customersList = tempStore;
@@ -117,11 +119,11 @@ class _CustomersState extends State<Customers> {
       return nameLower.contains(valueLower) || mobile.contains(valueLower);
     }).toList();
     final List filtered = [];
-    items.forEach((element) {
+    for (var element in items) {
       filtered.add(element);
-    });
+    }
     setState(() {
-      this.customersList = filtered;
+      customersList = filtered;
     });
   }
 
@@ -132,16 +134,18 @@ class _CustomersState extends State<Customers> {
     // TODO: implement initState
     generalCrud.getCustomerList(widget.role).then((snapshot) {
       final data = snapshot.docs;
-      data.forEach((element) {
+      for (var element in data) {
         setState(() {
           customersList.add(element.data());
         });
-      });
+      }
       setState(() {
         isLoaded = true;
       });
     }).catchError((error) {
-      print(error);
+      if (kDebugMode) {
+        print(error);
+      }
       setState(() {
         statusMessage = 'Failed to fetch customers';
       });
@@ -152,156 +156,151 @@ class _CustomersState extends State<Customers> {
   @override
   Widget build(BuildContext context) {
     return isLoaded
-        ? Container(
-            child: ListView.builder(
-              itemCount: customersList.length + 1,
-              itemBuilder: (context, i) {
-                if (i == 0) {
-                  return Container(
-                    height: 70.0,
-                    width: double.infinity,
-                    color: kspareColor,
-                    padding: EdgeInsets.all(10.0),
-                    child: showSearch == false
-                        ? Row(
-                            children: [
-                              InkWell(
-                                child: Icon(
-                                  Icons.search,
-                                  color: kSubMainColor,
-                                  size: 25.0,
-                                ),
-                                onTap: () {
-                                  setState(
-                                    () {
-                                      showSearch = true;
-                                      tempStore = customersList;
-                                    },
-                                  );
+        ? ListView.builder(
+          itemCount: customersList.length + 1,
+          itemBuilder: (context, i) {
+            if (i == 0) {
+              return Container(
+                height: 70.0,
+                width: double.infinity,
+                color: kspareColor,
+                padding: const EdgeInsets.all(10.0),
+                child: showSearch == false
+                    ? Row(
+                        children: [
+                          InkWell(
+                            child: const Icon(
+                              Icons.search,
+                              color: kSubMainColor,
+                              size: 25.0,
+                            ),
+                            onTap: () {
+                              setState(
+                                () {
+                                  showSearch = true;
+                                  tempStore = customersList;
                                 },
-                              ),
-                              SizedBox(width: 6.0),
-                              Text(
-                                'Search by name or phone number',
-                                style: kProductNameStylePro,
-                              ),
-                            ],
-                          )
-                        : Container(
-                            // width: double.infinity,
-                            child: Center(
-                              child: TextFormField(
-                                textAlignVertical: TextAlignVertical.bottom,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  hintText: 'Search user',
-                                  hintStyle: TextStyle(
-                                    color: kSubMainColor,
-                                    fontSize: 15.0,
-                                  ),
-                                  prefixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(
-                                        () {
-                                          showSearch = false;
-                                          // print(showSearch);
-                                        },
-                                      );
-                                    },
-                                    icon: Icon(
-                                      Icons.close,
-                                      size: 25.0,
-                                      color: kSubMainColor,
-                                    ),
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  // print(value.length);
-                                  initSearch(value);
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 6.0),
+                          const Text(
+                            'Search by name or phone number',
+                            style: kProductNameStylePro,
+                          ),
+                        ],
+                      )
+                    : Center(
+                      child: TextFormField(
+                        textAlignVertical: TextAlignVertical.bottom,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          hintText: 'Search user',
+                          hintStyle: const TextStyle(
+                            color: kSubMainColor,
+                            fontSize: 15.0,
+                          ),
+                          prefixIcon: IconButton(
+                            onPressed: () {
+                              setState(
+                                () {
+                                  showSearch = false;
+                                  // print(showSearch);
                                 },
-                              ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.close,
+                              size: 25.0,
+                              color: kSubMainColor,
                             ),
                           ),
-                  );
-                }
-                return InkWell(
-                  onTap: () {
-                    var info = {
-                      'id': customersList[i - 1]['userId'],
-                      'role': customersList[i - 1]['role'],
-                      'name': customersList[i - 1]['name'],
-                      'address': customersList[i - 1]['address'],
-                      'mobile': customersList[i - 1]['mobile'],
-                      'email': customersList[i -1]['email'],
-                    };
-                    Hive.box('customer').putAll(info).whenComplete(
-                          () {
-                            Navigator.pop(context);
-                            snackBar(text: 'Customer info added', context: context, duration: 30,
-                            color: kNewMainColor,
-                            );
-                          },
-                        );
-                  },
-                  child: Container(
-                    height: 80.0,
-                    width: double.infinity,
-                    padding: EdgeInsets.all(15.0),
-                    decoration: BoxDecoration(
-                      color: kBackgroundColor,
-                      border: Border(
-                        bottom: BorderSide(color: Colors.black12),
+                        ),
+                        onChanged: (value) {
+                          // print(value.length);
+                          initSearch(value);
+                        },
                       ),
                     ),
-                    child: Center(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              );
+            }
+            return InkWell(
+              onTap: () {
+                var info = {
+                  'id': customersList[i - 1]['userId'],
+                  'role': customersList[i - 1]['role'],
+                  'name': customersList[i - 1]['name'],
+                  'address': customersList[i - 1]['address'],
+                  'mobile': customersList[i - 1]['mobile'],
+                  'email': customersList[i -1]['email'],
+                };
+                Hive.box('customer').putAll(info).whenComplete(
+                      () {
+                        Navigator.pop(context);
+                        snackBar(text: 'Customer info added', context: context, duration: 30,
+                        color: kNewMainColor,
+                        );
+                      },
+                    );
+              },
+              child: Container(
+                height: 80.0,
+                width: double.infinity,
+                padding: const EdgeInsets.all(15.0),
+                decoration: const BoxDecoration(
+                  color: kBackgroundColor,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.black12),
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${customersList[i - 1]['name']}',
-                                style: kProductNameStylePro,
-                              ),
-                              Text(
-                                widget.role == 'agents'
-                                    ? 'Wallet: BDT ${customersList[i - 1]['wallet'].toString()}'
-                                    : '${customersList[i - 1]['role']}',
-                                style: TextStyle(
-                                  color: kSubMainColor,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 15,
-                                  letterSpacing: 1.3,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            '${customersList[i - 1]['name']}',
+                            style: kProductNameStylePro,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${customersList[i - 1]['mobile']}',
-                                style: kProductNameStylePro,
-                              ),
-                              Icon(
-                                FontAwesomeIcons.chevronRight,
-                                color: kSubMainColor,
-                                size: 15.0,
-                              ),
-                            ],
+                          Text(
+                            widget.role == 'agents'
+                                ? 'Wallet: BDT ${customersList[i - 1]['wallet'].toString()}'
+                                : '${customersList[i - 1]['role']}',
+                            style: const TextStyle(
+                              color: kSubMainColor,
+                              fontFamily: 'Montserrat',
+                              fontSize: 15,
+                              letterSpacing: 1.3,
+                            ),
                           ),
                         ],
                       ),
-                    ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${customersList[i - 1]['mobile']}',
+                            style: kProductNameStylePro,
+                          ),
+                          const Icon(
+                            FontAwesomeIcons.chevronRight,
+                            color: kSubMainColor,
+                            size: 15.0,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
-          )
+                ),
+              ),
+            );
+          },
+        )
         : Center(
             child: Text(
               statusMessage,

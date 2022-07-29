@@ -25,10 +25,10 @@ class _CustomersPageState extends State<CustomersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'General Customers',
           style: kAppBarTitleTextStyle,
         ),
@@ -45,10 +45,10 @@ class _CustomersPageState extends State<CustomersPage> {
               final myorders = snapshot.data!.docs;
               List<String> docIds = [];
               List customerList = [];
-              myorders.forEach((element) {
+              for (var element in myorders) {
                 customerList.add(element.data());
                 docIds.add(element.id);
-              });
+              }
               return Container(
                 child: customerList != null
                     ? ListView.builder(
@@ -81,7 +81,7 @@ class _CustomersPageState extends State<CustomersPage> {
                                   child: Text('${i + 1}'), //Icon(Icons.person,
                                   // color: kBackgroundColor),
                                 ),
-                                trailing: Icon(Icons.arrow_right),
+                                trailing: const Icon(Icons.arrow_right),
                                 title: Text('${customerList[i]['name']} ',
                                     style: kCategoryNameStylePro),
                                 subtitle: Text(
@@ -93,10 +93,10 @@ class _CustomersPageState extends State<CustomersPage> {
                           );
                         },
                       )
-                    : Text('Loading'),
+                    : const Text('Loading'),
               );
             }
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }),
     );
   }

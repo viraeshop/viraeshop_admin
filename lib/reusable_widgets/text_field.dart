@@ -5,6 +5,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 class NewTextField extends StatelessWidget {
   final TextEditingController controller;
   bool readOnly;
+  final bool? secure;
   int lines;
   dynamic prefix;
   dynamic prefixIcon;
@@ -19,6 +20,7 @@ class NewTextField extends StatelessWidget {
     this.helperText = '',
     this.labelText = '',
     this.validator,
+    this.secure = false,
     required this.controller,
   });
 
@@ -28,6 +30,7 @@ class NewTextField extends StatelessWidget {
       controller: controller,
       style: kTableCellStyle,
       cursorColor: kNewTextColor,
+      obscureText: secure!,
       readOnly: readOnly,
       maxLines: lines,
       validator: validator,

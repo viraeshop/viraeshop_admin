@@ -89,7 +89,7 @@ class _SignupRequestsPageState extends State<SignupRequestsPage> {
                               padding: const EdgeInsets.all(15.0),
                               child: ListTile(
                                 onTap: () {
-                                  var user_info = {
+                                  Map user_info = {
                                     'fullname': customerList[i]['fullname'],
                                     'email': customerList[i]['email'],
                                     'phone': customerList[i]['phone'],
@@ -107,8 +107,8 @@ class _SignupRequestsPageState extends State<SignupRequestsPage> {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => UpdateUser(
-                                                userInfo: jsonEncode(user_info),
-                                                user_id: customerList[i]['id'],
+                                                userInfo: user_info,
+                                                userId: customerList[i]['id'],
                                               )));
                                 },
                                 leading: CircleAvatar(

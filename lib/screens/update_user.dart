@@ -15,9 +15,9 @@ import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'home_screen.dart';
 
 class UpdateUser extends StatefulWidget {
-  var userInfo;
-  var user_id;
-  UpdateUser({Key? key, required this.userInfo, required this.user_id})
+  final Map userInfo;
+  final String userId;
+ const  UpdateUser({Key? key, required this.userInfo, required this.userId})
       : super(key: key);
 
   @override
@@ -25,7 +25,7 @@ class UpdateUser extends StatefulWidget {
 }
 
 class _UpdateUserState extends State<UpdateUser> {
-  TextEditingController fullnameController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
   TextEditingController walletController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -54,7 +54,7 @@ class _UpdateUserState extends State<UpdateUser> {
     super.initState();
     setState(() {
       print(jsonEncode(widget.userInfo));
-      fullnameController.text = widget.userInfo['name'];
+      nameController.text = widget.userInfo['name'];
       _emailController.text = widget.userInfo['email'];
       phoneController.text = widget.userInfo['mobile'];
       //passwordController.text = widget.userInfo['password'];
@@ -72,13 +72,13 @@ class _UpdateUserState extends State<UpdateUser> {
   @override
   Widget build(BuildContext context) {
     final _tabs = <Tab>[
-      Tab(
+      const Tab(
         text: 'Info',
       ),
-      Tab(
+      const Tab(
         text: 'Sales',
       ),
-      Tab(
+      const Tab(
         text: 'Orders',
       ),
     ];
@@ -86,12 +86,12 @@ class _UpdateUserState extends State<UpdateUser> {
       CustomerInfoScreen(
         info: widget.userInfo,
       ),
-      SalesTab(userId: widget.user_id),
-      OrdersTab(userId: widget.user_id),
+      SalesTab(userId: widget.userId),
+      OrdersTab(userId: widget.userId),
     ];
     if (widget.userInfo['role'] == 'agents') {
       _tabs.add(
-        Tab(
+        const Tab(
           text: 'Account',
         ),
       );
@@ -99,7 +99,7 @@ class _UpdateUserState extends State<UpdateUser> {
     }
     return ModalProgressHUD(
       inAsyncCall: showFields,
-      progressIndicator: CircularProgressIndicator(color: kMainColor),
+      progressIndicator: const CircularProgressIndicator(color: kMainColor),
       child: SafeArea(
         child: DefaultTabController(
           length: _tabs.length,
@@ -134,7 +134,7 @@ class _UpdateUserState extends State<UpdateUser> {
                 indicatorColor: kMainColor,
                 labelColor: kMainColor,
                 unselectedLabelColor: kSubMainColor,
-                labelStyle: TextStyle(
+                labelStyle: const TextStyle(
                   color: kMainColor,
                   fontSize: 15.0,
                   letterSpacing: 1.3,
@@ -142,10 +142,10 @@ class _UpdateUserState extends State<UpdateUser> {
                 ),
                 unselectedLabelStyle: kProductNameStylePro,
               ),
-              iconTheme: IconThemeData(color: kSelectedTileColor),
+              iconTheme: const IconThemeData(color: kSelectedTileColor),
               elevation: 0.0,
               backgroundColor: kBackgroundColor,
-              title: Text(
+              title: const Text(
                 'Update user',
                 style: kAppBarTitleTextStyle,
               ),
@@ -158,8 +158,8 @@ class _UpdateUserState extends State<UpdateUser> {
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          title: Text('Delete Customer'),
-                          content: Text(
+                          title: const Text('Delete Customer'),
+                          content: const Text(
                             'Are you sure you want to remove this customer?',
                             softWrap: true,
                             style: kSourceSansStyle,
@@ -173,7 +173,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                 Navigator.pop(context);
                                 await FirebaseFirestore.instance
                                     .collection(widget.userInfo['role'])
-                                    .doc(widget.user_id)
+                                    .doc(widget.userId)
                                     .delete()
                                     .then((value) {
                                   setState(() {
@@ -183,7 +183,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                       HomeScreen.path, (route) => false);
                                 });
                               },
-                              child: Text(
+                              child: const Text(
                                 'Yes',
                                 softWrap: true,
                                 style: kSourceSansStyle,
@@ -193,7 +193,7 @@ class _UpdateUserState extends State<UpdateUser> {
                               onPressed: () {
                                 Navigator.pop(context);
                               },
-                              child: Text(
+                              child: const Text(
                                 'No',
                                 softWrap: true,
                                 style: kSourceSansStyle,
@@ -204,7 +204,7 @@ class _UpdateUserState extends State<UpdateUser> {
                       },
                     );
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.delete,
                   ),
                   color: kSubMainColor,
@@ -238,7 +238,7 @@ class _UpdateUserState extends State<UpdateUser> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'CURRENT ACCOUNT BALANCE',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 15, color: kProductCardColor),
@@ -263,14 +263,14 @@ class _UpdateUserState extends State<UpdateUser> {
                               return Text(
                                 '${data!.get('wallet').toString()}৳',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 70, color: kSelectedTileColor),
                               );
                             }
-                            return Text(
+                            return const Text(
                               '৳',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 70, color: kSelectedTileColor),
                             );
                           }),
@@ -297,7 +297,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 InkWell(
                                   child: Container(
                                     width: MediaQuery.of(context).size.width,
@@ -313,9 +313,9 @@ class _UpdateUserState extends State<UpdateUser> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        Text(
+                                        const Text(
                                           "Add",
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                               fontSize: 20,
                                               color: Colors.white),
                                         )
@@ -323,7 +323,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                     ),
                                   ),
                                   onTap: () async {
-                                    print(widget.user_id);
+                                    print(widget.userId);
                                     Navigator.pop(context);
                                     setState(() {
                                       showFields = !showFields;
@@ -371,9 +371,9 @@ class _UpdateUserState extends State<UpdateUser> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
+                          const Text(
                             'Update Balance',
-                            style: TextStyle(fontSize: 20, color: Colors.white),
+                            style: const TextStyle(fontSize: 20, color: Colors.white),
                           )
                         ],
                       ),
@@ -529,7 +529,7 @@ class _UpdateUserState extends State<UpdateUser> {
                         //         ],
                         //       )
                         //     : Container(),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         SizedBox(
                             height: 170,
                             width: 170,
@@ -542,7 +542,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                     // color: Colors.red,
                                     width: 200,
                                     height: 200,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
                                         image: DecorationImage(
                                             image: AssetImage(
@@ -550,7 +550,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                             fit: BoxFit.contain)),
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 30,
                                   width: 30,
                                   child: CircleAvatar(
@@ -581,10 +581,10 @@ class _UpdateUserState extends State<UpdateUser> {
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                               children: [
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 TextField(
-                                  controller: fullnameController,
-                                  decoration: InputDecoration(
+                                  controller: nameController,
+                                  decoration: const InputDecoration(
                                     labelText: "Full Name",
                                     hintText: "",
                                     // border: OutlineInputBorder(
@@ -592,10 +592,10 @@ class _UpdateUserState extends State<UpdateUser> {
                                     //         BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 20,
                                 ),
-                                TextField(
+                                const TextField(
                                   // controller: fullnameController,
                                   decoration: InputDecoration(
                                     labelText: "Address",
@@ -605,58 +605,58 @@ class _UpdateUserState extends State<UpdateUser> {
                                     //         BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 20,
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        SizedBox(height: 40),
+                        const SizedBox(height: 40),
                         Card(
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                               children: [
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 TextField(
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
                                   readOnly: true,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: "Email",
                                     hintText: "",
                                     // border: OutlineInputBorder(
                                     //     borderRadius: BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 20,
                                 ),
                                 TextField(
                                   controller: phoneController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: "Phone",
                                     hintText: "",
                                     // border: OutlineInputBorder(
                                     //     borderRadius: BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 10,
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         bottomCard(
                           context: context,
                           text: "Save",
                           onTap: () async {
-                            if (fullnameController.text != '' &&
+                            if (nameController.text != '' &&
                                 _emailController.text != '' &&
                                 phoneController.text != '' &&
                                 passwordController.text != '' &&
@@ -671,7 +671,7 @@ class _UpdateUserState extends State<UpdateUser> {
                               if (widget.userInfo['role'] == 'agents') {
                                 setState(() {
                                   upd_user = {
-                                    'name': fullnameController.text,
+                                    'name': nameController.text,
                                     'email': _emailController.text,
                                     'phone': phoneController.text,
                                   };
@@ -683,7 +683,7 @@ class _UpdateUserState extends State<UpdateUser> {
                               // Update Here
                               adminCrud
                                   .updateCustomer(
-                                      cid: widget.user_id,
+                                      cid: widget.userId,
                                       cusData: upd_user,
                                       collection: widget.userInfo['agents'])
                                   .then((val) {

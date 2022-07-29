@@ -1,10 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
@@ -29,7 +27,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
   late String verificationId;
   bool onError = false;
   bool isLoading = false;
-
+  static const String countryCode = '+88';
   @override
   void initState() {
     // TODO: implement initState
@@ -77,10 +75,25 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                       child: NewTextField(
                         secure: index == 4,
                         controller: _preferences.getControllers[index],
-                        prefixIcon: Icon(
-                          _preferences.getIconData[index],
-                          color: kNewMainColor,
-                          size: 20,
+                        maxLength: index == 1 ? 11: index == 4 ? 15 : 1000,
+                        prefixIcon: SizedBox(
+                          width: index == 1 ? 100 : 30,
+                          child: Row(
+                            children: [
+                              const SizedBox(
+                                width: 7.0,
+                              ),
+                              Icon(
+                                _preferences.getIconData[index],
+                                color: kSubMainColor,
+                                size: 30,
+                              ),
+                             const SizedBox(
+                                width: 5.0,
+                              ),
+                              if(index == 1) const Text(countryCode, style: kTableCellStyle,),
+                            ],
+                          ),
                         ),
                         labelText: _preferences.getHint[index],
                       ),
@@ -115,6 +128,15 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                   onChanged: (String? value) {
                     setState(() {
                       dropdownValue = value!;
+                      if(value != 'general' && _preferences.getHint.length == 5){
+                        _preferences.addControllers = TextEditingController();
+                        _preferences.addHint = 'Business name';
+                        _preferences.addIconData = Icons.business;
+                      }else if(value == 'general' && _preferences.getHint.length > 5){
+                        _preferences.getControllers.removeLast();
+                        _preferences.getHint.removeLast();
+                        _preferences.getIconData.removeLast();
+                      }
                     });
                   },
                   decoration: const InputDecoration(

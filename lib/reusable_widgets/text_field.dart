@@ -11,6 +11,7 @@ class NewTextField extends StatelessWidget {
   dynamic prefixIcon;
   String hintText, helperText, labelText;
   String? Function(String?)? validator;
+  final int? maxLength;
   NewTextField({
     this.prefixIcon = null,
     this.prefix = null,
@@ -20,6 +21,7 @@ class NewTextField extends StatelessWidget {
     this.helperText = '',
     this.labelText = '',
     this.validator,
+    this.maxLength,
     this.secure = false,
     required this.controller,
   });
@@ -34,6 +36,7 @@ class NewTextField extends StatelessWidget {
       readOnly: readOnly,
       maxLines: lines,
       validator: validator,
+      maxLength: maxLength,
       decoration: InputDecoration(
         prefixStyle: kTableCellStyle,
         prefixText: prefix,
@@ -43,7 +46,7 @@ class NewTextField extends StatelessWidget {
         labelText: labelText,
         hintStyle: kTableCellStyle,
         helperText: helperText,
-        helperStyle: TextStyle(
+        helperStyle: const TextStyle(
           fontSize: 12.0,
           color: kNewTextColor,
           fontFamily: 'SourceSans',
@@ -57,23 +60,23 @@ class NewTextField extends StatelessWidget {
         // ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: kRedColor,
            // width: 3.0,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide(
-            color: kNewTextColor,
-           // width: 3.0,
+          borderSide: const BorderSide(
+            color: kSubMainColor,
+           width: 3.0,
           ),
         ),
-        enabledBorder: OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: kBlackColor,
-           // width: 3.0,
+           width: 5.0,
           ),
         ),
       ),

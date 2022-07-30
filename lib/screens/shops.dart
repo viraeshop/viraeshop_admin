@@ -175,7 +175,8 @@ class _ShopsState extends State<Shops> {
                       color: kNewTextColor,
                       size: 20,
                     ),
-                    hintText: 'Email'),
+                    hintText: 'Email',
+                ),
                 const SizedBox(
                   height: 10.0,
                 ),
@@ -186,7 +187,8 @@ class _ShopsState extends State<Shops> {
                       color: kNewTextColor,
                       size: 20,
                     ),
-                    hintText: 'Address'),
+                    hintText: 'Address',
+                ),
                 const SizedBox(
                   height: 20.0,
                 ),
@@ -200,9 +202,10 @@ class _ShopsState extends State<Shops> {
                       AdminCrud().addShop(controllers[1].text, {
                         'supplier_name': controllers[0].text,
                         'business_name': controllers[1].text,
-                        'email': controllers[3].text,
                         'mobile': controllers[2].text,
-                        'address': controllers[4].text,
+                        'optional_phone': controllers[3].text,
+                        'email': controllers[4].text,
+                        'address': controllers[5].text,
                         'profileImage': imageUrl,
                       }).then((value) {
                         setState(() {

@@ -628,33 +628,41 @@ Future<void> getNonInventoryDialog({
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: List.generate(shops.length, (index) {
                     return InkWell(
-                      onTap: () {
-                        Hive.box('shops')
-                            .putAll(shops[index])
-                            .whenComplete(() => Navigator.pop(context));
-                      },
-                      child: SizedBox(
-                        height: 40.0,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(
-                              shops[index]['profileImage'],
+                        onTap: () {
+                          Hive.box('shops')
+                              .putAll(shops[index])
+                              .whenComplete(() => Navigator.pop(context));
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                shops[index]['profileImage'],
+                              ),
+                              radius: 35.0,
                             ),
-                            radius: 40.0,
-                          ),
-                          title: Text(
-                            shops[index]['business_name'],
-                            style: kProductNameStylePro,
-                          ),
-                          subtitle: Text(
-                            shops[index]['supplier_name'],
-                            style: kProductNameStylePro,
-                          ),
-                        ),
-                      ),
-                    );
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  shops[index]['business_name'],
+                                  style: kTableCellStyle,
+                                ),
+                                const SizedBox(
+                                  height: 10.0,
+                                ),
+                                Text(
+                                  shops[index]['supplier_name'],
+                                  style: kTableCellStyle,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ));
                   }),
                 ),
               );

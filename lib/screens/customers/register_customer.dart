@@ -166,6 +166,9 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                         'address': _preferences.getControllers[3].text,
                         'role': dropdownValue,
                       };
+                      if (dropdownValue == 'agents'){
+                        userInfo['wallet'] = 0.0;
+                      }
                       try {
                         final UserCredential user =
                             await NetworkUtility.registerUserEmail(

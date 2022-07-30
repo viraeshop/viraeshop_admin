@@ -230,27 +230,36 @@ class _DueReceiptState extends State<DueReceipt> {
                       'Advance: ${widget.data['advance'].toString()}',
                       style: kProductNameStylePro,
                     ),
-
-                    ///Todo:
                     const SizedBox(height: 10),
-                    if (!isEditing)
+                    if(payList.isNotEmpty) Column(
+                      children: List.generate(payList.length, (index) {
+                        Timestamp timestamp = payList[index]['date'];
+                        final formatter = DateFormat('MM/dd/yyyy');
+                        String dateTime = formatter.format(
+                          timestamp.toDate(),
+                        );
+                        return Row(
+                          children: [
+                            Text(
+                              dateTime,
+                              style: kTableCellStyle,
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Text(
+                              'Pay ${payList[index]['paid']}',
+                              style: kTableCellStyle,
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                    if (due != 0)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          if (controller.text.isNotEmpty)
-                            Column(
-                              children: List.generate(payList.length, (index) {
-                                Timestamp timestamp = payList[index]['date'];
-                                final formatter = DateFormat('MM/dd/yyyy');
-                                String dateTime = formatter.format(
-                                  timestamp.toDate(),
-                                );
-                                return Text(
-                                  dateTime,
-                                  style: kTableCellStyle,
-                                );
-                              }),
-                            ),
+                        if (!isEditing)
                           TextButton(
                             onPressed: () {
                               setState(() {
@@ -261,46 +270,40 @@ class _DueReceiptState extends State<DueReceipt> {
                               'Pay: ${controller.text}',
                               style: kTableCellStyle,
                             ),
-                          ),
+                          )
+                          else
+                            SizedBox(
+                              width: 150.0,
+                              child: TextField(
+                                controller: controller,
+                                style: kProductNameStylePro,
+                                onSubmitted: (value) {
+                                  setState(() {
+                                    due -= num.parse(value);
+                                  });
+                                },
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  suffix: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isEditing = false;
+                                      });
+                                    },
+                                    icon: const Icon(Icons.done),
+                                    iconSize: 20.0,
+                                    color: kNewMainColor,
+                                  ),
+                                  border: const UnderlineInputBorder(
+                                    borderSide: BorderSide(color: kSubMainColor),
+                                  ),
+                                  focusedBorder: const UnderlineInputBorder(
+                                    borderSide: BorderSide(color: kNewMainColor),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
-                      )
-                    else
-                      SizedBox(
-                        width: 150.0,
-                        child: TextField(
-                          controller: controller,
-                          style: kProductNameStylePro,
-                          onChanged: (value) {
-                            setState(() {
-                              if (paid == 0) {
-                                paid =
-                                    widget.data['advance'] + num.parse(value);
-                              } else {
-                                paid += num.parse(value).round();
-                              }
-                              due = widget.data['price'] - paid.round();
-                            });
-                          },
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            suffix: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  isEditing = false;
-                                });
-                              },
-                              icon: const Icon(Icons.done),
-                              iconSize: 20.0,
-                              color: kNewMainColor,
-                            ),
-                            border: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: kSubMainColor),
-                            ),
-                            focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: kNewMainColor),
-                            ),
-                          ),
-                        ),
                       ),
                     const SizedBox(height: 10),
                     Text(
@@ -315,49 +318,6 @@ class _DueReceiptState extends State<DueReceipt> {
                   ]),
                 ],
               ),
-              // const SizedBox(
-              //   height: 7.0,
-              // ),
-              // Column(
-              //   children: payList.isEmpty
-              //       ? [
-              //           Row(
-              //             mainAxisAlignment: MainAxisAlignment.center,
-              //             children: [
-              //               textContainer('Pay'),
-              //               const SizedBox(
-              //                 width: 3.0,
-              //               ),
-              //               textContainer('        '),
-              //               const SizedBox(
-              //                 width: 3.0,
-              //               ),
-              //               textContainer('        '),
-              //             ],
-              //           )
-              //         ]
-              //       : List.generate(payList.length, (index) {
-              //           Timestamp timestamp = payList[index]['date'];
-              //           final formatter = DateFormat('MM/dd/yyyy');
-              //           String dateTime = formatter.format(
-              //             timestamp.toDate(),
-              //           );
-              //           return Row(
-              //             mainAxisAlignment: MainAxisAlignment.center,
-              //             children: [
-              //               textContainer('Pay'),
-              //               const SizedBox(
-              //                 width: 3.0,
-              //               ),
-              //               textContainer(dateTime),
-              //               const SizedBox(
-              //                 width: 3.0,
-              //               ),
-              //               textContainer(payList[index]['paid'].toString()),
-              //             ],
-              //           );
-              //         }),
-              // ),
             ],
           ),
         ),

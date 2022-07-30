@@ -18,7 +18,7 @@ import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 
 class Configs extends ChangeNotifier {
-  Widget currentScreen = ModalWidget();
+  Widget currentScreen = const ModalWidget();
   String? sellBy;
   String category = '';
   String? productFor;
@@ -79,7 +79,7 @@ class Configs extends ChangeNotifier {
 void snackBar(
     {required String text, required BuildContext context, int duration = 6, color = kNewTextColor}) {
   final snacks = SnackBar(
-    duration: Duration(milliseconds: 6),
+    duration: const Duration(milliseconds: 6),
     backgroundColor: color,
     content: Text(
       text,
@@ -93,7 +93,7 @@ Container headerContainer({required String heading}) {
   return Container(
       height: 90.0,
       width: double.infinity,
-      padding: EdgeInsets.all(15.0),
+      padding: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         color: kBackgroundColor,
@@ -106,12 +106,12 @@ Container headerContainer({required String heading}) {
             heading,
             style: kCategoryNameStylePro,
           ),
-          SizedBox(
+          const SizedBox(
             height: 10.0,
           ),
           Row(
             children: [
-              Text(
+              const Text(
                 'Home > ',
                 style: kProductNameStylePro,
               ),
@@ -137,10 +137,10 @@ Future<void> showDialogBox(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: Text('Alert'),
+        title: const Text('Alert'),
         titleTextStyle: kProductNameStyle,
         content: SingleChildScrollView(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           child: ListBody(
             children: <Widget>[
               Text(
@@ -156,15 +156,15 @@ Future<void> showDialogBox(
               Navigator.pop(context);
             },
             child: Container(
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3.0),
                 color: kMainColor,
               ),
-              child: Center(
+              child: const Center(
                 child: Text(
                   'OK',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 15.0,
                     color: kBackgroundColor,
                     fontFamily: 'Montserrat',
@@ -189,19 +189,19 @@ Future<void> loginDialogBox({required BuildContext buildContext}) async {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: Text('Alert'),
+        title: const Text('Alert'),
         titleTextStyle: kProductNameStyle,
         content: SingleChildScrollView(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
+              const Text(
                 'Sorry you need to log in',
                 softWrap: true,
                 style: kProductNameStylePro,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               contains()
@@ -215,7 +215,7 @@ Future<void> loginDialogBox({required BuildContext buildContext}) async {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => LoginPage(),
+                  builder: (context) => const LoginPage(),
                 ),
               );
             },
@@ -235,8 +235,8 @@ Widget contains() {
       return Container(
         // width: 150.0,
         // height: 50.0,
-        padding: EdgeInsets.all(7.0),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.all(7.0),
+        decoration: const BoxDecoration(
           color: kBackgroundColor,
         ),
         child: Center(
@@ -246,31 +246,31 @@ Widget contains() {
             onChanged: (dynamic value) {
               saveUserType(value);
             },
-            hint: Text('Select User type', style: kProductNameStylePro),
+            hint: const Text('Select User type', style: kProductNameStylePro),
             isExpanded: true,
             value: userType,
             decoration: InputDecoration(
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: kSubMainColor),
+                borderSide: const BorderSide(color: kSubMainColor),
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
             items: <DropdownMenuItem>[
-              DropdownMenuItem(
+              const DropdownMenuItem(
                 value: 'agents',
-                child: Text(
+                child: const Text(
                   'Agent',
                   style: kProductNameStylePro,
                 ),
               ),
-              DropdownMenuItem(
+              const DropdownMenuItem(
                 value: 'general',
                 child: Text(
                   'General',
                   style: kProductNameStylePro,
                 ),
               ),
-              DropdownMenuItem(
+              const DropdownMenuItem(
                 value: 'architect',
                 child: Text(
                   'Architect',
@@ -352,10 +352,10 @@ Future<void> getCategoryDialog({
     barrierDismissible: true, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        actionsPadding: EdgeInsets.all(10.0),
+        actionsPadding: const EdgeInsets.all(10.0),
         actions: [
           TextButton(
-            child: Text(
+            child: const Text(
               'Add Category',
               style: TextStyle(
                 color: kIconColor1,
@@ -377,7 +377,7 @@ Future<void> getCategoryDialog({
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: Text('Categories'),
+        title: const Text('Categories'),
         titleTextStyle: kProductNameStyle,
         // ignore: dead_code
         content: StreamBuilder<QuerySnapshot>(
@@ -388,8 +388,8 @@ Future<void> getCategoryDialog({
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: Container(
+              return const Center(
+                child: SizedBox(
                   height: 50.0,
                   width: 50.0,
                   child: CircularProgressIndicator(
@@ -400,12 +400,12 @@ Future<void> getCategoryDialog({
             } else if (snapshot.hasData) {
               final data = snapshot.data!.docs;
               List categories = [];
-              data.forEach((element) {
+              for (var element in data) {
                 categories.add(element.data());
-              });
+              }
               print(categories);
               return SingleChildScrollView(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                       children: List.generate(categories.length, (index) {
                     return InkWell(
@@ -414,17 +414,17 @@ Future<void> getCategoryDialog({
                             .put('name', categories[index]['category_name'])
                             .whenComplete(() => Navigator.pop(context));
                       },
-                      child: Container(
+                      child: SizedBox(
                         height: 40.0,
                         child: Row(
                           // mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.category,
                               color: kIconColor1,
                               size: 15.0,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 5.0,
                             ),
                             Text(
@@ -437,7 +437,7 @@ Future<void> getCategoryDialog({
                     );
                   })));
             } else {
-              return Text('Oops an error occured');
+              return const Text('Oops an error occured');
             }
           },
         ),
@@ -454,7 +454,7 @@ Future<void> getAdvertsDialog({
     barrierDismissible: true, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        actionsPadding: EdgeInsets.all(10.0),
+        actionsPadding: const EdgeInsets.all(10.0),
         // actions: [
         //   TextButton(
         //     child: Text(
@@ -479,15 +479,15 @@ Future<void> getAdvertsDialog({
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: Text('Advertisements'),
+        title: const Text('Advertisements'),
         titleTextStyle: kProductNameStyle,
         // ignore: dead_code
         content: StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance.collection('adverts').doc('adverts').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: Container(
+              return const Center(
+                child: SizedBox(
                   height: 50.0,
                   width: 50.0,
                   child: CircularProgressIndicator(
@@ -504,7 +504,7 @@ Future<void> getAdvertsDialog({
               List adverts = Set.from(advertList).toList();
               print(adverts);
               return SingleChildScrollView(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                       children: List.generate(adverts.length, (index) {
                     return Consumer<GeneralProvider>(
@@ -521,19 +521,19 @@ Future<void> getAdvertsDialog({
                                 .addAdvert(adName);
                           }
                         },
-                        child: Container(
+                        child: SizedBox(
                           height: 40.0,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.category,
                                     color: kNewMainColor,
                                     size: 15.0,
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 5.0,
                                   ),
                                   Text(
@@ -543,12 +543,12 @@ Future<void> getAdvertsDialog({
                                 ],
                               ),
                               advert.contains(adName)
-                                  ? Icon(
+                                  ? const Icon(
                                       Icons.done_rounded,
                                       color: kNewMainColor,
                                       size: 15.0,
                                     )
-                                  : SizedBox(),
+                                  : const SizedBox(),
                             ],
                           ),
                         ),
@@ -556,7 +556,7 @@ Future<void> getAdvertsDialog({
                     });
                   })));
             } else {
-              return Text('Oops an error occured');
+              return const Text('Oops an error occured');
             }
           },
         ),
@@ -568,7 +568,7 @@ Future<void> getAdvertsDialog({
 Future<void> getNonInventoryDialog({
   required BuildContext buildContext,
 }) async {
-  TextEditingController _controller = TextEditingController();
+  TextEditingController controller = TextEditingController();
   AdminCrud adminCrud = AdminCrud();
   return showDialog<void>(
     context: buildContext,
@@ -578,7 +578,7 @@ Future<void> getNonInventoryDialog({
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: Text('Non-Inventory shops'),
+        title: const Text('Non-Inventory shops'),
         titleTextStyle: kProductNameStyle,
         actions: [
           TextButton(
@@ -586,11 +586,11 @@ Future<void> getNonInventoryDialog({
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Shops(),
+                  builder: (context) => const Shops(),
                 ),
               );
             },
-            child: Text(
+            child: const Text(
               'Create Shop',
               style: kTotalTextStyle,
             ),
@@ -601,8 +601,8 @@ Future<void> getNonInventoryDialog({
           future: adminCrud.getShop(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: Container(
+              return const Center(
+                child: SizedBox(
                   height: 50.0,
                   width: 50.0,
                   child: CircularProgressIndicator(
@@ -613,12 +613,14 @@ Future<void> getNonInventoryDialog({
             } else if (snapshot.hasData) {
               final data = snapshot.data!.docs;
               List shops = [];
-              data.forEach((element) {
+              for (var element in data) {
                 shops.add(element.data());
-              });
-              print(shops);
+              }
+              if (kDebugMode) {
+                print(shops);
+              }
               return SingleChildScrollView(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                       children: List.generate(shops.length, (index) {
                     return InkWell(
@@ -627,17 +629,17 @@ Future<void> getNonInventoryDialog({
                             .putAll(shops[index])
                             .whenComplete(() => Navigator.pop(context));
                       },
-                      child: Container(
+                      child: SizedBox(
                         height: 40.0,
                         child: Row(
                           // mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.category,
                               color: kIconColor1,
                               size: 15.0,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 5.0,
                             ),
                             Text(
@@ -650,7 +652,7 @@ Future<void> getNonInventoryDialog({
                     );
                   })));
             } else {
-              return Text('Oops an error occured');
+              return const Text('Oops an error occurred');
             }
           },
         ),
@@ -662,7 +664,7 @@ Future<void> getNonInventoryDialog({
 Future<void> createCategoryDialog({
   required BuildContext buildContext,
 }) async {
-  TextEditingController _controller = TextEditingController();
+  TextEditingController controller = TextEditingController();
   AdminCrud adminCrud = AdminCrud();
   return showDialog<void>(
     context: buildContext,
@@ -672,25 +674,25 @@ Future<void> createCategoryDialog({
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: Text('Add new category'),
+        title: const Text('Add new category'),
         titleTextStyle: kProductNameStyle,
         // ignore: dead_code
         content: SingleChildScrollView(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           child: ListBody(
             children: <Widget>[
               Container(
                 height: 40.0,
                 // width: MediaQuery.of(context).size.width * 0.4,
-                margin: EdgeInsets.all(15.0),
+                margin: const EdgeInsets.all(15.0),
                 child: Center(
                   child: TextFormField(
-                    controller: _controller,
+                    controller: controller,
                     cursorColor: kMainColor,
                     style: kProductNameStylePro,
                     textInputAction: TextInputAction.done,
                     maxLines: 1,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: kMainColor),
                       ),
@@ -711,18 +713,18 @@ Future<void> createCategoryDialog({
         actions: <Widget>[
           InkWell(
             onTap: () {
-              adminCrud.addCategory({'category_name': _controller.text});
+              adminCrud.addCategory({'category_name': controller.text});
               Navigator.pop(context);
             },
             child: Container(
               width: 80.0,
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3.0),
                 color: kMainColor,
               ),
-              child: Center(
-                child: Text(
+              child: const Center(
+                child: const Text(
                   'Create',
                   style: TextStyle(
                     fontSize: 15.0,
@@ -747,15 +749,15 @@ num percent(num discount, price) {
 
 Widget discountPercentWidget(String text) {
   return Container(
-    padding: EdgeInsets.all(1.0),
-    margin: EdgeInsets.all(2.50),
+    padding: const EdgeInsets.all(1.0),
+    margin: const EdgeInsets.all(2.50),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(5.0),
       color: kIconColor2,
     ),
     child: Text(
       '-$text%',
-      style: TextStyle(
+      style: const TextStyle(
   fontFamily: 'Montserrat',
   fontSize: 12.50,
   color: kBackgroundColor,

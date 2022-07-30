@@ -43,6 +43,7 @@ import 'package:viraeshop_admin/screens/return_history.dart';
 import 'package:viraeshop_admin/screens/return_product.dart';
 import 'package:viraeshop_admin/screens/settings_screen.dart';
 import 'package:viraeshop_admin/screens/signup_request.dart';
+import 'package:viraeshop_admin/screens/supplier_pay.dart';
 import 'package:viraeshop_admin/screens/transaction_screen.dart';
 import 'package:viraeshop_admin/screens/user_list.dart';
 import 'package:viraeshop_admin/screens/user_profile.dart';
@@ -487,6 +488,25 @@ class _AppDrawerState extends State<AppDrawer> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => NewNonInventoryProduct(),
+                        ),
+                      );
+                      //}
+                    },
+                  ),
+                  ReusableTile(
+                    padding: true,
+                    title: 'Supplier Pay',
+                    onTap: () {
+                      // if (widget.isBigScreen == true) {
+                      //   Provider.of<Configs>(context, listen: false)
+                      //       .updateWidget(
+                      //     NewNonInventoryProduct(),
+                      //   );
+                      // } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SupplierPay(),
                         ),
                       );
                       //}

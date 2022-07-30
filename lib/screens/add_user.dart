@@ -74,7 +74,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
   void getImageWeb() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      Uint8List? imageBytes = result.files.first.bytes;
+      Uint8List imageBytes = result.files.first.bytes ?? Uint8List(0);
       String? fileName = result.files.first.name;
       adminCrud.uploadWebImage(imageBytes, fileName).then((imageUrl) {
         setState(() {
@@ -1096,7 +1096,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
   void getImageWeb() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      Uint8List? imageBytes = result.files.first.bytes;
+      Uint8List imageBytes = result.files.first.bytes ?? Uint8List(0);
       String? fileName = result.files.first.name;
       adminCrud.uploadWebImage(imageBytes, fileName).then((imageUrl) {
         setState(() {

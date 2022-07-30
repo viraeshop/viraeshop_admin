@@ -26,6 +26,7 @@ class _DueScreenState extends State<DueScreen> {
   List invoiceBackup = [];
   num totalDue = 0;
   bool isLoading = false;
+  bool dueCalculated = false;
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -63,7 +64,6 @@ class _DueScreenState extends State<DueScreen> {
                   padding: const EdgeInsets.only(top: 120),
                   child: Column(
                     children: List.generate(customerInvoices.length, (i) {
-                      totalDue += customerInvoices[i]['due'];
                       List items = customerInvoices[i]['items'];
                       String description = '';
                       for (var element in items) {
@@ -116,6 +116,9 @@ class _DueScreenState extends State<DueScreen> {
                             }
                             setState(() {
                               customerInvoices = fetchInvoices;
+                              for (var invoice in customerInvoices){
+                                totalDue += invoice['due'];
+                              }
                               isLoading = false;
                             });
                           } catch (e) {

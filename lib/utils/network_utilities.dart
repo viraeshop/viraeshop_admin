@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:pdf/widgets.dart';
 
 class NetworkUtility {
   static final FirebaseFirestore _firestore =  FirebaseFirestore.instance;
@@ -29,5 +30,11 @@ class NetworkUtility {
   }
   static Future<void> saveUserInfo (String userId, data) async{
     await _firestore.collection('customers').doc(userId).set(data);
+  }
+  static Future<void> supplierPayment (String businessName, data) async{
+    await _firestore.collection('supplier_pay').doc(businessName).set(data);
+  }
+  static Future<DocumentSnapshot> getSupplierPayment (String businessName) async{
+    return _firestore.collection('supplier_pay').doc(businessName).get();
   }
 }

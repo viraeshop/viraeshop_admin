@@ -53,12 +53,12 @@ class _NonInventoryProductState extends State<NonInventoryProduct> {
     controllers[9].text = widget.data['description'];
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: Scaffold(
         body: Container(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -67,7 +67,7 @@ class _NonInventoryProductState extends State<NonInventoryProduct> {
                 heightFactor: 0.3,
                 child: Column(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       height: 20.0,
                     ),
                     imagePickerWidget(
@@ -97,31 +97,31 @@ class _NonInventoryProductState extends State<NonInventoryProduct> {
                         controller: controllers[0],
                         readOnly: true,
                         prefix: 'Reference No'),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     textFieldRow(
                         controllers[1], controllers[2], true, '', ''),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     textFieldRow(controllers[3], controllers[4], true,
                         '', ''),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     textFieldRow(controllers[5], controllers[6], false,
                         'Buy Price', 'Profit'),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     textFieldRow(
                         controllers[7], controllers[8], false, 'Due', 'Paid'),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     textField(controller: controllers[9], lines: 3),
-                    SizedBox(
+                    const SizedBox(
                       height: 20.0,
                     ),
                     Row(
@@ -154,7 +154,7 @@ class _NonInventoryProductState extends State<NonInventoryProduct> {
                             });
                           },
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 10.0,
                         ),
                         buttons(title: 'View', width: 100.0),
@@ -179,7 +179,7 @@ Widget textFieldRow(TextEditingController controller1, controller2,
         child: textField(
             controller: controller1, readOnly: readOnly, prefix: prefix1),
       ),
-      SizedBox(
+      const SizedBox(
         width: 10.0,
       ),
       Expanded(
@@ -210,7 +210,7 @@ Widget textField(
       hintStyle: kTableCellStyle,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: kBlackColor,
           width: 3.0,
         ),

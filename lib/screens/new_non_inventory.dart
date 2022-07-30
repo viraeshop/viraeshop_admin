@@ -387,7 +387,8 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                               );
                             }),
                           );
-                        }),
+                        },
+                        ),
                   ],
                 )
               ],

@@ -11,7 +11,8 @@ class NonInventoryInfo extends StatefulWidget {
   final Map data;
   final String invoiceId;
   final Timestamp date;
-  NonInventoryInfo({required this.data, required this.invoiceId, required this.date});
+  final bool? isSupplierPay;
+  NonInventoryInfo({required this.data, required this.invoiceId, required this.date, this.isSupplierPay});
 
   @override
   _NonInventoryInfoState createState() => _NonInventoryInfoState();
@@ -22,16 +23,14 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
   List images = [];
   List payList = [];
   int imageIndex = 0;
+  final formatter = DateFormat('MM/dd/yyyy');
   @override
   void initState() {
     // TODO: implement initState
     Timestamp timestamp = widget.date;
-    final formatter = DateFormat('MM/dd/yyyy');
-    setState(() {
       date = formatter.format(timestamp.toDate());
-      images = widget.data['images'];
-      payList = widget.data['pay_list'];
-    });
+      images = widget.data['images'] ?? [];
+      payList = widget.data['pay_list'] ?? [];
     super.initState();
   }
 
@@ -101,7 +100,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
 
                       /// Invoice no
                       Text(
-                        '${widget.invoiceId}',
+                        widget.invoiceId,
                         style: kTotalSalesStyle,
                       ),
                     ],
@@ -137,6 +136,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           if (imageIndex > 0) {
                             setState(() {
                               imageIndex--;
+                              Timestamp timestamp = widget.data['pay_list'][imageIndex]['date'] ?? Timestamp.now();
+                              date = formatter.format(timestamp.toDate());
                             });
                           }
                         }),
@@ -149,6 +150,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           if (imageIndex < images.length - 1) {
                             setState(() {
                               imageIndex++;
+                              Timestamp timestamp = widget.data['pay_list'][imageIndex]['date'] ?? Timestamp.now();
+                              date = formatter.format(timestamp.toDate());
                             });
                           }
                         }),
@@ -187,12 +190,12 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                                 const SizedBox(
                                   width: 3.0,
                                 ),
-                                textContainer('$dateTime'),
+                                textContainer(dateTime),
                                 const SizedBox(
                                   width: 3.0,
                                 ),
                                 textContainer(
-                                    '${payList[index]['paid'].toString()}'),
+                                    payList[index]['paid'].toString()),
                               ],
                             );
                           }),

@@ -3,9 +3,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -52,13 +53,13 @@ class NewProduct extends StatefulWidget {
 
 class _NewProductState extends State<NewProduct>
     with SingleTickerProviderStateMixin {
-  ImagePicker _picker = ImagePicker();
+  final ImagePicker _picker = ImagePicker();
   File? _imageFile;
   List images = Hive.box('images').get('imagesBytes', defaultValue: []);
   List productImage = Hive.box('images').get('productImages', defaultValue: []);
   AdminCrud adminCrud = AdminCrud();
   GeneralCrud generalCrud = GeneralCrud();
-  String _uniqueCode = randomAlphaNumeric(10);
+  final String _uniqueCode = randomAlphaNumeric(10);
   bool showFields = true;
   bool loading = false;
   var currdate = DateTime.now();
@@ -70,28 +71,36 @@ class _NewProductState extends State<NewProduct>
   bool isArchitectDiscount = false;
   bool isGeneral = true;
   bool isAgent = true;
-  bool isArchitect = true; 
+  bool isArchitect = true;
   bool isInfinity = false;
   var selected_category = '';
-  List _pr_user_List = ['general', 'agents', 'architect'];
-  List _category_List = [];
-  List<String> _sell_by = ['Unit', 'Sft', 'Rft', 'Kilo', 'Kg', 'CM', 'Pisce'];
+  final List _pr_user_List = ['general', 'agents', 'architect'];
+  final List _category_List = [];
+  final List<String> _sell_by = [
+    'Unit',
+    'Sft',
+    'Rft',
+    'Kilo',
+    'Kg',
+    'CM',
+    'Pisce'
+  ];
   TextEditingController descController = TextEditingController();
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _productIdController = TextEditingController();
-  TextEditingController _priceController = TextEditingController();
-  TextEditingController _costController = TextEditingController();
-  TextEditingController _quantityController = TextEditingController();
-  TextEditingController _minimumController = TextEditingController();
-  TextEditingController _categoryController = TextEditingController();
-  TextEditingController _adsController = TextEditingController();
-  TextEditingController _generalController = TextEditingController();
-  TextEditingController _agentController = TextEditingController();
-  TextEditingController _architectController = TextEditingController();
-  TextEditingController _generalDiscountCont = TextEditingController();
-  TextEditingController _architectDiscountCont = TextEditingController();
-  TextEditingController _agentsDiscountCont = TextEditingController();
-  List<Widget> _tabs = <Tab>[
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _productIdController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _costController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _minimumController = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _adsController = TextEditingController();
+  final TextEditingController _generalController = TextEditingController();
+  final TextEditingController _agentController = TextEditingController();
+  final TextEditingController _architectController = TextEditingController();
+  final TextEditingController _generalDiscountCont = TextEditingController();
+  final TextEditingController _architectDiscountCont = TextEditingController();
+  final TextEditingController _agentsDiscountCont = TextEditingController();
+  final List<Widget> _tabs = const <Tab>[
     Tab(
       text: 'Product',
     ),
@@ -104,36 +113,34 @@ class _NewProductState extends State<NewProduct>
   void initState() {
     // TODO: implement initState
     _tabController = TabController(length: 2, vsync: this);
-    if (widget.isUpdateProduct == true){
+    if (widget.isUpdateProduct == true) {
       descController.text = widget.info['description'];
-        _nameController.text = widget.info['name'];
-        _generalController.text = widget.info['generalPrice'].toString();
-        _agentController.text = widget.info['agentsPrice'].toString();
-        _architectController.text = widget.info['architectPrice'].toString();
-        _generalDiscountCont.text = widget.info['generalDiscount'].toString();
-        _agentsDiscountCont.text = widget.info['agentsDiscount'].toString();
-        _productIdController.text = widget.info['productId'];
-        _architectDiscountCont.text =
-            widget.info['architectDiscount'].toString();
-        _costController.text = widget.info['cost_price'];
-        _quantityController.text = widget.info['quantity'].toString();
-        widget.info['minimum'] != null
-            ? _minimumController.text = widget.info['minimum'].toString()
-            : '0';
-        isGeneralDiscount = widget.info['isGeneralDiscount'];
-        isAgentDiscount = widget.info['isAgentDiscount'];
-        isArchitectDiscount = widget.info['isArchitectDiscount'];
-        selectedSellby = widget.info['sell_by'];        
-        isInfinity = widget.info['isInfinity'];   
-        Hive.box('images').put('productImages', widget.info['image']);
-        SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-          Provider.of<GeneralProvider>(context, listen: false).updateAdList(widget.info['adverts']);
-        });
-    }          
+      _nameController.text = widget.info['name'];
+      _generalController.text = widget.info['generalPrice'].toString();
+      _agentController.text = widget.info['agentsPrice'].toString();
+      _architectController.text = widget.info['architectPrice'].toString();
+      _generalDiscountCont.text = widget.info['generalDiscount'].toString();
+      _agentsDiscountCont.text = widget.info['agentsDiscount'].toString();
+      _productIdController.text = widget.info['productId'];
+      _architectDiscountCont.text = widget.info['architectDiscount'].toString();
+      _costController.text = widget.info['cost_price'];
+      _quantityController.text = widget.info['quantity'].toString();
+      widget.info['minimum'] != null
+          ? _minimumController.text = widget.info['minimum'].toString()
+          : '0';
+      isGeneralDiscount = widget.info['isGeneralDiscount'];
+      isAgentDiscount = widget.info['isAgentDiscount'];
+      isArchitectDiscount = widget.info['isArchitectDiscount'];
+      selectedSellby = widget.info['sell_by'];
+      isInfinity = widget.info['isInfinity'];
+      Hive.box('images').put('productImages', widget.info['image']);
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+        Provider.of<GeneralProvider>(context, listen: false)
+            .updateAdList(widget.info['adverts']);
+      });
+    }
     super.initState();
   }
-
-  
 
   @override
   void dispose() {
@@ -144,7 +151,7 @@ class _NewProductState extends State<NewProduct>
 
   DecorationImage _imageBG() {
     return images == null || images.isEmpty
-        ? DecorationImage(
+        ? const DecorationImage(
             image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
         : DecorationImage(image: MemoryImage(images[0]), fit: BoxFit.cover);
   }
@@ -192,7 +199,7 @@ class _NewProductState extends State<NewProduct>
           child: Scaffold(
             appBar: AppBar(
               automaticallyImplyLeading: true,
-              iconTheme: const  IconThemeData(color: kSelectedTileColor),
+              iconTheme: const IconThemeData(color: kSelectedTileColor),
               elevation: 0.0,
               backgroundColor: kBackgroundColor,
               title: Text(
@@ -211,8 +218,8 @@ class _NewProductState extends State<NewProduct>
                             context: context,
                             builder: (dialogContext) {
                               return AlertDialog(
-                                title: Text('Delete Product'),
-                                content: Text(
+                                title: const Text('Delete Product'),
+                                content: const Text(
                                   'Are you sure you want to remove this Product?',
                                   softWrap: true,
                                   style: kSourceSansStyle,
@@ -224,11 +231,14 @@ class _NewProductState extends State<NewProduct>
                                         loading = true;
                                       });
                                       Navigator.pop(dialogContext);
-                                      await deleteProductImages(widget.info['image'])!
+                                      await deleteProductImages(
+                                              widget.info['image'])!
                                           .then((value) async {
-                                            if(value == 'No image'){
-                                              snackBar(text: 'No image found', context: context);
-                                            }
+                                        if (value == 'No image') {
+                                          snackBar(
+                                              text: 'No image found',
+                                              context: context);
+                                        }
                                         await FirebaseFirestore.instance
                                             .collection('products')
                                             .doc('items')
@@ -253,14 +263,14 @@ class _NewProductState extends State<NewProduct>
                                               loading = false;
                                             });
                                             Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            HomeScreen.path,
-                                            (route) => false);
+                                                context,
+                                                HomeScreen.path,
+                                                (route) => false);
                                           });
                                         });
                                       });
                                     },
-                                    child: Text(
+                                    child: const Text(
                                       'Yes',
                                       softWrap: true,
                                       style: kSourceSansStyle,
@@ -270,7 +280,7 @@ class _NewProductState extends State<NewProduct>
                                     onPressed: () {
                                       Navigator.pop(context);
                                     },
-                                    child: Text(
+                                    child: const Text(
                                       'No',
                                       softWrap: true,
                                       style: kSourceSansStyle,
@@ -281,13 +291,13 @@ class _NewProductState extends State<NewProduct>
                             },
                           );
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.delete,
                         ),
                         color: kSubMainColor,
                         iconSize: 20.0,
                       )
-                    : SizedBox(),
+                    : const SizedBox(),
               ],
               bottom: TabBar(
                 tabs: _tabs,
@@ -317,7 +327,7 @@ class _NewProductState extends State<NewProduct>
             child: ListView(
               shrinkWrap: true,
               children: [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -346,6 +356,20 @@ class _NewProductState extends State<NewProduct>
                                         );
                                       },
                                 child: Container(
+                                  height: 100.0,
+                                  width: 100.0,
+                                  decoration: BoxDecoration(
+                                    color: kProductCardColor,
+                                    image: imagesByte.isEmpty
+                                        ? const DecorationImage(
+                                            image: AssetImage(
+                                                'assets/default.jpg'),
+                                            fit: BoxFit.cover)
+                                        : DecorationImage(
+                                            image: MemoryImage(imagesByte[0]),
+                                            fit: BoxFit.cover),
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
                                   child: Align(
                                       alignment: Alignment.bottomCenter,
                                       child: Container(
@@ -354,13 +378,13 @@ class _NewProductState extends State<NewProduct>
                                           child: ListView(
                                             shrinkWrap: true,
                                             children: [
-                                              Text('Upload Image',
+                                              const Text('Upload Image',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                       color: kBackgroundColor,
                                                       fontWeight:
                                                           FontWeight.bold)),
-                                              Text(
+                                              const Text(
                                                 '+',
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
@@ -371,27 +395,13 @@ class _NewProductState extends State<NewProduct>
                                           ),
                                         ),
                                         width: double.infinity,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           color: kSubMainColor,
                                           borderRadius: BorderRadius.only(
                                               bottomLeft: Radius.circular(10),
                                               bottomRight: Radius.circular(10)),
                                         ),
                                       )),
-                                  height: 100.0,
-                                  width: 100.0,
-                                  decoration: BoxDecoration(
-                                    color: kProductCardColor,
-                                    image: imagesByte.isEmpty
-                                        ? DecorationImage(
-                                            image: AssetImage(
-                                                'assets/default.jpg'),
-                                            fit: BoxFit.cover)
-                                        : DecorationImage(
-                                            image: MemoryImage(imagesByte[0]),
-                                            fit: BoxFit.cover),
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
                                 ),
                               ),
                             );
@@ -399,7 +409,7 @@ class _NewProductState extends State<NewProduct>
                         }),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Card(
                   elevation: 0,
                   child: Column(
@@ -415,19 +425,19 @@ class _NewProductState extends State<NewProduct>
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
-                  padding: EdgeInsets.all(10.0),
-                  margin: EdgeInsets.symmetric(vertical: 20.0),
+                  padding: const EdgeInsets.all(10.0),
+                  margin: const EdgeInsets.symmetric(vertical: 20.0),
                   color: kBackgroundColor,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Prices',
                         style: kProductNameStyle,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 5.0,
                       ),
                       ProductPrice(
@@ -458,11 +468,11 @@ class _NewProductState extends State<NewProduct>
                           isArchitect = value!;
                         },
                       ),
-                      Text(
+                      const Text(
                         'Discounts',
                         style: kTotalSalesStyle,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10.0,
                       ),
                       ProductPrice(
@@ -506,14 +516,14 @@ class _NewProductState extends State<NewProduct>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         // shrinkWrap: true,
                         children: [
-                          ListTile(
+                          const ListTile(
                             title: Text(
                               'Details',
                               style: kProductNameStyle,
                             ),
                             // trailing: Icon(Icons.arrow_drop_up),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           // Category
@@ -536,7 +546,7 @@ class _NewProductState extends State<NewProduct>
                                           getCategoryDialog(
                                               buildContext: context);
                                         },
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     focusedBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
                                         color: kBlackColor,
@@ -557,12 +567,13 @@ class _NewProductState extends State<NewProduct>
                                   onChanged: (dynamic value) {},
                                 );
                               }),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           Consumer<GeneralProvider>(
                               builder: (context, provider, childs) {
-                            List advert = Set.from(provider.advertSelected).toList();
+                            List advert =
+                                Set.from(provider.advertSelected).toList();
                             adverts = advert;
                             _adsController.clear();
                             adverts.forEach((element) {
@@ -579,7 +590,9 @@ class _NewProductState extends State<NewProduct>
                                   : () {
                                       getAdvertsDialog(buildContext: context);
                                     },
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
+                                hintText: 'Adverts',
+                                hintStyle: kProductNameStylePro,
                                 focusedBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
                                     color: kBlackColor,
@@ -600,14 +613,14 @@ class _NewProductState extends State<NewProduct>
                               onChanged: (dynamic value) {},
                             );
                           }),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           TextField(
                             style: kTableCellStyle,
                             controller: _costController,
                             keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                                 labelText: "Cost",
                                 labelStyle: kProductNameStylePro,
                                 focusedBorder: UnderlineInputBorder(
@@ -624,7 +637,7 @@ class _NewProductState extends State<NewProduct>
                                 //     borderRadius: BorderRadius.circular(15))
                                 ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           TextField(
@@ -634,7 +647,7 @@ class _NewProductState extends State<NewProduct>
                             keyboardType: isProducts == true
                                 ? TextInputType.text
                                 : TextInputType.none,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: "Description",
                               labelStyle: kProductNameStylePro,
                               focusedBorder: UnderlineInputBorder(
@@ -651,12 +664,42 @@ class _NewProductState extends State<NewProduct>
                               //     borderRadius: BorderRadius.circular(15))
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              getNonInventoryDialog(buildContext: context);
+                            },
+                            child: Container(
+                              height: 45,
+                              width: double.infinity,
+                              //padding: const EdgeInsets.all(10.0),
+                              decoration: const BoxDecoration(
+                                color: kBackgroundColor,
+                                //borderRadius: BorderRadius.circular(10.0),
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: kSubMainColor,
+                                    )
+                                  )
+                              ),
+                              child: ValueListenableBuilder(
+                                  valueListenable:
+                                      Hive.box('shops').listenable(),
+                                  builder: (context, Box box, childs) {
+                                    String shopName = box.get('name',
+                                        defaultValue: 'Shops');
+                                    return Text(
+                                      shopName,
+                                      style: kTotalTextStyle,
+                                    );
+                                  }),
+                            ),
                           ),
                           DropdownButtonFormField(
                             value: selectedSellby,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                                 focusedBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(color: kBlackColor),
                                 ),
@@ -667,7 +710,8 @@ class _NewProductState extends State<NewProduct>
                                 enabledBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(color: kBlackColor)),
                                 hintStyle: TextStyle(color: Colors.black87)),
-                            hint: Text('Sell By'), // Not necessary for Option 1
+                            hint: const Text(
+                                'Sell By'), // Not necessary for Option 1
                             // value: default_pruser,
                             onChanged: isProducts == false
                                 ? null
@@ -678,20 +722,20 @@ class _NewProductState extends State<NewProduct>
                                   },
                             items: _sell_by.map((itm) {
                               return DropdownMenuItem(
-                                child: new Text(itm),
                                 value: itm,
+                                child: Text(itm),
                               );
                             }).toList(),
                           ),
-                          SizedBox(height: 5),
+                          const SizedBox(height: 5),
                         ],
                       ),
                     )),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
               ],
-            )),        
+            )),
       ],
     );
   }
@@ -702,7 +746,7 @@ class _NewProductState extends State<NewProduct>
       labelText}) {
     bool isProducts = Hive.box('adminInfo').get('isProducts');
     return Padding(
-      padding: EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20.0),
       child: TextField(
         style: kTableCellStyle,
         controller: controller,
@@ -712,18 +756,18 @@ class _NewProductState extends State<NewProduct>
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: kTableCellStyle,
-          focusedBorder: UnderlineInputBorder(
+          focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(
               color: kBlackColor,
             ),
           ),
-          border: UnderlineInputBorder(
+          border: const UnderlineInputBorder(
             borderSide: BorderSide(
               color: kBlackColor,
             ),
           ),
           focusColor: kBlackColor,
-          enabledBorder: UnderlineInputBorder(
+          enabledBorder: const UnderlineInputBorder(
             borderSide: BorderSide(
               color: kBlackColor,
             ),
@@ -741,7 +785,7 @@ class _NewProductState extends State<NewProduct>
         SwitchListTile(
           activeColor: kNewMainColor,
           tileColor: kBackgroundColor,
-          title: Text(
+          title: const Text(
             'Infinity Stock',
             style: kTableCellStyle,
           ),
@@ -752,7 +796,7 @@ class _NewProductState extends State<NewProduct>
             });
           },
         ),
-        Expanded(
+        const Expanded(
           flex: 1,
           child: Text('-'),
         ),
@@ -765,7 +809,7 @@ class _NewProductState extends State<NewProduct>
                 child: Column(
                   // shrinkWrap: true,
                   children: [
-                    Text(
+                    const Text(
                       'On hand',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 20),
@@ -773,7 +817,9 @@ class _NewProductState extends State<NewProduct>
                     TextField(
                       enabled: !isInfinity,
                       style: TextStyle(
-                        color: isInfinity == false ? kBlackColor : Colors.grey[200],
+                        color: isInfinity == false
+                            ? kBlackColor
+                            : Colors.grey[200],
                         fontFamily: 'Montserrat',
                         fontSize: 15,
                         letterSpacing: 1.3,
@@ -790,21 +836,24 @@ class _NewProductState extends State<NewProduct>
                         // labelStyle: TextStyle(fontSize: 40),
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color:
-                                isInfinity == false ? kBlackColor : Colors.grey[200]!,
+                            color: isInfinity == false
+                                ? kBlackColor
+                                : Colors.grey[200]!,
                           ),
                         ),
                         border: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color:
-                                isInfinity == false ? kBlackColor : Colors.grey[200]!,
+                            color: isInfinity == false
+                                ? kBlackColor
+                                : Colors.grey[200]!,
                           ),
                         ),
                         focusColor: kBlackColor,
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color:
-                                isInfinity == false ? kBlackColor : Colors.grey[200]!,
+                            color: isInfinity == false
+                                ? kBlackColor
+                                : Colors.grey[200]!,
                           ),
                         ),
                       ),
@@ -818,7 +867,7 @@ class _NewProductState extends State<NewProduct>
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: ListView(
@@ -827,7 +876,9 @@ class _NewProductState extends State<NewProduct>
                     TextField(
                       enabled: !isInfinity,
                       style: TextStyle(
-                        color: isInfinity == false ? kBlackColor : Colors.grey[200],
+                        color: isInfinity == false
+                            ? kBlackColor
+                            : Colors.grey[200],
                         fontFamily: 'Montserrat',
                         fontSize: 15,
                         letterSpacing: 1.3,
@@ -843,26 +894,29 @@ class _NewProductState extends State<NewProduct>
                         labelText: "Minimum",
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color:
-                                isInfinity == false ? kBlackColor : Colors.grey[200]!,
+                            color: isInfinity == false
+                                ? kBlackColor
+                                : Colors.grey[200]!,
                           ),
                         ),
                         border: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color:
-                                isInfinity == false ? kBlackColor : Colors.grey[200]!,
+                            color: isInfinity == false
+                                ? kBlackColor
+                                : Colors.grey[200]!,
                           ),
                         ),
                         focusColor: kBlackColor,
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color:
-                                isInfinity == false ? kBlackColor : Colors.grey[200]!,
+                            color: isInfinity == false
+                                ? kBlackColor
+                                : Colors.grey[200]!,
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20.0,
                     ),
                     bottomCard(
@@ -891,13 +945,21 @@ class _NewProductState extends State<NewProduct>
                           // var full_image = 'images/product_.jpg';
                           List imagesList = Hive.box('images')
                               .get('productImages', defaultValue: []);
-                              print(imagesList);
+                          Map supplier = Hive.box('shops').toMap() ?? {};
+                          if (kDebugMode) {
+                            print(imagesList);
+                          }
                           Map<String, dynamic> fields = {
+                            'supplier': supplier,
                             'category': _categoryController.text,
                             'sell_by': selectedSellby,
-                            'minimum': isInfinity ? 0 : num.tryParse(_minimumController.text),
+                            'minimum': isInfinity
+                                ? 0
+                                : num.tryParse(_minimumController.text),
                             'name': _nameController.text,
-                            'quantity': isInfinity ? 0 : num.parse(_quantityController.text),
+                            'quantity': isInfinity
+                                ? 0
+                                : num.parse(_quantityController.text),
                             'cost_price': _costController.text,
                             'generalPrice': isGeneral
                                 ? num.parse(_generalController.text)
@@ -1062,7 +1124,7 @@ class _NewProductState extends State<NewProduct>
   desktopBody() {
     return SingleChildScrollView(
       child: Container(
-        padding: EdgeInsets.all(40.0),
+        padding: const EdgeInsets.all(40.0),
         child: Row(
           // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1075,7 +1137,7 @@ class _NewProductState extends State<NewProduct>
                   nameController: _nameController,
                   priceController: _priceController,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
                 Container(
@@ -1088,21 +1150,21 @@ class _NewProductState extends State<NewProduct>
                   width: MediaQuery.of(context).size.width * 0.6,
                   child: Column(
                     children: [
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.only(left: 15.0, top: 15.0),
                         child: Text(
                           'Stocks',
                           style: kCategoryNameStyle,
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: double.infinity,
                         child: Divider(
                           color: kScaffoldBackgroundColor,
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 15.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 15.0),
                         child: Column(
                           children: [
                             HeadingTextField(
@@ -1115,13 +1177,13 @@ class _NewProductState extends State<NewProduct>
                               controller: _minimumController,
                               heading: 'Minimum: ',
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10.0,
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
+                                const Text(
                                   'Category: ',
                                   style: kProductPriceStylePro,
                                 ),
@@ -1130,7 +1192,7 @@ class _NewProductState extends State<NewProduct>
                                     height: 46.0,
                                     width:
                                         MediaQuery.of(context).size.width * 0.4,
-                                    margin: EdgeInsets.all(10.0),
+                                    margin: const EdgeInsets.all(10.0),
                                     child: ValueListenableBuilder(
                                         valueListenable:
                                             Hive.box('category').listenable(),
@@ -1146,7 +1208,7 @@ class _NewProductState extends State<NewProduct>
                                               getCategoryDialog(
                                                   buildContext: context);
                                             },
-                                            decoration: InputDecoration(
+                                            decoration: const InputDecoration(
                                               focusedBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
                                                     color: kMainColor),
@@ -1175,14 +1237,14 @@ class _NewProductState extends State<NewProduct>
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               width: 30.0,
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 imagePickerContainer(context),
-                SizedBox(height: 10.0),
+                const SizedBox(height: 10.0),
                 Container(
                   height: MediaQuery.of(context).size.height * 0.35,
                   width: MediaQuery.of(context).size.width * 0.25,
@@ -1193,14 +1255,14 @@ class _NewProductState extends State<NewProduct>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.only(top: 15.0, left: 15.0),
                         child: Text(
                           'Description',
                           style: kCategoryNameStyle,
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: double.infinity,
                         child: Divider(
                           color: kScaffoldBackgroundColor,
@@ -1210,8 +1272,8 @@ class _NewProductState extends State<NewProduct>
                       //   height: 10.0,
                       // ),
                       Container(
-                        margin: EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
+                        margin: const EdgeInsets.all(10.0),
+                        decoration: const BoxDecoration(
                             // border: Border.all(
                             //   color: kScaffoldBackgroundColor,
                             // ),
@@ -1225,7 +1287,7 @@ class _NewProductState extends State<NewProduct>
                             style: kProductNameStylePro,
                             textInputAction: TextInputAction.done,
                             maxLines: 10,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: kMainColor),
                               ),
@@ -1243,7 +1305,7 @@ class _NewProductState extends State<NewProduct>
                     ],
                   ),
                 ),
-                SizedBox(height: 20.0),
+                const SizedBox(height: 20.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -1258,7 +1320,7 @@ class _NewProductState extends State<NewProduct>
                               color:
                                   kMainColor, //Theme.of(context).accentColor,
                               borderRadius: BorderRadius.circular(5)),
-                          child: Center(
+                          child: const Center(
                             child: Text(
                               "Save",
                               style:
@@ -1365,14 +1427,14 @@ class _NewProductState extends State<NewProduct>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.only(left: 15.0, top: 15.0),
                     child: Text(
                       'Pick Product Image',
                       style: kCategoryNameStyle,
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: double.infinity,
                     child: Divider(
                       color: kScaffoldBackgroundColor,
@@ -1385,7 +1447,7 @@ class _NewProductState extends State<NewProduct>
           Align(
             alignment: Alignment.center,
             child: Container(
-              margin: EdgeInsets.all(10.0),
+              margin: const EdgeInsets.all(10.0),
               height: MediaQuery.of(context).size.height * 0.3,
               width: MediaQuery.of(context).size.width * 0.25,
               decoration: BoxDecoration(
@@ -1405,7 +1467,7 @@ class _NewProductState extends State<NewProduct>
                   selectImage();
                 }
               },
-              child: Icon(Icons.add_a_photo, size: 30),
+              child: const Icon(Icons.add_a_photo, size: 30),
             ),
           ),
         ],
@@ -1439,14 +1501,14 @@ class _NewProductState extends State<NewProduct>
   void getImageWeb() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      Uint8List? imageBytes = result.files.first.bytes;
+      Uint8List imageBytes = result.files.first.bytes ?? Uint8List(0);
       List<PlatformFile> filePath = result.files.toList();
       setState(() {
         loading = true;
       });
       filePath.forEach((fileName) async {
         await adminCrud
-            .uploadWebImage(imageBytes, fileName.path)
+            .uploadWebImage(imageBytes, fileName.path!)
             .then((imageUrl) {
           setState(() {
             images.add(result.files.first.bytes);

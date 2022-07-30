@@ -21,7 +21,7 @@ class _ShopsState extends State<Shops> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: Scaffold(
@@ -30,113 +30,91 @@ class _ShopsState extends State<Shops> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(Icons.chevron_left),
+            icon: const Icon(Icons.chevron_left),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Create shop',
             style: kAppBarTitleTextStyle,
           ),
         ),
         body: Container(
-          padding: EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(15.0),
           child: Column(
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
               Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 60.0,
                     backgroundColor: kNewTextColor,
                   ),
-                  SizedBox(width: 20.0),
+                  const SizedBox(width: 20.0),
                   Expanded(
                     child: Column(
                       children: [
                         textField(
                             controller: controllers[0],
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.person,
                               color: kNewTextColor,
                               size: 20,
                             ),
                             hintText: 'Name of supplier'),
-                        SizedBox(
+                        const SizedBox(
                           height: 10.0,
                         ),
                         textField(
                             controller: controllers[1],
-                            prefixIcon: Icon(
-                              Icons.code_off,
+                            prefixIcon: const Icon(
+                              Icons.business,
                               color: kNewTextColor,
                               size: 20,
                             ),
-                            hintText: 'Code'),
+                            hintText: 'Business name',
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               textField(
                   controller: controllers[2],
-                  prefixIcon: Icon(
+                  prefixIcon: const Icon(
                     Icons.phone_android,
                     color: kNewTextColor,
                     size: 20,
                   ),
                   hintText: 'Phone'),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               textField(
                   controller: controllers[3],
-                  prefixIcon: Icon(
+                  prefixIcon: const Icon(
                     Icons.email,
                     color: kNewTextColor,
                     size: 20,
                   ),
                   hintText: 'Email'),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               textField(
                   controller: controllers[4],
-                 prefixIcon: Icon(
+                 prefixIcon: const Icon(
                     Icons.room,
                     color: kNewTextColor,
                     size: 20,
                   ),
                   hintText: 'Address'),
-              SizedBox(
-                height: 10.0,
-              ),
-              textField(
-                  controller: controllers[5],
-                  prefixIcon: Icon(
-                    Icons.note_alt,
-                    color: kNewTextColor,
-                    size: 20,
-                  ),
-                  hintText: 'Tax ID'),
-              SizedBox(
-                height: 10.0,
-              ),
-              textField(
-                  controller: controllers[6],
-                  lines: 3,
-                  prefixIcon: Icon(
-                    Icons.note_alt,
-                    color: kNewTextColor,
-                    size: 20,
-                  ),
-                  hintText: 'Note'),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
               sendButton(
@@ -148,12 +126,10 @@ class _ShopsState extends State<Shops> {
                       });
                     AdminCrud().addShop(controllers[0].text, {
                       'name': controllers[0].text,
-                      'code': controllers[1].text,
+                      'business_name': controllers[1].text,
                       'email': controllers[3].text,
                       'mobile': controllers[2].text,
                       'address': controllers[4].text,
-                      'taxId': controllers[5].text,
-                      'note': controllers[6].text,
                     }).then((value) {
                       setState(() {
                         isLoading = false;

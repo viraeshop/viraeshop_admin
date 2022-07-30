@@ -278,10 +278,10 @@ class AdminCrud {
       firebase_storage.SettableMetadata(
     contentType: 'image/jpeg',
   );
-  Future<String> uploadWebImage(Uint8List? fileBytes, String? fileName) async {
+  Future<String> uploadWebImage(Uint8List fileBytes, String fileName) async {
     await FirebaseStorage.instance
         .ref('images/$fileName')
-        .putData(fileBytes!, metadata);
+        .putData(fileBytes, metadata);
     firebase_storage.Reference imref =
         firebase_storage.FirebaseStorage.instance.ref('images/$fileName');
     String imageUrl = await imref.getDownloadURL();

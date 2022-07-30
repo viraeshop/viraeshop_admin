@@ -5,8 +5,10 @@ import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:image/image.dart';
+import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class BluetoothPrinter extends StatefulWidget {
@@ -21,19 +23,19 @@ class BluetoothPrinter extends StatefulWidget {
       paid,
       quantity,
       due;
-  BluetoothPrinter({
-    required this.items,
-    required this.invoiceId,
-    required this.name,
-    required this.mobile,
-    required this.address,
-    required this.advance,
-    required this.discountAmount,
-    required this.due,
-    required this.paid,
-    required this.subTotal,
-    required this.quantity,
-  });
+  BluetoothPrinter(
+      {required this.items,
+        required this.invoiceId,
+        required this.name,
+        required this.mobile,
+        required this.address,
+        required this.advance,
+        required this.discountAmount,
+        required this.due,
+        required this.paid,
+        required this.subTotal,
+        required this.quantity,
+      });
   @override
   _BluetoothPrinterState createState() => _BluetoothPrinterState();
 }
@@ -41,26 +43,18 @@ class BluetoothPrinter extends StatefulWidget {
 class _BluetoothPrinterState extends State<BluetoothPrinter> {
   @override
   void initState() {
-    getBluetooth().then((devices) async {
-      String select = devices[0];
-    List list = select.split("#");
-   // String name = list[0];
-    String mac = list[1];
-    this.setConnect(mac);
-    });
     super.initState();
   }
 
   bool connected = false;
   List availableBluetoothDevices = [];
 
-  Future<List> getBluetooth() async {
+  Future<void> getBluetooth() async {
     final List? bluetooths = await BluetoothThermalPrinter.getBluetooths;
     print("Print $bluetooths");
-    return bluetooths ?? [];
-   // setState(() {
-   // availableBluetoothDevices = bluetooths ?? [];
-   // });
+    setState(() {
+      availableBluetoothDevices = bluetooths ?? [];
+    });
   }
 
   Future<void> setConnect(String mac) async {
@@ -120,67 +114,47 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     final Generator receipt = Generator(PaperSize.mm80, profile);
     List<int> bytes = [];
     // Print image
-    final ByteData data = await rootBundle.load('assets/images/Asset.png');
+    final ByteData data = await rootBundle.load('assets/images/DONE.png');
     final Uint8List imageBytes = data.buffer.asUint8List();
     final Image? image = decodeImage(imageBytes);
-
-    bytes += receipt.image(image!, align: PosAlign. right);
+    bytes += receipt.image(image!, align: PosAlign.center);
     bytes += receipt.text(
       'Tel: +880 1710735425 01324430921',
-    styles: const PosStyles(
-       align: PosAlign.left,
-        bold: false,
-      ),
-    );;
+      styles: const PosStyles(align: PosAlign.left),
+    );
     bytes += receipt.text(
       'Email: viraeshop@gmail.com',
-    styles: const PosStyles(
-       align: PosAlign.left,
-        bold: false,
-      ),
+      styles: const PosStyles(align: PosAlign.left),
     );
     bytes += receipt.text(
       'H-65, New Airport, Amtoli,Mohakhali,',
-    styles: const PosStyles(
-       align: PosAlign.left,
-        bold: false,
-      ),
+      styles: const PosStyles(align: PosAlign.left),
     );
     bytes += receipt.text(
       'Dhaka-1212, Bangladesh.',
-    styles: const PosStyles(
-       align: PosAlign.left,
-        bold: false,
-      ),
+      styles: const PosStyles(align: PosAlign.center),
     );
     bytes += receipt.text(
       'Web: www.viraeshop.com',
-    styles: const PosStyles(
-       align: PosAlign.left,
-        bold: false,
-      ),
+      styles: const PosStyles(align: PosAlign.center),
     );
     bytes += receipt.text(
       'Invoice No. ${widget.invoiceId}',
-       linesAfter: 1,
-    styles: PosStyles(align: PosAlign.right, bold: false),
+      linesAfter: 1,
+      styles: const PosStyles(
+        align: PosAlign.right,
+      ),
     );
-    final now = DateTime.now();
-    final formater = DateFormat('dd/MM/yyyy H:m');
-    final String timestamp = formater.format(now);
-    bytes += receipt.text(timestamp,
-        styles: PosStyles(align: PosAlign.right), linesAfter: 1);
     bytes += receipt.text(
       widget.name,
-      linesAfter:1,
       styles: const PosStyles(
-       align: PosAlign.left,
+        align: PosAlign.left,
         bold: true,
       ),
     );
     bytes += receipt.text(
       widget.mobile,
-      styles: const PosStyles(
+      styles: const  PosStyles(
         align: PosAlign.left,
       ),
     );
@@ -193,21 +167,20 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     bytes += receipt.hr();
     bytes += receipt.row([
       PosColumn(
-        text: 'QTY ${widget.quantity}',
+        text: 'Quantity',
         width: 2,
-        styles: const PosStyles(
+        styles: const  PosStyles(
           bold: true,
           align: PosAlign.left,
         ),
       ),
       PosColumn(
-        text: 'Items ${widget.items.length.toString()}',
-        width: 6,
-        styles: const PosStyles(
-          bold: true,
-          align: PosAlign.left,
-        ),
-      ),
+          text: '${widget.items.length.toString()} Items (QTY ${widget.quantity})',
+          width: 6,
+          styles: const PosStyles(
+            bold: true,
+            align: PosAlign.left,
+          ),),
       PosColumn(
         text: 'Price(BDT)',
         width: 2,
@@ -226,56 +199,62 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
       ),
     ]);
     bytes += receipt.hr();
-    for (var element in widget.items) {
+   for (var element in widget.items) {
       bytes += receipt.row([
         PosColumn(text: element['quantity'].toString(), width: 1),
+        PosColumn(text: element['product_name'], width: 7),
         PosColumn(
-            text: '${element['product_name']}(${element['product_id']})',
-            width: 7),
-        // PosColumn(text: element['product_id'], width: 7),
+          text: element['unit_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),
         PosColumn(
-          text: element['unit_price'].toString(),
-          width: 2,
-          styles: const PosStyles(align: PosAlign.right),
-        ),
-        PosColumn(
-          text: element['product_price'].toString(),
-          width: 2,
-          styles: const PosStyles(align: PosAlign.right),
-        ),
+          text: element['product_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),
       ]);
     }
     bytes += receipt.hr();
-    bytes += receipt.text('VAT: %',
-        styles: const PosStyles(
-          align: PosAlign.right, bold: true
-        ));
-    bytes += receipt.text('Discount: ${widget.discountAmount}BDT',
-        styles: const PosStyles(
-          align: PosAlign.right, bold: true
-        ));
-    bytes += receipt.text('Sub-Total: ${widget.subTotal}BDT',
-        styles: const PosStyles(
-          align: PosAlign.right, bold: true
-        ));
-    bytes += receipt.text('Advance: ${widget.advance}BDT',
-        styles: const PosStyles(
-          align: PosAlign.right, bold: true
-        ));
-    bytes += receipt.text('Due: ${widget.due}BDT',
-        styles: const PosStyles(
-          align: PosAlign.right, bold: true
-        ));
-    bytes += receipt.text('Paid: ${widget.paid}BDT',
-        styles: const PosStyles(
-          align: PosAlign.right, bold: true
-        ));
+    bytes += receipt.text(
+      'VAT: %',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Discount: ${widget.discountAmount}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Sub-Total: ${widget.subTotal}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Advance: ${widget.advance}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Due: ${widget.due}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
+    bytes += receipt.text(
+      'Paid: ${widget.paid}BDT',
+      styles: const PosStyles(
+        align: PosAlign.right,
+      )
+    );
     bytes += receipt.feed(2);
     bytes += receipt.text('Thank you!',
-        styles: PosStyles(align: PosAlign.center, bold: true));
-    bytes += receipt.text(
-        'Note: Goods once sold will not be taken back or exchanged.',
-        styles: PosStyles(align: PosAlign.center, bold: true));
+        styles: const PosStyles(align: PosAlign.center, bold: true));
+
+    final now = DateTime.now();
+    final formatter = DateFormat('MM/dd/yyyy H:m');
+    final String timestamp = formatter.format(now);
+    bytes += receipt.text(timestamp,
+        styles: const PosStyles(align: PosAlign.center), linesAfter: 2);
     receipt.feed(1);
     bytes += receipt.feed(2);
     bytes += receipt.qrcode('www.viraeshop.com');
@@ -440,34 +419,43 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Bluetooth Thermal Printer Demo'),
+          backgroundColor: kBackgroundColor,
+          leading: IconButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
+            color: kSubMainColor,
+            iconSize: 20.0,
+          ),
+          title: const Text('Printer', style: kAppBarTitleTextStyle, ),
         ),
         body: Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // const Text("Search Paired Bluetooth"),
-              // TextButton(
-              //   onPressed: () {
-              //     this.getBluetooth();
-              //   },
-              //   child: const Text("Search", style: kProductNameStylePro ),
-              // ),
+              const Text("Search Paired Bluetooth"),
+              TextButton(
+                onPressed: () {
+                  getBluetooth();
+                },
+                child: const Text("Search", style: kProductNameStylePro,),
+              ),
               SizedBox(
                 height: 200,
                 child: ListView.builder(
-                  itemCount: availableBluetoothDevices.length > 0
+                  itemCount: availableBluetoothDevices.isNotEmpty
                       ? availableBluetoothDevices.length
                       : 0,
                   itemBuilder: (context, index) {
                     return ListTile(
                       onTap: () {
-                        // String select = availableBluetoothDevices[index];
-                        // List list = select.split("#");
-                        // // String name = list[0];
-                        // String mac = list[1];
-                        // this.setConnect(mac);
+                        String select = availableBluetoothDevices[index];
+                        List list = select.split("#");
+                        // String name = list[0];
+                        String mac = list[1];
+                        setConnect(mac);
                       },
                       title: Text('${availableBluetoothDevices[index]}'),
                       subtitle: Text(
@@ -475,14 +463,14 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
                         // in other to change the status message
                         // since we currently have one printer
                         // but subsequently this must be changed for every printer
-                        connected ? "Connected" : 'Click to connect',
+                      connected ? "Connected" : 'Click to connect',
                         style: kProductNameStylePro,
                       ),
                     );
                   },
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 30,
               ),
               // TextButton(
@@ -491,10 +479,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
               // ),
               TextButton(
                 onPressed: connected ? printTicket : null,
-                child: const Text(
-                  "Print Ticket",
-                  style: kProductNameStylePro,
-                ),
+                child: const Text("Print Ticket", style: kProductNameStylePro,),
               ),
             ],
           ),

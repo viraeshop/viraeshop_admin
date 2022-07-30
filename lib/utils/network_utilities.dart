@@ -37,4 +37,7 @@ class NetworkUtility {
   static Future<DocumentSnapshot> getSupplierPayment (String businessName) async{
     return _firestore.collection('supplier_pay').doc(businessName).get();
   }
+  static Future<void> updateUser (String userId, data) async{
+    await _firestore.collection('customers').doc(userId).update(data);
+  }
 }

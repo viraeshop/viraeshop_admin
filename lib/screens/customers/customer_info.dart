@@ -13,6 +13,7 @@ import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 class CustomerInfoScreen extends StatefulWidget {
   final Map info;
@@ -174,7 +175,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
               const SizedBox(
                 height: 20.0,
               ),
-              widget.isNew == true
+              widget.isNew
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -335,6 +336,46 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                       ],
                     )
                   : const SizedBox(),
+              !widget.isNew ?
+                  DialogButton(
+                      onTap: () async{
+                        setState((){
+                          isLoading = true;
+                        });
+                        Map<String, dynamic> fields = {
+                          'name': _preferences.getControllers[0].text,
+                          'mobile': _preferences.getControllers[1].text,
+                          'email': _preferences.getControllers[2].text,
+                          'address': _preferences.getControllers[3].text,
+                        };
+                        // if (widget.info['role'] == 'architect' && widget.info['idType'] != null) {
+                        //   fields['idType'] = widget.info['idType'];
+                        //   fields['idNumber'] = widget.info['idNumber'];
+                        //   fields['idImage'] = widget.info['idImage'];
+                        // } else if (widget.info['role'] == 'agents' && widget.info['idType'] != null){
+                        //   fields['binNumber'] = widget.info['binNumber'];
+                        //   fields['tinNumber'] = widget.info['tinNumber'];
+                        //   fields['binImage'] = widget.info['binImage'];
+                        //   fields['tinImage'] = widget.info['tinImage'];
+                        // }
+                        try{
+                          await NetworkUtility.updateUser(widget.info['userId'], fields);
+                        } catch (e){
+                          if (kDebugMode) {
+                            print(e);
+                          }
+                        }finally{
+                          setState((){
+                            isLoading = false;
+                          });
+                        }
+                      },
+                      title: 'Update',
+                    width: double.infinity,
+                    radius: 10.0,
+                    color: kNewTextColor,
+                  ) : const SizedBox()
+
             ],
           ),
         ),

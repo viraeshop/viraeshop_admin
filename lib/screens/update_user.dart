@@ -255,7 +255,7 @@ class _UpdateUserState extends State<UpdateUser> {
                       StreamBuilder<DocumentSnapshot>(
                           stream: FirebaseFirestore.instance
                               .collection('customers')
-                              .doc(widget.userInfo['userId'])
+                              .doc(widget.userId)
                               .snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
@@ -330,7 +330,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                     });
                                     adminCrud
                                         .wallet(
-                                      widget.userInfo['userId'],
+                                      widget.userId,
                                       num.parse(walletController.text),
                                     )
                                         .then((successfull) {

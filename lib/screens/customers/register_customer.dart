@@ -161,7 +161,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                       });
                       Map<String, dynamic> userInfo = {
                         'name': _preferences.getControllers[0].text,
-                        'mobile': _preferences.getControllers[1].text,
+                        'mobile': countryCode + _preferences.getControllers[1].text,
                         'email': _preferences.getControllers[2].text,
                         'address': _preferences.getControllers[3].text,
                         'role': dropdownValue,
@@ -187,7 +187,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                       }
                       toast(context: context, title: 'Sending verification code please wait....');
                       await _auth.verifyPhoneNumber(
-                          phoneNumber: _preferences.getControllers[1].text,
+                          phoneNumber: countryCode+_preferences.getControllers[1].text,
                           verificationCompleted:
                               (PhoneAuthCredential credentials) async {
                             await _auth.signInWithCredential(credentials);

@@ -43,7 +43,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
     _preferences.getControllers[1].text = userInfo['mobile'];
     _preferences.getControllers[2].text = userInfo['email'];
     _preferences.getControllers[3].text = userInfo['address'];
-    if (userInfo['role'] == 'architect') {
+    if (userInfo['role'] == 'architect' && userInfo['idType'] != null) {
       if (userInfo['idType'] == 'IAB') {
         _preferences.addHint = 'IAB ID';
       } else {
@@ -52,7 +52,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
       _preferences.addControllers =  TextEditingController(text: userInfo['idNumber']);
       _preferences.addIconData = Icons.badge_outlined;
       strings['idImage'] = userInfo['idImage'];
-    } else if (userInfo['role'] == 'agents') {
+    } else if (userInfo['role'] == 'agents' && userInfo['binNumber'] != null) {
       _preferences.addAll(hints: [
         'BIN Number',
         'Trade License Number',
@@ -106,7 +106,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
               const SizedBox(
                 height: 20.0,
               ),
-              userInfo['role'] == 'agents'
+              userInfo['role'] == 'agents' && userInfo['binNumber'] != null
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -152,7 +152,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                         ),
                       ],
                     )
-                  : userInfo['role'] == 'architect'
+                  : userInfo['role'] == 'architect' && userInfo['idType'] != null
                       ? Container(
                           height: screenSize.height * 0.23,
                           width: screenSize.width,

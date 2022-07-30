@@ -77,7 +77,10 @@ class Configs extends ChangeNotifier {
 }
 
 void snackBar(
-    {required String text, required BuildContext context, int duration = 6, color = kNewTextColor}) {
+    {required String text,
+    required BuildContext context,
+    int duration = 6,
+    color = kNewTextColor}) {
   final snacks = SnackBar(
     duration: const Duration(milliseconds: 6),
     backgroundColor: color,
@@ -483,7 +486,10 @@ Future<void> getAdvertsDialog({
         titleTextStyle: kProductNameStyle,
         // ignore: dead_code
         content: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance.collection('adverts').doc('adverts').snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('adverts')
+              .doc('adverts')
+              .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -578,7 +584,7 @@ Future<void> getNonInventoryDialog({
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        title: const Text('Non-Inventory shops'),
+        title: const Text('Suppliers'),
         titleTextStyle: kProductNameStyle,
         actions: [
           TextButton(
@@ -591,7 +597,7 @@ Future<void> getNonInventoryDialog({
               );
             },
             child: const Text(
-              'Create Shop',
+              'Create Supplier',
               style: kTotalTextStyle,
             ),
           ),
@@ -620,9 +626,9 @@ Future<void> getNonInventoryDialog({
                 print(shops);
               }
               return SingleChildScrollView(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                      children: List.generate(shops.length, (index) {
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  children: List.generate(shops.length, (index) {
                     return InkWell(
                       onTap: () {
                         Hive.box('shops')
@@ -631,26 +637,27 @@ Future<void> getNonInventoryDialog({
                       },
                       child: SizedBox(
                         height: 40.0,
-                        child: Row(
-                          // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            const Icon(
-                              Icons.category,
-                              color: kIconColor1,
-                              size: 15.0,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(
+                              shops[index]['profileImage'],
                             ),
-                            const SizedBox(
-                              width: 5.0,
-                            ),
-                            Text(
-                              shops[index]['name'],
-                              style: kProductNameStylePro,
-                            ),
-                          ],
+                            radius: 40.0,
+                          ),
+                          title: Text(
+                            shops[index]['business_name'],
+                            style: kProductNameStylePro,
+                          ),
+                          subtitle: Text(
+                            shops[index]['supplier_name'],
+                            style: kProductNameStylePro,
+                          ),
                         ),
                       ),
                     );
-                  })));
+                  }),
+                ),
+              );
             } else {
               return const Text('Oops an error occurred');
             }
@@ -758,11 +765,11 @@ Widget discountPercentWidget(String text) {
     child: Text(
       '-$text%',
       style: const TextStyle(
-  fontFamily: 'Montserrat',
-  fontSize: 12.50,
-  color: kBackgroundColor,
-  letterSpacing: 1.3,
-),
+        fontFamily: 'Montserrat',
+        fontSize: 12.50,
+        color: kBackgroundColor,
+        letterSpacing: 1.3,
+      ),
     ),
   );
 }

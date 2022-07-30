@@ -23,7 +23,7 @@ Widget imagePickerWidget({
       width: width,
       decoration: BoxDecoration(
         color: backgroundColor,
-        image: _imageBG(images),
+        image: imageBG(images),
         borderRadius: showBottomCard
             ? BorderRadius.circular(10.0)
             : const BorderRadius.only(
@@ -67,10 +67,10 @@ Widget imagePickerWidget({
   );
 }
 
-DecorationImage _imageBG(Uint8List? images) {
-  return images == null
-      ? const DecorationImage(
-          image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
+DecorationImage imageBG(Uint8List? images, [String asset = 'assets/default.jpg']) {
+  return images == null || images.isEmpty
+      ? DecorationImage(
+          image: AssetImage(asset), fit: BoxFit.cover)
       : DecorationImage(image: MemoryImage(images), fit: BoxFit.cover);
 }
 

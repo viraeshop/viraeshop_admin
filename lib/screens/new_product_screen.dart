@@ -689,7 +689,7 @@ class _NewProductState extends State<NewProduct>
                                       Hive.box('shops').listenable(),
                                   builder: (context, Box box, childs) {
                                     String shopName = box.get('name',
-                                        defaultValue: 'Shops');
+                                        defaultValue: 'Suppliers');
                                     return Text(
                                       shopName,
                                       style: kTotalTextStyle,

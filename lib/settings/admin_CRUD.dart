@@ -58,11 +58,11 @@ class AdminCrud {
   }
 
   Future<void> addShop(String docId, info) async {
-    await FirebaseFirestore.instance.collection('shops').doc(docId).set(info);
+    await FirebaseFirestore.instance.collection('suppliers').doc(docId).set(info);
   }
 
   Future<QuerySnapshot> getShop() {
-    return FirebaseFirestore.instance.collection('shops').get();
+    return FirebaseFirestore.instance.collection('suppliers').get();
   }
 
   Future<void> updateNonInventory(String docId, data) async {

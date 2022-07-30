@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/image_picker.dart';
+import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/non_inventory_product.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 
@@ -15,10 +19,13 @@ class Shops extends StatefulWidget {
 
 class _ShopsState extends State<Shops> {
   List<TextEditingController> controllers =
-      List.generate(7, (index) => TextEditingController());
+      List.generate(6, (index) => TextEditingController());
   bool isLoading = false;
+  Uint8List bundleImage = Uint8List(0);
+  String imageUrl = '';
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return ModalProgressHUD(
       inAsyncCall: isLoading,
       progressIndicator: const CircularProgressIndicator(
@@ -35,39 +42,62 @@ class _ShopsState extends State<Shops> {
             iconSize: 20.0,
           ),
           title: const Text(
-            'Create shop',
+            'Register Supplier',
             style: kAppBarTitleTextStyle,
           ),
         ),
         body: Container(
           padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 20.0,
-              ),
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 60.0,
-                    backgroundColor: kNewTextColor,
-                  ),
-                  const SizedBox(width: 20.0),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        textField(
+          height: screenSize.height,
+          width: screenSize.width,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 20.0,
+                ),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        getImageWeb().then((value) {
+                          setState(() {
+                            bundleImage = value.item1!;
+                            imageUrl = value.item2!;
+                          });
+                        });
+                      },
+                      child: Container(
+                        height: 100.0,
+                        width: 100.0,
+                        decoration: BoxDecoration(
+                          image: imageBG(bundleImage, 'assets/images/man.png'),
+                          color: kBackgroundColor,
+                          borderRadius: BorderRadius.circular(100.0),
+                          border: Border.all(
+                            color: kSubMainColor,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20.0),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          NewTextField(
                             controller: controllers[0],
                             prefixIcon: const Icon(
                               Icons.person,
                               color: kNewTextColor,
                               size: 20,
                             ),
-                            hintText: 'Name of supplier'),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                        textField(
+                            hintText: 'Name of supplier',
+                          ),
+                          const SizedBox(
+                            height: 10.0,
+                          ),
+                          NewTextField(
                             controller: controllers[1],
                             prefixIcon: const Icon(
                               Icons.business,
@@ -75,76 +105,121 @@ class _ShopsState extends State<Shops> {
                               size: 20,
                             ),
                             hintText: 'Business name',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                NewTextField(
+                    controller: controllers[2],
+                    maxLength: 11,
+                    prefixIcon: Container(
+                      padding: const EdgeInsets.all(10),
+                      width: 100.0,
+                      child: Row(
+                        children: const [
+                          Icon(
+                            Icons.phone_android,
+                            color: kNewTextColor,
+                            size: 20,
+                          ),
+                          SizedBox(
+                            width: 10.0,
+                          ),
+                          Text(
+                            '+88',
+                            style: kTableCellStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    hintText: 'Phone',
+                ),
+                /// Optional number
+                NewTextField(
+                  controller: controllers[3],
+                  maxLength: 11,
+                  prefixIcon: Container(
+                    padding: const EdgeInsets.all(10),
+                    width: 100.0,
+                    child: Row(
+                      children: const [
+                        Icon(
+                          Icons.phone_android,
+                          color: kNewTextColor,
+                          size: 20,
+                        ),
+                        SizedBox(
+                          width: 10.0,
+                        ),
+                        Text(
+                          '+88',
+                          style: kTableCellStyle,
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              textField(
-                  controller: controllers[2],
-                  prefixIcon: const Icon(
-                    Icons.phone_android,
-                    color: kNewTextColor,
-                    size: 20,
-                  ),
-                  hintText: 'Phone'),
-              const SizedBox(
-                height: 10.0,
-              ),
-              textField(
-                  controller: controllers[3],
-                  prefixIcon: const Icon(
-                    Icons.email,
-                    color: kNewTextColor,
-                    size: 20,
-                  ),
-                  hintText: 'Email'),
-              const SizedBox(
-                height: 10.0,
-              ),
-              textField(
-                  controller: controllers[4],
-                 prefixIcon: const Icon(
-                    Icons.room,
-                    color: kNewTextColor,
-                    size: 20,
-                  ),
-                  hintText: 'Address'),
-              const SizedBox(
-                height: 20.0,
-              ),
-              sendButton(
-               title: 'Create',
-               onTap:  () {
-                  if (controllers[0].text != null) {
-                    setState(() {
-                        isLoading = false;
-                      });
-                    AdminCrud().addShop(controllers[0].text, {
-                      'name': controllers[0].text,
-                      'business_name': controllers[1].text,
-                      'email': controllers[3].text,
-                      'mobile': controllers[2].text,
-                      'address': controllers[4].text,
-                    }).then((value) {
+                  hintText: 'Optional Phone',
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                NewTextField(
+                    controller: controllers[4],
+                    prefixIcon: const Icon(
+                      Icons.email,
+                      color: kNewTextColor,
+                      size: 20,
+                    ),
+                    hintText: 'Email'),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                NewTextField(
+                    controller: controllers[5],
+                    prefixIcon: const Icon(
+                      Icons.room,
+                      color: kNewTextColor,
+                      size: 20,
+                    ),
+                    hintText: 'Address'),
+                const SizedBox(
+                  height: 20.0,
+                ),
+                sendButton(
+                  title: 'Create',
+                  onTap: () {
+                    if (controllers[0].text != null) {
                       setState(() {
-                        isLoading = false;
+                        isLoading = true;
                       });
-                    }).catchError((error) {
-                      setState(() {
-                        isLoading = false;
+                      AdminCrud().addShop(controllers[1].text, {
+                        'supplier_name': controllers[0].text,
+                        'business_name': controllers[1].text,
+                        'email': controllers[3].text,
+                        'mobile': controllers[2].text,
+                        'address': controllers[4].text,
+                        'profileImage': imageUrl,
+                      }).then((value) {
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }).catchError((error) {
+                        setState(() {
+                          isLoading = false;
+                        });
                       });
-                    });
-                  } else {
-                    showMyDialog('Fields can\'t be empty', context);
-                  }
-                },
-              ),
-            ],
+                    } else {
+                      showMyDialog('Fields can\'t be empty', context);
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -152,7 +227,12 @@ class _ShopsState extends State<Shops> {
   }
 }
 
-Widget sendButton({required String title, void Function()? onTap, double width = double.infinity, height = 50.0, Color color = kNewTextColor}) {
+Widget sendButton(
+    {required String title,
+    void Function()? onTap,
+    double width = double.infinity,
+    height = 50.0,
+    Color color = kNewTextColor}) {
   return InkWell(
     onTap: onTap,
     child: Container(

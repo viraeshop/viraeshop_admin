@@ -103,7 +103,7 @@ class _SupplierPayState extends State<SupplierPay> {
                           builder: (context, Box box, childs) {
                             shop = box.toMap();
                             String shopName =
-                                box.get('business_name', defaultValue: 'Shops');
+                                box.get('business_name', defaultValue: 'Supplier');
                            boxStream =  box.watch().listen((event) async {
                              setState(() {
                                 isLoading = true;

@@ -279,7 +279,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 style: kProductNameStylePro,
                                 onSubmitted: (value) {
                                   setState(() {
-                                    due -= num.parse(value);
+                                    due -= num.parse(value.isNotEmpty ? value : '0');
                                   });
                                 },
                                 keyboardType: TextInputType.number,
@@ -287,6 +287,9 @@ class _DueReceiptState extends State<DueReceipt> {
                                   suffix: IconButton(
                                     onPressed: () {
                                       setState(() {
+                                        if(due != 0){
+                                          due -= num.parse(controller.text.isNotEmpty ? controller.text : '0');
+                                        }
                                         isEditing = false;
                                       });
                                     },
@@ -388,7 +391,6 @@ class _DueReceiptState extends State<DueReceipt> {
                         await NetworkUtility.updateCustomerDue(
                             widget.data['invoice_id'], {
                           'due': due,
-                          'paid': paid,
                           'pay_list': payList,
                         });
                         setState(() {

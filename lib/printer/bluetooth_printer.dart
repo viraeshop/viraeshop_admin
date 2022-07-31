@@ -114,10 +114,10 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     final Generator receipt = Generator(PaperSize.mm80, profile);
     List<int> bytes = [];
     // Print image
-    final ByteData data = await rootBundle.load('assets/images/DONE.png');
+    final ByteData data = await rootBundle.load('assets/images/Asset.png');
     final Uint8List imageBytes = data.buffer.asUint8List();
     final Image? image = decodeImage(imageBytes);
-    bytes += receipt.image(image!, align: PosAlign.center);
+    bytes += receipt.image(image!, align: PosAlign.right);
     bytes += receipt.text(
       'Tel: +880 1710735425 01324430921',
       styles: const PosStyles(align: PosAlign.left),
@@ -132,12 +132,17 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     );
     bytes += receipt.text(
       'Dhaka-1212, Bangladesh.',
-      styles: const PosStyles(align: PosAlign.center),
+      styles: const PosStyles(align: PosAlign.left),
     );
     bytes += receipt.text(
       'Web: www.viraeshop.com',
-      styles: const PosStyles(align: PosAlign.center),
+      styles: const PosStyles(align: PosAlign.left),
     );
+    final now = DateTime.now();
+    final formatter = DateFormat('MM/dd/yyyy H:m');
+    final String timestamp = formatter.format(now);
+    bytes += receipt.text(timestamp,
+        styles: const PosStyles(align: PosAlign.right), linesAfter: 1);
     bytes += receipt.text(
       'Invoice No. ${widget.invoiceId}',
       linesAfter: 1,
@@ -167,7 +172,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     bytes += receipt.hr();
     bytes += receipt.row([
       PosColumn(
-        text: 'Quantity',
+        text: 'QTY ${widget.quantity}',
         width: 2,
         styles: const  PosStyles(
           bold: true,
@@ -175,7 +180,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         ),
       ),
       PosColumn(
-          text: '${widget.items.length.toString()} Items (QTY ${widget.quantity})',
+          text: 'Items ${widget.items.length.toString()}',
           width: 6,
           styles: const PosStyles(
             bold: true,
@@ -201,7 +206,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     bytes += receipt.hr();
    for (var element in widget.items) {
       bytes += receipt.row([
-        PosColumn(text: element['quantity'].toString(), width: 1),
+        PosColumn(text: element['quantity'].toString(), width: 1, styles: const PosStyles(align: PosAlign.left),),
         PosColumn(text: element['product_name']+(element['product_id']), width: 7),
         PosColumn(
           text: element['unit_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),
@@ -249,12 +254,6 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     bytes += receipt.feed(2);
     bytes += receipt.text('Thank you!',
         styles: const PosStyles(align: PosAlign.center, bold: true));
-
-    final now = DateTime.now();
-    final formatter = DateFormat('MM/dd/yyyy H:m');
-    final String timestamp = formatter.format(now);
-    bytes += receipt.text(timestamp,
-        styles: const PosStyles(align: PosAlign.center), linesAfter: 2);
     receipt.feed(1);
     bytes += receipt.feed(2);
     bytes += receipt.qrcode('www.viraeshop.com');

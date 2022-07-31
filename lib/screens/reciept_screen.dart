@@ -154,7 +154,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${items.length.toString()} Items (QTY $quantity)',
+                  ' QTY $quantity  Items ${items.length.toString()}',
                   style: kProductNameStylePro,
                 ),
                 Text(

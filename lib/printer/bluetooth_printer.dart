@@ -206,7 +206,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     bytes += receipt.hr();
    for (var element in widget.items) {
       bytes += receipt.row([
-        PosColumn(text: element['quantity'].toString(), width: 1, styles: const PosStyles(align: PosAlign.left),),
+        PosColumn(text: element['quantity'].toString()+'x', width: 1, styles: const PosStyles(align: PosAlign.left),),
         PosColumn(text: element['product_name']+(element['product_id']), width: 7),
         PosColumn(
           text: element['unit_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),

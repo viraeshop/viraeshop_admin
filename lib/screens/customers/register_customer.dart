@@ -242,19 +242,25 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                             codeAutoRetrievalTimeout: (
                                 String verificationId) {});
                       }else{
-                        ConfirmationResult confirmationResult = await _auth.signInWithPhoneNumber('+2347063939531');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return PhoneVerificationScreen(
+                        try{
+                          ConfirmationResult confirmationResult = await _auth.signInWithPhoneNumber(number);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return PhoneVerificationScreen(
                                   number: _preferences.getControllers[1]
                                       .text,
-                              confirmationResult: confirmationResult,
-                              );
-                            },
-                          ),
-                        );
+                                  confirmationResult: confirmationResult,
+                                );
+                              },
+                            ),
+                          );
+                        }catch (e){
+                          if (kDebugMode) {
+                            print(e);
+                          }
+                        }
                       }
                     },
                     title: 'Register'),

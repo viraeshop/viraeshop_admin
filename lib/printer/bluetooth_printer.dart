@@ -114,7 +114,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     final Generator receipt = Generator(PaperSize.mm80, profile);
     List<int> bytes = [];
     // Print image
-    final ByteData data = await rootBundle.load('assets/images/DONE.png');
+    final ByteData data = await rootBundle.load('assets/pos_logo.png');
     final Uint8List imageBytes = data.buffer.asUint8List();
     final Image? image = decodeImage(imageBytes);
     bytes += receipt.image(image!, align: PosAlign.center);
@@ -202,7 +202,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
    for (var element in widget.items) {
       bytes += receipt.row([
         PosColumn(text: element['quantity'].toString(), width: 1),
-        PosColumn(text: element['product_name']+(element['product_id']), width: 7),
+        PosColumn(text: element['product_name']+'(${element['product_id']})', width: 7),
         PosColumn(
           text: element['unit_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),
         PosColumn(

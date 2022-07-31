@@ -191,7 +191,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         width: 2,
         styles: const PosStyles(
           bold: true,
-          align: PosAlign.left,
+          align: PosAlign.right,
         ),
       ),
       PosColumn(
@@ -199,7 +199,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         width: 2,
         styles: const PosStyles(
           bold: true,
-          align: PosAlign.left,
+          align: PosAlign.right,
         ),
       ),
     ]);

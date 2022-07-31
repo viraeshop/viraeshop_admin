@@ -114,10 +114,10 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     final Generator receipt = Generator(PaperSize.mm80, profile);
     List<int> bytes = [];
     // Print image
-    final ByteData data = await rootBundle.load('assets/images/Asset.png');
+    final ByteData data = await rootBundle.load('assets/images/oasisvira.png');
     final Uint8List imageBytes = data.buffer.asUint8List();
     final Image? image = decodeImage(imageBytes);
-    bytes += receipt.image(image!, align: PosAlign.right);
+    bytes += receipt.image(image!, align: PosAlign.center);
     bytes += receipt.text(
       'Tel: +880 1710735425 01324430921',
       styles: const PosStyles(align: PosAlign.left),

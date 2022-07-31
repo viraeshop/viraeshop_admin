@@ -179,11 +179,11 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                           await NetworkUtility.registerUserEmail(
                               _preferences.getControllers[2].text,
                               _preferences.getControllers[4].text);
-                          userInfo['userId'] = user.user!.uid;
                           uid = user.user!.uid;
                         }else{
                           uid = randomAlphaNumeric(15);
                         }
+                        userInfo['userId'] = uid;
                         await NetworkUtility.saveUserInfo(
                             uid, userInfo);
                       } on FirebaseAuthException catch (e) {

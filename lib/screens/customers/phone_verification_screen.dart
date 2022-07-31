@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -9,10 +10,12 @@ import '../../components/styles/text_styles.dart';
 
 class PhoneVerificationScreen extends StatefulWidget {
   final String number;
-  final String verificationId;
+  final String? verificationId;
+  final ConfirmationResult? confirmationResult;
   const PhoneVerificationScreen({
     required this.number,
-    required this.verificationId,
+    this.verificationId,
+    this.confirmationResult,
   });
 
   @override
@@ -98,11 +101,15 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                     setState((){
                       isLoading = true;
                     });
-                    final credentials = PhoneAuthProvider.credential(
-                      smsCode: value,
-                      verificationId: widget.verificationId,
-                    );
-                    await _auth.signInWithCredential(credentials);
+                    if(!kIsWeb) {
+                      final credentials = PhoneAuthProvider.credential(
+                        smsCode: value,
+                        verificationId: widget.verificationId!,
+                      );
+                      await _auth.signInWithCredential(credentials);
+                    }else{
+                      UserCredential userCredential = await widget.confirmationResult!.confirm(value);
+                    }
                     setState((){
                       isLoading = false;
                     });

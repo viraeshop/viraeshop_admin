@@ -376,13 +376,23 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      Text('Due: ${due.toString()}', style: const TextStyle(
-                                        color: kSubMainColor,
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 15,
-                                        letterSpacing: 1.3,
-                                        fontWeight: FontWeight.bold,
-                                      ),),
+                                      TextButton(
+                                        onPressed: (){
+                                          setState((){
+                                            paid = 0;
+                                            advance = 0;
+                                            due = totalPrice;
+                                            descController.text = '0';
+                                          });
+                                        },
+                                        child: Text('Due: ${due.toString()}', style: const TextStyle(
+                                          color: kSubMainColor,
+                                          fontFamily: 'Montserrat',
+                                          fontSize: 15,
+                                          letterSpacing: 1.3,
+                                          fontWeight: FontWeight.bold,
+                                        ),),
+                                      ),
                                     ],
                                   ),
                                 ),

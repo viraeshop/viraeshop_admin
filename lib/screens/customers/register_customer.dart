@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:random_string/random_string.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
@@ -159,6 +160,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                       setState(() {
                         isLoading = true;
                       });
+                      String uid = '';
                       Map<String, dynamic> userInfo = {
                         'name': _preferences.getControllers[0].text,
                         'mobile': countryCode + _preferences.getControllers[1].text,
@@ -166,17 +168,24 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                         'address': _preferences.getControllers[3].text,
                         'role': dropdownValue,
                       };
+                      String number = countryCode +
+                          _preferences.getControllers[1].text;
                       if (dropdownValue == 'agents'){
                         userInfo['wallet'] = 0.0;
                       }
                       try {
-                        final UserCredential user =
-                            await NetworkUtility.registerUserEmail(
-                                _preferences.getControllers[2].text,
-                                _preferences.getControllers[4].text);
-                        userInfo['userId'] = user.user!.uid;
+                        if(_preferences.getControllers[2].text.isNotEmpty){
+                          final UserCredential user =
+                          await NetworkUtility.registerUserEmail(
+                              _preferences.getControllers[2].text,
+                              _preferences.getControllers[4].text);
+                          userInfo['userId'] = user.user!.uid;
+                          uid = user.user!.uid;
+                        }else{
+                          uid = randomAlphaNumeric(15);
+                        }
                         await NetworkUtility.saveUserInfo(
-                            user.user!.uid, userInfo);
+                            uid, userInfo);
                       } on FirebaseAuthException catch (e) {
                         if (kDebugMode) {
                           print(e.message);
@@ -187,46 +196,66 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                         });
                       }
                       toast(context: context, title: 'Sending verification code please wait....');
-                      await _auth.verifyPhoneNumber(
-                          phoneNumber: countryCode+_preferences.getControllers[1].text,
-                          verificationCompleted:
-                              (PhoneAuthCredential credentials) async {
-                            await _auth.signInWithCredential(credentials);
-                          },
-                          verificationFailed: (FirebaseAuthException e) {
-                            print(e.code);
-                            if (e.code == 'invalid-phone-number') {
-                              if (kDebugMode) {
-                                print('The provided phone number is not valid.');
+                      if(!kIsWeb) {
+                        await _auth.verifyPhoneNumber(
+                            phoneNumber: number,
+                            verificationCompleted:
+                                (PhoneAuthCredential credentials) async {
+                              await _auth.signInWithCredential(credentials);
+                            },
+                            verificationFailed: (FirebaseAuthException e) {
+                              print(e.code);
+                              if (e.code == 'invalid-phone-number') {
+                                if (kDebugMode) {
+                                  print(
+                                      'The provided phone number is not valid.');
+                                }
+                                snackBar(
+                                    duration: 25,
+                                    text: 'The provided phone number is not valid.',
+                                    context: context,
+                                    color: kRedColor);
                               }
+                              setState(() {
+                                errorMsg = e.code;
+                              });
                               snackBar(
                                   duration: 25,
-                                  text: 'The provided phone number is not valid.',
+                                  text: e.code,
                                   context: context,
                                   color: kRedColor);
-                            }
-                            setState(() {
-                              errorMsg = e.code;
-                            });
-                            snackBar(
-                                duration: 25,
-                                text: e.code,
-                                context: context,
-                                color: kRedColor);
-                          },
-                          codeSent: (String verificationId, int? resendToken) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return PhoneVerificationScreen(
-                                      number: _preferences.getControllers[1].text,
-                                      verificationId: verificationId);
-                                },
-                              ),
-                            );
-                          },
-                          codeAutoRetrievalTimeout: (String verificationId) {});
+                            },
+                            codeSent: (String verificationId,
+                                int? resendToken) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return PhoneVerificationScreen(
+                                        number: _preferences.getControllers[1]
+                                            .text,
+                                        verificationId: verificationId,);
+                                  },
+                                ),
+                              );
+                            },
+                            codeAutoRetrievalTimeout: (
+                                String verificationId) {});
+                      }else{
+                        ConfirmationResult confirmationResult = await _auth.signInWithPhoneNumber('+2347063939531');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return PhoneVerificationScreen(
+                                  number: _preferences.getControllers[1]
+                                      .text,
+                              confirmationResult: confirmationResult,
+                              );
+                            },
+                          ),
+                        );
+                      }
                     },
                     title: 'Register'),
               ],

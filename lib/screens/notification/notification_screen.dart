@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -37,7 +38,7 @@ class _NotificationScreenState extends State<NotificationScreen> with AutomaticK
           // shape: RoundedRectangleBorder(),
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(FontAwesomeIcons.chevronLeft),
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kBackgroundColor,
             iconSize: 20.0,
           ),
@@ -70,10 +71,10 @@ class _NotificationScreenState extends State<NotificationScreen> with AutomaticK
                 heightFactor: 0.8,
                 widthFactor: 0.9,
                 child: Container(
-                  padding: EdgeInsets.all(10.0),
-                  margin: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
+                  margin: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         offset: Offset(0, 3),
                         color: Colors.black26,
@@ -87,12 +88,12 @@ class _NotificationScreenState extends State<NotificationScreen> with AutomaticK
                     stream: FirebaseFirestore.instance.collection('push_notifications').snapshots(),
                     builder: (context, snapshot) {
                       if(snapshot.connectionState == ConnectionState.waiting){
-                        return Center(
+                        return const Center(
                           child: CircularProgressIndicator(color: kNewMainColor,),
                         );
                       }else if(snapshot.hasError){
                         print(snapshot.error);
-                        return Text('${snapshot.error}', style: TextStyle(
+                        return Text('${snapshot.error}', style: const TextStyle(
                           color: kRedColor,
                           fontFamily: 'Montserrat',
                           fontSize: 15.0,
@@ -157,6 +158,8 @@ class _NotificationMakerState extends State<NotificationMaker> {
 
   Uint8List imageBytes = Uint8List(0);
 
+  String imagePath = '';
+
   String imageLink = '';
   @override
   Widget build(BuildContext context) {
@@ -169,7 +172,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                margin: EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 //height: 150.0,
                 width: size.width * 0.7,
                 decoration: BoxDecoration(
@@ -181,7 +184,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                   //crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(10.0),
                       width: size.width * 0.4,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,30 +192,30 @@ class _NotificationMakerState extends State<NotificationMaker> {
                           CustomTextStyle(
                                   hintText: 'Title',
                                     title1Controller: titleController,
-                                    textStyle: TextStyle(
+                                    textStyle: const TextStyle(
                                       color: kSubMainColor,
                                       fontSize: 15.0,
                                       fontFamily: 'Montserrat',
                                     ),
                                   ),
-                                  SizedBox(),
+                                  const SizedBox(),
                                   CustomTextStyle(
                                   hintText: 'Sub-title',
                                     title1Controller: subTitleController,
-                                    textStyle: TextStyle(
+                                    textStyle: const TextStyle(
                                       color: kSubMainColor,
                                       fontSize: 15.0,
                                       fontFamily: 'Montserrat',
                                     ),
                                   ),
-                                  SizedBox(),
+                                  const SizedBox(),
                                   CustomTextStyle(
                                     lines: 3,
                                     width: size.width * 0.4,
                                     height: 70.0,
                                   hintText: 'Description',
                                     title1Controller: bodyController,
-                                    textStyle: TextStyle(
+                                    textStyle: const TextStyle(
                                       color: kSubMainColor,
                                       fontSize: 15.0,
                                       fontFamily: 'Montserrat',
@@ -222,31 +225,38 @@ class _NotificationMakerState extends State<NotificationMaker> {
                         ],
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10.0,
                     ),
                     InkWell(
                       onTap: (){
-                        getImageWeb().then((value){
-                          setState(() {
-                            imageBytes = value.item1!;
-                            imageLink = value.item2!;
+                        if(kIsWeb){
+                          getImageWeb('notifications').then((value){
+                            setState(() {
+                              imageBytes = value.item1!;
+                              imageLink = value.item2!;
+                            });
                           });
-                        });
+                        }else{
+                          getImageNative('notifications').then((value){
+                            setState(() {
+                              imagePath = value.item1!;
+                              imageLink = value.item2!;
+                            });
+                          });
+                        }
                       },
                       child: Container(
                         width: size.width * 0.2,
                         height: 120.0,
-                        margin: EdgeInsets.all(10.0),
+                        margin: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
                           color: kNewYellowColor,
-                          image: DecorationImage(
-                            image: MemoryImage(imageBytes),
-                            ),
+                          image: imageBG(imageBytes, imagePath),
                             borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: Center(
-                          child: imageBytes.isEmpty ? Icon(Icons.add_a_photo, size: 30.0, color: kBackgroundColor,) : SizedBox(),
+                          child: imageBytes.isEmpty ? const Icon(Icons.add_a_photo, size: 30.0, color: kBackgroundColor,) : const SizedBox(),
                         ),
                       ),
                     ),
@@ -254,7 +264,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(10.0),
                 child: sendButton(
                   color: kNewMainColor,
                   width: 70.0,
@@ -305,7 +315,7 @@ class NotificationCard extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       //height: 150.0,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
@@ -314,14 +324,14 @@ class NotificationCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10.0),
             width: size.width * 0.5,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '$title',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: kSubMainColor,
                     fontFamily: 'Montserrat',
                     fontSize: 15,
@@ -335,7 +345,7 @@ class NotificationCard extends StatelessWidget {
                 ),
                 Text(
                   '$body',                  
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: kSubMainColor,
                     fontFamily: 'SourceSans',
                     fontSize: 15,
@@ -348,7 +358,7 @@ class NotificationCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 10.0,
           ),          
           ClipRRect(

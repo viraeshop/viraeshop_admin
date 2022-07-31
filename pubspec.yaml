@@ -80,6 +80,7 @@ dependencies:
   flutter_linkify: ^5.0.2
   bluetooth_thermal_printer: ^0.0.6
   flutter_styled_toast: ^2.0.0
+  path_provider: ^2.0.11
 dev_dependencies:
   flutter_test:
     sdk: flutter

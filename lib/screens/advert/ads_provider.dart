@@ -72,11 +72,12 @@ class AdsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveImages(String adId, image, Uint8List imagesBytes) {
+  void saveImages({required String adId, image, Uint8List? imagesBytes, String? imagePath}) {
     int index = adIndex(adId);
     print('Item index $index');
     adCards[index]['image'] = image;
     adCards[index]['imageBytes'] = imagesBytes;
+    adCards[index]['imagePath'] = imagePath;
     notifyListeners();
   }
 

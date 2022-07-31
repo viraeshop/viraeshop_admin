@@ -336,6 +336,7 @@ class _NewProductState extends State<NewProduct>
                         builder: (context, Box box, childs) {
                           List imagesByte =
                               box.get('imagesBytes', defaultValue: []);
+                          List imagesPath = box.get('imagesPath', defaultValue: []);
                           if (widget.isUpdateProduct == true &&
                               imagesByte.isEmpty) {
                             return imageProduct(widget.info['image']);
@@ -360,14 +361,10 @@ class _NewProductState extends State<NewProduct>
                                   width: 100.0,
                                   decoration: BoxDecoration(
                                     color: kProductCardColor,
-                                    image: imagesByte.isEmpty
-                                        ? const DecorationImage(
-                                            image: AssetImage(
-                                                'assets/default.jpg'),
-                                            fit: BoxFit.cover)
-                                        : DecorationImage(
-                                            image: MemoryImage(imagesByte[0]),
-                                            fit: BoxFit.cover),
+                                    image: imageBG(
+                                      imagesByte.isEmpty ? Uint8List(0) : imagesByte[0],
+                                      imagesPath.isEmpty ? '' : imagesPath[0],
+                                    ),
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                   child: Align(
@@ -688,7 +685,7 @@ class _NewProductState extends State<NewProduct>
                                   valueListenable:
                                       Hive.box('shops').listenable(),
                                   builder: (context, Box box, childs) {
-                                    String shopName = box.get('name',
+                                    String shopName = box.get('business_name',
                                         defaultValue: 'Suppliers');
                                     return Text(
                                       shopName,
@@ -1508,7 +1505,7 @@ class _NewProductState extends State<NewProduct>
       });
       filePath.forEach((fileName) async {
         await adminCrud
-            .uploadWebImage(imageBytes, fileName.path!)
+            .uploadWebImage(imageBytes, fileName.path!, '')
             .then((imageUrl) {
           setState(() {
             images.add(result.files.first.bytes);

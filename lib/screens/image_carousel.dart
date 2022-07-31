@@ -1,16 +1,20 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 class ImageCarousel extends StatefulWidget {
   final bool isUpdate;
@@ -24,6 +28,7 @@ class ImageCarousel extends StatefulWidget {
 class _ImageCarouselState extends State<ImageCarousel> {
   List<Uint8List> imagesBytes = [];
   List<String> filesNames = [];
+  List filesPath = [];
   List productImages = [];
   bool loading = false;
   int incrementer = 0, index = -1;
@@ -42,12 +47,12 @@ class _ImageCarouselState extends State<ImageCarousel> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: loading,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Photos',
             style: kAppBarTitleTextStyle,
           ),
@@ -55,13 +60,13 @@ class _ImageCarouselState extends State<ImageCarousel> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(FontAwesomeIcons.chevronLeft),
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
         ),
         body: Container(
-          padding: EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(15.0),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -89,17 +94,22 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                       );
                                     },
                                   )
-                                : imagesBytes.isEmpty
-                                    ? Center(
+                                : (imagesBytes.isEmpty && kIsWeb) || (filesPath.isEmpty && !kIsWeb)
+                                    ? const Center(
                                         child: Icon(
                                           Icons.add_a_photo,
                                           size: 25.0,
                                         ),
                                       )
-                                    : Image.memory(
-                                        imagesBytes[0],
-                                        fit: BoxFit.cover,
-                                      ),
+                                    : kIsWeb
+                                        ? Image.memory(
+                                            imagesBytes[0],
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.file(
+                                            File(filesPath[0]),
+                                            fit: BoxFit.cover,
+                                          ),
                             topCancelButton(onTap: () {
                               snackBar(
                                 text: 'Deleting...',
@@ -123,19 +133,23 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                 });
                               } else {
                                 setState(() {
-                                  imagesBytes.removeAt(0);
+                                  if(kIsWeb){
+                                    imagesBytes.removeAt(0);
+                                  }else{
+                                    filesPath.removeAt(0);
+                                  }
                                 });
                               }
                             }),
                           ],
                         )),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     LimitedBox(
                       maxHeight: MediaQuery.of(context).size.height * 0.4,
                       child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
                           mainAxisSpacing: 10.0,
                           crossAxisSpacing: 10.0,
@@ -143,7 +157,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         ),
                         itemCount: widget.isUpdate && productImages.isNotEmpty
                             ? productImages.length + incrementer
-                            : imagesBytes.length,
+                            : kIsWeb ? imagesBytes.length : filesPath.length,
                         itemBuilder: (context, i) {
                           if (widget.isUpdate && productImages.isNotEmpty) {
                             if (i == 0) {
@@ -151,7 +165,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                 onTap: () {
                                   getImageWeb();
                                 },
-                                child: Center(
+                                child: const Center(
                                   child: Icon(
                                     Icons.add_a_photo,
                                     size: 25.0,
@@ -165,11 +179,14 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                     fit: StackFit.expand,
                                     children: [
                                       i >= productImages.length
-                                          ? Image.memory(
+                                          ? kIsWeb ? Image.memory(
                                               imagesBytes[
                                                   i - productImages.length],
                                               fit: BoxFit.cover,
-                                            )
+                                            ) : Image.file(
+                                        File(filesPath[i - productImages.length]),
+                                        fit: BoxFit.cover,
+                                      )
                                           : CachedNetworkImage(
                                               imageUrl: productImages[i],
                                               fit: BoxFit.cover,
@@ -183,8 +200,12 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                       topCancelButton(onTap: () {
                                         if (i >= productImages.length) {
                                           setState(() {
-                                            imagesBytes.removeAt(
-                                                i - productImages.length);
+                                            if(kIsWeb){
+                                              imagesBytes.removeAt(
+                                                  i - productImages.length);
+                                            }else{
+                                              filesPath.removeAt(i - productImages.length);
+                                            }
                                             incrementer -= 1;
                                           });
                                         } else {
@@ -212,7 +233,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                 onTap: () {
                                   getImageWeb();
                                 },
-                                child: Center(
+                                child: const Center(
                                   child: Icon(
                                     Icons.add_a_photo,
                                     size: 25.0,
@@ -225,8 +246,11 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
-                                    Image.memory(
+                                    if(kIsWeb)Image.memory(
                                       imagesBytes[i],
+                                      fit: BoxFit.cover,
+                                    )else Image.file(
+                                        File(filesPath[i]),
                                       fit: BoxFit.cover,
                                     ),
                                     Align(
@@ -246,7 +270,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                             color:
                                                 Colors.white.withOpacity(0.8),
                                           ),
-                                          child: Icon(
+                                          child: const Icon(
                                             Icons.cancel,
                                             color: kSubMainColor,
                                             size: 15.0,
@@ -268,32 +292,44 @@ class _ImageCarouselState extends State<ImageCarousel> {
               FractionallySizedBox(
                 heightFactor: 0.12,
                 alignment: Alignment.bottomCenter,
-                child: sendButton(title: 'Save',onTap: () async {
-                  for (int i = 0; i < filesNames.length; i++) {
-                    setState(() {
-                      loading = true;
-                    });
-                    await AdminCrud()
-                        .uploadWebImage(imagesBytes[i], filesNames[i])
-                        .then((imageUrl) {
-                      setState(() {
-                        productImages.add(imageUrl);
-                        loading = false;
-                      });
-                    }).catchError((error) {
-                      setState(() {
-                        loading = false;
-                      });
-                    });
-                  }
-                  Hive.box('images').put('imagesBytes', imagesBytes);
-                  Hive.box('images')
-                      .put('productImages', productImages)
-                      .whenComplete(
-                        () => snackBar(text: 'Saved', context: context),
-                      );
-                  print(productImages);
-                }),
+                child: sendButton(
+                    title: 'Save',
+                    onTap: () async {
+                      try{
+                        setState(() {
+                          loading = true;
+                        });
+                        if(kIsWeb){
+                          for (int i = 0; i < filesNames.length; i++){
+                            String imageUrl = await AdminCrud()
+                                .uploadWebImage(imagesBytes[i], filesNames[i], 'product_images');
+                            productImages.add(imageUrl);
+                          }
+                        }else{
+                          for(int i = 0; i < filesPath.length; i++){
+                            String imageUrl = await NetworkUtility
+                                .uploadImageFromNative(File(filesPath[i]), filesNames[i], 'product_images');
+                            productImages.add(imageUrl);
+                          }
+                        }
+                        Hive.box('images').put('imagesBytes', imagesBytes);
+                        Hive.box('images').put('imagesPath', filesPath);
+                        Hive.box('images')
+                            .put('productImages', productImages)
+                            .whenComplete(
+                              () => snackBar(text: 'Saved', context: context),
+                        );
+                        print(productImages);
+                      }catch (e){
+                        if(kDebugMode){
+                          print(e);
+                        }
+                      }finally{
+                        setState(() {
+                          loading = false;
+                        });
+                      }
+                    }),
               ),
             ],
           ),
@@ -301,17 +337,29 @@ class _ImageCarouselState extends State<ImageCarousel> {
       ),
     );
   }
-
   void getImageWeb() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
+    print('image: ${result?.files.first}');
     if (result != null) {
-      Uint8List? imageBytes = result.files.first.bytes;
       String? fileName = result.files.first.name;
-      setState(() {
-        imagesBytes.add(imageBytes!);
-        filesNames.add(fileName);
-        incrementer += 1;
-      });
+      if(kIsWeb){
+        Uint8List imageBytes = result.files.first.bytes!;
+        setState(() {
+          imagesBytes.add(imageBytes);
+          incrementer += 1;
+        });
+      }else{
+        //Directory appDocDir = await getApplicationDocumentsDirectory();
+        String filePath = result.paths.first!;
+        // await dir.create().then((value) {
+        //   File file = File('${value.path}/example.txt');
+        //   file.writeAsString('123'); //writeAsBytesSync(doc.save());
+        // });
+        setState((){
+          filesPath.add(filePath);
+          filesNames.add(fileName);
+        });
+      }
     }
   }
 }
@@ -347,7 +395,7 @@ Widget topCancelButton({required Function()? onTap}) {
           borderRadius: BorderRadius.circular(100.0),
           color: Colors.white.withOpacity(0.8),
         ),
-        child: Icon(
+        child: const Icon(
           Icons.cancel,
           color: kSubMainColor,
           size: 15.0,

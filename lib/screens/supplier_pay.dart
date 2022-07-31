@@ -26,7 +26,9 @@ class SupplierPay extends StatefulWidget {
 }
 
 class _SupplierPayState extends State<SupplierPay> {
-  Tuple2<Uint8List?, String?> imageInfo = Tuple2<Uint8List?, String?>(Uint8List(0), '');
+  Uint8List? profileBytes;
+  String? profileLink;
+  String? profilePath;
   final TextEditingController invoiceCont = TextEditingController();
   final TextEditingController refCont = TextEditingController();
   final TextEditingController invoiceAmountCont = TextEditingController();
@@ -71,12 +73,22 @@ class _SupplierPayState extends State<SupplierPay> {
                   height: 20.0,
                 ),
                 imagePickerWidget(
-                  images: imageInfo.item1,
+                  imagePath: profilePath,
+                  images: profileBytes,
                   onTap: () async {
-                    final images = await getImageWeb();
-                    setState((){
-                      imageInfo = images;
-                    });
+                    if(kIsWeb){
+                      final Tuple2<Uint8List?, String?> images = await getImageWeb('supplier_payments');
+                      setState((){
+                        profileBytes = images.item1;
+                        profileLink = images.item2;
+                      });
+                    }else{
+                      final Tuple2<String?, String?> images = await getImageNative('supplier_payments');
+                      setState((){
+                        profilePath = images.item1;
+                        profileLink = images.item2;
+                      });
+                    }
                   },
                 ),
                 const SizedBox(
@@ -284,7 +296,7 @@ class _SupplierPayState extends State<SupplierPay> {
                           'note': noteCont.text,
                           'business_name': shop['business_name'],
                           'supplier_name': shop['supplier_name'],
-                          'image': imageInfo.item2,
+                          'image': profileLink,
                           'date': Timestamp.now(),
                         };
                         print(paymentInfo);

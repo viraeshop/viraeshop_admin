@@ -65,7 +65,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     });
     shops.forEach((element) {
       shop.add({
-        'name': element.name,
+        'business_name': element.name,
         'address': element.address,
         'mobile': element.mobile,
         'email': element.email,

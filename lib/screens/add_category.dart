@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
@@ -24,6 +25,7 @@ class _AddCategoryState extends State<AddCategory> {
   bool load = false;
   Uint8List images = Uint8List(0);
   String imageLink = '';
+  String imagePath = '';
   final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
@@ -53,7 +55,7 @@ class _AddCategoryState extends State<AddCategory> {
           ),
         ),
         body: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Form(
             key: _formKey,
             child: Stack(
@@ -62,16 +64,26 @@ class _AddCategoryState extends State<AddCategory> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    GestureDetector(
+                    imagePickerWidget(
                       onTap: () {
-                        getImageWeb().then((value) {
-                          setState(() {
-                            images = value.item1!;
-                            imageLink = value.item2!;
+                        if(kIsWeb){
+                          getImageWeb('category_images').then((value) {
+                            setState(() {
+                              images = value.item1!;
+                              imageLink = value.item2!;
+                            });
                           });
-                        });
+                        }else{
+                          getImageNative('category_images').then((value){
+                            setState(() {
+                              imagePath = value.item1!;
+                              imageLink = value.item2!;
+                            });
+                          });
+                        }
                       },
-                      child: imagePickerWidget(images: images),
+                      images: images,
+                      imagePath: imagePath,
                     ),
                     SizedBox(
                       height: 10.0,

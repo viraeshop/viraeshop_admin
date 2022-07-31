@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:random_string/random_string.dart';
@@ -22,6 +23,7 @@ class AdsCard extends StatelessWidget {
   final String title2;
   final String title3;
   final String? image;
+  final String? imagePath;
   final Uint8List? imageBytes;
   final void Function()? onEdit;
   final void Function()? onEditDone;
@@ -37,6 +39,7 @@ class AdsCard extends StatelessWidget {
     required this.title3,
     required this.image,
     this.imageBytes,
+    this.imagePath,
     this.onEdit,
     this.onEditDone,
     this.onDelete,
@@ -144,6 +147,7 @@ class AdsCard extends StatelessWidget {
                       width: 100.0,
                       onTap: isEdit! ? getImage : null,
                       images: imageBytes,
+                      imagePath: imagePath,
                       showBottomCard: false,
                       backgroundColor: kNewYellowColor,
                     )

@@ -26,6 +26,7 @@ class _NewExpenseState extends State<NewExpense>
   TextEditingController expenseDescription = TextEditingController();
   TextEditingController expenseCost = TextEditingController();
   AdminCrud adminCrud = AdminCrud();
+  String imagePath = '';
   late TabController _tabController;
 
   var currdate = DateTime.now();
@@ -49,10 +50,10 @@ class _NewExpenseState extends State<NewExpense>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'New Expense',
           style: kAppBarTitleTextStyle,
         ),
@@ -63,27 +64,38 @@ class _NewExpenseState extends State<NewExpense>
         // ),
       ),
       body: Container(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           // crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             imagePickerWidget(
+
               onTap: () {
                 try {
-                  getImageWeb().then((value) {
-                    setState(() {
-                      images = value.item1;
-                      productImage = value.item2;
+                  if(kIsWeb){
+                    getImageWeb('expenses').then((value) {
+                      setState(() {
+                        images = value.item1;
+                        productImage = value.item2;
+                      });
                     });
-                  });
+                  }else{
+                    getImageNative('expenses').then((value){
+                      setState(() {
+                        imagePath = value.item1!;
+                        productImage = value.item2;
+                      });
+                    });
+                  }
                 } catch (e) {
                   print(e);
                 }
               },
               images: images,
+              imagePath: imagePath,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             TextField(
@@ -93,7 +105,7 @@ class _NewExpenseState extends State<NewExpense>
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             TextField(
@@ -104,7 +116,7 @@ class _NewExpenseState extends State<NewExpense>
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             TextField(
@@ -115,7 +127,7 @@ class _NewExpenseState extends State<NewExpense>
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15))),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             InkWell(
@@ -125,8 +137,8 @@ class _NewExpenseState extends State<NewExpense>
                 decoration: BoxDecoration(
                     color: kSelectedTileColor, //Theme.of(context).accentColor,
                     borderRadius: BorderRadius.circular(15)),
-                child: Center(
-                  child: Text(
+                child: const Center(
+                  child: const Text(
                     "Add Expense",
                     style: TextStyle(fontSize: 20, color: Colors.white),
                   ),
@@ -148,7 +160,7 @@ class _NewExpenseState extends State<NewExpense>
                   // print(jsonEncode(expenseData));
                   if (adminCrud.addExpenses(expenseData)) {
                     popDialog(
-                        widget: Text(
+                        widget: const Text(
                           'Expense Added',
                           textAlign: TextAlign.center,
                         ),
@@ -156,7 +168,7 @@ class _NewExpenseState extends State<NewExpense>
                         context: context);
                   } else {
                     popDialog(
-                        widget: Text(
+                        widget: const Text(
                           'Could Not Add Expense',
                           textAlign: TextAlign.center,
                         ),
@@ -165,7 +177,7 @@ class _NewExpenseState extends State<NewExpense>
                   }
                 } else {
                   popDialog(
-                      widget: Text(
+                      widget: const Text(
                         'FIelds Cannot Be Empty',
                         textAlign: TextAlign.center,
                       ),

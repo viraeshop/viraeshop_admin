@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/gradients.dart';
@@ -81,15 +82,28 @@ class AdsCarousel extends StatelessWidget {
                 title3Controller: controllers[currentId]!['title3']!,
                 image: ads[itemIndex]['image'],
                 imageBytes: ads[itemIndex]['imageBytes'],
+                imagePath: ads[itemIndex]['imagePath'],
                 onEdit: () {
                   Provider.of<AdsProvider>(context, listen: false)
                       .onEdit(ads[itemIndex]['adId'], true);
                 },
                 getImage: () {
-                  getImageWeb().then((value) {
-                    Provider.of<AdsProvider>(context, listen: false).saveImages(
-                        ads[itemIndex]['adId'], value.item2, value.item1!);
-                  });
+                  if(kIsWeb){
+                    getImageWeb('ads_banners').then((value) {
+                      Provider.of<AdsProvider>(context, listen: false).saveImages(
+                         adId: ads[itemIndex]['adId'],
+                          image: value.item2,
+                          imagesBytes: value.item1!);
+                    });
+                  }else{
+                    getImageNative('ads_banners').then((value){
+                      Provider.of<AdsProvider>(context, listen: false).saveImages(
+                          adId: ads[itemIndex]['adId'],
+                          image: value.item2,
+                          imagePath: value.item1!,
+                      );
+                    });
+                  }
                 },
                 onEditDone: () {
                   String title1 = controllers[currentId]!['title1']!.text;

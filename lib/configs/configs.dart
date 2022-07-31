@@ -636,32 +636,35 @@ Future<void> getNonInventoryDialog({
                               .putAll(shops[index])
                               .whenComplete(() => Navigator.pop(context));
                         },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            CircleAvatar(
-                              backgroundImage: NetworkImage(
-                                shops[index]['profileImage'],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                  shops[index]['profileImage'],
+                                ),
+                                radius: 35.0,
                               ),
-                              radius: 35.0,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  shops[index]['business_name'],
-                                  style: kTableCellStyle,
-                                ),
-                                const SizedBox(
-                                  height: 10.0,
-                                ),
-                                Text(
-                                  shops[index]['supplier_name'],
-                                  style: kTableCellStyle,
-                                ),
-                              ],
-                            ),
-                          ],
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    shops[index]['business_name'],
+                                    style: kTableCellStyle,
+                                  ),
+                                  const SizedBox(
+                                    height: 10.0,
+                                  ),
+                                  Text(
+                                    shops[index]['supplier_name'],
+                                    style: kTableCellStyle,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ));
                   }),
                 ),

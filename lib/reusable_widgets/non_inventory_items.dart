@@ -154,7 +154,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                       valueListenable: Hive.box('shops').listenable(),
                       builder: (context, Box box, childs) {
                         String shopName =
-                            box.get('name', defaultValue: 'Shops');
+                            box.get('business_name', defaultValue: 'Suppliers');
                         return Text(
                           shopName,
                           style: kTotalTextStyle,
@@ -226,7 +226,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                     quantity: 1,
                     unitPrice: num.parse(_controller.text),
                     isInventory: false,
-                    shopName: shopBox.get('name'),
+                    shopName: shopBox.get('business_name'),
                   ),
                 );
 
@@ -234,7 +234,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                     .put(
                   id,
                   Shop(
-                    name: shopBox.get('name'),
+                    name: shopBox.get('business_name'),
                     price: price,
                     address: shopBox.get('address'),
                     email: shopBox.get('email'),

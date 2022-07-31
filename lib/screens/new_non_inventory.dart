@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -37,6 +38,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
   Map currentShop = {};
   String? dropdownValue;
   num paid = 0;
+  String imagePath = '';
   @override
   void initState() {
     // TODO: implement initState
@@ -47,7 +49,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: GestureDetector(
@@ -58,53 +60,75 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
           appBar: AppBar(
             leading: IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: Icon(FontAwesomeIcons.chevronLeft),
+              icon: const Icon(FontAwesomeIcons.chevronLeft),
               iconSize: 20.0,
               color: kSubMainColor,
             ),
-            title: Text(
+            title: const Text(
               'Product expense',
               style: kTextStyle1,
             ),
             centerTitle: false,
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(10.0),
             child: Column(
               //alignment: AlignmentDirectional.topCenter,
               //fit: StackFit.expand,
               children: [
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
                 receipt == null
                     ? imagePickerWidget(
                         onTap: () {
                           try {
-                            getImageWeb().then((value) {
-                              setState(() {
-                                image = value.item1;
-                                uploadImageString = value.item2;
+                            if(kIsWeb){
+                              getImageWeb('product_expense_images').then((value) {
+                                setState(() {
+                                  image = value.item1;
+                                  uploadImageString = value.item2;
+                                });
                               });
-                            });
+                            }else{
+                              getImageNative('product_expense_images').then((value){
+                                setState(() {
+                                  imagePath = value.item1!;
+                                  uploadImageString = value.item2;
+                                });
+                              });
+                            }
                           } catch (e) {
                             print(e);
                           }
                         },
                         images: image,
+                  imagePath: imagePath,
                       )
                     : GestureDetector(
                         onTap: () {
                           try {
-                            getImageWeb().then((value) {
-                              setState(() {
-                                image = value.item1;
-                                uploadImageString = value.item2;
-                                receipt = value.item2!;
+                            if(kIsWeb){
+                              getImageWeb('product_expense_images').then((value) {
+                                setState(() {
+                                  image = value.item1;
+                                  uploadImageString = value.item2;
+                                  receipt = value.item2!;
+                                });
                               });
-                            });
+                            }else{
+                              getImageNative('product_expense_images').then((value){
+                                setState(() {
+                                  imagePath = value.item1!;
+                                  uploadImageString = value.item2;
+                                  receipt = value.item2!;
+                                });
+                              });
+                            }
                           } catch (e) {
-                            print(e);
+                            if (kDebugMode) {
+                              print(e);
+                            }
                           }
                         },
                         child: Stack(
@@ -124,7 +148,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                 },
                               ),
                             ),
-                            Align(
+                            const Align(
                               alignment: Alignment.center,
                               child: Icon(
                                 Icons.add,
@@ -135,7 +159,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                           ],
                         ),
                       ),
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
                 textField(
@@ -182,7 +206,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         });
                       });
                     }),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
                 Row(
@@ -194,7 +218,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         hint: 'Shops'
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10.0,
                     ),
                     Expanded(
@@ -202,7 +226,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10.0),
-                            borderSide: BorderSide(
+                            borderSide: const BorderSide(
                               color: kBlackColor,
                               width: 3.0,
                             ),
@@ -250,7 +274,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
                 textFieldRow(
@@ -259,7 +283,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                     readOnly1: true,
                     prefix1: 'Sales Price',
                     prefix2: ''),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
                 textFieldRow(
@@ -278,7 +302,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         controllers[5].text = profit.toString();
                       });
                     }),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
                 textFieldRow(
@@ -301,11 +325,11 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                 //   height: 10.0,
                 // ),
                 // textField(controller: controllers[10], prefix: 'Qunatity'),
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
                 textField(controller: controllers[8], lines: 3),
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
                 Row(
@@ -370,7 +394,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                 msg: 'Error occurred');
                           });
                         }),
-                    SizedBox(
+                    const SizedBox(
                       width: 10.0,
                     ),
                     buttons(
@@ -422,7 +446,7 @@ Widget textFieldRow({
           onChange: onChange1,
         ),
       ),
-      SizedBox(
+      const SizedBox(
         width: 10.0,
       ),
       Expanded(
@@ -454,27 +478,27 @@ Widget textField({
     maxLines: lines,
     decoration: InputDecoration(
       prefixIcon: Padding(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: Text(hint, style: kCustomerCellStyle,),
       ),
       //prefixStyle: kCustomerCellStyle,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: kBlackColor,
           width: 3.0,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: kBlackColor,
           width: 3.0,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: kBlackColor,
           width: 3.0,
         ),

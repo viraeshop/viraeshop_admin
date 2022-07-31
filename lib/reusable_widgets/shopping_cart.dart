@@ -205,7 +205,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                     fit: StackFit.expand,
                     children: [
                       FractionallySizedBox(
-                        heightFactor: 0.75,
+                        heightFactor: 0.9,
                         alignment: Alignment.topCenter,
                         child: Container(
                           // height: MediaQuery.of(context).size.height * 0.8,

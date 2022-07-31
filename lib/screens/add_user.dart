@@ -76,7 +76,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
     if (result != null) {
       Uint8List imageBytes = result.files.first.bytes ?? Uint8List(0);
       String? fileName = result.files.first.name;
-      adminCrud.uploadWebImage(imageBytes, fileName).then((imageUrl) {
+      adminCrud.uploadWebImage(imageBytes, fileName, '').then((imageUrl) {
         setState(() {
           images = result.files.first.bytes;
           profileImage = imageUrl;
@@ -1098,7 +1098,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
     if (result != null) {
       Uint8List imageBytes = result.files.first.bytes ?? Uint8List(0);
       String? fileName = result.files.first.name;
-      adminCrud.uploadWebImage(imageBytes, fileName).then((imageUrl) {
+      adminCrud.uploadWebImage(imageBytes, fileName,'').then((imageUrl) {
         setState(() {
           images = result.files.first.bytes;
           profileImage = imageUrl;

@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:viraeshop_admin/settings/authentication.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:viraeshop_admin/settings/general_crud.dart';
@@ -278,14 +280,17 @@ class AdminCrud {
       firebase_storage.SettableMetadata(
     contentType: 'image/jpeg',
   );
-  Future<String> uploadWebImage(Uint8List fileBytes, String fileName) async {
-    await FirebaseStorage.instance
-        .ref('images/$fileName')
-        .putData(fileBytes, metadata);
+  Future<String> uploadWebImage(Uint8List fileBytes, String fileName, folder) async {
+      await FirebaseStorage.instance
+          .ref()
+      .child('$folder/$fileName')
+          .putData(fileBytes, metadata);
     firebase_storage.Reference imref =
-        firebase_storage.FirebaseStorage.instance.ref('images/$fileName');
+        firebase_storage.FirebaseStorage.instance.ref('$folder/$fileName');
     String imageUrl = await imref.getDownloadURL();
-    print(imageUrl);
+    if (kDebugMode) {
+      print(imageUrl);
+    }
     return imageUrl;
   }
 }

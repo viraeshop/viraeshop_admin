@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -8,9 +9,11 @@ import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
+import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/non_inventory_product.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
+import 'new_non_inventory.dart';
 import 'shops.dart';
 
 class ReturnProduct extends StatefulWidget {
@@ -23,6 +26,7 @@ class ReturnProduct extends StatefulWidget {
 class _ReturnProductState extends State<ReturnProduct> {
   Uint8List? images;
   String? productImage;
+  String? imagePath;
   List<TextEditingController> controllers =
       List.generate(4, (index) => TextEditingController());
   bool isLoading = false;
@@ -36,72 +40,81 @@ class _ReturnProductState extends State<ReturnProduct> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              icon: Icon(FontAwesomeIcons.chevronLeft),
+              icon: const Icon(FontAwesomeIcons.chevronLeft),
               color: kSubMainColor,
               iconSize: 20.0),
-          title: Text(
+          title: const Text(
             'Return Product',
             style: kAppBarTitleTextStyle,
           ),
         ),
         body: Container(
-          padding: EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(10.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               imagePickerWidget(
                 onTap: () {
                   try {
-                    getImageWeb().then((value) {
-                      setState(() {
-                        images = value.item1;
-                        productImage = value.item2;
+                    if(kIsWeb){
+                      getImageWeb('returns').then((value) {
+                        setState(() {
+                          images = value.item1;
+                          productImage = value.item2;
+                        });
                       });
-                      print('image: $productImage');
-                    });
+                    }else{
+                      getImageNative('returns').then((value){
+                        setState(() {
+                          imagePath = value.item1;
+                          productImage = value.item2;
+                        });
+                      });
+                    }
                   } catch (e) {
                     print(e);
                   }
                 },
                 images: images,
+                imagePath: imagePath,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
-              textField(
+              NewTextField(
                   controller: controllers[0],
                   prefixIcon:
-                      Icon(Icons.person, color: kNewTextColor, size: 20.0),
+                      const Icon(Icons.person, color: kNewTextColor, size: 20.0),
                   hintText: 'Customer\'s name/Id'),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
-              textField(
+              NewTextField(
                   controller: controllers[1],
                   prefixIcon:
-                      Icon(Icons.inventory_2, color: kNewTextColor, size: 20.0),
+                      const Icon(Icons.inventory_2, color: kNewTextColor, size: 20.0),
                   hintText: 'Product\s name'),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
-              textField(
+              NewTextField(
                   controller: controllers[2],
                   prefixIcon:
-                      Icon(Icons.sell, color: kNewTextColor, size: 20.0),
+                      const Icon(Icons.sell, color: kNewTextColor, size: 20.0),
                   hintText: 'Product\s price'),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
-              textField(
+              NewTextField(
                   controller: controllers[3],
                   prefixIcon:
-                      Icon(Icons.note_alt, color: kNewTextColor, size: 20.0),
+                      const Icon(Icons.note_alt, color: kNewTextColor, size: 20.0),
                   hintText: 'Reason of return',
                   lines: 3),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
               sendButton(title: 'Return', onTap: () {

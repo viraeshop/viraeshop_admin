@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
@@ -23,6 +24,7 @@ class _ShopsState extends State<Shops> {
   bool isLoading = false;
   Uint8List bundleImage = Uint8List(0);
   String imageUrl = '';
+  String imagePath = '';
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -60,18 +62,27 @@ class _ShopsState extends State<Shops> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        getImageWeb().then((value) {
-                          setState(() {
-                            bundleImage = value.item1!;
-                            imageUrl = value.item2!;
+                        if(kIsWeb){
+                          getImageWeb('suppliers').then((value) {
+                            setState(() {
+                              bundleImage = value.item1!;
+                              imageUrl = value.item2!;
+                            });
                           });
-                        });
+                        }else{
+                          getImageNative('suppliers').then((value){
+                            setState(() {
+                              imagePath = value.item1!;
+                              imageUrl = value.item2!;
+                            });
+                          });
+                        }
                       },
                       child: Container(
                         height: 100.0,
                         width: 100.0,
                         decoration: BoxDecoration(
-                          image: imageBG(bundleImage, 'assets/images/man.png'),
+                          image: imageBG(bundleImage, imagePath, 'assets/images/man.png',),
                           color: kBackgroundColor,
                           borderRadius: BorderRadius.circular(100.0),
                           border: Border.all(

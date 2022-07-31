@@ -277,11 +277,11 @@ class _DueReceiptState extends State<DueReceipt> {
                               child: TextField(
                                 controller: controller,
                                 style: kProductNameStylePro,
-                                onSubmitted: (value) {
-                                  setState(() {
-                                    due -= num.parse(value.isNotEmpty ? value : '0');
-                                  });
-                                },
+                                // onSubmitted: (value) {
+                                //   setState(() {
+                                //     due -= num.parse(value.isNotEmpty ? value : '0');
+                                //   });
+                                // },
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                   suffix: IconButton(

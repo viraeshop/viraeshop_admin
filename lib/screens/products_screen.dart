@@ -1,23 +1,14 @@
-import 'dart:convert';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:tuple/tuple.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
-import 'package:viraeshop_admin/components/product_table.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/product_cards.dart';
 import 'package:viraeshop_admin/screens/new_product_screen.dart';
-import 'package:viraeshop_admin/screens/product_info.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class Products extends StatefulWidget {
   static String productsPath = '/products';
@@ -47,10 +38,10 @@ class _ProductsState extends State<Products> {
         backgroundColor: kScaffoldBackgroundColor,
         appBar: AppBar(
           automaticallyImplyLeading: constraints.maxWidth > 600 ? false : true,
-          iconTheme: IconThemeData(color: kSelectedTileColor),
+          iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 3.0,
           backgroundColor: kBackgroundColor,
-          title: Text(
+          title: const Text(
             'Products',
             style: kAppBarTitleTextStyle,
           ),
@@ -62,7 +53,7 @@ class _ProductsState extends State<Products> {
           actions: [
             DropdownButton(
               value: dropdownValue,
-              items: [
+              items: const [
                 DropdownMenuItem(
                   value: 'general',
                   child: Text(
@@ -91,7 +82,7 @@ class _ProductsState extends State<Products> {
                 });
               },
             ),
-            SizedBox(
+            const SizedBox(
               width: 10.0,
             ),
             Padding(
@@ -105,7 +96,7 @@ class _ProductsState extends State<Products> {
                             MaterialPageRoute(
                                 builder: (context) => NewProduct()));
                       },
-                child: Icon(Icons.add),
+                child: const Icon(Icons.add),
               ),
             ),
           ],
@@ -117,57 +108,36 @@ class _ProductsState extends State<Products> {
                 final products = snapshot.data!.docs;
                 List<String> productName = [];
                 List productsList = [];
-                products.forEach((element) {
-                  productsList.add({
-                    'docId': element.id,
-                    'name': element.get('name'),
-                    'generalPrice': element['generalPrice'],
-                    'agentsPrice': element['agentsPrice'],
-                    'architectPrice': element['architectPrice'],
-                    'description': element.get('description'),
-                    'cost': element.get('cost_price'),
-                    'image': element.get('image'),
-                    'category': element.get('category'),
-                    'sell_by': element.get('sell_by'),
-                    'quantity': element.get('quantity'),
-                    'minimum': element.get('minimum'),
-                    'generalDiscount': element.get('generalDiscount'),
-                    'agentsDiscount': element.get('agentsDiscount'),
-                    'architectDiscount': element.get('architectDiscount'),
-                    'isGeneralDiscount': element.get('isGeneralDiscount'),
-                    'isAgentDiscount': element.get('isAgentDiscount'),
-                    'isArchitectDiscount': element.get('isArchitectDiscount'),
-                    'adverts': element.get('adverts'),
-                    'isInfinity': element.get('isInfinity'),
-                  });
+                for (var element in products) {
+                  productsList.add(element.data());
                   productName.add(element.get('name'));
-                });
+                }
                 return Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(20.0),
-                  margin: EdgeInsets.all(40.0),
+                  padding: const EdgeInsets.all(20.0),
+                  margin: const EdgeInsets.all(40.0),
                   color: kBackgroundColor,
                   child: productName.isNotEmpty
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'All Products',
                               style: kTextStyle1,
                               textAlign: TextAlign.left,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10.0,
                             ),
                             Expanded(
                               child: LayoutBuilder(
                                 builder: (context, constraints) {
-                                  if (constraints.maxWidth > 600) {
+                                  if (constraints.maxWidth > 800) {
                                     return GridView.builder(
-                                      physics: NeverScrollableScrollPhysics(),
+                                      physics: const NeverScrollableScrollPhysics(),
                                       shrinkWrap: true,
                                       gridDelegate:
-                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                          const SliverGridDelegateWithFixedCrossAxisCount(
                                         crossAxisCount: 4,
                                         childAspectRatio: 1 / 1.5,
                                         mainAxisSpacing: 10.0,
@@ -177,7 +147,7 @@ class _ProductsState extends State<Products> {
                                       itemBuilder: (context, i) {
                                         num currentPrice = 0;
                                         Tuple3<num, num, bool> discountData =
-                                            Tuple3<num, num, bool>(0, 0, false);
+                                            const Tuple3<num, num, bool>(0, 0, false);
                                         if (dropdownValue == 'general') {
                                           currentPrice =
                                               productsList[i]['generalPrice'];
@@ -251,14 +221,17 @@ class _ProductsState extends State<Products> {
                                           productCategory: productsList[i]
                                               ['category'],
                                           image: productsList[i]['image'][0],
-                                          onTap: () {
+                                          onTap:!isProduct ? null :  () {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    ProductInformation(
-                                                  productInfo: productsList[i],
-                                                ),
+                                                    NewProduct(
+                                                      isUpdateProduct: true,
+                                                      info: productsList[i],
+                                                      routeName:
+                                                      Products.productsPath,
+                                                    ),
                                               ),
                                             );
                                           },
@@ -273,7 +246,7 @@ class _ProductsState extends State<Products> {
                                         num currentPrice = 0;
                                         List images = productsList[i]['image'];
                                         Tuple3<num, num, bool> discountData =
-                                            Tuple3<num, num, bool>(0, 0, false);
+                                            const Tuple3<num, num, bool>(0, 0, false);
                                         if (dropdownValue == 'general') {
                                           currentPrice =
                                               productsList[i]['generalPrice'];
@@ -349,7 +322,7 @@ class _ProductsState extends State<Products> {
                                           image: images.isNotEmpty
                                               ? images[0]
                                               : '',
-                                          onTap: () {
+                                          onTap: !isProduct ? null : () {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -372,10 +345,10 @@ class _ProductsState extends State<Products> {
                             ),
                           ],
                         )
-                      : Text('Loading'),
+                      : const Text('Loading'),
                 );
               }
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }),
       ),
     );

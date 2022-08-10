@@ -44,27 +44,37 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
     _preferences.getControllers[1].text = userInfo['mobile'];
     _preferences.getControllers[2].text = userInfo['email'];
     _preferences.getControllers[3].text = userInfo['address'];
-    if (userInfo['role'] == 'architect' && userInfo['idType'] != null) {
-      if (userInfo['idType'] == 'IAB') {
-        _preferences.addHint = 'IAB ID';
-      } else {
-        _preferences.addHint = 'BSC ID';
+    if (userInfo['role'] == 'architect') {
+      _preferences.addHint = 'Business name';
+      _preferences.addControllers = TextEditingController(text: userInfo['business_name']);
+      _preferences.addIconData = Icons.add_business;
+      if(userInfo['idType'] != null){
+        if (userInfo['idType'] == 'IAB') {
+          _preferences.addHint = 'IAB ID';
+        } else {
+          _preferences.addHint = 'BSC ID';
+        }
+        _preferences.addControllers =  TextEditingController(text: userInfo['idNumber']);
+        _preferences.addIconData = Icons.badge_outlined;
+        strings['idImage'] = userInfo['idImage'];
       }
-      _preferences.addControllers =  TextEditingController(text: userInfo['idNumber']);
-      _preferences.addIconData = Icons.badge_outlined;
-      strings['idImage'] = userInfo['idImage'];
-    } else if (userInfo['role'] == 'agents' && userInfo['binNumber'] != null) {
-      _preferences.addAll(hints: [
-        'BIN Number',
-        'Trade License Number',
-      ], controller: [
-        TextEditingController(text: userInfo['binNumber']),
-        TextEditingController(text: userInfo['tinNumber']),
-      ], icons: [
-        Icons.badge_outlined, Icons.badge_outlined
-      ]);
-      strings['binImage'] = userInfo['binImage'];
-      strings['tinImage'] = userInfo['tinImage'];
+    } else if (userInfo['role'] == 'agents') {
+      _preferences.addHint = 'Business name';
+      _preferences.addControllers = TextEditingController(text: userInfo['business_name']);
+      _preferences.addIconData = Icons.add_business;
+      if(userInfo['binNumber'] != null){
+        _preferences.addAll(hints: [
+          'BIN Number',
+          'Trade License Number',
+        ], controller: [
+          TextEditingController(text: userInfo['binNumber']),
+          TextEditingController(text: userInfo['tinNumber']),
+        ], icons: [
+          Icons.badge_outlined, Icons.badge_outlined
+        ]);
+        strings['binImage'] = userInfo['binImage'];
+        strings['tinImage'] = userInfo['tinImage'];
+      }
     }
     super.initState();
   }
@@ -281,12 +291,12 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                                     widget.info['userId']);
                                             if (widget.info['role'] ==
                                                 'architect') {
-                                              await deleteImage(
+                                              await NetworkUtility.deleteImage(
                                                   widget.info['idImage']);
                                             } else {
-                                              await deleteImage(
+                                              await NetworkUtility.deleteImage(
                                                   widget.info['binImage']);
-                                              await deleteImage(
+                                              await NetworkUtility.deleteImage(
                                                   widget.info['tinImage']);
                                             }
                                             setState(() {

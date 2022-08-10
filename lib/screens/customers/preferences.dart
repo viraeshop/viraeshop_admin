@@ -35,10 +35,10 @@ class CustomerPreferences {
     _controllers.addAll(controller);
   }
 }
-dynamic toast({required BuildContext context,required String title}) {
+dynamic toast({required BuildContext context,required String title,Color color = kNewTextColor}) {
   return showToast(
     title,
-    backgroundColor: kNewTextColor,
+    backgroundColor: color,
     context: context,
     animation: StyledToastAnimation.scale,
     reverseAnimation: StyledToastAnimation.fade,

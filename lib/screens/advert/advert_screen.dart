@@ -54,9 +54,9 @@ class _AdvertScreenState extends State<AdvertScreen> {
                   //maxHeight: size.height * 0.58,
                   child: Consumer<AdsProvider>(builder: (context, ads, childs) {
                     return Padding(
-                      padding: EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(10.0),
                       child: ads.currentCatg == 'All'
-                          ? AdvertListWidget()
+                          ? const AdvertListWidget()
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -126,7 +126,7 @@ class _AdvertScreenState extends State<AdvertScreen> {
                       });
                     },
                     child: Container(
-                        margin: EdgeInsets.all(3.0),
+                        margin: const EdgeInsets.all(3.0),
                         decoration: BoxDecoration(
                           color: kBackgroundColor,
                           borderRadius: BorderRadius.circular(10.0),
@@ -135,7 +135,7 @@ class _AdvertScreenState extends State<AdvertScreen> {
                             width: 3.0,
                           ),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Text('Update',
                               style: TextStyle(
                                 color: kNewMainColor,
@@ -156,7 +156,7 @@ class _AdvertScreenState extends State<AdvertScreen> {
 }
 
 class AdvertListWidget extends StatelessWidget {
-  AdvertListWidget();
+  const AdvertListWidget({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
@@ -174,7 +174,7 @@ class AdvertListWidget extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: const [
                       Shimmers(),
                       Shimmers(),
                       Shimmers(),
@@ -185,7 +185,7 @@ class AdvertListWidget extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: const [
                       Shimmers(),
                       Shimmers(),
                       Shimmers(),
@@ -196,7 +196,7 @@ class AdvertListWidget extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: const [
                       Shimmers(),
                       Shimmers(),
                       Shimmers(),
@@ -207,7 +207,7 @@ class AdvertListWidget extends StatelessWidget {
             );
           } else if (snapshot.hasError) {
             print(snapshot.error);
-            return Center(
+            return const Center(
               child: Text(
                 'An error occured',
                 style: kTableCellStyle,
@@ -233,9 +233,9 @@ class AdvertListWidget extends StatelessWidget {
                     .addAdCard(element['adId'], advert);
                 Provider.of<AdsProvider>(context, listen: false)
                     .addController(element['adId'], {
-                  'title1': TextEditingController(),
-                  'title2': TextEditingController(),
-                  'title3': TextEditingController(),
+                  'title1': TextEditingController(text: element['title1']),
+                  'title2': TextEditingController(text: element['title2']),
+                  'title3': TextEditingController(text: element['title3']),
                 });
               });
             });
@@ -243,56 +243,56 @@ class AdvertListWidget extends StatelessWidget {
           return ListView(
             // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Top Discount',
                 style: kTableCellStyle,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               AdsCarousel(
                 adsId: 'Top Discount',
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
-              Text(
+              const Text(
                 'Top Sales',
                 style: kTableCellStyle,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               AdsCarousel(
                 adsId: 'Top Sales',
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
-              Text(
+              const Text(
                 'New Arrivals',
                 style: kTableCellStyle,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               AdsCarousel(
                 adsId: 'New Arrivals',
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
-              Text(
+              const Text(
                 'Vira Shop',
                 style: kTableCellStyle,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
               AdsCarousel(
                 adsId: 'Vira Shop',
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
             ],
@@ -312,7 +312,7 @@ class Shimmers extends StatelessWidget {
       child: Container(
         height: 100.0,
         width: MediaQuery.of(context).size.width * 0.3,
-        margin: EdgeInsets.all(10.0),
+        margin: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10.0),
           color: Colors.grey,

@@ -7,11 +7,11 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/employees.dart';
-import 'package:viraeshop_admin/screens/group_transactions.dart';
-import 'package:viraeshop_admin/screens/non_inventory_transactions.dart';
-import 'package:viraeshop_admin/screens/noninventory_tranzacs.dart';
-import 'package:viraeshop_admin/screens/user_transaction_screen.dart';
+import 'package:viraeshop_admin/screens/transactions/employees_transactions.dart';
+import 'package:viraeshop_admin/screens/transactions/group_transactions.dart';
+import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
+import 'package:viraeshop_admin/screens/transactions/noninventory_tranzacs.dart';
+import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
 class TransactionDetails extends StatefulWidget {
@@ -26,6 +26,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   List employCus = [];
   List transactionData = [];
   List nonInventory = [];
+  GeneralCrud generalCrud = GeneralCrud();
   int percentageCounter(num value, total) {
     num percent = 0;
     if (value != 0 && total != 0 || total != 0) {
@@ -41,23 +42,26 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   }
 
   Tuple4<String, String, String, String> groupTuple =
-      Tuple4('0', '0', '0', '0');
+      const Tuple4('0', '0', '0', '0');
   Tuple4<String, String, String, String> groupTupleTemp =
-      Tuple4('0', '0', '0', '0');
+      const Tuple4('0', '0', '0', '0');
   Tuple5<num, num, num, num, num> totals =
-      Tuple5<num, num, num, num, num>(0, 0, 0, 0, 0);
+      const Tuple5<num, num, num, num, num>(0, 0, 0, 0, 0);
   Tuple5<num, num, num, num, num> totalsTemp =
-      Tuple5<num, num, num, num, num>(0, 0, 0, 0, 0);
+      const Tuple5<num, num, num, num, num>(0, 0, 0, 0, 0);
   int salesPercent = 0,
       duePercent = 0,
       paidPercent = 0,
       expensePercent = 0,
       profitPercent = 0;
+  bool isLoading = true;
   @override
   void initState() {
     // TODO: implement initState
-    GeneralCrud generalCrud = GeneralCrud();
     generalCrud.getTransacion().then((snapshot) async {
+      setState(() {
+        isLoading = true;
+      });
       final data = snapshot.docs;
       Map<String, num> totalTemp = {
         'totalSales': 0,
@@ -71,9 +75,13 @@ class _TransactionDetailsState extends State<TransactionDetails> {
           nonInventorySales = 0,
           nonInventoryDue = 0;
       data.forEach((element) {
-        transactionData.add(element.data());
+        //setState((){
+          transactionData.add(element.data());
+        //});
         if (element.get('isWithNonInventory') == true) {
-          nonInventory.add(element.data());
+          setState((){
+            nonInventory.add(element.data());
+          });
           element.get('shop').forEach((shop) {
             nonInventorySales += shop['price'];
             nonInventoryDue += shop['due'];
@@ -82,7 +90,9 @@ class _TransactionDetailsState extends State<TransactionDetails> {
             });
           });
         }
-        employCus.add(element.data());
+        setState((){
+          employCus.add(element.data());
+        });
         empCusSales += element.get('price');
         empCusDue += element.get('due');
         totalTemp.update('totalSales', (value) {
@@ -94,39 +104,55 @@ class _TransactionDetailsState extends State<TransactionDetails> {
         totalTemp.update('totalPaid', (value) {
           return value + element.get('paid');
         });
+        totalTemp.update('totalProfit', (value){
+          return value + element.get('profit');
+        });
       });
       await generalCrud.getExpenses().then((snapshot) {
+        isLoading = false;
         final data = snapshot.docs;
         data.forEach((element) {
-          setState(() {
+         //setState(() {
             transactionData.add(element.data());
-          });
+         //});
           totalTemp.update('totalExpense', (value) {
             return value + element.get('cost');
           });
         });
+      }).catchError((error){
+        isLoading = false;
+        print(error);
       });
-
       groupTuple = Tuple4(
         empCusSales.toString(),
         empCusDue.toString(),
         nonInventorySales.toString(),
         nonInventoryDue.toString(),
       );
-      groupTupleTemp = groupTuple;
+      //setState((){
+        groupTupleTemp = groupTuple;
+      //});
       totals = Tuple5<num, num, num, num, num>(
           totalTemp['totalSales']!,
           totalTemp['totalDue']!,
           totalTemp['totalPaid']!,
           totalTemp['totalExpense']!,
           totalTemp['totalProfit']!);
-      totalsTemp = totals;
-      num totalValue = sumTotal(totals);
-      salesPercent = percentageCounter(totals.item1, totalValue);
-      duePercent = percentageCounter(totals.item2, totalValue);
-      paidPercent = percentageCounter(totals.item3, totalValue);
-      expensePercent = percentageCounter(totals.item4, totalValue);
-      profitPercent = percentageCounter(totals.item5, totalValue);
+      setState((){
+        totalsTemp = totals;
+        num totalValue = sumTotal(totals);
+        salesPercent = percentageCounter(totals.item1, totalValue);
+        duePercent = percentageCounter(totals.item2, totalValue);
+        paidPercent = percentageCounter(totals.item3, totalValue);
+        expensePercent = percentageCounter(totals.item4, totalValue);
+        profitPercent = percentageCounter(totals.item5, totalValue);
+        isLoading = false;
+      });
+    }).catchError((error){
+      print(error);
+      setState(() {
+        isLoading = false;
+      });
     });
     super.initState();
   }
@@ -135,22 +161,22 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   DateTime end = DateTime.now();
   @override
   Widget build(BuildContext context) {
-    print(transactionData);
+    //print('employCus: $employCus');
     return ModalProgressHUD(
-      inAsyncCall: employCus.isEmpty,
-      progressIndicator: SizedBox(
+      inAsyncCall: isLoading,
+      progressIndicator: const SizedBox(
         height: 100.0,
         width: 100.0,
         child: LoadingIndicator(
           indicatorType: Indicator.lineScale,
-          colors: const [kMainColor, kBlueColor, kRedColor, kYellowColor],
+          colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
           strokeWidth: 2,
         ),
       ),
       child: Scaffold(
         backgroundColor: kBackgroundColor,
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Transactions',
             style: kAppBarTitleTextStyle,
           ),
@@ -158,18 +184,18 @@ class _TransactionDetailsState extends State<TransactionDetails> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(FontAwesomeIcons.chevronLeft),
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
           elevation: 0.0,
         ),
-        body: employCus.isEmpty && nonInventory.isEmpty
+        body: isLoading
             ? Container()
             : Container(
                 color: kBackgroundColor,
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(10.0),
+                  padding: const EdgeInsets.all(10.0),
                   child: Column(
                     children: [
                       InfoWidget(
@@ -264,19 +290,19 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                                       data.y),
                             ]),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 20.0,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           dateWidget(
-                            title: '${begin.toString().split(' ')[0]}',
+                            title: begin.toString().split(' ')[0],
                             onTap: () {
                               buildMaterialDatePicker(context, true);
                             },
                           ),
-                          Icon(
+                          const Icon(
                             Icons.arrow_forward,
                             color: kSubMainColor,
                             size: 20.0,
@@ -288,7 +314,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                               title: end.isAtSameMomentAs(DateTime.now())
                                   ? 'To this date..'
                                   : end.toString().split(' ')[0]),
-                          SizedBox(
+                          const SizedBox(
                             width: 20.0,
                           ),
                           roundedTextButton(onTap: () {
@@ -313,15 +339,15 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                           }),
                         ],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10.0,
                       ),
                       LimitedBox(
                         maxHeight: MediaQuery.of(context).size.height * 0.7,
                         child: GridView(
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             mainAxisSpacing: 10.0,
                             crossAxisSpacing: 10.0,
@@ -398,6 +424,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
 Tuple5<num, num, num, num, num> dateTotalTuple(
     List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0, expense = 0, paid = 0, profit = 0;
+  //print('Date data: $items');
   items.forEach((element) {
     Timestamp timestamp = element['date'];
     DateTime date = timestamp.toDate();
@@ -407,6 +434,7 @@ Tuple5<num, num, num, num, num> dateTotalTuple(
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
+      print('Expense: ${element.containsKey('cost')}');
       if (element.containsKey('cost')) {
         expense += element['cost'];
       } else {
@@ -419,6 +447,7 @@ Tuple5<num, num, num, num, num> dateTotalTuple(
         sale += element['price'];
         due += element['due'];
         paid += element['paid'];
+        profit += element['profit'];
       }
     }
   });
@@ -471,7 +500,7 @@ Widget roundedTextButton({
   return InkWell(
     onTap: onTap,
     child: Container(
-      padding: EdgeInsets.all(5.0),
+      padding: const EdgeInsets.all(5.0),
       decoration: BoxDecoration(
         border: Border.all(
           color: borderColor,
@@ -526,7 +555,7 @@ class InfoWidget extends StatelessWidget {
       child: Container(
         width: screenSize.width,
         height: 130,
-        margin: EdgeInsets.symmetric(vertical: 10.0),
+        margin: const EdgeInsets.symmetric(vertical: 10.0),
         decoration: BoxDecoration(
           // color: kStrokeColor,
           border: Border.all(
@@ -543,7 +572,7 @@ class InfoWidget extends StatelessWidget {
               alignment: Alignment.center,
               child: Container(
                 //width: 250.0,
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 height: 60.0,
                 //padding: EdgeInsets.only(top: 10.0),
                 child: textWidget,
@@ -559,8 +588,8 @@ class InfoWidget extends StatelessWidget {
 Widget cardWidget(String title) {
   return Container(
     width: 200.0,
-    margin: EdgeInsets.all(10.0),
-    padding: EdgeInsets.all(3.0),
+    margin: const EdgeInsets.all(10.0),
+    padding: const EdgeInsets.all(3.0),
     decoration: BoxDecoration(
       color: kMainColor,
       borderRadius: BorderRadius.circular(4.0),
@@ -619,7 +648,7 @@ class SpecialContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: const EdgeInsets.symmetric(
         horizontal: 15.0,
         vertical: 10.0,
       ),
@@ -639,11 +668,11 @@ class SpecialContainer extends StatelessWidget {
             '$value BDT',
             style: kTotalSalesStyle,
           ),
-          SizedBox(
+          const SizedBox(
             height: 20.0,
           ),
           Container(
-            padding: EdgeInsets.all(3.0),
+            padding: const EdgeInsets.all(3.0),
             width: 120.0,
             decoration: BoxDecoration(
               color: color,

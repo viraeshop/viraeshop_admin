@@ -26,6 +26,7 @@ import 'package:viraeshop_admin/screens/category_screen.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_admin/utils/utilities.dart';
 import 'package:random_string/random_string.dart';
 import 'package:file_picker/file_picker.dart';
@@ -231,44 +232,38 @@ class _NewProductState extends State<NewProduct>
                                         loading = true;
                                       });
                                       Navigator.pop(dialogContext);
-                                      await deleteProductImages(
-                                              widget.info['image'])!
-                                          .then((value) async {
-                                        if (value == 'No image') {
+                                      List productImageUrls = Hive.box('images').get('productImages', defaultValue: []);
+                                      try{
+                                        String deleteOperationResponse = await NetworkUtility.deleteProductImages(productImageUrls.isNotEmpty ? productImageUrls : widget.info['image'])!;
+                                        if (deleteOperationResponse == 'No image') {
                                           snackBar(
                                               text: 'No image found',
-                                              context: context);
+                                              context: context,
+                                            duration: 40,
+                                            color: kRedColor,
+                                          );
                                         }
-                                        await FirebaseFirestore.instance
-                                            .collection('products')
-                                            .doc('items')
-                                            .collection('products')
-                                            .doc(widget.info['productId'])
-                                            .delete()
-                                            .then((value) {
-                                          List products = Hive.box(productsBox)
-                                              .get(productsKey);
-                                          for (int i = 0;
-                                              i < products.length;
-                                              i++) {
-                                            if (widget.info['productId'] ==
-                                                products[i]['productId']) {
-                                              products.removeAt(i);
-                                            }
+                                        await NetworkUtility.deleteProduct(widget.info['productId']);
+                                        List products = Hive.box(productsBox).get(productsKey);
+                                        for (int i = 0; i < products.length; i++) {
+                                          if (widget.info['productId'] == products[i]['productId']) {
+                                            products.removeAt(i);
                                           }
-                                          Hive.box(productsBox)
-                                              .put(productsKey, products)
-                                              .whenComplete(() {
-                                            setState(() {
-                                              loading = false;
-                                            });
-                                            Navigator.pushNamedAndRemoveUntil(
-                                                context,
-                                                HomeScreen.path,
+                                        }
+                                        Hive.box(productsBox).put(productsKey, products);
+                                        Navigator.pushNamedAndRemoveUntil(
+                                            context,
+                                            HomeScreen.path,
                                                 (route) => false);
-                                          });
+                                      }on FirebaseException catch (e){
+                                        if(kDebugMode){
+                                          print(e.message);
+                                        }
+                                      }finally{
+                                        setState(() {
+                                          loading = false;
                                         });
-                                      });
+                                      }
                                     },
                                     child: const Text(
                                       'Yes',

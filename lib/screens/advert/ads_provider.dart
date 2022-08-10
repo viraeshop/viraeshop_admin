@@ -10,7 +10,7 @@ class AdsProvider extends ChangeNotifier {
   String currentCatg = 'All';
   String drawerWidget = 'Tab Widget';
   bool isSearch = false;
-  bool isStarted = false;
+  bool isAnimationStarted = false;
   void updateAddedToCart (List<bool> values){
     addedToCart = values;
     notifyListeners();
@@ -20,7 +20,7 @@ class AdsProvider extends ChangeNotifier {
     notifyListeners();
   }
   void animationTracker (bool value){
-    isStarted = value;
+    isAnimationStarted = value;
     notifyListeners();
   }
   void switchSearch (bool value){

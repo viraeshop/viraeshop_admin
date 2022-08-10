@@ -441,7 +441,7 @@ packages:
     source: hosted
     version: "7.3.3"
   flutter_bluetooth_basic:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flutter_bluetooth_basic
       url: "https://pub.dartlang.org"

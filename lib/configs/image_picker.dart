@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -114,19 +115,4 @@ Future<Tuple2<String?, String?>> getImageNative(String folder) async {
         File(path!), fileName, folder);
   }
   return Tuple2<String?, String?>(path, productImageLink);
-}
-
-Future<String>? deleteProductImages(List image) async {
-  String message = 'Deleted successfully';
-  List images = image;
-  if (images.isNotEmpty) {
-    images.forEach((element) async {
-      await deleteImage(element).catchError((error) {
-        message = error;
-      });
-    });
-  } else {
-    message = 'No image';
-  }
-  return message;
 }

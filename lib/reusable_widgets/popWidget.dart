@@ -7,20 +7,33 @@ import 'package:viraeshop_admin/screens/new_product_screen.dart';
 import 'package:viraeshop_admin/screens/photoslide_show.dart';
 import 'iconWidget.dart';
 
-Widget popWidget(
-        {required List image,
-        productName,
-        quantity,
-        category,
-        price,
-        description,
-        info,
-        routeName,
-        required bool isDiscount,
-        sellBy,
-        discountPrice,
-        required BuildContext context}) =>
-    AlertDialog(
+
+class PopWidget extends StatefulWidget {
+  const PopWidget({Key? key, required this.image, required this.info, required this.price, required this.description,
+  required this.isDiscount, required this.category, required this.discountPrice, required this.productName, required this.quantity, required this.routeName,
+    required this.sellBy
+  }) : super(key: key);
+  final List image;
+  final String productName,
+  quantity,
+  category,
+  price,
+  description,
+  routeName,
+  sellBy;
+  final Map info;
+  final bool isDiscount;
+  final num discountPrice;
+  @override
+  State<PopWidget> createState() => _PopWidgetState();
+}
+
+class _PopWidgetState extends State<PopWidget> {
+  bool isAnimate = false;
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return AlertDialog(
       // shape: RoundedRectangleBorder().,
       backgroundColor: Colors.black12.withOpacity(0.1),
       contentPadding: const EdgeInsets.all(0.0),
@@ -36,8 +49,8 @@ Widget popWidget(
         ),
       ),
       content: Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        width: MediaQuery.of(context).size.width,
+        height: isAnimate ? size.height * 0.63 : size.height * 0.43,
+        width: size.width,
         decoration: BoxDecoration(
           color: kBackgroundColor,
           borderRadius: BorderRadius.circular(5.0),
@@ -57,8 +70,8 @@ Widget popWidget(
                         topRight: Radius.circular(10.0),
                       ),
                       child: CachedNetworkImage(
-                        imageUrl: image.isNotEmpty ? image[0] : '',
-                        fit: BoxFit.cover,
+                        imageUrl: widget.image.isNotEmpty ? widget.image[0] : '',
+                        fit: BoxFit.contain,
                       ),
                     ),
                     Align(
@@ -69,14 +82,14 @@ Widget popWidget(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  PhotoSlideShow(images: image),
+                                  PhotoSlideShow(images: widget.image),
                             ),
                           );
                         },
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.crop_free_outlined,
                           size: 20.0,
-                          color: kBackgroundColor,
+                          color: Colors.grey[800],
                         ),
                       ),
                     ),
@@ -93,49 +106,60 @@ Widget popWidget(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        productName,
+                        widget.productName,
                         style: kProductNameStyle,
                       ),
                       Text(
-                        category,
+                        widget.category,
                         style: kProductNameStylePro,
                       ),
                       const SizedBox(
                         height: 10.0,
                       ),
                       Text(
-                        isDiscount ? '$price৳' : '$price৳/ $sellBy',
+                        widget.isDiscount ? '${widget.price}৳' : '${widget.price}৳/ ${widget.sellBy}',
                         style: TextStyle(
-                          decoration: isDiscount
+                          decoration: widget.isDiscount
                               ? TextDecoration.lineThrough
                               : TextDecoration.none,
-                          color:
-                              isDiscount ? kIconColor2 : Colors.teal[100],
+                          color: widget.isDiscount ? kIconColor2 : Colors.teal[100],
                           fontSize: 12.0,
                           fontFamily: 'Montserrat',
                         ),
                       ),
-                      isDiscount
+                      widget.isDiscount
                           ? Text(
-                              '${discountPrice.toString()}৳/ $sellBy',
-                              style: TextStyle(
-                                color: Colors.teal[100],
-                                fontSize: 20.0,
-                                fontFamily: 'Montserrat',
-                              ),
-                            )
+                        '${widget.discountPrice.toString()}৳/ ${widget.sellBy}',
+                        style: TextStyle(
+                          color: Colors.teal[100],
+                          fontSize: 20.0,
+                          fontFamily: 'Montserrat',
+                        ),
+                      )
                           : const SizedBox(),
                       const SizedBox(
                         height: 10.0,
                       ),
                       Text(
-                        description,
+                        widget.description,
                         style: kProductNameStylePro,
                       ),
                       const SizedBox(
                         height: 10.0,
                       ),
-                      const SupplierInfo(),
+                      SupplierInfo(
+                        onAnimate: () {
+                          setState(() {
+                            isAnimate = !isAnimate;
+                          });
+                        },
+                        isAnimate: isAnimate,
+                        address: widget.info['supplier']['address'] ?? '',
+                        optionalMobile: widget.info['supplier']['optional_phone'] ?? '',
+                        businessName: widget.info['supplier']['business_name'] ?? '',
+                        supplierName: widget.info['supplier']['supplier_name'] ?? '',
+                        mobile: widget.info['supplier']['mobile'] ?? '',
+                      ),
                     ],
                   ),
                 ),
@@ -153,10 +177,10 @@ Widget popWidget(
               context,
               MaterialPageRoute(
                   builder: (context) => NewProduct(
-                        info: info,
-                        routeName: routeName,
-                        isUpdateProduct: true,
-                      )),
+                    info: widget.info,
+                    routeName: widget.routeName,
+                    isUpdateProduct: true,
+                  )),
             );
           },
           child: IconWidget(icon: Icons.edit_outlined),
@@ -165,8 +189,8 @@ Widget popWidget(
           icon: Icons.share,
         ),
         Container(
-          height: quantity.length <= 6 ? 50.0 : null,
-          width: quantity.length <= 6 ? null : 100.0,
+          height: widget.quantity.length <= 6 ? 50.0 : null,
+          width: widget.quantity.length <= 6 ? null : 100.0,
           padding: const EdgeInsets.only(top: 8.0, left: 3.0, right: 3.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(30.0),
@@ -174,7 +198,7 @@ Widget popWidget(
             border: Border.all(color: kBackgroundColor, width: 3),
           ),
           child: Text(
-            quantity,
+            widget.quantity,
             softWrap: true,
             style: const TextStyle(
               fontSize: 20.0,
@@ -185,4 +209,6 @@ Widget popWidget(
           ),
         ),
       ],
-    );
+    );;
+  }
+}

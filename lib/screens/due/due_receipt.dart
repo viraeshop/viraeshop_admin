@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -10,11 +11,17 @@ import 'package:viraeshop_admin/configs/share_invoice.dart';
 import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
-import '../non_inventory_transaction_info.dart';
+import '../../components/ui_components/delete_popup.dart';
+import '../transactions/non_inventory_transaction_info.dart';
 
 class DueReceipt extends StatefulWidget {
   final Map data;
-  const DueReceipt({required this.data});
+  final String title;
+  final bool isOnlyShow;
+  const DueReceipt(
+      {required this.data,
+      this.title = 'Due Receipt',
+      this.isOnlyShow = false});
   @override
   _DueReceiptState createState() => _DueReceiptState();
 }
@@ -24,9 +31,13 @@ class _DueReceiptState extends State<DueReceipt> {
   List items = [];
   String quantity = '0';
   final TextEditingController controller = TextEditingController();
-  bool isEditing = false, isLoading = false;
-  num due = 0, paid = 0;
+  final TextEditingController discountController = TextEditingController();
+  bool isEditing = false;
+  bool isLoading = false;
+  bool isDiscount = false;
+  num due = 0, paid = 0, discount = 0, subTotal = 0;
   List payList = [];
+  String role = '';
   static Timestamp timestamp = Timestamp.now();
   static final formatter = DateFormat('MM/dd/yyyy');
   String dateTime = formatter.format(
@@ -47,9 +58,12 @@ class _DueReceiptState extends State<DueReceipt> {
     due = widget.data['due'];
     paid = widget.data['paid'];
     payList = widget.data['pay_list'] ?? [];
+    role = widget.data['customer_role'];
+    discount = widget.data['discount'];
+    subTotal = widget.data['price'];
     super.initState();
   }
-
+  bool isManageDue = Hive.box('adminInfo').get('isManageDue');
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -63,12 +77,43 @@ class _DueReceiptState extends State<DueReceipt> {
           iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: const Text(
-            'Due Receipt',
+          title: Text(
+            widget.title,
             style: kAppBarTitleTextStyle,
           ),
           centerTitle: true,
           titleTextStyle: kTextStyle1,
+          actions: [
+           if(isManageDue) IconButton(
+                onPressed: (){
+                  showDialog(context: context, builder: (context){
+                    return DeletePopup(
+                      onDelete: () async{
+                        setState(() {
+                          isLoading = true;
+                        });
+                        Navigator.pop(context);
+                        try{
+                          await NetworkUtility.deleteInvoice(widget.data['invoice_id']);
+                          Navigator.pop(context);
+                        } on FirebaseException catch (e) {
+                          if (kDebugMode) {
+                            print(e.message);
+                          }
+                        } finally {
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                      },
+                    );
+                  });
+                },
+                icon: const Icon(Icons.delete),
+                color: kRedColor,
+              iconSize: 30.0,
+            )
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(10),
@@ -136,18 +181,17 @@ class _DueReceiptState extends State<DueReceipt> {
               const SizedBox(
                 height: 10.0,
               ),
-              Row(
-                //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if(role != 'general')Text(
+                    '${widget.data['user_info']['business_name']}',
+                    style: kProductNameStyle,
+                  ),
                   Text(
                     '${widget.data['user_info']['name']}',
                     style: kProductNameStyle,
                   ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
                   Text(
                     '${widget.data['user_info']['mobile']}',
                     style: kProductNameStylePro,
@@ -217,12 +261,57 @@ class _DueReceiptState extends State<DueReceipt> {
                       style: kProductNameStylePro,
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      'Discount: ${widget.data['discount'].toString()}',
-                      style: kProductNameStylePro,
+                    if (isDiscount) SizedBox(
+                      width: 150.0,
+                      child: TextField(
+                        controller: discountController,
+                        style: kProductNameStylePro,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value){
+                          if(value.isEmpty){
+                            setState(() {
+                              subTotal = widget.data['price'];
+                              due = widget.data['due'];
+                            });
+                          }
+                        },
+                        decoration: InputDecoration(
+                          suffix: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                discount = discountController.text.isNotEmpty ? num.parse(discountController.text) : discount;
+                                subTotal -= discount;
+                                due -= discount;
+                                isDiscount = false;
+                              });
+                            },
+                            icon: const Icon(Icons.done),
+                            iconSize: 20.0,
+                            color: kNewMainColor,
+                          ),
+                          border: const UnderlineInputBorder(
+                            borderSide:
+                            BorderSide(color: kSubMainColor),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide:
+                            BorderSide(color: kNewMainColor),
+                          ),
+                        ),
+                      ),
+                    ) else TextButton(
+                      onPressed: (){
+                        setState(() {
+                          isDiscount = true;
+                        });
+                      },
+                      child: Text(
+                        'Discount: ${discount.toString()}',
+                        style: kProductNameStylePro,
+                      ),
                     ),
                     Text(
-                      'Sub Total: ${widget.data['price'].toString()}',
+                      'Sub Total: ${subTotal.toString()}',
                       style: kProductNameStylePro,
                     ),
                     const SizedBox(height: 10),
@@ -231,65 +320,67 @@ class _DueReceiptState extends State<DueReceipt> {
                       style: kProductNameStylePro,
                     ),
                     const SizedBox(height: 10),
-                    if(payList.isNotEmpty) Column(
-                      children: List.generate(payList.length, (index) {
-                        Timestamp timestamp = payList[index]['date'];
-                        final formatter = DateFormat('MM/dd/yyyy');
-                        String dateTime = formatter.format(
-                          timestamp.toDate(),
-                        );
-                        return Row(
-                          children: [
-                            Text(
-                              dateTime,
-                              style: kTableCellStyle,
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              'Pay ${payList[index]['paid']}',
-                              style: kTableCellStyle,
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
+                    if (payList.isNotEmpty)
+                      Column(
+                        children: List.generate(payList.length, (index) {
+                          Timestamp timestamp = payList[index]['date'];
+                          final formatter = DateFormat('MM/dd/yyyy');
+                          String dateTime = formatter.format(
+                            timestamp.toDate(),
+                          );
+                          return Row(
+                            children: [
+                              Text(
+                                dateTime,
+                                style: kProductNameStylePro,
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Text(
+                                'Pay ${payList[index]['paid']}',
+                                style: kProductNameStylePro,
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
                     if (due != 0)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                        if (!isEditing)
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                isEditing = true;
-                              });
-                            },
-                            child: Text(
-                              'Pay: ${controller.text}',
-                              style: kTableCellStyle,
-                            ),
-                          )
-                          else
+                          if (!isEditing && !widget.isOnlyShow)
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  isEditing = true;
+                                });
+                              },
+                              child: Text(
+                                'Pay: ${controller.text}',
+                                style: kProductNameStylePro,
+                              ),
+                            )
+                          else if (!widget.isOnlyShow)
                             SizedBox(
                               width: 150.0,
                               child: TextField(
                                 controller: controller,
                                 style: kProductNameStylePro,
-                                // onSubmitted: (value) {
-                                //   setState(() {
-                                //     due -= num.parse(value.isNotEmpty ? value : '0');
-                                //   });
-                                // },
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                   suffix: IconButton(
                                     onPressed: () {
                                       setState(() {
-                                        if(due != 0){
-                                          due -= num.parse(controller.text.isNotEmpty ? controller.text : '0');
-                                        }
+                                        due -= num.parse(
+                                            controller.text.isNotEmpty
+                                                ? controller.text
+                                                : '0');
+                                        payList.add({
+                                          'date': Timestamp.now(),
+                                          'paid':
+                                              num.parse(controller.text ?? '0'),
+                                        });
                                         isEditing = false;
                                       });
                                     },
@@ -298,10 +389,12 @@ class _DueReceiptState extends State<DueReceipt> {
                                     color: kNewMainColor,
                                   ),
                                   border: const UnderlineInputBorder(
-                                    borderSide: BorderSide(color: kSubMainColor),
+                                    borderSide:
+                                        BorderSide(color: kSubMainColor),
                                   ),
                                   focusedBorder: const UnderlineInputBorder(
-                                    borderSide: BorderSide(color: kNewMainColor),
+                                    borderSide:
+                                        BorderSide(color: kNewMainColor),
                                   ),
                                 ),
                               ),
@@ -311,12 +404,12 @@ class _DueReceiptState extends State<DueReceipt> {
                     const SizedBox(height: 10),
                     Text(
                       'Due: ${due.toString()}',
-                      style: kTableCellStyle,
+                      style: kProductNameStylePro,
                     ),
                     const SizedBox(height: 10),
                     Text(
                       'Paid: ${paid.toString()}',
-                      style: kTableCellStyle,
+                      style: kProductNameStylePro,
                     ),
                   ]),
                 ],
@@ -382,24 +475,20 @@ class _DueReceiptState extends State<DueReceipt> {
                     onPressed: () async {
                       setState(() {
                         isLoading = true;
-                        payList.add({
-                          'date': Timestamp.now(),
-                          'paid': num.parse(controller.text ?? '0'),
-                        });
                       });
                       try {
                         await NetworkUtility.updateCustomerDue(
                             widget.data['invoice_id'], {
+                          'price': subTotal,
+                          'discount': discount,
                           'due': due,
                           'pay_list': payList,
-                        });
-                        setState(() {
-                          isLoading = false;
                         });
                       } catch (e) {
                         if (kDebugMode) {
                           print(e);
                         }
+                      }finally{
                         setState(() {
                           isLoading = false;
                         });
@@ -419,6 +508,8 @@ class _DueReceiptState extends State<DueReceipt> {
                         MaterialPageRoute(
                           builder: (context) {
                             return BluetoothPrinter(
+                              isWithBusinessName: role != 'general',
+                              businessName: widget.data['user_info']['business_name'],
                               quantity: quantity,
                               subTotal: widget.data['price'].toString(),
                               items: items,

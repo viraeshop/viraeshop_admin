@@ -8,8 +8,8 @@ import 'package:viraeshop_admin/configs/generate_statement.dart';
 import 'package:viraeshop_admin/configs/invoices/customer_goods_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/print_customer_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_details.dart';
-import 'package:viraeshop_admin/screens/user_transaction_screen.dart';
+import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
+import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 
 import 'reciept_screen.dart';
 
@@ -26,8 +26,8 @@ class CustomerTransactionScreen extends StatefulWidget {
 class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
   List data = [];
   List dataTemp = [];
-  Tuple3<num, num, num> totals = Tuple3<num, num, num>(0, 0, 0);
-  Tuple3<num, num, num> totalsTemp = Tuple3<num, num, num>(0, 0, 0);
+  Tuple3<num, num, num> totals = const Tuple3<num, num, num>(0, 0, 0);
+  Tuple3<num, num, num> totalsTemp = const Tuple3<num, num, num>(0, 0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
   @override
@@ -80,20 +80,20 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
         toolbarHeight: 40.0,
         backgroundColor: kSubMainColor,
         elevation: 0.0,
-        shape: Border(
+        shape: const Border(
           bottom: BorderSide(
             color: kSubMainColor,
           ),
         ),
         title: Text(
-          '${widget.name}',
+          widget.name,
           style: kDrawerTextStyle2,
         ),
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.chevronLeft,
           ),
           color: kBackgroundColor,
@@ -107,7 +107,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                 totalsTemp = totals;
               });
             },
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             color: kBackgroundColor,
             iconSize: 20.0,
           ),
@@ -128,8 +128,8 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                     Container(
                       height: 160.0,
                       width: screenSize.width,
-                      padding: EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(10.0),
+                      decoration: const BoxDecoration(
                         color: kSubMainColor,
                         border: Border(
                             // bottom: BorderSide(color: kBackgroundColor,),
@@ -138,11 +138,11 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Total Sales',
                             style: kDrawerTextStyle1,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10.0,
                           ),
                           Row(
@@ -151,12 +151,12 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                               dateWidget(
                                 borderColor: kBackgroundColor,
                                 color: kBackgroundColor,
-                                title: '${begin.toString().split(' ')[0]}',
+                                title: begin.toString().split(' ')[0],
                                 onTap: () {
                                   buildMaterialDatePicker(context, true);
                                 },
                               ),
-                              Icon(
+                              const Icon(
                                 Icons.arrow_forward,
                                 color: kSubMainColor,
                                 size: 20.0,
@@ -170,7 +170,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                   title: end.isAtSameMomentAs(DateTime.now())
                                       ? 'To this date..'
                                       : end.toString().split(' ')[0]),
-                              SizedBox(
+                              const SizedBox(
                                 width: 20.0,
                               ),
                               roundedTextButton(
@@ -185,7 +185,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10.0,
                           ),
                           searchBar((value) {
@@ -203,13 +203,13 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                           },
                         ),
                         columns: [
-                          DataColumn(
+                          const DataColumn(
                             label: Text(
                               'SL',
                               style: kTotalSalesStyle,
                             ),
                           ),
-                          DataColumn(
+                          const DataColumn(
                             label: Text(
                               'Invoice No.',
                               style: kTotalSalesStyle,
@@ -221,7 +221,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                 showPaid = !showPaid;
                               });
                             },
-                            label: Text(
+                            label: const Text(
                               'Paid',
                               style: kTotalSalesStyle,
                             ),
@@ -232,20 +232,14 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                 showDue = !showDue;
                               });
                             },
-                            label: Text(
+                            label: const Text(
                               'Due',
                               style: kTotalSalesStyle,
                             ),
                           ),
-                          DataColumn(
+                          const DataColumn(
                             label: Text(
                               'Amount',
-                              style: kTotalSalesStyle,
-                            ),
-                          ),
-                          DataColumn(
-                            label: Text(
-                              'Action',
                               style: kTotalSalesStyle,
                             ),
                           ),
@@ -266,41 +260,37 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                   '${dataTemp[index]['invoice_id']}',
                                   style: kCustomerCellStyle,
                                 ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ReceiptScreen(
+                                            data: dataTemp[index],
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }
                               ),
                               DataCell(
                                 Text(
-                                  '${dataTemp[index]['paid'].toString()}',
+                                  dataTemp[index]['paid'].toString(),
                                   style: kTotalTextStyle,
                                 ),
                               ),
                               DataCell(
                                 Text(
-                                  '${dataTemp[index]['due'].toString()}',
+                                  dataTemp[index]['due'].toString(),
                                   style: kDueCellStyle,
                                 ),
                               ),
                               DataCell(
                                 Text(
-                                  '${dataTemp[index]['price'].toString()}',
+                                  dataTemp[index]['price'].toString(),
                                   style: kTotalTextStyle,
                                 ),
                               ),
-                              DataCell(
-                                  Text(
-                                    'View',
-                                    style: kTotalTextStyle,
-                                  ), onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return ReceiptScreen(
-                                        data: dataTemp[index],
-                                      );
-                                    },
-                                  ),
-                                );
-                              }),
                             ],
                           );
                         }),
@@ -314,80 +304,46 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
               alignment: Alignment.bottomCenter,
               heightFactor: 0.32,
               child: Padding(
-                padding: EdgeInsets.all(15.0),
-                child: Column(
-                  children: [
-                    LimitedBox(
-                      maxHeight: 140,
-                      child: GridView(
-                        physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 10.0,
-                          crossAxisSpacing: 10.0,
-                          childAspectRatio: 1,
-                        ),
-                        children: [
-                          showPaid == true ? SpecialContainer(
-                            value: '${totalsTemp.item1.toString()}',
-                            title: 'Total Paid',
-                            color: kNewTextColor,
-                          ) : SizedBox(),
-                         showDue == true ? SpecialContainer(
-                            value: totalsTemp.item2.toString(),
-                            title: 'Total Due',
-                            color: kRedColor,
-                          ) : SizedBox(),
-                          SpecialContainer(
-                            value: '${totalsTemp.item3.toString()}',
-                            title: 'Amount',
-                            color: kBlueColor,
+                padding: const EdgeInsets.all(15.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      LimitedBox(
+                        maxHeight: 140,
+                        child: GridView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 10.0,
+                            crossAxisSpacing: 10.0,
+                            childAspectRatio: 1,
                           ),
-                        ],
+                          children: [
+                            showPaid == true ? SpecialContainer(
+                              value: totalsTemp.item1.toString(),
+                              title: 'Total Paid',
+                              color: kNewTextColor,
+                            ) : const SizedBox(),
+                           showDue == true ? SpecialContainer(
+                              value: totalsTemp.item2.toString(),
+                              title: 'Total Due',
+                              color: kRedColor,
+                            ) : const SizedBox(),
+                            SpecialContainer(
+                              value: totalsTemp.item3.toString(),
+                              title: 'Amount',
+                              color: kBlueColor,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        buttons(
-                          title: 'Save PDF',
-                          onTap: () {
-                            generateCustomerStatement(
-                              name: dataTemp[0]['name'],
-                              email: dataTemp[0]['email'],
-                              mobile: dataTemp[0]['mobile'],
-                              address: dataTemp[0]['address'],
-                              isInventory: true,
-                              items: data,
-                              begin: begin,
-                              end: end,
-                              totalAmount: totalsTemp.item3.toString(),
-                              totalDue: totalsTemp.item2.toString(),
-                              totalPay: totalsTemp.item1.toString(),
-                            );
-                          },
-                        ),
-                        buttons(
-                          onTap: () {
-                            shareCustomerStatement(
-                              name: dataTemp[0]['name'],
-                              email: dataTemp[0]['email'],
-                              mobile: dataTemp[0]['mobile'],
-                              address: dataTemp[0]['address'],
-                              isInventory: true,
-                              items: data,
-                              begin: begin,
-                              end: end,
-                              totalAmount: totalsTemp.item3.toString(),
-                              totalDue: totalsTemp.item2.toString(),
-                              totalPay: totalsTemp.item1.toString(),
-                            );
-                          },
-                          title: 'Share',
-                        ),
-                        buttons(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          buttons(
+                            title: 'Save PDF',
                             onTap: () {
-                              printCustomerStatement(
+                              generateCustomerStatement(
                                 name: dataTemp[0]['name'],
                                 email: dataTemp[0]['email'],
                                 mobile: dataTemp[0]['mobile'],
@@ -401,10 +357,46 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                 totalPay: totalsTemp.item1.toString(),
                               );
                             },
-                            title: 'Print'),
-                      ],
-                    ),
-                  ],
+                          ),
+                          buttons(
+                            onTap: () {
+                              shareCustomerStatement(
+                                name: dataTemp[0]['name'],
+                                email: dataTemp[0]['email'],
+                                mobile: dataTemp[0]['mobile'],
+                                address: dataTemp[0]['address'],
+                                isInventory: true,
+                                items: data,
+                                begin: begin,
+                                end: end,
+                                totalAmount: totalsTemp.item3.toString(),
+                                totalDue: totalsTemp.item2.toString(),
+                                totalPay: totalsTemp.item1.toString(),
+                              );
+                            },
+                            title: 'Share',
+                          ),
+                          buttons(
+                              onTap: () {
+                                printCustomerStatement(
+                                  name: dataTemp[0]['name'],
+                                  email: dataTemp[0]['email'],
+                                  mobile: dataTemp[0]['mobile'],
+                                  address: dataTemp[0]['address'],
+                                  isInventory: true,
+                                  items: data,
+                                  begin: begin,
+                                  end: end,
+                                  totalAmount: totalsTemp.item3.toString(),
+                                  totalDue: totalsTemp.item2.toString(),
+                                  totalPay: totalsTemp.item1.toString(),
+                                );
+                              },
+                              title: 'Print'),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -514,7 +506,7 @@ Widget infoCard(String title, Color color) {
     width: double.infinity,
     height: 30.0,
     // margin: EdgeInsets.all(10.0),
-    padding: EdgeInsets.all(5.0),
+    padding: const EdgeInsets.all(5.0),
     decoration: BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(4.0),
@@ -523,7 +515,7 @@ Widget infoCard(String title, Color color) {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'SourceSans',
             fontSize: 15.0,
             color: kBackgroundColor,
@@ -541,13 +533,13 @@ Widget dateWidget({
   Color borderColor = kMainColor,
   // ignore: avoid_init_to_null
   color = kNewTextColor,
-  dynamic onTap = null,
+  dynamic onTap,
 }) {
   return InkWell(
     onTap: onTap,
     child: Container(
       // height: 30.0,
-      padding: EdgeInsets.all(5.0),
+      padding: const EdgeInsets.all(5.0),
       decoration: BoxDecoration(
         border: Border.all(
           color: borderColor,
@@ -585,7 +577,7 @@ Widget searchBar(void Function(String)? onChanged) {
       Container(
         width: 170.0,
         height: 50.0,
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           border: Border.all(
             color: kBackgroundColor,
@@ -599,7 +591,8 @@ Widget searchBar(void Function(String)? onChanged) {
             textAlign: TextAlign.center,
             style: kDrawerTextStyle2,
             textAlignVertical: TextAlignVertical.center,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.all(10.0),
               hintText: 'Search',
               hintStyle: TextStyle(
                 fontFamily: 'SourceSans',

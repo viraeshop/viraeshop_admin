@@ -5,58 +5,63 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_details.dart';
+import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
+import 'non_inventory_transactions.dart';
 import 'user_transaction_screen.dart';
 import 'package:tuple/tuple.dart';
 
-class Employees extends StatefulWidget {
+class NonInventoryTransactionShops extends StatefulWidget {
   final List data;
-  Employees({required this.data});
+  const NonInventoryTransactionShops({required this.data});
 
   @override
-  _EmployeesState createState() => _EmployeesState();
+  _NonInventoryTransactionShopsState createState() =>
+      _NonInventoryTransactionShopsState();
 }
 
-class _EmployeesState extends State<Employees> {
+class _NonInventoryTransactionShopsState
+    extends State<NonInventoryTransactionShops> {
   Map<String, List> transactionData = {};
   Map<String, Tuple2> balances = {};
   Map<String, Tuple2> balancesTemp = {};
-  Tuple2 totalBalance = Tuple2<num, num>(0, 0);
-  Tuple2 totalBalanceTemp = Tuple2<num, num>(0, 0);
+  Tuple2 totalBalance = const Tuple2<num, num>(0, 0);
+  Tuple2 totalBalanceTemp = const Tuple2<num, num>(0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
   Set employees = Set();
   @override
   void initState() {
     // TODO: implement initState
-    List employeeId = [];
-    widget.data.forEach((element) {
-      employeeId.add(element['employee_id']);
-    });
-    Set employeeSet = Set.from(employeeId);
-    employeeSet.forEach((employee) {
-      List items = [];
-      widget.data.forEach((element) {
-        if (element['employee_id'] == employee) {
-          items.add(element);
-        }
-        setState(() {
-          transactionData[employee] = items;
+    List shops = [];
+    for (var element in widget.data) {
+      if (element['isWithNonInventory'] == true) {
+        element['shop'].forEach((nameShop) {
+          shops.add(nameShop['business_name']);
         });
+      }
+    }
+    Set shopSet = Set.from(shops);
+    for (var shop in shopSet) {
+      List items = [];
+      for (var element in widget.data) {
+        element['shop'].forEach((shopItem) {
+          if (shopItem['business_name'] == shop) {
+            items.add(element);
+          }
+        });
+      }
+      setState(() {
+        transactionData[shop] = items;
       });
-    });
+    }
     setState(() {
-      balances = Map.fromIterable(
-        employeeSet,
-        key: (element) => element,
-        value: (element) {
-          return tuple(transactionData[element]!);
-        },
-      );
+      balances = {
+        for (var element in shopSet) element: tuple(transactionData[element]!)
+      };
       balancesTemp = balances;
       totalBalance = tuple(widget.data);
       totalBalanceTemp = totalBalance;
-      employees = employeeSet;
+      employees = shopSet;
     });
     super.initState();
   }
@@ -65,12 +70,12 @@ class _EmployeesState extends State<Employees> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: balancesTemp.isEmpty,
-      progressIndicator: SizedBox(
+      progressIndicator: const SizedBox(
         height: 100.0,
         width: 100.0,
         child: LoadingIndicator(
           indicatorType: Indicator.lineScale,
-          colors: const [kMainColor, kBlueColor, kRedColor, kYellowColor],
+          colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
           strokeWidth: 2,
         ),
       ),
@@ -80,12 +85,12 @@ class _EmployeesState extends State<Employees> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(FontAwesomeIcons.chevronLeft),
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
-          title: Text(
-            'Employees',
+          title: const Text(
+            'Non Inventory',
             style: kAppBarTitleTextStyle,
           ),
           actions: [
@@ -96,7 +101,7 @@ class _EmployeesState extends State<Employees> {
                   totalBalanceTemp = totalBalance;
                 });
               },
-              icon: Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh),
               color: kSubMainColor,
               iconSize: 20.0,
             ),
@@ -112,20 +117,21 @@ class _EmployeesState extends State<Employees> {
                       heightFactor: 0.7,
                       alignment: Alignment.topCenter,
                       child: ListView.builder(
-                          padding: EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(10.0),
                           itemCount: balancesTemp.keys.toList().length,
                           itemBuilder: (context, i) {
                             return InfoWidget(
                                 textWidget: rowWidget(
-                                    '${balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString()}',
-                                    '${balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()}'),
-                                title: '${balancesTemp.keys.toList()[i]}',
+                                    balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString(),
+                                    balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()),
+                                title: balancesTemp.keys.toList()[i],
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) {
-                                      return UserTransactionScreen(
-                                        data: transactionData[transactionData.keys.toList()[i]]!,
+                                      return NonInventoryTransactions(
+                                        data: transactionData[
+                                            transactionData.keys.toList()[i]]!,
                                         name: transactionData.keys.toList()[i],
                                       );
                                     }),
@@ -134,16 +140,16 @@ class _EmployeesState extends State<Employees> {
                           }),
                     ),
                     FractionallySizedBox(
-                      heightFactor: 0.3,
+                      heightFactor: 0.25,
                       alignment: Alignment.bottomCenter,
                       child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
                           color: kBackgroundColor,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black12,
-                              offset: Offset(0, 0),
+                              offset: const Offset(0, 0),
                               spreadRadius: 2.0,
                             ),
                           ],
@@ -156,12 +162,12 @@ class _EmployeesState extends State<Employees> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 dateWidget(
-                                  title: '${begin.toString().split(' ')[0]}',
+                                  title: begin.toString().split(' ')[0],
                                   onTap: () {
                                     buildMaterialDatePicker(context, true);
                                   },
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.arrow_forward,
                                   color: kSubMainColor,
                                   size: 20.0,
@@ -173,7 +179,7 @@ class _EmployeesState extends State<Employees> {
                                     title: end.isAtSameMomentAs(DateTime.now())
                                         ? 'To this date..'
                                         : end.toString().split(' ')[0]),
-                                SizedBox(
+                                const SizedBox(
                                   width: 20.0,
                                 ),
                                 roundedTextButton(onTap: () {
@@ -204,7 +210,7 @@ class _EmployeesState extends State<Employees> {
                                   title: 'Total Sales',
                                   color: kYellowColor,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 20.0,
                                 ),
                                 SpecialContainer(
@@ -260,17 +266,19 @@ class _EmployeesState extends State<Employees> {
 
 Tuple2 tuple(List items) {
   num sale = 0, due = 0;
-  items.forEach((element) {
-    sale += element['price'];
-    due += element['due'];
-  });
+  for (var element in items) {
+    element['shop'].forEach((shop) {
+      sale += shop['price'];
+      due += shop['due'];
+    });
+  }
   Tuple2 data = Tuple2<num, num>(sale, due);
   return data;
 }
 
 Tuple2 dateTuple(List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0;
-  items.forEach((element) {
+  for (var element in items) {
     Timestamp timestamp = element['date'];
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
@@ -279,10 +287,12 @@ Tuple2 dateTuple(List items, DateTime begin, DateTime end) {
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-      sale += element['price'];
-      due += element['due'];
+      element['shop'].forEach((shop) {
+        sale += shop['price'];
+        due += shop['due'];
+      });
     }
-  });
+  }
   Tuple2 data = Tuple2<num, num>(sale, due);
   return data;
 }

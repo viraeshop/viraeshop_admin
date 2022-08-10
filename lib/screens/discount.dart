@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -20,26 +21,34 @@ class _DiscountScreenState extends State<DiscountScreen> {
   TextEditingController _percentController = TextEditingController();
   static Box box = Hive.box('cartDetails');
   num discountAmount = 0.0;
-  static num originalTotalPrice = box.get('totalPrice', defaultValue: 0.0);
-  num currentTotalPrice = originalTotalPrice;
+  static num originalTotalPrice = 0;
+  num currentTotalPrice = 0;
   num discountPercent = 0;
+  String cashHint = '';
+  String percentHint = '';
   List numbers = List.generate(11, (index) => index.toString());
 
   @override
   void initState() {
     // TODO: implement initState
-    if(widget.isItems){
-      Cart? item =
-      Hive.box<Cart>('cart').get(widget.keyStore);
-      originalTotalPrice = item!.price;
+    if (widget.isItems) {
+      Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
+      item!.price = item.unitPrice * item.quantity;
+      cashHint = item.discountValue.toString();
+      percentHint = item.discountPercent.toString();
+      originalTotalPrice = item.price;
+      currentTotalPrice = originalTotalPrice;
+    } else {
+      originalTotalPrice = box.get('totalPrice', defaultValue: 0.0) + box.get('discountAmount', defaultValue: 0);
       currentTotalPrice = originalTotalPrice;
     }
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
@@ -49,18 +58,18 @@ class _DiscountScreenState extends State<DiscountScreen> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(
+            icon: const Icon(
               FontAwesomeIcons.chevronLeft,
             ),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Payment: Cash',
             style: kAppBarTitleTextStyle,
           ),
           centerTitle: false,
-          shape: Border(
+          shape: const Border(
             bottom: BorderSide(color: kStrokeColor),
           ),
         ),
@@ -80,7 +89,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                     children: [
                       Column(
                         children: [
-                          Text(
+                          const Text(
                             'Cash Discount',
                             style: TextStyle(
                               color: kSubMainColor,
@@ -100,41 +109,50 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 keyboardType: TextInputType.number,
                                 controller: _controller,
                                 decoration: InputDecoration(
-                                  border: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: kSubMainColor),
-                                  ),
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: kMainColor),
-                                  ),
-                                  enabledBorder: UnderlineInputBorder(
+                                  hintText: cashHint,
+                                  border: const UnderlineInputBorder(
                                     borderSide:
-                                        BorderSide(color: kSubMainColor, width: 2.0),
+                                        BorderSide(color: kSubMainColor),
+                                  ),
+                                  focusedBorder: const UnderlineInputBorder(
+                                    borderSide:
+                                        const BorderSide(color: kMainColor),
+                                  ),
+                                  enabledBorder: const UnderlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: kSubMainColor, width: 2.0),
                                   ),
                                 ),
                                 onChanged: (value) {
-                                  List characters = value.characters.where((p0) => numbers.contains(p0) || p0 == '.').toList();
-                                 print(characters.join());
+                                  List characters = value.characters
+                                      .where((p0) =>
+                                          numbers.contains(p0) || p0 == '.')
+                                      .toList();
+                                  if (kDebugMode) {
+                                    print(characters.join());
+                                  }
                                   setState(() {
-                                      discountAmount =
-                                          num.parse(characters.join());
-                                      if(discountAmount <= originalTotalPrice){
-                                        currentTotalPrice =
-                                        (originalTotalPrice - discountAmount).round();
-                                        discountPercent =
-                                            (discountAmount / originalTotalPrice) *
-                                                100;
-                                        _percentController.text =
-                                            discountPercent.toStringAsFixed(2);
-                                      }
+                                    discountAmount =
+                                        num.parse(characters.join());
+                                    if (discountAmount <= originalTotalPrice) {
+                                      currentTotalPrice =
+                                          (originalTotalPrice - discountAmount)
+                                              .round();
+                                      discountPercent = (discountAmount /
+                                              originalTotalPrice) *
+                                          100;
+                                      _percentController.text =
+                                          discountPercent.toStringAsFixed(2);
+                                    }
                                   });
                                 }),
                           ),
                         ],
                       ),
-                      SizedBox(height: 50.0),
+                      const SizedBox(height: 50.0),
                       Column(
                         children: [
-                          Text(
+                          const Text(
                             'Percentage Discount',
                             style: TextStyle(
                               color: kSubMainColor,
@@ -157,28 +175,36 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 keyboardType: TextInputType.number,
                                 controller: _percentController,
                                 decoration: InputDecoration(
-                                  border: UnderlineInputBorder(
-                                    borderSide: BorderSide(color: kSubMainColor),
+                                  hintText: percentHint,
+                                  border: const UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: kSubMainColor),
                                   ),
-                                  focusedBorder: UnderlineInputBorder(
+                                  focusedBorder: const UnderlineInputBorder(
                                     borderSide: BorderSide(color: kMainColor),
                                   ),
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: kMainColor, width: 2.0),
+                                  enabledBorder: const UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: kMainColor, width: 2.0),
                                   ),
                                 ),
                                 onChanged: (value) {
-                                  List characters = value.characters.where((p0) => numbers.contains(p0) || p0 == '.').toList();
+                                  List characters = value.characters
+                                      .where((p0) =>
+                                          numbers.contains(p0) || p0 == '.')
+                                      .toList();
                                   //print(characters.join());
                                   setState(() {
-                                    discountPercent = num.parse(characters.join());
+                                    discountPercent =
+                                        num.parse(characters.join());
                                     discountAmount =
                                         (discountPercent * originalTotalPrice) /
                                             100.round();
                                     currentTotalPrice =
-                                    (originalTotalPrice - discountAmount).round();
-                                    _controller.text = discountAmount.toString();
+                                        (originalTotalPrice - discountAmount)
+                                            .round();
+                                    _controller.text =
+                                        discountAmount.toString();
                                   });
                                 }),
                           ),
@@ -192,7 +218,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                 heightFactor: 0.3,
                 alignment: Alignment.bottomCenter,
                 child: Container(
-                  padding: EdgeInsets.only(top: 20.0),
+                  padding: const EdgeInsets.only(top: 20.0),
                   color: kBackgroundColor,
                   child: SingleChildScrollView(
                     child: Column(
@@ -204,7 +230,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                           child: Column(
                             //mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Text(
+                              const Text(
                                 'New total:',
                                 style: TextStyle(
                                   color: kSubMainColor,
@@ -213,24 +239,24 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   letterSpacing: 1.3,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10.0,
                               ),
                               Text(
                                 '$currentTotalPrice',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: kSubMainColor,
                                   fontFamily: 'SourceSans',
                                   fontSize: 30,
                                   letterSpacing: 1.3,
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10.0,
                               ),
                               Text(
                                 '$originalTotalPrice',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.black38,
                                   fontFamily: 'SourceSans',
                                   fontSize: 25,
@@ -245,33 +271,33 @@ class _DiscountScreenState extends State<DiscountScreen> {
                           alignment: Alignment.bottomCenter,
                           child: InkWell(
                             onTap: () {
-                              num newDiscountAmount = box.get('discountAmount', defaultValue: 0) + discountAmount;
-                              num newDiscountPercent = box.get('discountPercent', defaultValue: 0) + discountPercent;
-                              box.put('discountAmount', newDiscountAmount);
-                              box.put('discountPercent', newDiscountPercent);
-                              box
-                                  .put(
-                                'totalPrice',
-                                currentTotalPrice,
-                              )
-                                  .whenComplete(
-                                () {
-                                  if (widget.isItems == true) {
-                                    Cart? item =
-                                        Hive.box<Cart>('cart').get(widget.keyStore);
-                                    item!.price -= discountAmount;
-                                    item.discountPercent = discountPercent;
-                                    item.discountValue = discountAmount;
-                                    Hive.box<Cart>('cart')
-                                        .put(widget.keyStore, item);
-                                  }
-                                  Navigator.pop(context);
-                                },
-                              );
+                              num newDiscountAmount = box.get('discountAmount', defaultValue: 0);
+                              num newDiscountPercent = box.get('discountPercent', defaultValue: 0);
+                              if (widget.isItems) {
+                                num totalPrice = box.get('totalPrice');
+                                Cart? item =
+                                    Hive.box<Cart>('cart').get(widget.keyStore);
+                                newDiscountAmount -= item!.discountValue;
+                                newDiscountPercent -= item.discountPercent;
+                                totalPrice += item.discountValue;
+                                item.price -= discountAmount;
+                                item.discountPercent = discountPercent;
+                                item.discountValue = discountAmount;
+                                box.put('totalPrice', totalPrice - discountAmount);
+                                box.put('discountAmount', newDiscountAmount + discountAmount);
+                                box.put('discountPercent', newDiscountPercent + discountPercent);
+                                Hive.box<Cart>('cart')
+                                    .put(widget.keyStore, item);
+                              }else{
+                                box.put('discountAmount', newDiscountAmount + discountAmount);
+                                box.put('discountPercent', newDiscountPercent + discountPercent);
+                                box.put('totalPrice', originalTotalPrice - discountAmount);
+                              }
+                              Navigator.pop(context);
                             },
                             child: Container(
-                              padding: EdgeInsets.all(10.0),
-                              margin: EdgeInsets.all(10.0),
+                              padding: const EdgeInsets.all(10.0),
+                              margin: const EdgeInsets.all(10.0),
                               height: 70.0,
                               decoration: BoxDecoration(
                                 border: Border.all(
@@ -280,7 +306,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 ),
                                 borderRadius: BorderRadius.circular(7.0),
                               ),
-                              child: Center(
+                              child: const Center(
                                 child: Text(
                                   'Apply Discount',
                                   style: TextStyle(

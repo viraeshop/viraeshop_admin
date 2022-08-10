@@ -73,14 +73,6 @@ class AdminCrud {
         .doc(docId)
         .update(data);
   }
-
-  updateAdmin(info, String adminId) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(adminId)
-        .update(info);
-  }
-
   addCategory(Map<String, dynamic> data) async {
     await FirebaseFirestore.instance
         .collection('products')

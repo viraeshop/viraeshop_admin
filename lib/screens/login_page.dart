@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: _isStart,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: Scaffold(
@@ -43,21 +43,21 @@ class _LoginPageState extends State<LoginPage> {
                   ? MediaQuery.of(layoutContext).size.width * 0.40
                   : null,
               height: MediaQuery.of(layoutContext).size.height * 0.75,
-              margin: EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
               decoration: kBoxDecoration,
               child: Column(
                 // shrinkWrap: true,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: myField(
                         hint: 'Email',
                         input_type: 'email',
                         myController: _emailController),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: myField(
                       hint: 'Password',
                       input_type: 'password',
@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
+                          children: const [
                             Text(
                               "Login",
                               style:
@@ -110,7 +110,6 @@ class _LoginPageState extends State<LoginPage> {
                                   Hive.box('adminInfo').putAll({
                                     'email': adminInfo.get('email'),
                                     'name': adminInfo.get('name'),
-                                    // 'password': adminInfo.get('password'),
                                     'adminId': adminInfo.get('adminId'),
                                     'isAdmin': adminInfo.get('isAdmin'),
                                     'isInventory': adminInfo.get('isInventory'),
@@ -120,6 +119,9 @@ class _LoginPageState extends State<LoginPage> {
                                     'isMakeCustomer':
                                         adminInfo.get('isMakeCustomer'),
                                     'isMakeAdmin': adminInfo.get('isMakeAdmin'),
+                                    'isManageDue': adminInfo.get('isManageDue'),
+                                    'isDeleteCustomer': adminInfo.get('isDeleteCustomer'),
+                                    'isDeleteEmployee': adminInfo.get('isDeleteEmployee'),
                                   });
                                   setState(() {
                                     _isStart = false;
@@ -190,18 +192,18 @@ class _LoginPageState extends State<LoginPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Dont have an account?'),
+                        const Text('Dont have an account?'),
                         InkWell(
                           onTap: () {
                             Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        VerificationScreen()));
+                                        const VerificationScreen()));
                           },
-                          child: Text(
+                          child: const Text(
                             'Sign-up',
-                            style: TextStyle(color: kMainColor),
+                            style: const TextStyle(color: kMainColor),
                           ),
                         )
                       ],

@@ -22,6 +22,8 @@ class Cart {
   bool? isInventory;
   @HiveField(8)
   String shopName;
+  @HiveField(9)
+  num buyPrice;
 
   Cart({
     required this.productName,
@@ -29,6 +31,7 @@ class Cart {
     required this.price,
     required this.quantity,
     required this.unitPrice,
+    this.buyPrice = 0,
     this.discountPercent = 0,
     this.discountValue = 0,
     this.isInventory = true,

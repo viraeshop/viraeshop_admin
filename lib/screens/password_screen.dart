@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -8,6 +9,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 class PasswordScreen extends StatefulWidget {
   const PasswordScreen({Key? key}) : super(key: key);
@@ -19,31 +21,31 @@ class PasswordScreen extends StatefulWidget {
 class _PasswordScreenState extends State<PasswordScreen> {
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _passwordController = TextEditingController();
-  final labelStyle = TextStyle(
+  final TextEditingController _passwordController = TextEditingController();
+  final labelStyle =  const TextStyle(
     color: kSubMainColor,
     fontSize: 12.0,
     fontFamily: 'Montserrat',
     letterSpacing: 1.3,
   );
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(color: kMainColor),
+      progressIndicator: const CircularProgressIndicator(color: kMainColor),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.close,
               color: kSubMainColor,
             ),
           ),
-          title: Text(
+          title: const Text(
             'New User',
             style: kProductNameStylePro,
           ),
@@ -51,8 +53,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
         body: Form(
           key: _formKey,
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(13.0),
-            child: Container(
+            padding: const EdgeInsets.all(13.0),
+            child: SizedBox(
               height: MediaQuery.of(context).size.height * 0.92,
               width: MediaQuery.of(context).size.width,
               child: Stack(fit: StackFit.expand, children: [
@@ -72,12 +74,12 @@ class _PasswordScreenState extends State<PasswordScreen> {
                           return null;
                         },
                         decoration: InputDecoration(
-                          enabledBorder: UnderlineInputBorder(
+                          enabledBorder: const UnderlineInputBorder(
                             borderSide: BorderSide(
                               color: kSubMainColor,
                             ),
                           ),
-                          focusedBorder: UnderlineInputBorder(
+                          focusedBorder: const UnderlineInputBorder(
                             borderSide: BorderSide(
                               color: kMainColor,
                             ),
@@ -100,7 +102,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   heightFactor: 0.1,
                   alignment: Alignment.bottomCenter,
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async{
                       if (_formKey.currentState!.validate()) {
                         setState(() {
                           isLoading = true;
@@ -109,62 +111,35 @@ class _PasswordScreenState extends State<PasswordScreen> {
                         Map<String, dynamic> adminMap = {
                           'email': adminInfo['email'],
                           'name': adminInfo['name'],
-                          'adminId': adminInfo['adminId'],
                           'isAdmin': adminInfo['isAdmin'],
                           'isInventory': adminInfo['isInventory'],
                           'isProducts': adminInfo['isProducts'],
                           'isTransactions': adminInfo['isTransactions'],
                           'isMakeCustomer': adminInfo['isMakeCustomer'],
                           'isMakeAdmin': adminInfo['isMakeAdmin'],
+                          'isDeleteCustomer': adminInfo['isDeleteCustomer'],
+                          'isDeleteEmployee': adminInfo['isDeleteEmployee'],
+                          'isManageDue': adminInfo['isManageDue'],
                         };
-                        try {
-                          AdminCrud()
-                              .addAdmin(adminInfo['adminId'], adminMap)
-                              .then((value) {
-                            try {
-                              _auth
-                                  .createUserWithEmailAndPassword(
-                                      email: adminInfo['email'],
-                                      password: _passwordController.text)
-                                  .then((value) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                print('done creating admin');
-                                Hive.box('newAdmin').clear();
-                                Navigator.pushAndRemoveUntil(context,
-                                    MaterialPageRoute(builder: (context) {
-                                  return HomeScreen();
-                                }), (route) => false);
-                              }).catchError((error) {
-                                print(error);
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                snackBar(
-                                    text: '${error.toString()}',
-                                    context: context);
-                              });
-                            } on FirebaseAuthException catch (e) {
-                              print(e);
-                              setState(() {
-                                isLoading = false;
-                              });
-                              showDialogBox(
-                                buildContext: context,
-                                msg: '${e.message}',
-                              );
-                            }
-                          });
-                        } catch (e) {
-                          print(e);
-                          setState(() {
+                        try{
+                         final user = await NetworkUtility.registerUserEmail(adminInfo['email'], _passwordController.text);
+                         adminMap['adminId'] = user.user!.uid;
+                         await NetworkUtility.saveAdminInfo(adminMap['adminId'], adminMap);
+                         Hive.box('newAdmin').clear();
+                        } on FirebaseAuthException catch(e){
+                          if(kDebugMode){
+                            print(e.message);
+                          }
+                          snackBar(text: e.message!, context: context, color: kRedColor, duration: 30);
+                        } on FirebaseException catch (e){
+                          if(kDebugMode){
+                            print(e.message);
+                          }
+                          snackBar(text: e.message!, context: context, color: kRedColor, duration: 50);
+                        }finally{
+                          setState((){
                             isLoading = false;
                           });
-                          showDialogBox(
-                            buildContext: context,
-                            msg: 'Fialed to create new User. Try again',
-                          );
                         }
                       }
                     },
@@ -175,8 +150,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
                         color: kSubMainColor,
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      child: Center(
-                        child: Text(
+                      child: const Center(
+                        child: const Text(
                           'Create',
                           style: TextStyle(
                             fontSize: 20.0,

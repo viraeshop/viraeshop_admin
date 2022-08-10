@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
+import 'package:viraeshop_admin/configs/image_picker.dart';
+import 'package:viraeshop_admin/screens/image/image_update_widget.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
@@ -26,25 +29,27 @@ class ImageCarousel extends StatefulWidget {
 }
 
 class _ImageCarouselState extends State<ImageCarousel> {
-  List<Uint8List> imagesBytes = [];
-  List<String> filesNames = [];
-  List filesPath = [];
-  List productImages = [];
+  Map<String, Uint8List> imagesBytes = {};
+  Map filesPath = {};
+  List allImages = [];
   bool loading = false;
-  int incrementer = 0, index = -1;
   @override
   void initState() {
     // TODO: implement initState
     if (widget.isUpdate) {
-      setState(() {
-        productImages = widget.images! != null ? widget.images! : [];
-      });
+        allImages = widget.images!;
+      //   this.productImage = widget.images!;
+      //   print('Init State');
+      // print('All Images: $allImages');
+      //   print('Product Images: $productImage');
     }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    print('Build state');
+    print('All Images: $allImages');
     return ModalProgressHUD(
       inAsyncCall: loading,
       progressIndicator: const CircularProgressIndicator(
@@ -79,67 +84,44 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         height: MediaQuery.of(context).size.height * 0.3,
                         width: double.infinity,
                         onTap: () {
-                          getImageWeb();
+                          getImageWeb(true);
                         },
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            widget.isUpdate && productImages.isNotEmpty
-                                ? CachedNetworkImage(
-                                    imageUrl: productImages[0],
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, childs) {
-                                      return Image.asset(
-                                        'assets/default.jpg',
-                                      );
-                                    },
+                            allImages.isNotEmpty
+                                ? ImageFromUpdate(
+                                    image: allImages[0] is String ? allImages[0] : '',
+                                    isUpdate: widget.isUpdate,
+                                    imageBytes: allImages[0] is Uint8List ? allImages[0] : Uint8List(0),
                                   )
-                                : (imagesBytes.isEmpty && kIsWeb) || (filesPath.isEmpty && !kIsWeb)
-                                    ? const Center(
-                                        child: Icon(
-                                          Icons.add_a_photo,
-                                          size: 25.0,
-                                        ),
-                                      )
-                                    : kIsWeb
-                                        ? Image.memory(
-                                            imagesBytes[0],
-                                            fit: BoxFit.cover,
-                                          )
-                                        : Image.file(
-                                            File(filesPath[0]),
-                                            fit: BoxFit.cover,
-                                          ),
-                            topCancelButton(onTap: () {
-                              snackBar(
-                                text: 'Deleting...',
-                                context: context,
-                                duration: 10,
-                              );
-                              if (widget.isUpdate && productImages.isNotEmpty) {
-                                deleteImage(productImages[0]).then((value) {
-                                  productImages.removeAt(0);
-                                  snackBar(
-                                    text: 'Deleted',
-                                    context: context,
-                                    duration: 10,
-                                  );
-                                }).catchError((error) {
-                                  snackBar(
-                                    text: 'Operation failed. please try again',
-                                    context: context,
-                                    duration: 20,
-                                  );
-                                });
-                              } else {
-                                setState(() {
-                                  if(kIsWeb){
-                                    imagesBytes.removeAt(0);
-                                  }else{
-                                    filesPath.removeAt(0);
+                                : const Center(
+                                    child: Icon(
+                                      Icons.add_a_photo,
+                                      size: 25.0,
+                                    ),
+                                  ),
+                            topCancelButton(onTap: () async {
+                              if (allImages[0] is String) {
+                                if (allImages[0].contains('https')) {
+                                  try {
+                                    await NetworkUtility.deleteImage(
+                                        allImages[0]);
+                                  } on FirebaseException catch (e) {
+                                    if (kDebugMode) {
+                                      print(e);
+                                    }
                                   }
-                                });
+                                }
+                                filesPath.removeWhere(
+                                    (key, value) => value == allImages[0]);
+                              } else {
+                                imagesBytes.removeWhere(
+                                    (key, value) => value == allImages[0]);
                               }
+                              setState(() {
+                                allImages.removeAt(0);
+                              });
                             }),
                           ],
                         )),
@@ -149,140 +131,60 @@ class _ImageCarouselState extends State<ImageCarousel> {
                     LimitedBox(
                       maxHeight: MediaQuery.of(context).size.height * 0.4,
                       child: GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
                           mainAxisSpacing: 10.0,
                           crossAxisSpacing: 10.0,
                           childAspectRatio: 1.0,
                         ),
-                        itemCount: widget.isUpdate && productImages.isNotEmpty
-                            ? productImages.length + incrementer
-                            : kIsWeb ? imagesBytes.length : filesPath.length,
+                        itemCount: allImages.length,
                         itemBuilder: (context, i) {
-                          if (widget.isUpdate && productImages.isNotEmpty) {
-                            if (i == 0) {
-                              return showImage(
-                                onTap: () {
-                                  getImageWeb();
-                                },
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.add_a_photo,
-                                    size: 25.0,
-                                  ),
+                          if (i == 0) {
+                            return showImage(
+                              onTap: () {
+                                getImageWeb();
+                              },
+                              child: const Center(
+                                child: Icon(
+                                  Icons.add_a_photo,
+                                  size: 25.0,
                                 ),
-                              );
-                            } else {
-                              return showImage(
-                                  onTap: () {},
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      i >= productImages.length
-                                          ? kIsWeb ? Image.memory(
-                                              imagesBytes[
-                                                  i - productImages.length],
-                                              fit: BoxFit.cover,
-                                            ) : Image.file(
-                                        File(filesPath[i - productImages.length]),
-                                        fit: BoxFit.cover,
-                                      )
-                                          : CachedNetworkImage(
-                                              imageUrl: productImages[i],
-                                              fit: BoxFit.cover,
-                                              errorWidget:
-                                                  (context, url, childs) {
-                                                return Image.asset(
-                                                  'assets/default.jpg',
-                                                );
-                                              },
-                                            ),
-                                      topCancelButton(onTap: () {
-                                        if (i >= productImages.length) {
-                                          setState(() {
-                                            if(kIsWeb){
-                                              imagesBytes.removeAt(
-                                                  i - productImages.length);
-                                            }else{
-                                              filesPath.removeAt(i - productImages.length);
-                                            }
-                                            incrementer -= 1;
-                                          });
-                                        } else {
-                                          deleteImage(productImages[i])
-                                              .then((value) =>
-                                                  productImages.removeAt(i))
-                                              .catchError((error) {
-                                            snackBar(
-                                              text:
-                                                  'Operation failed. please try again',
-                                              context: context,
-                                              duration: 10,
-                                            );
-                                          });
-                                        }
-                                      }),
-
-                                      /// top cancel button
-                                    ],
-                                  ));
-                            }
-                          } else {
-                            if (i == 0) {
-                              return showImage(
-                                onTap: () {
-                                  getImageWeb();
-                                },
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.add_a_photo,
-                                    size: 25.0,
-                                  ),
-                                ),
-                              );
-                            } else {
-                              return showImage(
-                                onTap: () {},
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    if(kIsWeb)Image.memory(
-                                      imagesBytes[i],
-                                      fit: BoxFit.cover,
-                                    )else Image.file(
-                                        File(filesPath[i]),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topRight,
-                                      child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            imagesBytes.removeAt(i);
-                                          });
-                                        },
-                                        child: Container(
-                                          height: 25.0,
-                                          width: 25.0,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(100.0),
-                                            color:
-                                                Colors.white.withOpacity(0.8),
-                                          ),
-                                          child: const Icon(
-                                            Icons.cancel,
-                                            color: kSubMainColor,
-                                            size: 15.0,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              );
-                            }
+                              ),
+                            );
                           }
+                          return Stack(fit: StackFit.expand, children: [
+                            ImageFromUpdate(
+                                image: allImages[i], isUpdate: widget.isUpdate),
+                            topCancelButton(onTap: () async {
+                              if (kDebugMode) {
+                                print('initial List: $filesPath');
+                              }
+                              if (allImages[i] is String) {
+                                if (allImages[i].contains('https')) {
+                                  try {
+                                    await NetworkUtility.deleteImage(
+                                        allImages[i]);
+                                  } on FirebaseException catch (e) {
+                                    if (kDebugMode) {
+                                      print(e);
+                                    }
+                                  }
+                                }
+                                filesPath.removeWhere(
+                                    (key, value) => value == allImages[i]);
+                              } else {
+                                imagesBytes.removeWhere(
+                                    (key, value) => value == allImages[i]);
+                              }
+                              setState(() {
+                                allImages.removeAt(i);
+                              });
+                              if (kDebugMode) {
+                                print('final List: $filesPath');
+                              }
+                            }),
+                          ]);
                         },
                       ),
                     ),
@@ -295,36 +197,55 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 child: sendButton(
                     title: 'Save',
                     onTap: () async {
-                      try{
+                      List filesNames = filesPath.keys.toList();
+                      List filesPaths = filesPath.values.toList();
+                      List productImage = [];
+                      for (var image in allImages){
+                        if(image is String){
+                          if(image.contains('https')){
+                            productImage.add(image);
+                          }
+                        }
+                      }
+                      // print('Thumbnail: $filesPaths');
+                      // print('First Image: ${filesPath[filesNames[0]]}');
+                      try {
                         setState(() {
                           loading = true;
                         });
-                        if(kIsWeb){
-                          for (int i = 0; i < filesNames.length; i++){
-                            String imageUrl = await AdminCrud()
-                                .uploadWebImage(imagesBytes[i], filesNames[i], 'product_images');
-                            productImages.add(imageUrl);
+                        if (kIsWeb) {
+                          for (int i = 0; i < filesNames.length; i++) {
+                            String imageUrl = await AdminCrud().uploadWebImage(
+                                imagesBytes[filesNames[i]]!,
+                                filesNames[i],
+                                'product_images');
+                            productImage.add(imageUrl);
                           }
-                        }else{
-                          for(int i = 0; i < filesPath.length; i++){
-                            String imageUrl = await NetworkUtility
-                                .uploadImageFromNative(File(filesPath[i]), filesNames[i], 'product_images');
-                            productImages.add(imageUrl);
+                        } else {
+                          for (int i = 0; i < filesNames.length; i++) {
+                            String imageUrl = await NetworkUtility.uploadImageFromNative(File(filesPath[filesNames[i]]), filesNames[i], 'product_images');
+                            print('imageUrl: $imageUrl');
+                            productImage.add(imageUrl);
                           }
                         }
-                        Hive.box('images').put('imagesBytes', imagesBytes);
-                        Hive.box('images').put('imagesPath', filesPath);
+                        print('Final State');
+                        print('All Images: $allImages');
+                        print('Product Images: $productImage');
+                        Hive.box('images').put('imagesBytes', imagesBytes.values.toList());
+                        Hive.box('images').put('imagesPath', filesPaths);
                         Hive.box('images')
-                            .put('productImages', productImages)
+                            .put('productImages', productImage)
                             .whenComplete(
                               () => snackBar(text: 'Saved', context: context),
-                        );
-                        print(productImages);
-                      }catch (e){
-                        if(kDebugMode){
+                            );
+                        // if (kDebugMode) {
+                        //   print(productImages);
+                        // }
+                      } catch (e) {
+                        if (kDebugMode) {
                           print(e);
                         }
-                      }finally{
+                      } finally {
                         setState(() {
                           loading = false;
                         });
@@ -337,28 +258,56 @@ class _ImageCarouselState extends State<ImageCarousel> {
       ),
     );
   }
-  void getImageWeb() async {
+  void getImageWeb([bool isFirst = false]) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     print('image: ${result?.files.first}');
     if (result != null) {
       String? fileName = result.files.first.name;
-      if(kIsWeb){
+
+      /// Replacing the first image
+      if (isFirst && allImages.isNotEmpty) {
+        try {
+          if (allImages[0].contains('http')) {
+            await NetworkUtility.deleteImage(allImages[0]);
+          }
+        } on FirebaseException catch (e) {
+          if (kDebugMode) {
+            print(e.message);
+          }
+        }
+      }
+
+      /// check if the running platform is web
+      if (kIsWeb) {
         Uint8List imageBytes = result.files.first.bytes!;
         setState(() {
-          imagesBytes.add(imageBytes);
-          incrementer += 1;
+          if (isFirst) {
+            if (allImages.isNotEmpty) {
+              allImages[0] = imageBytes;
+            } else {
+              allImages.add(imageBytes);
+            }
+          } else {
+            allImages.add(imageBytes);
+          }
+          imagesBytes[fileName] = imageBytes;
         });
-      }else{
-        //Directory appDocDir = await getApplicationDocumentsDirectory();
+      } else {
         String filePath = result.paths.first!;
-        // await dir.create().then((value) {
-        //   File file = File('${value.path}/example.txt');
-        //   file.writeAsString('123'); //writeAsBytesSync(doc.save());
-        // });
-        setState((){
-          filesPath.add(filePath);
-          filesNames.add(fileName);
+        setState(() {
+          if (isFirst) {
+            if (allImages.isNotEmpty) {
+              allImages[0] = filePath;
+            } else {
+              allImages.add(filePath);
+            }
+          } else {
+            allImages.add(filePath);
+          }
+          filesPath[fileName] = filePath;
         });
+        print('total images: $filesPath');
+        // print('Replaced: $isReplaced');
       }
     }
   }

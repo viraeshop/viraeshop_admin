@@ -26,15 +26,6 @@ Future<void> updateProductInventory(String docPath, num productQuantity) {
     // Return the new count
   });
 }
-
-Future deleteImage(String ref) async{
-  try {
-   FirebaseStorage _storage = FirebaseStorage.instance;
-   await _storage.ref(ref).delete();
-  } on FirebaseException catch (e) {
-    print('Delete error: $e');
-  }
-}
 initSearch({required String value,required BuildContext context,required List temps, reset, update}) {
   List products = Hive.box(productsBox).get(productsKey);
   List tempStore = temps;
@@ -50,11 +41,19 @@ initSearch({required String value,required BuildContext context,required List te
     Provider.of<AdsProvider>(context, listen: false).updateProductList(filteredList);
   }
 
-List searchEngine({required String value,required String key,required List temps,}) {
+List searchEngine({required String value,required String key,required List temps, bool isNested = false, String key2 = '', String key3 = ''}) {
+  String field = '';
+  String field2 = '';
   final filteredList = temps.where((element) {
-    final String invoiceId = element[key].toLowerCase();
+    if(isNested){
+      field = element[key][key2]?.toLowerCase() ?? '';
+      field2 = element[key][key3]?.toLowerCase() ?? '';
+    }else{
+      field = element[key]?.toLowerCase() ?? '';
+      field2 = element[key2]?.toLowerCase() ?? '';
+    }
     final valueLower = value.toLowerCase();
-    return invoiceId.contains(valueLower);
+    return field.contains(valueLower) || field2.contains(valueLower);
   }).toList();
   return filteredList;
 }

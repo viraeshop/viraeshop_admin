@@ -64,7 +64,7 @@ class _DueScreenState extends State<DueScreen> {
                   padding: const EdgeInsets.only(top: 120),
                   child: Column(
                     children: List.generate(customerInvoices.length, (i) {
-                      List items = customerInvoices[i]['items'];
+                      List items = customerInvoices[i]['items'] ?? [];
                       String description = '';
                       for (var element in items) {
                         description +=
@@ -75,7 +75,7 @@ class _DueScreenState extends State<DueScreen> {
                           DateFormat.yMMMd().format(timestamp.toDate());
                       return OrderTranzCard(
                         price: customerInvoices[i]['price'].toString(),
-                        employeeName: customerInvoices[i]['employee_id'],
+                        employeeName: customerInvoices[i]['employee_name'],
                         desc: description,
                         date: date,
                         customerName: customerInvoices[i]['user_info']['name'],
@@ -103,32 +103,55 @@ class _DueScreenState extends State<DueScreen> {
                     children: [
                       SearchWidget(
                         controller: nameController,
-                        onSubmitted: (value) async {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          try {
-                            final invoices = await NetworkUtility
-                                .getCustomerTransactionInvoices(value);
-                            List fetchInvoices = [];
-                            for (var invoice in invoices.docs) {
-                              fetchInvoices.add(invoice.data());
-                            }
+                        onChanged: (value) async{
+                          if(value.isEmpty){
                             setState(() {
-                              customerInvoices = fetchInvoices;
+                              customerInvoices.clear();
+                              invoiceBackup.clear();
+                            });
+                          }
+                          if (customerInvoices.isEmpty && invoiceBackup.isNotEmpty) {
+                            setState(() {
+                              customerInvoices = searchEngine(value: value, key: 'user_info', temps: invoiceBackup, isNested: true, key2: 'name', key3: 'business_name');
                               for (var invoice in customerInvoices){
                                 totalDue += invoice['due'];
                               }
-                              isLoading = false;
                             });
-                          } catch (e) {
-                            setState(() {
-                              isLoading = false;
-                            });
-                            if (kDebugMode) {
-                              print(e);
-                            }
                           }
+                          if(value.length == 1 && customerInvoices.isEmpty){
+                            setState(() {
+                              isLoading = true;
+                            });
+                            try {
+                              final invoices = await NetworkUtility
+                                  .getCustomerTransactionInvoices(value.toUpperCase().characters.toList());
+                              List fetchInvoices = [];
+                              for (var invoice in invoices.docs) {
+                                fetchInvoices.add(invoice.data());
+                              }
+                              setState(() {
+                                customerInvoices = fetchInvoices;
+                                invoiceBackup = customerInvoices;
+                              });
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print(e);
+                              }
+                            }finally{
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          }else if(value.length > 1){
+                            setState((){
+                              customerInvoices = searchEngine(value: value, key: 'user_info', temps: invoiceBackup, isNested: true, key2: 'name', key3: 'business_name');
+                              for (var invoice in customerInvoices){
+                                totalDue += invoice['due'];
+                              }
+                            });
+                          }
+                        },
+                        onSubmitted: (value) async {
                         },
                         hintText: 'Search by name',
                       ),
@@ -137,21 +160,35 @@ class _DueScreenState extends State<DueScreen> {
                       ),
                       SearchWidget(
                         controller: invoiceController,
-                        onChanged: (value) {
-                          if (value.isEmpty && invoiceBackup.isNotEmpty) {
+                        onSubmitted: (value) async{
+                          if(customerInvoices.isEmpty && invoiceBackup.isEmpty){
                             setState(() {
-                              customerInvoices = invoiceBackup;
+                              isLoading = true;
+                            });
+                            try{
+                              final transactionData = await NetworkUtility.getCustomerTransactionInvoicesByID(value);
+                              setState(() {
+                                if(transactionData.exists){
+                                  customerInvoices.add(transactionData.data());
+                                }
+                              });
+                            } on FirebaseException catch (e){
+                              if(kDebugMode){
+                                print(e);
+                              }
+                            }finally{
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          }else{
+                            setState(() {
+                              customerInvoices = searchEngine(
+                                  value: value,
+                                  key: 'invoice_id',
+                                  temps: customerInvoices);
                             });
                           }
-                        },
-                        onSubmitted: (value) {
-                          setState(() {
-                            invoiceBackup = customerInvoices;
-                            customerInvoices = searchEngine(
-                                value: value,
-                                key: 'invoice_id',
-                                temps: customerInvoices);
-                          });
                         },
                         hintText: 'Search by invoice number',
                       ),

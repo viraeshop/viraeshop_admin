@@ -12,6 +12,8 @@ import 'package:viraeshop_admin/screens/user_profile_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 
+import 'customers/customer_list.dart';
+
 class AgentsPage extends StatefulWidget {
   const AgentsPage({Key? key}) : super(key: key);
 
@@ -38,10 +40,10 @@ class _AgentsPageState extends State<AgentsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Agents',
           style: kAppBarTitleTextStyle,
         ),
@@ -51,156 +53,9 @@ class _AgentsPageState extends State<AgentsPage> {
         //   tabs: tabs,
         // ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-          stream: generalCrud.getCustomers('agents'),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final myorders = snapshot.data!.docs;
-              List<String> docIds = [];
-              List agentList = [];
-              num storeCredit = 0.0;
-              myorders.forEach((element) {
-                agentList.add(element.data());
-                docIds.add(element.id);
-                storeCredit += element.get('wallet');
-              });
-              return Container(
-                child: agentList.isNotEmpty
-                    ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          FractionallySizedBox(
-                            alignment: Alignment.topCenter,
-                            heightFactor: 0.88,
-                            child: ListView.builder(
-                              itemCount: myorders.length,
-                              itemBuilder: (BuildContext context, int i) {
-                                return Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: ListTile(
-                                      onTap: () {
-                                        Map<String, dynamic> userInfo = {
-                                          'name': agentList[i]['name'],
-                                          'mobile': agentList[i]['mobile'],
-                                          'address': agentList[i]['address'],                                          
-                                          'userId': agentList[i]['userId'],                                        
-                                          'email': agentList[i]['email'],                                          
-                                          'binImage': agentList[i]['binImage'],
-                                          'tinImage': agentList[i]['tinImage'],
-                                          'binNumber': agentList[i]['binNumber'],
-                                          'role': agentList[i]['role'],
-                                          'wallet': agentList[i]['wallet'],
-                                        };
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    UserProfileInfo(
-                                                      userInfo: userInfo,
-                                                      docId: docIds[i],
-                                                    )));
-                                      },
-                                      leading: CircleAvatar(
-                                        radius: 60.0,                                        
-                                        backgroundColor: kNewTextColor,
-                                        child: Text(
-                                            '${i + 1}'), //Icon(Icons.person,
-                                        // color: kBackgroundColor),
-                                      ),
-                                      trailing: Icon(Icons.arrow_right),
-                                      title: Text('${agentList[i]['name']} ',
-                                          style: TextStyle(color: kMainColor)),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${agentList[i]['email']}',
-                                            style: kProductNameStylePro,
-                                          ),                                        
-                                          Text(
-                                            'Wallet: ${agentList[i]['wallet'].toString()}৳',
-                                            style: kProductPriceStylePro,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          FractionallySizedBox(
-                            alignment: Alignment.bottomCenter,
-                            heightFactor: 0.12,
-                            child: Container(
-                              width: double.infinity,
-                              color: kSubMainColor,
-                              padding: EdgeInsets.all(10.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Receivables',
-                                        style: TextStyle(
-                                          color: kBackgroundColor,
-                                          fontSize: 15.0,
-                                          letterSpacing: 1.3,
-                                          fontFamily: 'Montserrat',
-                                        ),
-                                      ),
-                                      Text(
-                                        'BDT 0.0',
-                                        style: TextStyle(
-                                          color: Colors.redAccent,
-                                          fontSize: 15.0,
-                                          letterSpacing: 1.3,
-                                          fontFamily: 'Montserrat',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Store Credits',
-                                        style: TextStyle(
-                                          color: kBackgroundColor,
-                                          fontSize: 15.0,
-                                          letterSpacing: 1.3,
-                                          fontFamily: 'Montserrat',
-                                        ),
-                                      ),
-                                      Text(
-                                        'BDT ${storeCredit.toString()}',
-                                        style: TextStyle(
-                                          color: kMainColor,
-                                          fontSize: 15.0,
-                                          letterSpacing: 1.3,
-                                          fontFamily: 'Montserrat',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Text('Loading'),
-              );
-            }
-            return Center(child: CircularProgressIndicator());
-          }),
+      body: const Customers(
+        role: 'agents',
+      ),
     );
   }
 
@@ -226,7 +81,7 @@ class _AgentsPageState extends State<AgentsPage> {
                   child: myField(hint: 'Quantity'),
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 InkWell(
                   child: Container(
                     width: double.infinity, //MediaQuery.of(context).size.width,
@@ -238,7 +93,7 @@ class _AgentsPageState extends State<AgentsPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
+                      children: const [
                         Text(
                           "Return",
                           style: TextStyle(fontSize: 20, color: Colors.white),
@@ -255,7 +110,7 @@ class _AgentsPageState extends State<AgentsPage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },

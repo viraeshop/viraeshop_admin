@@ -3,15 +3,24 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
-class SupplierInfo extends StatefulWidget {
-  const SupplierInfo({Key? key}) : super(key: key);
-
-  @override
-  State<SupplierInfo> createState() => _SupplierInfoState();
-}
-
-class _SupplierInfoState extends State<SupplierInfo> {
-  bool isAnimate = false;
+class SupplierInfo extends StatelessWidget {
+  const SupplierInfo(
+      {Key? key,
+      required this.supplierName,
+      required this.address,
+      required this.mobile,
+      required this.businessName,
+      required this.optionalMobile,
+      required this.onAnimate, required this.isAnimate,
+      })
+      : super(key: key);
+  final String supplierName;
+  final String businessName;
+  final String mobile;
+  final String optionalMobile;
+  final String address;
+  final void Function()? onAnimate;
+  final bool isAnimate;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -23,11 +32,7 @@ class _SupplierInfoState extends State<SupplierInfo> {
               style: kProductNameStylePro,
             ),
             IconButton(
-              onPressed: () {
-                setState(() {
-                  isAnimate = !isAnimate;
-                });
-              },
+              onPressed: onAnimate,
               icon: Icon(
                 isAnimate
                     ? FontAwesomeIcons.chevronUp
@@ -45,49 +50,49 @@ class _SupplierInfoState extends State<SupplierInfo> {
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 ListTile(
                   // leading: CircleAvatar(
                   //   backgroundColor: kBackgroundColor,
                   //   radius: 40.0,
-                   leading: Icon(
-                      Icons.person,
-                      color: kSubMainColor,
-                      size: 40.0,
-                   // ),
+                  leading: const Icon(
+                    Icons.person,
+                    color: kSubMainColor,
+                    size: 40.0,
+                    // ),
                   ),
                   title: Text(
-                    'Nazmul Enterprise',
+                    businessName,
                     style: kProductNameStylePro,
                   ),
                   subtitle: Text(
-                    'Mr Kabir',
+                    supplierName,
                     style: kProductNameStylePro,
                   ),
                 ),
                 ListTile(
-                  leading: Icon(
+                  leading: const Icon(
                     Icons.call,
                     color: kSubMainColor,
                     size: 20.0,
                   ),
                   title: Text(
-                    '+880-904278489',
+                    mobile,
                     style: kProductNameStylePro,
                   ),
                   subtitle: Text(
-                    '+880-904278489',
+                    optionalMobile,
                     style: kProductNameStylePro,
                   ),
                 ),
                 ListTile(
-                  leading: Icon(
+                  leading: const Icon(
                     Icons.storefront,
                     color: kSubMainColor,
                     size: 20.0,
                   ),
                   title: Text(
-                    'New Airport road Banani, Dhaka 1213, Bangladesh',
+                    address,
                     style: kProductNameStylePro,
                   ),
                 ),

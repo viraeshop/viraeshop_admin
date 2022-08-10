@@ -37,16 +37,16 @@ class _QuantityScreenState extends State<QuantityScreen> {
       appBar: AppBar(
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text('Qunatity', style: kAppBarTitleTextStyle),
+        title: const Text('Qunatity', style: kAppBarTitleTextStyle),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.chevronLeft,
             color: kSubMainColor,
             size: 20.0,
           ),
         ),
-        shape: Border(
+        shape: const Border(
           bottom: BorderSide(color: Colors.black12),
         ),
       ),
@@ -55,7 +55,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Quantity:',
               style: kProductNameStylePro,
             ),
@@ -69,19 +69,19 @@ class _QuantityScreenState extends State<QuantityScreen> {
                 decoration: InputDecoration(
                   hintText: hint,
                   hintStyle: kProductNameStylePro,
-                  border: UnderlineInputBorder(
+                  border: const UnderlineInputBorder(
                     borderSide: BorderSide(color: kMainColor),
                   ),
-                  focusedBorder: UnderlineInputBorder(
+                  focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: kMainColor),
                   ),
-                  enabledBorder: UnderlineInputBorder(
+                  enabledBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: kMainColor, width: 2.0),
                   ),
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             TextButton(
@@ -125,7 +125,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
                   },
                 );
               },
-              child: Text(
+              child: const Text(
                 'Remove Product',
                 style: TextStyle(
                   color: kRedColor,
@@ -135,7 +135,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 50.0,
             ),
             Container(
@@ -156,7 +156,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
                     _controller.text = nums.join();
                   });
                 },
-                leftIcon: Icon(
+                leftIcon: const Icon(
                   Icons.backspace,
                   size: 30.0,
                   color: kSubMainColor,
@@ -176,7 +176,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
                   Hive.box<Cart>('cart').put(widget.keyStore, item);
                   Navigator.pop(context);
                 },
-                rightIcon: Icon(
+                rightIcon: const Icon(
                   Icons.done,
                   size: 30.0,
                   color: kSubMainColor,

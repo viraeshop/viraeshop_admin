@@ -10,7 +10,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/desktop_orders.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_details.dart';
+import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
@@ -74,7 +74,8 @@ class _AppDrawerState extends State<AppDrawer> {
   bool isProduct = true,
       isMakeCustomer = true,
       isTransactions = true,
-      isMakeAdmin = true;
+      isMakeAdmin = true,
+      isManageDue = true;
   String name = '', email = '';
   String newMessages = '';
   @override
@@ -87,6 +88,7 @@ class _AppDrawerState extends State<AppDrawer> {
     isMakeCustomer = Hive.box('adminInfo').get('isMakeCustomer');
     isMakeAdmin = Hive.box('adminInfo').get('isMakeAdmin');
     isTransactions = Hive.box('adminInfo').get('isTransactions');
+    isManageDue = Hive.box('adminInfo').get('isManageDue');
     newMessages = widget.totalMessages;
     super.initState();
   }
@@ -515,7 +517,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     icon: Icons.attach_money,
                     title: 'Due',
-                    onTap: () => Navigator.push(
+                    onTap: !isManageDue ? null : () => Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const DueScreen(),

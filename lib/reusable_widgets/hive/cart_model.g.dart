@@ -22,6 +22,7 @@ class CartAdapter extends TypeAdapter<Cart> {
       price: fields[1] as dynamic,
       quantity: fields[2] as int,
       unitPrice: fields[4] as num,
+      buyPrice: fields[9] as num,
       discountPercent: fields[5] as num,
       discountValue: fields[6] as num,
       isInventory: fields[7] as bool?,
@@ -32,7 +33,7 @@ class CartAdapter extends TypeAdapter<Cart> {
   @override
   void write(BinaryWriter writer, Cart obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.productName)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class CartAdapter extends TypeAdapter<Cart> {
       ..writeByte(7)
       ..write(obj.isInventory)
       ..writeByte(8)
-      ..write(obj.shopName);
+      ..write(obj.shopName)
+      ..writeByte(9)
+      ..write(obj.buyPrice);
   }
 
   @override

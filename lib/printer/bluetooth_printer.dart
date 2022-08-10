@@ -13,6 +13,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class BluetoothPrinter extends StatefulWidget {
   final List items;
+  final bool isWithBusinessName;
   final String invoiceId,
       name,
       mobile,
@@ -22,7 +23,9 @@ class BluetoothPrinter extends StatefulWidget {
       advance,
       paid,
       quantity,
-      due;
+      due,
+      businessName
+  ;
   BluetoothPrinter(
       {required this.items,
         required this.invoiceId,
@@ -35,6 +38,8 @@ class BluetoothPrinter extends StatefulWidget {
         required this.paid,
         required this.subTotal,
         required this.quantity,
+        required this.isWithBusinessName,
+        this.businessName = '',
       });
   @override
   _BluetoothPrinterState createState() => _BluetoothPrinterState();
@@ -150,6 +155,15 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         align: PosAlign.right,
       ),
     );
+    if(widget.isWithBusinessName) {
+      bytes += receipt.text(
+      widget.businessName,
+      styles: const PosStyles(
+        align: PosAlign.left,
+        bold: true,
+      ),
+    );
+    }
     bytes += receipt.text(
       widget.name,
       styles: const PosStyles(

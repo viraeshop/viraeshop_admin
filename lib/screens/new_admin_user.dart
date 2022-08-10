@@ -7,38 +7,38 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/permission_page.dart';
 
 class NewAdmin extends StatelessWidget {
-  final _formKey = GlobalKey<FormState>();
-  NewAdmin();
+  NewAdmin({Key? key}) : super(key: key);
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _iDController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final labelStyle = const TextStyle(
+    color: kSubMainColor,
+    fontSize: 15.0,
+    fontFamily: 'Montserrat',
+    letterSpacing: 1.3,
+  );
   @override
   Widget build(BuildContext context) {
-    final labelStyle = TextStyle(
-      color: kSubMainColor,
-      fontSize: 15.0,
-      fontFamily: 'Montserrat',
-      letterSpacing: 1.3,
-    );
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.close,
             color: kSubMainColor,
           ),
         ),
-        title: Text(
+        title: const Text(
           'New User',
           style: kProductNameStylePro,
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(10.0),
-        child: Container(
+        padding: const EdgeInsets.all(10.0),
+        child: SizedBox(
           height: MediaQuery.of(context).size.height,
           // width: MediaQuery.of(context).size.width * 0.45,
           child: Form(
@@ -49,7 +49,7 @@ class NewAdmin extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _nameController,
                       validator: (value){
@@ -59,12 +59,12 @@ class NewAdmin extends StatelessWidget {
                           return null;
                       },
                       decoration: InputDecoration(
-                        enabledBorder: UnderlineInputBorder(
+                        enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
                             color: kSubMainColor,
                           ),
                         ),
-                        focusedBorder: UnderlineInputBorder(
+                        focusedBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
                             color: kMainColor,
                           ),
@@ -73,7 +73,7 @@ class NewAdmin extends StatelessWidget {
                         labelStyle: labelStyle,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     TextFormField(
@@ -85,12 +85,12 @@ class NewAdmin extends StatelessWidget {
                           return null;
                       },
                       decoration: InputDecoration(
-                        enabledBorder: UnderlineInputBorder(
+                        enabledBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
                             color: kSubMainColor,
                           ),
                         ),
-                        focusedBorder: UnderlineInputBorder(
+                        focusedBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(
                             color: kMainColor,
                           ),
@@ -99,30 +99,8 @@ class NewAdmin extends StatelessWidget {
                         labelStyle: labelStyle,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
-                    ),
-                    TextFormField(
-                      controller: _iDController,
-                      validator: (value){
-                        if (value == null || value.isEmpty) {
-                            return 'Please enter the admin id';
-                          }
-                          return null;
-                      },
-                      decoration: InputDecoration(
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: kSubMainColor,
-                            ),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: kMainColor,
-                            ),
-                          ),
-                          labelText: "ID",
-                          labelStyle: labelStyle),
                     ),
                   ],
                 ),
@@ -135,7 +113,7 @@ class NewAdmin extends StatelessWidget {
                       Hive.box('newAdmin').putAll({
                         'email': _emailController.text,
                         'name': _nameController.text,
-                        'adminId': _iDController.text,
+                        //'adminId': _iDController.text,
                       }).whenComplete(() {
                         Navigator.push(
                           context,
@@ -154,7 +132,7 @@ class NewAdmin extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10.0),
                       border: Border.all(color: kMainColor),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'Next',
                         style: kButtonTextStyle,

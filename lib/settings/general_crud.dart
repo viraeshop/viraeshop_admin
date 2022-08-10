@@ -220,10 +220,6 @@ class GeneralCrud {
         .get();
   }
 
-  Future<void> makeTransaction(String docId, transInfo) async {
-    await _firestore.collection('transaction').doc(docId).set(transInfo);
-  }
-
   Future<void> updateInvoice(String docId, transInfo) async {
     await _firestore.collection('transaction').doc(docId).update(transInfo);
   }

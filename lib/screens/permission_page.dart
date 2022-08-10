@@ -21,6 +21,9 @@ class _PermissionPageState extends State<PermissionPage> {
     'isTransaction': false,
     'isMakeCustomer': false,
     'isMakeAdmin': false,
+    'isDeleteCustomer': false,
+    'isDeleteEmployee': false,
+    'isManageDue': false,
   };
   @override
   Widget build(BuildContext context) {
@@ -30,18 +33,18 @@ class _PermissionPageState extends State<PermissionPage> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             Icons.close,
             color: kSubMainColor,
           ),
         ),
-        title: Text(
+        title: const Text(
           'New User',
           style: kProductNameStylePro,
         ),
       ),
       body: Container(
-        padding: EdgeInsets.all(13.0),
+        padding: const EdgeInsets.all(13.0),
         height: MediaQuery.of(context).size.height,
         child: Stack(
           children: [
@@ -49,7 +52,7 @@ class _PermissionPageState extends State<PermissionPage> {
               children: [
                 ListTile(
                   // leading: Icon(Icons.dark_mode),
-                  title: Text(
+                  title: const Text(
                     'Administrator',
                     style: kProductNameStyle,
                   ),
@@ -67,13 +70,16 @@ class _PermissionPageState extends State<PermissionPage> {
                         bools['isTransaction'] = status;
                         bools['isMakeAdmin'] = status;
                         bools['isMakeCustomer'] = status;
+                        bools['isDeleteCustomer'] = status;
+                        bools['isManageDue'] = status;
+                        bools['isDeleteEmployee'] = status;
                       });
                     },
                   ),
                 ),
                 ListTile(
                   // leading: Icon(Icons.dark_mode),
-                  title: Text(
+                  title: const Text(
                     'Create and Edit products',
                     style: kProductNameStyle,
                   ),
@@ -94,7 +100,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 ),
                 ListTile(
                   // leading: Icon(Icons.dark_mode),
-                  title: Text(
+                  title: const Text(
                     'Manage Inventory',
                     style: kProductNameStyle,
                   ),
@@ -115,7 +121,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 ),
                 ListTile(
                   // leading: Icon(Icons.dark_mode),
-                  title: Text(
+                  title: const Text(
                     'View Transactions',
                     style: kProductNameStyle,
                   ),
@@ -136,7 +142,7 @@ class _PermissionPageState extends State<PermissionPage> {
                 ),
                 ListTile(
                   // leading: Icon(Icons.dark_mode),
-                  title: Text(
+                  title: const Text(
                     'Create Customers',
                     style: kProductNameStyle,
                   ),
@@ -157,8 +163,8 @@ class _PermissionPageState extends State<PermissionPage> {
                 ),
                 ListTile(
                   // leading: Icon(Icons.dark_mode),
-                  title: Text(
-                    'Create user',
+                  title: const Text(
+                    'Create Employee',
                     style: kProductNameStyle,
                   ),
                   onTap: () {
@@ -176,6 +182,69 @@ class _PermissionPageState extends State<PermissionPage> {
                           },
                   ),
                 ),
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Delete Employee',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: bools['isDeleteEmployee']!,
+                    onChanged: bools['isAdmin'] == true
+                        ? null
+                        : (status) {
+                      setState(() {
+                        bools['isDeleteEmployee'] = status;
+                      });
+                    },
+                  ),
+                ),
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Delete Customer',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: bools['isDeleteCustomer']!,
+                    onChanged: bools['isAdmin'] == true
+                        ? null
+                        : (status) {
+                      setState(() {
+                        bools['isDeleteCustomer'] = status;
+                      });
+                    },
+                  ),
+                ),
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Manage Due',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: bools['isManageDue']!,
+                    onChanged: bools['isAdmin'] == true
+                        ? null
+                        : (status) {
+                      setState(() {
+                        bools['isManageDue'] = status;
+                      });
+                    },
+                  ),
+                ),
               ],
             ),
             Align(
@@ -190,11 +259,14 @@ class _PermissionPageState extends State<PermissionPage> {
                     'isTransactions': bools['isTransaction'],
                     'isMakeCustomer': bools['isMakeCustomer'],
                     'isMakeAdmin': bools['isMakeAdmin'],
+                    'isDeleteCustomer': bools['isDeleteCustomer'],
+                    'isDeleteEmployee': bools['isDeleteEmployee'],
+                    'isManageDue': bools['isManageDue'],
                   }).whenComplete(() {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PasswordScreen(),
+                        builder: (context) => const PasswordScreen(),
                       ),
                     );
                   });
@@ -207,8 +279,8 @@ class _PermissionPageState extends State<PermissionPage> {
                     borderRadius: BorderRadius.circular(10.0),
                     border: Border.all(color: kMainColor),
                   ),
-                  child: Center(
-                    child: Text(
+                  child: const Center(
+                    child: const Text(
                       'Next',
                       style: kButtonTextStyle,
                     ),

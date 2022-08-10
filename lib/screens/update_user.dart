@@ -1,23 +1,27 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/components/ui_components/delete_popup.dart';
 import 'package:viraeshop_admin/screens/customers/customer_info.dart';
 import 'package:viraeshop_admin/screens/customers/tabWidgets.dart';
 import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import 'home_screen.dart';
 
 class UpdateUser extends StatefulWidget {
   final Map userInfo;
   final String userId;
- const  UpdateUser({Key? key, required this.userInfo, required this.userId})
+  const UpdateUser({Key? key, required this.userInfo, required this.userId})
       : super(key: key);
 
   @override
@@ -27,27 +31,27 @@ class UpdateUser extends StatefulWidget {
 class _UpdateUserState extends State<UpdateUser> {
   TextEditingController nameController = TextEditingController();
   TextEditingController walletController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   var default_role = 'Customer';
   var selected_role = '';
-  List _myList = ['general', 'agents', 'architect'];
+  final List _myList = ['general', 'agents', 'architect'];
 
   var default_verification = 'not-verified';
   var selected_verification = '';
-  List _verificationList = ['not-verified', 'verified'];
+  final List _verificationList = ['not-verified', 'verified'];
 
   var default_activity = 'not-active';
   var selected_activity = '';
-  List _activityList = ['not-active', 'active'];
+  final List _activityList = ['not-active', 'active'];
 
   bool showFields = false;
 
   var currdate = DateTime.now();
   AdminCrud adminCrud = AdminCrud();
   GeneralCrud generalCrud = GeneralCrud();
-
+  bool isDeleteCustomer = Hive.box('adminInfo').get('isDeleteCustomer');
   @override
   void initState() {
     // TODO: implement initState
@@ -104,30 +108,6 @@ class _UpdateUserState extends State<UpdateUser> {
         child: DefaultTabController(
           length: _tabs.length,
           child: Scaffold(
-            // floatingActionButton: FloatingActionButton(
-            //   onPressed: () {
-            //     FirebaseFirestore.instance
-            //         .collection('messages')
-            //         .doc(widget.user_id)
-            //         .set({
-            //       'name': current_user['fullname'],
-            //       'userId': widget.user_id,
-            //       'email': current_user['email'],
-            //     });
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (context) => Message(
-            //             name: current_user['fullname'], userId: widget.user_id),
-            //       ),
-            //     );
-            //   },
-            //   backgroundColor: kMainColor,
-            //   child: Icon(
-            //     Icons.message,
-            //     color: kBackgroundColor,
-            //   ),
-            // ),
             appBar: AppBar(
               bottom: TabBar(
                 tabs: _tabs,
@@ -152,54 +132,31 @@ class _UpdateUserState extends State<UpdateUser> {
               centerTitle: true,
               titleTextStyle: kTextStyle1,
               actions: [
-                IconButton(
+                !isDeleteCustomer ? const SizedBox() : IconButton(
                   onPressed: () {
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Delete Customer'),
-                          content: const Text(
-                            'Are you sure you want to remove this customer?',
-                            softWrap: true,
-                            style: kSourceSansStyle,
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () async {
-                                setState(() {
-                                  showFields = true;
-                                });
-                                Navigator.pop(context);
-                                await FirebaseFirestore.instance
-                                    .collection(widget.userInfo['role'])
-                                    .doc(widget.userId)
-                                    .delete()
-                                    .then((value) {
-                                  setState(() {
-                                    showFields = false;
-                                  });
-                                  Navigator.pushNamedAndRemoveUntil(context,
-                                      HomeScreen.path, (route) => false);
-                                });
-                              },
-                              child: const Text(
-                                'Yes',
-                                softWrap: true,
-                                style: kSourceSansStyle,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text(
-                                'No',
-                                softWrap: true,
-                                style: kSourceSansStyle,
-                              ),
-                            )
-                          ],
+                        return DeletePopup(
+                          onDelete: () async {
+                            setState(() {
+                              showFields = true;
+                            });
+                            Navigator.pop(context);
+                            try {
+                              await NetworkUtility.deleteCustomer(
+                                  widget.userId);
+                              Navigator.pop(context);
+                            } on FirebaseException catch (e) {
+                              if (kDebugMode) {
+                                print(e.message);
+                              }
+                            } finally {
+                              setState(() {
+                                showFields = false;
+                              });
+                            }
+                          },
                         );
                       },
                     );
@@ -335,6 +292,14 @@ class _UpdateUserState extends State<UpdateUser> {
                                     )
                                         .then((successfull) {
                                       // Navigator.pop(context);
+                                      Box box = Hive.box('customer');
+                                      if(box.isNotEmpty){
+                                        String role = box.get('role');
+                                        if(role == 'agents'){
+                                          num wallet = box.get('wallet', defaultValue: 0.0);
+                                          box.put('wallet', wallet + num.parse(walletController.text));
+                                        }
+                                      }
                                       setState(() {
                                         showFields = !showFields;
                                         widget.userInfo['wallet'] =
@@ -373,7 +338,8 @@ class _UpdateUserState extends State<UpdateUser> {
                         children: [
                           const Text(
                             'Update Balance',
-                            style: const TextStyle(fontSize: 20, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 20, color: Colors.white),
                           )
                         ],
                       ),

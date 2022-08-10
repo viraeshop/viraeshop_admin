@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/screens/add_category.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
@@ -16,6 +18,8 @@ import 'package:viraeshop_admin/screens/login_page.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
+
+import '../reusable_widgets/text_field.dart';
 
 class Configs extends ChangeNotifier {
   Widget currentScreen = const ModalWidget();
@@ -618,55 +622,83 @@ Future<void> getNonInventoryDialog({
               );
             } else if (snapshot.hasData) {
               final data = snapshot.data!.docs;
-              List shops = [];
+              List suppliers = [];
               for (var element in data) {
-                shops.add(element.data());
+                suppliers.add(element.data());
               }
+              SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+                Provider.of<GeneralProvider>(context, listen: false).getSuppliers(suppliers);
+              });
               if (kDebugMode) {
-                print(shops);
+                print(suppliers);
               }
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: List.generate(shops.length, (index) {
-                    return InkWell(
-                        onTap: () {
-                          Hive.box('shops')
-                              .putAll(shops[index])
-                              .whenComplete(() => Navigator.pop(context));
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: NetworkImage(
-                                  shops[index]['profileImage'],
+              return SizedBox(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Consumer<GeneralProvider>(
+                    builder: (context, supplier, childWidget){
+                      List shops = supplier.suppliers;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(shops.length + 1, (index) {
+                          if(index == 0){
+                            return NewTextField(
+                              controller: controller,
+                              hintText: 'Search',
+                              onChanged: (value){
+                                if(value.isEmpty && supplier.suppliersBackup.isNotEmpty){
+                                  Provider.of<GeneralProvider>(context, listen: false).updateSuppliersList(supplier.suppliersBackup);
+                                }else{
+                                  shops = searchEngine(value: value, key: 'supplier_name', temps: shops, key2: 'business_name');
+                                  Provider.of<GeneralProvider>(context, listen: false).updateSuppliersList(shops);
+                                }
+                              },
+                            );
+                          }
+                          return InkWell(
+                              onTap: () {
+                                Hive.box('shops')
+                                    .putAll(shops[index-1])
+                                    .whenComplete(() => Navigator.pop(context));
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        shops[index-1]['profileImage'],
+                                      ),
+                                      radius: 35.0,
+                                    ),
+                                    const SizedBox(
+                                      width: 10.0,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          shops[index-1]['business_name'],
+                                          style: kTableCellStyle,
+                                        ),
+                                        const SizedBox(
+                                          height: 10.0,
+                                        ),
+                                        Text(
+                                          shops[index-1]['supplier_name'],
+                                          style: kTableCellStyle,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                radius: 35.0,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    shops[index]['business_name'],
-                                    style: kTableCellStyle,
-                                  ),
-                                  const SizedBox(
-                                    height: 10.0,
-                                  ),
-                                  Text(
-                                    shops[index]['supplier_name'],
-                                    style: kTableCellStyle,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ));
-                  }),
+                              ));
+                        }),
+                      );
+                    },
+                  ),
                 ),
               );
             } else {

@@ -12,11 +12,11 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
-import 'package:viraeshop_admin/screens/non_inventory_transaction_info.dart';
+import 'package:viraeshop_admin/screens/transactions/non_inventory_transaction_info.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
-import 'user_transaction_screen.dart';
+import 'transactions/user_transaction_screen.dart';
 
 class NewNonInventoryProduct extends StatefulWidget {
   @override
@@ -180,11 +180,11 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         date = value.get('date');
                         controllers[0].text = value.get('invoice_id');
                         value.get('shop').forEach((element) {
-                          shopNames.add(element['name']);
+                          shopNames.add(element['business_name']);
                         });
                         shopList = value.get('shop');
                         currentShop = shopList[0];
-                        dropdownValue = currentShop['name'];
+                        dropdownValue = currentShop['business_name'];
                         receipt = currentShop['images'].isNotEmpty
                             ? currentShop['images'][0]
                             : null;
@@ -245,7 +245,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         onChanged: (value) {
                           Map shop = {};
                           shopList.forEach((element) {
-                            if (element['name'] == value.toString()) {
+                            if (element['business_name'] == value.toString()) {
                               shop = element;
                             }
                           });
@@ -342,7 +342,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                           List updatedShopList = [];
                           num totalPaid = 0;
                           shopList.forEach((element) {
-                            if (dropdownValue == element['name']) {
+                            if (dropdownValue == element['business_name']) {
                               List imageList = element['images'],
                                   payLists = element['pay_list'];
                               imageList.add(uploadImageString);
@@ -354,7 +354,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                 totalPaid += element['paid'];
                               });
                               Map updatedShop = {
-                                'name': element['name'],
+                                'business_name': element['business_name'],
                                 'address': element['address'],
                                 'mobile': element['mobile'],
                                 'email': element['email'],

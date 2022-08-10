@@ -151,12 +151,15 @@ class AdsCard extends StatelessWidget {
                       showBottomCard: false,
                       backgroundColor: kNewYellowColor,
                     )
-                  : CachedNetworkImage(
-                      imageUrl: '$image',
-                      height: double.infinity,
-                      width: 100.0,
-                      fit: BoxFit.cover,
-                    ),
+                  : InkWell(
+                onTap: isEdit! ? getImage : null,
+                child: CachedNetworkImage(
+                        imageUrl: '$image',
+                        height: double.infinity,
+                        width: 100.0,
+                        fit: BoxFit.cover,
+                      ),
+                  ),
             ),
           ]),
         ),

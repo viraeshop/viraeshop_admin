@@ -8,11 +8,12 @@ import 'package:viraeshop_admin/animation_testing.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_details.dart';
+import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/about_us_page.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
 import 'package:viraeshop_admin/screens/agent_products.dart';
+import 'package:viraeshop_admin/screens/allusers.dart';
 import 'package:viraeshop_admin/screens/architect_products.dart';
 import 'package:viraeshop_admin/screens/bloc/product_bloc.dart';
 import 'package:viraeshop_admin/screens/customers/customer_request.dart';
@@ -38,7 +39,7 @@ import 'configs/configs.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/orders/order_configs.dart';
 import 'screens/transaction_screen.dart';
-import 'screens/user_transaction_screen.dart';
+import 'screens/transactions/user_transaction_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 void main() async {
@@ -182,6 +183,7 @@ class _MyAppState extends State<MyApp> {
         TransactionDetails.path: (context) => const TransactionDetails(),
         ShoppingCart.path: (context) => const ShoppingCart(),
         NotificationScreen.path: (context) => const NotificationScreen(),
+        AllUserScreen.path: (context) => const AllUserScreen(),
       },
     );
   }

@@ -1,11 +1,15 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/gradients.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import 'ads_card.dart';
 import 'ads_provider.dart';
@@ -24,7 +28,7 @@ class AdsCarousel extends StatelessWidget {
       print('Ads list: $ads');
       Map<String, Map<String, TextEditingController>> controllers =
           childs.controllers;
-      // print('Controllers: $controllers');
+      print('Controllers: $controllers');
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -72,6 +76,7 @@ class AdsCarousel extends StatelessWidget {
                 );
               }
               String currentId = ads[itemIndex]['adId'];
+              String imageLink = ads[itemIndex]['image'];
               return AdsCard(
                 isEdit: ads[itemIndex]['isEdit'],
                 title1: ads[itemIndex]['title1'],
@@ -105,7 +110,7 @@ class AdsCarousel extends StatelessWidget {
                     });
                   }
                 },
-                onEditDone: () {
+                onEditDone: () async{
                   String title1 = controllers[currentId]!['title1']!.text;
                   String title2 = controllers[currentId]!['title2']!.text;
                   String title3 = controllers[currentId]!['title3']!.text;
@@ -113,11 +118,31 @@ class AdsCarousel extends StatelessWidget {
                       .updateAdCard(currentId, title1, title2, title3);
                   Provider.of<AdsProvider>(context, listen: false)
                       .onEdit(currentId, false);
+                  if(ads[itemIndex]['imagePath'] != null || ads[itemIndex]['imageBytes'] != null){
+                    try{
+                      await NetworkUtility.deleteImage(imageLink);
+                      snackBar(text: 'Editing Done', context: context, color: kNewMainColor, duration: 100);
+                    }on FirebaseException catch (e){
+                      if(kDebugMode){
+                        print(e);
+                      }
+                      snackBar(text: e.message!, context: context, color: kRedColor, duration: 100);
+                    }
+                  }
                 },
-                onDelete: () {
+                onDelete: () async{
                   Provider.of<AdsProvider>(context, listen: false)
                       .deleteAdCard(ads[itemIndex]['adId']);
-                  print('Original Advert List: ${childs.adCards}');
+                  try{
+                    await NetworkUtility.deleteImage(imageLink);
+                    snackBar(text: 'Deleted successfully', context: context, color: kNewMainColor, duration: 100);
+                  }on FirebaseException catch (e){
+                    if(kDebugMode){
+                      print(e);
+                    }
+                   // snackBar(text: e.message!, context: context, color: kRedColor, duration: 100);
+                  }
+                  //print('Original Advert List: ${childs.adCards}');
                 },
               );
             },

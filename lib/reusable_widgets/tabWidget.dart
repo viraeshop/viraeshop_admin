@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,6 +17,7 @@ import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/non_inventory_items.dart';
 import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/new_product_screen.dart';
 
@@ -48,6 +50,7 @@ class TabWidget extends StatefulWidget {
 class _TabWidgetState extends State<TabWidget> {
   bool isSearch = false;
   bool showSearch = false;
+  StreamSubscription? productsStream;
   static List products = Hive.box(productsBox).get(productsKey);
   static List productsList = [];
   List tempStore = [];
@@ -63,10 +66,11 @@ class _TabWidgetState extends State<TabWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((c) {
-      // Get the location of the "shopping cart"
-      // _endOffset = (_key.currentContext!.findRenderObject() as RenderBox)
-      //     .localToGlobal(Offset.zero);
+    Hive.box(productsBox).watch(key: productsKey).listen((event){
+      print('event: $event');
+      setState((){
+        products = event.value;
+      });
     });
   }
 
@@ -77,15 +81,16 @@ class _TabWidgetState extends State<TabWidget> {
         final size = MediaQuery.of(context).size.height;
         return AnimatedPositioned(
             height:
-                animation.addedToCart[index] && animation.isStarted ? 0 : 100.0,
+                animation.addedToCart[index] && animation.isAnimationStarted ? 0 : 100.0,
             width:
-                animation.addedToCart[index] && animation.isStarted ? 0 : 150.0,
+                animation.addedToCart[index] && animation.isAnimationStarted ? 0 : 150.0,
             left: offset.dx,
             bottom: animation.addedToCart[index]
                 ? 0
                 : (size - (offset.dy.round() + (offset.dy.round() / 2)))
                     .round()
                     .toDouble(),
+            duration: const Duration(milliseconds: 200),
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -96,8 +101,7 @@ class _TabWidgetState extends State<TabWidget> {
                 ),
                 borderRadius: BorderRadius.circular(10.0),
               ),
-            ),
-            duration: const Duration(milliseconds: 200));
+            ));
       });
     });
     final overlay = Overlay.of(context);
@@ -206,7 +210,7 @@ class _TabWidgetState extends State<TabWidget> {
                       );
                     }),
                 Container(
-                  height: 35.0,
+                  height: 30.0,
                   // width: double.infinity,
                   margin: const EdgeInsets.all(10.0),
                   child: Row(
@@ -214,22 +218,22 @@ class _TabWidgetState extends State<TabWidget> {
                     children: [
                       DropdownButton(
                         value: dropdownValue,
-                        items: [
-                          const DropdownMenuItem(
+                        items: const [
+                          DropdownMenuItem(
                             value: 'general',
-                            child: const Text(
+                            child: Text(
                               'General',
                               style: kProductNameStylePro,
                             ),
                           ),
-                          const DropdownMenuItem(
+                          DropdownMenuItem(
                             value: 'agents',
-                            child: const Text(
+                            child: Text(
                               'Agents',
                               style: kProductNameStylePro,
                             ),
                           ),
-                          const DropdownMenuItem(
+                          DropdownMenuItem(
                             value: 'architect',
                             child: Text(
                               'Architect',
@@ -254,7 +258,7 @@ class _TabWidgetState extends State<TabWidget> {
                           );
                         },
                         child: const ImageIcon(
-                          const AssetImage('assets/icons/flash.png'),
+                          AssetImage('assets/icons/flash.png'),
                           color: kSubMainColor,
                           size: 25.0,
                         ),
@@ -262,13 +266,13 @@ class _TabWidgetState extends State<TabWidget> {
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 15.0,
-                ),
+                // const SizedBox(
+                //   height: 10.0,
+                // ),
                 Consumer<AdsProvider>(builder: (consumerContext, ads, childs) {
                   if (widget.isAll) {
                     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                      if (!ads.isSearch && !ads.isStarted) {
+                      if (!ads.isSearch && !ads.isAnimationStarted) {
                         ads.updateProductList(products);
                         List<bool> booleans =
                             List.generate(products.length, (index) => false);
@@ -280,7 +284,7 @@ class _TabWidgetState extends State<TabWidget> {
                       return element['category'] == widget.category;
                     }).toList();
                     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                      if (!ads.isSearch) {
+                      if (!ads.isSearch && !ads.isAnimationStarted) {
                         ads.updateProductList(classifiedProducts);
                         List<bool> booleans = List.generate(
                             classifiedProducts.length, (index) => false);
@@ -292,8 +296,8 @@ class _TabWidgetState extends State<TabWidget> {
                   return Container(
                     padding: const EdgeInsets.all(10.0),
                     height: deviceSize.height < 741
-                        ? deviceSize.height * 0.51
-                        : deviceSize.height * 0.55,
+                        ? deviceSize.height - 400
+                        : deviceSize.height - 367,
                     child: GridView.builder(
                       // physics:
                       //     ScrollableScrollPhysics(),
@@ -355,7 +359,7 @@ class _TabWidgetState extends State<TabWidget> {
                             showDialog<void>(
                               context: context,
                               // barrierColor: Colors.transparent,
-                              builder: (context) => popWidget(
+                              builder: (context) => PopWidget(
                                 image: productsList[index - 1]['image'],
                                 productName: productsList[index - 1]['name'],
                                 price: currentPrice.toString(),
@@ -364,7 +368,6 @@ class _TabWidgetState extends State<TabWidget> {
                                 category: productsList[index - 1]['category'],
                                 quantity: productsList[index - 1]['quantity']
                                     .toString(),
-                                context: context,
                                 info: productsList[index - 1],
                                 routeName: HomeScreen.path,
                                 isDiscount: discountData.item3,
@@ -375,7 +378,7 @@ class _TabWidgetState extends State<TabWidget> {
                           },
                           onTap: () {
                             print('start');
-                            if (!ads.isStarted) {
+                            if (!ads.isAnimationStarted) {
                               cartAnimation();
                               ads.animationTracker(true);
                               Offset offset = calculateWidgetPosition(
@@ -432,6 +435,7 @@ class _TabWidgetState extends State<TabWidget> {
                                       price: price,
                                       quantity: 1,
                                       unitPrice: price,
+                                      buyPrice: num.parse(productsList[index - 1]['cost_price'] ?? '0'),
                                     ),
                                   )
                                   .whenComplete(() => print('completed'))
@@ -441,6 +445,10 @@ class _TabWidgetState extends State<TabWidget> {
                             }
                           },
                           child: Container(
+                            decoration: BoxDecoration(
+                              color: kProductCardColor,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
@@ -475,7 +483,7 @@ class _TabWidgetState extends State<TabWidget> {
                                             borderRadius:
                                                 const BorderRadius.only(
                                               topLeft:
-                                                  const Radius.circular(10.0),
+                                                  Radius.circular(10.0),
                                               topRight: Radius.circular(10.0),
                                             ),
                                           ),
@@ -497,6 +505,16 @@ class _TabWidgetState extends State<TabWidget> {
                                       ),
                                       Container(
                                         height: 50.0,
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: kSubMainColor,
+                                          borderRadius: BorderRadius.only(
+                                            bottomLeft:
+                                                Radius.circular(10),
+                                            bottomRight:
+                                                Radius.circular(10),
+                                          ),
+                                        ),
                                         child: Padding(
                                           padding: const EdgeInsets.only(
                                             left: 5.0,
@@ -563,16 +581,6 @@ class _TabWidgetState extends State<TabWidget> {
                                             ],
                                           ),
                                         ),
-                                        width: double.infinity,
-                                        decoration: const BoxDecoration(
-                                          color: kSubMainColor,
-                                          borderRadius: BorderRadius.only(
-                                            bottomLeft:
-                                                const Radius.circular(10),
-                                            bottomRight:
-                                                const Radius.circular(10),
-                                          ),
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -587,11 +595,6 @@ class _TabWidgetState extends State<TabWidget> {
                                 ),
                               ],
                             ),
-                            //
-                            decoration: BoxDecoration(
-                              color: kProductCardColor,
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
                           ),
                         );
                       },
@@ -604,18 +607,19 @@ class _TabWidgetState extends State<TabWidget> {
               ],
             ),
           ),
-          FractionallySizedBox(
-            heightFactor: 0.1,
+          Align(
             alignment: Alignment.bottomCenter,
             child: Container(
+              height: 70.0,
               color: kBackgroundColor,
+              padding: const EdgeInsets.all(10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   InkWell(
                     onTap: () {
-                      if (Hive.box('adminInfo').isNotEmpty) {
+                      if (Hive.box('customer').isNotEmpty) {
                         // List<Cart> cart = Hive.box<Cart>('cart').values.toList();
                         // print(cart[0].productName);
                         Navigator.push(
@@ -625,7 +629,7 @@ class _TabWidgetState extends State<TabWidget> {
                           ),
                         );
                       } else {
-                        loginDialogBox(buildContext: context);
+                        toast(context: context, title: 'You Forgot to add Customer', color: kRedColor,);
                       }
                     },
                     child: ValueListenableBuilder(
@@ -664,6 +668,7 @@ class _TabWidgetState extends State<TabWidget> {
                                       : kBackgroundColor,
                                   fontFamily: 'Montserrat',
                                   letterSpacing: 1.3,
+                                  fontWeight: FontWeight.bold,
                                   // fontWeight: FontWeight.w700,
                                 ),
                               ),

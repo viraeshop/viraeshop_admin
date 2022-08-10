@@ -11,12 +11,12 @@ import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
-import 'package:viraeshop_admin/screens/user_transaction_screen.dart';
+import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../components/styles/text_styles.dart';
 import '../configs/configs.dart';
-import 'non_inventory_transaction_info.dart';
+import 'transactions/non_inventory_transaction_info.dart';
 
 class SupplierPay extends StatefulWidget {
   const SupplierPay({Key? key}) : super(key: key);

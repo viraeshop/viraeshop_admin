@@ -11,6 +11,7 @@ class NewTextField extends StatelessWidget {
   dynamic prefixIcon;
   String hintText, helperText, labelText;
   String? Function(String?)? validator;
+  void Function(String)? onChanged;
   final int? maxLength;
   NewTextField({
     this.prefixIcon = null,
@@ -22,6 +23,7 @@ class NewTextField extends StatelessWidget {
     this.labelText = '',
     this.validator,
     this.maxLength,
+    this.onChanged,
     this.secure = false,
     required this.controller,
   });
@@ -37,6 +39,7 @@ class NewTextField extends StatelessWidget {
       maxLines: lines,
       validator: validator,
       maxLength: maxLength,
+      onChanged: onChanged,
       decoration: InputDecoration(
         prefixStyle: kTableCellStyle,
         prefixText: prefix,

@@ -5,19 +5,20 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_details.dart';
+import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
+import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'user_transaction_screen.dart';
 import 'package:tuple/tuple.dart';
 
-class GroupTransactions extends StatefulWidget {
+class Employees extends StatefulWidget {
   final List data;
-  GroupTransactions({required this.data});
+  Employees({required this.data});
 
   @override
-  _GroupTransactionsState createState() => _GroupTransactionsState();
+  _EmployeesState createState() => _EmployeesState();
 }
 
-class _GroupTransactionsState extends State<GroupTransactions> {
+class _EmployeesState extends State<Employees> {
   Map<String, List> transactionData = {};
   Map<String, Tuple2> balances = {};
   Map<String, Tuple2> balancesTemp = {};
@@ -25,33 +26,38 @@ class _GroupTransactionsState extends State<GroupTransactions> {
   Tuple2 totalBalanceTemp = Tuple2<num, num>(0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
+  Set employees = Set();
   @override
   void initState() {
     // TODO: implement initState
-    List generalItems = [], agentsItems = [], architectItems = [];
+    List employeeId = [];
     widget.data.forEach((element) {
-      if (element['customer_role'] == 'general') {
-        generalItems.add(element);
-      } else if (element['customer_role'] == 'agents') {
-        agentsItems.add(element);
-      } else {
-        architectItems.add(element);
-      }
-      setState(() {
-        transactionData['General'] = generalItems;
-        transactionData['Agents'] = agentsItems;
-        transactionData['Architects'] = architectItems;
+      employeeId.add(element['employee_id']);
+    });
+    Set employeeSet = Set.from(employeeId);
+    employeeSet.forEach((employee) {
+      List items = [];
+      widget.data.forEach((element) {
+        if (element['employee_id'] == employee) {
+          items.add(element);
+        }
+        setState(() {
+          transactionData[employee] = items;
+        });
       });
     });
     setState(() {
-      balances = <String, Tuple2>{
-        'General': tuple(transactionData['General']!),
-        'Agents': tuple(transactionData['Agents']!),
-        'Architects': tuple(transactionData['Architects']!),
-      };
+      balances = Map.fromIterable(
+        employeeSet,
+        key: (element) => element,
+        value: (element) {
+          return tuple(transactionData[element]!);
+        },
+      );
       balancesTemp = balances;
       totalBalance = tuple(widget.data);
       totalBalanceTemp = totalBalance;
+      employees = employeeSet;
     });
     super.initState();
   }
@@ -80,7 +86,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
             iconSize: 20.0,
           ),
           title: Text(
-            'Customers',
+            'Employees',
             style: kAppBarTitleTextStyle,
           ),
           actions: [
@@ -112,17 +118,16 @@ class _GroupTransactionsState extends State<GroupTransactions> {
                           itemBuilder: (context, i) {
                             return InfoWidget(
                                 textWidget: rowWidget(
-                                    '${balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString()}',
-                                    '${balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()}'),
-                                title: '${balancesTemp.keys.toList()[i]}',
+                                    balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString(),
+                                    balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()),
+                                title: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) {
                                       return UserTransactionScreen(
-                                        data: transactionData[
-                                            transactionData.keys.toList()[i]]!,
-                                        name: transactionData.keys.toList()[i],
+                                        data: transactionData[transactionData.keys.toList()[i]]!,
+                                        name: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], widget.data),
                                       );
                                     }),
                                   );
@@ -130,7 +135,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
                           }),
                     ),
                     FractionallySizedBox(
-                      heightFactor: 0.25,
+                      heightFactor: 0.3,
                       alignment: Alignment.bottomCenter,
                       child: Container(
                         padding: EdgeInsets.all(10),
@@ -152,7 +157,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 dateWidget(
-                                  title: '${begin.toString().split(' ')[0]}',
+                                  title: begin.toString().split(' ')[0],
                                   onTap: () {
                                     buildMaterialDatePicker(context, true);
                                   },
@@ -174,20 +179,16 @@ class _GroupTransactionsState extends State<GroupTransactions> {
                                 ),
                                 roundedTextButton(onTap: () {
                                   setState(() {
-                                    balancesTemp = <String, Tuple2>{
-                                      'General': dateTuple(
-                                          transactionData['General']!,
-                                          begin,
-                                          end),
-                                      'Agents': dateTuple(
-                                          transactionData['Agents']!,
-                                          begin,
-                                          end),
-                                      'Architects': dateTuple(
-                                          transactionData['Architects']!,
-                                          begin,
-                                          end),
-                                    };
+                                    balancesTemp = Map.fromIterable(
+                                      employees,
+                                      key: (element) => element,
+                                      value: (element) {
+                                        return dateTuple(
+                                            transactionData[element]!,
+                                            begin,
+                                            end);
+                                      },
+                                    );
                                     totalBalanceTemp =
                                         dateTuple(widget.data, begin, end);
                                   });

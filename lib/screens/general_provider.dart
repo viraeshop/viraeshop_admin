@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 class GeneralProvider extends ChangeNotifier {
   List advertSelected = [];
+  List suppliers = [];
+  List suppliersBackup= [];
   List<bool> addedToCart = List.generate(10, (index) => false);
   bool isStarted = false;
   void addAdvert(String value) {
@@ -26,6 +28,15 @@ class GeneralProvider extends ChangeNotifier {
   }
   void updateAnimationTrigger (List<bool> value){
     addedToCart = value;
+    notifyListeners();
+  }
+  void getSuppliers (List suppliers){
+    this.suppliers = suppliers;
+    suppliersBackup = suppliers;
+    notifyListeners();
+  }
+  void updateSuppliersList (List suppliers){
+    this.suppliers = suppliers;
     notifyListeners();
   }
 }

@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/user_transaction_screen.dart';
+import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 
 class NonInventoryInfo extends StatefulWidget {
   final Map data;
@@ -62,7 +62,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                 children: [
                   /// name
                   Text(
-                    '${widget.data['name']}',
+                    '${widget.data['business_name']}',
                     style: kTotalSalesStyle,
                   ),
                   Row(

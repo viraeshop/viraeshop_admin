@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -8,6 +9,7 @@ import 'package:viraeshop_admin/screens/admininfoscreen.dart';
 import 'new_admin_user.dart';
 
 class AllUserScreen extends StatefulWidget {
+  static const String path = '/employees';
   const AllUserScreen({Key? key}) : super(key: key);
 
   @override
@@ -24,13 +26,13 @@ class _AllUserScreenState extends State<AllUserScreen> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.chevronLeft,
             color: kSubMainColor,
           ),
           iconSize: 15.0,
         ),
-        title: Text(
+        title: const Text(
           'Users',
           style: kProductNameStylePro,
         ),
@@ -45,7 +47,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
                 },
               ),
             ),
-            icon: Icon(FontAwesomeIcons.userPlus),
+            icon: const Icon(FontAwesomeIcons.userPlus),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
@@ -61,20 +63,22 @@ Widget architect() {
       stream: FirebaseFirestore.instance.collection('users').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: Text(
-              'Loading Plaese wait.....',
+              'Loading please wait.....',
               style: kProductNameStylePro,
             ),
           );
         } else if (snapshot.hasData) {
           final data = snapshot.data!.docs;
           List users = [];
-          data.forEach((element) {
+          for (var element in data) {
             users.add(element.data());
-          });
-          print(data.length);
-          return Container(
+          }
+          if (kDebugMode) {
+            print(data.length);
+          }
+          return SizedBox(
             height: double.infinity,
             width: double.infinity,
             child: SingleChildScrollView(
@@ -92,8 +96,8 @@ Widget architect() {
                               }));
                             },
                             child: Container(
-                              padding: EdgeInsets.all(15.0),
-                              decoration: BoxDecoration(
+                              padding: const EdgeInsets.all(15.0),
+                              decoration: const BoxDecoration(
                                 color: kBackgroundColor,
                                 border: Border(
                                   bottom: BorderSide(color: Colors.black26),
@@ -109,7 +113,7 @@ Widget architect() {
                                   ),
                                 ),
                                 title: Text(
-                                  '${user.split(' ')[0]}',
+                                  user.split(' ')[0],
                                   style: kProductNameStylePro,
                                 ),
                                 subtitle: Text(
@@ -119,7 +123,7 @@ Widget architect() {
                                 trailing: Column(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
-                                  children: [
+                                  children: const [
                                     Text(
                                       'Admin',
                                       style: kProductNameStylePro,
@@ -137,7 +141,7 @@ Widget architect() {
                         },
                       ),
                     )
-                  : Center(
+                  : const Center(
                       child: Text(
                         'Failed to fetch customers',
                         style: kProductNameStylePro,
@@ -146,7 +150,7 @@ Widget architect() {
             ),
           );
         } else {
-          return Center(
+          return const Center(
             child: Text(
               'Failed to fetch customers',
               style: kProductNameStylePro,

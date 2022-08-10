@@ -35,47 +35,52 @@ class OrderTranzCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.payments,
-                      size: 30.0,
-                      color: kSubMainColor,
-                    ),
-                    const SizedBox(
-                      width: 15.0,
-                    ),
-                    Text(
-                      '$price৳',
-                      style: const TextStyle(
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.payments,
+                        size: 30.0,
                         color: kSubMainColor,
-                        fontSize: 15.0,
-                        fontFamily: 'Montserrat',
-                        letterSpacing: 1.3,
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                    const SizedBox(
-                      width: 10.0,
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          'by $employeeName',
-                          style: const TextStyle(
-                            color: kProductCardColor,
-                            fontSize: 15.0,
-                            fontFamily: 'Montserrat',
-                            letterSpacing: 1.3,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      const SizedBox(
+                        width: 15.0,
+                      ),
+                      Text(
+                        '$price৳',
+                        style: const TextStyle(
+                          color: kSubMainColor,
+                          fontSize: 15.0,
+                          fontFamily: 'Montserrat',
+                          letterSpacing: 1.3,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(
-                          height: 5.0,
+                      ),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              'by $employeeName',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: kProductCardColor,
+                                fontSize: 15.0,
+                                fontFamily: 'Montserrat',
+                                letterSpacing: 1.3,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5.0,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
                 Text(
                   date,
@@ -107,22 +112,27 @@ class OrderTranzCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.person,
-                      color: kSubMainColor,
-                      size: 30,
-                    ),
-                    const SizedBox(
-                      width: 10.0,
-                    ),
-                    Text(
-                      customerName,
-                      overflow: TextOverflow.ellipsis,
-                      style: kProductNameStylePro,
-                    ),
-                  ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.person,
+                        color: kSubMainColor,
+                        size: 30,
+                      ),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      Expanded(
+                        child: Text(
+                          customerName,
+                          overflow: TextOverflow.ellipsis,
+                          style: kProductNameStylePro,
+
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 invoiceId != null ? Text(
                   'Invoice No: $invoiceId',

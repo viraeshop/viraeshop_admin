@@ -119,7 +119,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                       ),
                     ),
                     DropdownMenuItem(
-                      value: 'Architect',
+                      value: 'architect',
                       child: Text(
                         'Architect',
                         style: kTableCellStyle,
@@ -162,12 +162,20 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                       });
                       String uid = '';
                       Map<String, dynamic> userInfo = {
-                        'name': _preferences.getControllers[0].text,
+                        'name': _preferences.getControllers[0].text.toUpperCase(),
                         'mobile': countryCode + _preferences.getControllers[1].text,
                         'email': _preferences.getControllers[2].text,
                         'address': _preferences.getControllers[3].text,
                         'role': dropdownValue,
                       };
+                      List searchKeywords =  _preferences.getControllers[0].text.toUpperCase().characters.toList();
+                      if(dropdownValue == 'architect' || dropdownValue == 'agents'){
+                        userInfo['business_name'] =  _preferences.getControllers[5].text;
+                        searchKeywords.addAll( _preferences.getControllers[5].text.toUpperCase().characters.toList());
+                      }
+                      searchKeywords.removeWhere((element) => element == ' ');
+                      searchKeywords = Set.from(searchKeywords).toList();
+                      userInfo['search_keywords'] = searchKeywords;
                       String number = countryCode +
                           _preferences.getControllers[1].text;
                       if (dropdownValue == 'agents'){
@@ -186,10 +194,12 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                         userInfo['userId'] = uid;
                         await NetworkUtility.saveUserInfo(
                             uid, userInfo);
+
                       } on FirebaseAuthException catch (e) {
                         if (kDebugMode) {
                           print(e.message);
                         }
+                        snackBar(text: e.message!, context: context, color: kRedColor, duration: 50);
                       } finally {
                         setState(() {
                           isLoading = false;

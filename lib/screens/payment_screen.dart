@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -11,7 +12,9 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../reusable_widgets/hive/shops_model.dart';
 import 'done_screen.dart';
@@ -32,21 +35,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List shop = [];
   num totalPrice = cartDetails.get('totalPrice');
   num amountReceived = 0;
+  num profit = 0;
   int totalQuantity = cartDetails.get('totalItems');
   num discount = cartDetails.get('discountAmount', defaultValue: 0);
   final String adminId =
       Hive.box('adminInfo').get('adminId', defaultValue: 'adminId');
+  final String adminName = Hive.box('adminInfo').get('name', defaultValue: '');
   List<Map> transDesc = [];
-  String customerId =
-      customerBox.isEmpty ? '' : customerBox.get('id') == null ? '' : customerBox.get('id');
-  String customerRole =
-      customerBox.isEmpty ? '' : customerBox.get('role');
+  String customerId = customerBox.isEmpty ? '' : customerBox.get('id') ?? '';
+  String customerRole = customerBox.isEmpty ? '' : customerBox.get('role');
   String invoiceNo = randomNumeric(3);
   @override
   void initState() {
     // TODO: implement initState
-  amountReceived =  widget.advance != 0 ? widget.advance : widget.paid;
-    cartItems.forEach((element) {
+    amountReceived = widget.advance != 0 ? widget.advance : widget.paid;
+    for (var element in cartItems) {
+      if(element.isInventory!){
+        profit += (element.unitPrice - element.buyPrice);
+      }
       Map cartProduct = {
         'product_name': element.productName,
         'product_id': element.productId,
@@ -54,6 +60,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'quantity': element.quantity,
         'unit_price': element.unitPrice,
         'isInventory': element.isInventory,
+        'buy_price': element.buyPrice,
       };
       if (element.shopName != '') {
         cartProduct['shopName'] = element.shopName;
@@ -62,8 +69,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       if (element.isInventory == false) {
         isWithNonInventory = true;
       }
-    });
-    shops.forEach((element) {
+    }
+    for (var element in shops) {
       shop.add({
         'business_name': element.name,
         'address': element.address,
@@ -78,32 +85,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'pay_list': element.payList,
         'description': element.description,
       });
-    });
-    super.initState();
-  }
-
-  Future updateProducts() async {
-    String errorMessage = 'Product Inventory Updated Sucessfully';
-    try {
-      cartItems.forEach((element) async {
-        await updateProductInventory(element.productId, element.quantity)
-            .then((value) => print('updated'))
-            .catchError((error) {
-          errorMessage = error;
-        });
-      });
-    } catch (e) {
-      print(e);
-      errorMessage = e.toString();
     }
-    return errorMessage;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: Scaffold(
@@ -113,18 +103,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(
+            icon: const Icon(
               FontAwesomeIcons.chevronLeft,
             ),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
-          title: Text(
+          title: const Text(
             'Payment: Cash',
             style: kAppBarTitleTextStyle,
           ),
           centerTitle: false,
-          shape: Border(
+          shape: const Border(
             bottom: BorderSide(color: kStrokeColor),
           ),
         ),
@@ -139,23 +129,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       'AMOUNT RECEIVED',
                       style: kCategoryNameStyle,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20.0,
                     ),
                     Text(
                       '${amountReceived.toString()}৳',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: kMainColor,
                         fontFamily: 'Montserrat',
                         fontSize: 30,
                         letterSpacing: 1.3,
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20.0,
                     ),
                   ],
@@ -165,13 +155,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 heightFactor: 0.12,
                 alignment: Alignment.bottomCenter,
                 child: InkWell(
-                  onTap: () {
-                    GeneralCrud generalCrud = GeneralCrud();
+                  onTap: () async {
+                    if (kDebugMode) {
+                      print('Profit: $profit');
+                    }
                     Map<String, dynamic> transInfo = {
                       'price': totalPrice,
                       'quantity': totalQuantity.toString(),
                       'date': Timestamp.now(),
                       'employee_id': adminId,
+                      'employee_name': adminName,
                       'items': transDesc,
                       'invoice_id': invoiceNo,
                       'isWithNonInventory': isWithNonInventory,
@@ -182,52 +175,88 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       'due': widget.due,
                       'advance': widget.advance,
                       'discount': discount,
+                      'profit': profit,
                       'user_info': {
                         'name': Hive.box('customer').get('name'),
                         'email': Hive.box('customer').get('email'),
                         'address': Hive.box('customer').get('address'),
                         'mobile': Hive.box('customer').get('mobile'),
+                        'business_name': Hive.box('customer')
+                            .get('business_name', defaultValue: ''),
+                        'search_keywords':
+                            Hive.box('customer').get('search_keywords'),
                       },
                     };
                     if (isWithNonInventory) {
                       transInfo['shop'] = shop;
-                      print('non-inventory');
+                      if (kDebugMode) {
+                        print('non-inventory');
+                      }
                     }
-                    print('done with map.. now move on to database');
+                    if (kDebugMode) {
+                      print('done with map.. now move on to database');
+                    }
                     setState(() {
                       isLoading = true;
                     });
-                    generalCrud
-                        .makeTransaction(invoiceNo, transInfo)
-                        .then((value) {
-                      setState(() {
-                        isLoading = false;
-                      });
-                      updateProducts().then((value) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) {
-                            return DoneScreen(info: transInfo);
-                          }),
-                        );
-                      }).catchError((error) {
-                        print('Error message $error');
-                        setState(() {
-                          isLoading = false;
+                    try {
+                      if (customerRole == 'agents') {
+                        num wallet = customerBox.get('wallet', defaultValue: 0);
+                        num balanceToPay = totalPrice - discount;
+                        if (wallet >= balanceToPay) {
+                          num balance = wallet - balanceToPay;
+                          await NetworkUtility.updateWallet(customerId, {
+                            'wallet': balance,
+                          });
+                          if (kDebugMode) {
+                            print('balance: $balance');
+                          }
+                          customerBox.put('wallet', balance);
+                          await NetworkUtility.makeTransaction(
+                              invoiceNo, transInfo);
+                          await NetworkUtility.updateProducts(cartItems);
+                          Future.delayed(const Duration(milliseconds: 0), () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return DoneScreen(info: transInfo);
+                              }),
+                            );
+                          });
+                        }else{
+                          toast(context: context, title: 'Sorry customer has insufficient balance in his account');
+                        }
+                      } else {
+                        await NetworkUtility.makeTransaction(
+                            invoiceNo, transInfo);
+                        await NetworkUtility.updateProducts(cartItems);
+                        Future.delayed(const Duration(milliseconds: 0), () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return DoneScreen(info: transInfo);
+                            }),
+                          );
                         });
-                      });
-                    }).catchError((value) {
+                      }
+                    } on FirebaseException catch (e) {
+                      if (kDebugMode) {
+                        print(e.message);
+                      }
+                      snackBar(
+                          text: e.message!,
+                          context: context,
+                          color: kRedColor,
+                          duration: 50);
+                    } finally {
                       setState(() {
                         isLoading = false;
                       });
-                      showDialogBox(
-                          buildContext: context, msg: 'Error occured');
-                      print(value);
-                    });
+                    }
                   },
                   child: Container(
-                    padding: EdgeInsets.all(10.0),
-                    margin: EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(10.0),
+                    margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
                       color: kMainColor,
                       borderRadius: BorderRadius.circular(7.0),

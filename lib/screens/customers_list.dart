@@ -11,6 +11,8 @@ import 'package:viraeshop_admin/screens/user_profile_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 
+import 'customers/customer_list.dart';
+
 class CustomersPage extends StatefulWidget {
   const CustomersPage({Key? key}) : super(key: key);
 
@@ -38,66 +40,9 @@ class _CustomersPageState extends State<CustomersPage> {
         //   tabs: tabs,
         // ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-          stream: generalCrud.getCustomers('general'),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final myorders = snapshot.data!.docs;
-              List<String> docIds = [];
-              List customerList = [];
-              for (var element in myorders) {
-                customerList.add(element.data());
-                docIds.add(element.id);
-              }
-              return Container(
-                child: customerList != null
-                    ? ListView.builder(
-                        itemCount: myorders.length,
-                        itemBuilder: (BuildContext context, int i) {
-                          return Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(15.0),
-                              child: ListTile(
-                                onTap: () {
-                                  Map<String, dynamic> userInfo = {
-                                    'name': customerList[i]['name'],
-                                    'mobile': customerList[i]['mobile'],
-                                    'address': customerList[i]['address'],
-                                    'userId': customerList[i]['userId'],
-                                    'email': customerList[i]['email'],
-                                    'role': customerList[i]['role'],
-                                  };
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => UserProfileInfo(
-                                                userInfo: userInfo,
-                                                docId: docIds[i],
-                                              )));
-                                },
-                                leading: CircleAvatar(
-                                  radius: 60.0,
-                                  backgroundColor: kNewTextColor,
-                                  child: Text('${i + 1}'), //Icon(Icons.person,
-                                  // color: kBackgroundColor),
-                                ),
-                                trailing: const Icon(Icons.arrow_right),
-                                title: Text('${customerList[i]['name']} ',
-                                    style: kCategoryNameStylePro),
-                                subtitle: Text(
-                                  '${customerList[i]['email']}',
-                                  style: kProductNameStylePro,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : const Text('Loading'),
-              );
-            }
-            return const Center(child: CircularProgressIndicator());
-          }),
+      body: const Customers(
+      role: 'general',
+    ),
     );
   }
 }

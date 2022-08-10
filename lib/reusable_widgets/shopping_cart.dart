@@ -14,6 +14,7 @@ import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/payment_checkout.dart';
 import 'package:viraeshop_admin/reusable_widgets/quantity.dart';
 import 'package:viraeshop_admin/screens/cart_payment_options/advance.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/discount.dart';
 import 'package:viraeshop_admin/screens/payment_screen.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
@@ -165,12 +166,12 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
-                                    children: [
-                                      const Text(
+                                    children: const [
+                                      Text(
                                         "Clear Cart",
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 20, color: Colors.white),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -222,7 +223,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                           color: kBackgroundColor,
                                           border: Border(
                                             bottom: BorderSide(
-                                              color: const Color(0xffF7F7F7),
+                                              color: Color(0xffF7F7F7),
                                             ),
                                           ),
                                         ),
@@ -268,7 +269,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                               children: [
                                                 discounts != null
                                                     ? Text(
-                                                        'Total: ${(prices + discounts).toString()}',
+                                                        'Total: ${prices.toString()}',
                                                         style: const TextStyle(
                                                           color: kSubMainColor,
                                                           fontFamily:
@@ -432,130 +433,6 @@ class _ShoppingCartState extends State<ShoppingCart> {
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              // Container(
-                              //   child: Row(
-                              //     mainAxisAlignment:
-                              //         MainAxisAlignment.spaceEvenly,
-                              //     children: [
-                              //       Expanded(
-                              //         child: rowContainer(
-                              //           title: 'Advance',
-                              //           icon: FontAwesomeIcons.dollarSign,
-                              //           color: isAdvance
-                              //               ? kNewTextColor
-                              //               : kBackgroundColor,
-                              //           style: isAdvance
-                              //               ? kDrawerTextStyle2
-                              //               : kProductNameStylePro,
-                              //           onTap: () {
-                              //             setState(() {
-                              //               isAdvance = !isAdvance;
-                              //               isDue = false;
-                              //               isPaid = false;
-                              //               isAdvanceVisible =
-                              //                   !isAdvanceVisible;
-                              //             });
-                              //           },
-                              //         ),
-                              //       ),
-                              //       VerticalDivider(
-                              //         color: kBlackColor,
-                              //         thickness: 2.0,
-                              //       ),
-                              //       Expanded(
-                              //         child: rowContainer(
-                              //           title: 'Due',
-                              //           icon: FontAwesomeIcons.dollarSign,
-                              //           color: isDue
-                              //               ? kNewTextColor
-                              //               : kBackgroundColor,
-                              //           style: isDue
-                              //               ? kDrawerTextStyle2
-                              //               : kProductNameStylePro,
-                              //           onTap: () {
-                              //             setState(() {
-                              //               isDue = !isDue;
-                              //               isPaid = false;
-                              //               isAdvance = false;
-                              //               isAdvanceVisible = false;
-                              //             });
-                              //           },
-                              //         ),
-                              //       ),
-                              //       VerticalDivider(
-                              //         color: kBlackColor,
-                              //         thickness: 2.0,
-                              //       ),
-                              //       Expanded(
-                              //         child: rowContainer(
-                              //           title: 'Paid',
-                              //           icon: FontAwesomeIcons.dollarSign,
-                              //           color: isPaid
-                              //               ? kNewTextColor
-                              //               : kBackgroundColor,
-                              //           style: isPaid
-                              //               ? kDrawerTextStyle2
-                              //               : kProductNameStylePro,
-                              //           onTap: () {
-                              //             setState(() {
-                              //               isPaid = !isPaid;
-                              //               isAdvance = false;
-                              //               isDue = false;
-                              //               isAdvanceVisible = false;
-                              //             });
-                              //           },
-                              //         ),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // ),
-                              // AnimatedContainer(
-                              //   duration: Duration(milliseconds: 0),
-                              //   height: isVisible ? 80 : null,
-                              //   width: double.infinity,
-                              //   padding: EdgeInsets.all(0.0),
-                              //   decoration: BoxDecoration(
-                              //     border: Border(
-                              //       bottom: BorderSide(
-                              //         color: kStrokeColor,
-                              //       ),
-                              //       top: BorderSide(
-                              //         color: kStrokeColor,
-                              //       ),
-                              //     ),
-                              //     color: kBackgroundColor,
-                              //   ),
-                              //   child: Center(
-                              //     child: TextField(
-                              //       keyboardType: TextInputType.number,
-                              //       cursorColor: kBlackColor,
-                              //       // cursorHeight: 2.0,
-                              //       textAlign: TextAlign.center,
-                              //       style: kProductNameStylePro,
-                              //       onChanged: (value) {
-                              //         setState(() {
-                              //           advance = num.parse(value);
-                              //         });
-                              //       },
-                              //       decoration: InputDecoration(
-                              //         border: InputBorder.none,
-                              //         prefixIcon: InkWell(
-                              //           onTap: () {
-                              //             setState(() {
-                              //               isAdvanceVisible = false;
-                              //             });
-                              //           },
-                              //           child: Icon(
-                              //             Icons.done,
-                              //             color: kSubMainColor,
-                              //             size: 20.0,
-                              //           ),
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
-                              //SizedBox(height: 20.0),
                               Container(
                                 color: kBackgroundColor,
                                 child: InkWell(
@@ -586,8 +463,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                               style: const TextStyle(
                                                 color: kBackgroundColor,
                                                 fontFamily: 'Montserrat',
-                                                fontSize: 14,
+                                                fontSize: 20.0,
                                                 letterSpacing: 1.3,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             );
                                           },
@@ -596,16 +474,20 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     ),
                                   ),
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => PaymentScreen(
-                                          paid: paid,
-                                          due: due,
-                                          advance: advance,
-                                        ),
-                                      ),
-                                    );
+                                   if(paid == 0 && due == 0 && advance == 0){
+                                     toast(context: context, title: 'You have not complete the payment status!', color: kRedColor);
+                                   }else{
+                                     Navigator.push(
+                                       context,
+                                       MaterialPageRoute(
+                                         builder: (context) => PaymentScreen(
+                                           paid: paid,
+                                           due: due,
+                                           advance: advance,
+                                         ),
+                                       ),
+                                     );
+                                   }
                                   },
                                 ),
                               ),
@@ -709,11 +591,11 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
           width: double.infinity,
           //padding: EdgeInsets.all(0.0),
           decoration: const BoxDecoration(
-            border: const Border(
+            border: Border(
               bottom: BorderSide(
                 color: kStrokeColor,
               ),
-              top: const BorderSide(
+              top: BorderSide(
                 color: kStrokeColor,
               ),
             ),
@@ -767,6 +649,16 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                               message:
                                   'Once you edit this product, the discount that\'s been already applied to it will be removed. Would you like to proceed?',
                               onTap: () {
+                                Box box = Hive.box('cartDetails');
+                                Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
+                                num totalDiscountVal = box.get('discountAmount', defaultValue: 0);
+                                num totalDiscountPer = box.get('discountPercent', defaultValue: 0);
+                                box.put('discountAmount', totalDiscountVal - item!.discountValue);
+                                box.put('discountPercent', totalDiscountPer - item.discountPercent);
+                                item.discountValue = 0;
+                                item.discountPercent = 0;
+                                Hive.box<Cart>('cart').put(widget.keyStore, item);
+                                Navigator.pop(context);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -790,7 +682,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                         style: kProductNameStylePro),
                     const Text(
                       'Unit',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.black38,
                         fontSize: 12.0,
                         fontFamily: 'Montserrat',

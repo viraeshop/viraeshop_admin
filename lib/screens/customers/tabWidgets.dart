@@ -7,6 +7,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
 
+import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';
 
 class SalesTab extends StatefulWidget {
@@ -70,7 +71,11 @@ class _SalesTabState extends State<SalesTab> {
                       onTap: () {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                          return ReceiptScreen(data: transactions[i]);
+                          return DueReceipt(
+                              title: 'Receipt',
+                              data: transactions[i],
+                              isOnlyShow: true,
+                          );
                         }));
                       },
                       date: date,
@@ -78,11 +83,12 @@ class _SalesTabState extends State<SalesTab> {
                       employeeName: transactions[i]['employee_id'],
                       customerName: transactions[i]['user_info']['name'],
                       desc: description,
+                      invoiceId: transactions[i]['invoice_id'],
                     );
               },
             )
           : isLoading
-              ? Center(
+              ? const Center(
                   child: SizedBox(
                       height: 40.0,
                       width: 40.0,
@@ -90,7 +96,7 @@ class _SalesTabState extends State<SalesTab> {
                         color: kMainColor,
                       )),
                 )
-              : Center(
+              : const Center(
                   child: Text(
                     'May be You have\'nt made sale yet. or an error occured. Make sure you already made a sale or try again.',
                     textAlign: TextAlign.center,
@@ -172,7 +178,7 @@ class _OrdersTabState extends State<OrdersTab> {
               },
             )
           : isLoading
-              ? Center(
+              ? const Center(
                   child: SizedBox(
                       height: 40.0,
                       width: 40.0,
@@ -180,7 +186,7 @@ class _OrdersTabState extends State<OrdersTab> {
                         color: kMainColor,
                       )),
                 )
-              : Center(
+              : const Center(
                   child: Text(
                     'May be You have\'nt made sale yet. or an error occured. Make sure you already made a sale or try again.',
                     textAlign: TextAlign.center,

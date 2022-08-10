@@ -905,7 +905,7 @@ class OrderProducts extends StatelessWidget {
                       computeDiscountData(item,
                           box.get('role'), currentPrice);
                       showDialog<void>(context: context, builder: (context){
-                        return popWidget(
+                        return PopWidget(
                           image: item['image'],
                           productName: item['name'],
                           price: currentPrice.toString(),
@@ -914,7 +914,6 @@ class OrderProducts extends StatelessWidget {
                           category: item['category'],
                           quantity: item['quantity']
                               .toString(),
-                          context: context,
                           info: item,
                           routeName: HomeScreen.path,
                           isDiscount: discountData.item3,

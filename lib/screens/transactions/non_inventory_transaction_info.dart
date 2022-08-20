@@ -5,14 +5,19 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 
 class NonInventoryInfo extends StatefulWidget {
   final Map data;
   final String invoiceId;
   final Timestamp date;
-  final bool? isSupplierPay;
-  NonInventoryInfo({required this.data, required this.invoiceId, required this.date, this.isSupplierPay});
+  const NonInventoryInfo(
+      {required this.data,
+      required this.invoiceId,
+      required this.date,
+      Key? key})
+      : super(key: key);
 
   @override
   _NonInventoryInfoState createState() => _NonInventoryInfoState();
@@ -28,9 +33,9 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
   void initState() {
     // TODO: implement initState
     Timestamp timestamp = widget.date;
-      date = formatter.format(timestamp.toDate());
-      images = widget.data['images'] ?? [];
-      payList = widget.data['pay_list'] ?? [];
+    date = formatter.format(timestamp.toDate());
+    images = widget.data['images'] ?? [];
+    payList = widget.data['pay_list'] ?? [];
     super.initState();
   }
 
@@ -136,7 +141,9 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           if (imageIndex > 0) {
                             setState(() {
                               imageIndex--;
-                              Timestamp timestamp = widget.data['pay_list'][imageIndex]['date'] ?? Timestamp.now();
+                              Timestamp timestamp = widget.data['pay_list']
+                                      [imageIndex]['date'] ??
+                                  Timestamp.now();
                               date = formatter.format(timestamp.toDate());
                             });
                           }
@@ -150,12 +157,21 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           if (imageIndex < images.length - 1) {
                             setState(() {
                               imageIndex++;
-                              Timestamp timestamp = widget.data['pay_list'][imageIndex]['date'] ?? Timestamp.now();
+                              Timestamp timestamp = widget.data['pay_list']
+                                      [imageIndex]['date'] ??
+                                  Timestamp.now();
                               date = formatter.format(timestamp.toDate());
                             });
                           }
                         }),
                   ]),
+                  const SizedBox(
+                    height: 7.0,
+                  ),
+                  Text(
+                    'Total Buying Price: ${widget.data['buy_price']}$bdtSign',
+                    style: kTableCellStyle,
+                  ),
                   const SizedBox(
                     height: 7.0,
                   ),

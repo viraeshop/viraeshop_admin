@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +6,6 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/screens/home_screen.dart';
-import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 class PasswordScreen extends StatefulWidget {
@@ -28,7 +25,6 @@ class _PasswordScreenState extends State<PasswordScreen> {
     fontFamily: 'Montserrat',
     letterSpacing: 1.3,
   );
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -120,6 +116,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                           'isDeleteCustomer': adminInfo['isDeleteCustomer'],
                           'isDeleteEmployee': adminInfo['isDeleteEmployee'],
                           'isManageDue': adminInfo['isManageDue'],
+                          'isEditCustomer': adminInfo['isEditCustomer'],
                         };
                         try{
                          final user = await NetworkUtility.registerUserEmail(adminInfo['email'], _passwordController.text);
@@ -151,7 +148,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: const Center(
-                        child: const Text(
+                        child: Text(
                           'Create',
                           style: TextStyle(
                             fontSize: 20.0,

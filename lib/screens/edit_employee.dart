@@ -12,14 +12,15 @@ import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
-
 import 'customers/tabWidgets.dart';
 import 'home_screen.dart';
 
-
 class EditUserScreen extends StatefulWidget {
-  final adminInfo;
-  const EditUserScreen({required this.adminInfo});
+  final Map adminInfo;
+  final bool selfAdmin;
+  const EditUserScreen(
+      {Key? key, required this.adminInfo, this.selfAdmin = false})
+      : super(key: key);
   @override
   _EditUserScreenState createState() => _EditUserScreenState();
 }
@@ -29,9 +30,17 @@ class _EditUserScreenState extends State<EditUserScreen> {
   bool isDeleteEmployee = Hive.box('adminInfo').get('isDeleteEmployee');
   List<Tab> tabs = [
     const Tab(text: 'Info'),
-    const Tab(text: 'Permissions'),
     const Tab(text: 'Sales'),
   ];
+  @override
+  void initState() {
+    // TODO: implement initState
+    if (!widget.selfAdmin) {
+      tabs.add(const Tab(text: 'Permissions'));
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -52,8 +61,8 @@ class _EditUserScreenState extends State<EditUserScreen> {
               ),
               iconSize: 15.0,
             ),
-            title: const Text(
-              'Edit user',
+            title: Text(
+              !widget.selfAdmin ? 'Edit user' : 'User Profile',
               style: kProductNameStylePro,
             ),
             centerTitle: true,
@@ -71,68 +80,78 @@ class _EditUserScreenState extends State<EditUserScreen> {
               unselectedLabelStyle: kProductNameStylePro,
             ),
             actions: [
-              !isDeleteEmployee ? const SizedBox() : IconButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Delete User'),
-                        content: const Text(
-                          'Are you sure you want to remove this User?',
-                          softWrap: true,
-                          style: kSourceSansStyle,
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () async {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              try{
-                                Navigator.pop(context);
-                                await NetworkUtility.deleteEmployee(widget.adminInfo['adminId']);
-                                Future.delayed(const Duration(milliseconds: 0), (){
-                                  Navigator.popUntil(context, ModalRoute.withName(AllUserScreen.path));
-                                });
-                              }on FirebaseException catch (e){
-                                if(kDebugMode){
-                                  print(e.message);
-                                }
-                                toast(context: context, title: e.message!, color: kRedColor);
-                              }finally{
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                            },
-                            child: const Text(
-                              'Yes',
+              if (!widget.selfAdmin)
+                if (!isDeleteEmployee)
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Delete User'),
+                            content: const Text(
+                              'Are you sure you want to remove this User?',
                               softWrap: true,
                               style: kSourceSansStyle,
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'No',
-                              softWrap: true,
-                              style: kSourceSansStyle,
-                            ),
-                          )
-                        ],
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  try {
+                                    Navigator.pop(context);
+                                    await NetworkUtility.deleteEmployee(
+                                        widget.adminInfo['adminId']);
+                                    Future.delayed(
+                                        const Duration(milliseconds: 0), () {
+                                      Navigator.popUntil(
+                                          context,
+                                          ModalRoute.withName(
+                                              AllUserScreen.path));
+                                    });
+                                  } on FirebaseException catch (e) {
+                                    if (kDebugMode) {
+                                      print(e.message);
+                                    }
+                                    toast(
+                                        context: context,
+                                        title: e.message!,
+                                        color: kRedColor);
+                                  } finally {
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  }
+                                },
+                                child: const Text(
+                                  'Yes',
+                                  softWrap: true,
+                                  style: kSourceSansStyle,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text(
+                                  'No',
+                                  softWrap: true,
+                                  style: kSourceSansStyle,
+                                ),
+                              )
+                            ],
+                          );
+                        },
                       );
                     },
-                  );
-                },
-                icon: const Icon(
-                  Icons.delete,
-                ),
-                color: kSubMainColor,
-                iconSize: 20.0,
-              ),
+                    icon: const Icon(
+                      Icons.delete,
+                    ),
+                    color: kSubMainColor,
+                    iconSize: 20.0,
+                  ),
             ],
           ),
           body: TabBarView(
@@ -143,18 +162,20 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 name: widget.adminInfo['name'],
                 context: context,
               ),
-              PermissionTab(
-                adminId: widget.adminInfo['adminId'],
-                isAdmin: widget.adminInfo['isAdmin'],
-                isinventory: widget.adminInfo['isInventory'],
-                isMakeAdmin: widget.adminInfo['isMakeAdmin'],
-                isMakeCustomer: widget.adminInfo['isMakeCustomer'],
-                isproduct: widget.adminInfo['isProducts'],
-                istransaction: widget.adminInfo['isTransactions'],
-                isDeleteCustomer: widget.adminInfo['isDeleteCustomer'],
-                isDeleteEmployee: widget.adminInfo['isDeleteEmployee'],
-                isManageDue: widget.adminInfo['isManageDue'],
-              ),
+              if (!widget.selfAdmin)
+                PermissionTab(
+                  adminId: widget.adminInfo['adminId'],
+                  isAdmin: widget.adminInfo['isAdmin'],
+                  isinventory: widget.adminInfo['isInventory'],
+                  isMakeAdmin: widget.adminInfo['isMakeAdmin'],
+                  isMakeCustomer: widget.adminInfo['isMakeCustomer'],
+                  isproduct: widget.adminInfo['isProducts'],
+                  istransaction: widget.adminInfo['isTransactions'],
+                  isDeleteCustomer: widget.adminInfo['isDeleteCustomer'],
+                  isDeleteEmployee: widget.adminInfo['isDeleteEmployee'],
+                  isManageDue: widget.adminInfo['isManageDue'],
+                  isEditCustomer: widget.adminInfo['isEditCustomer'],
+                ),
               SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
             ],
           ),
@@ -169,7 +190,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
 //   return FutureBuilder<QuerySnapshot>(
 //       future: FirebaseFirestore.instance
 //           .collection('transaction')
-//           .where('employee_id', isEqualTo: adminId)          
+//           .where('employee_id', isEqualTo: adminId)
 //           .get(),
 //       builder: (context, snapshot) {
 //         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -232,7 +253,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
 //                     style: kProductNameStyle,
 //                   ),
 //                 );
-//         } 
+//         }
 //       });
 // }
 
@@ -332,6 +353,7 @@ class PermissionTab extends StatefulWidget {
       isDeleteCustomer,
       isDeleteEmployee,
       isManageDue,
+      isEditCustomer,
       isMakeAdmin;
   String adminId;
   PermissionTab(
@@ -344,6 +366,7 @@ class PermissionTab extends StatefulWidget {
       required this.isDeleteCustomer,
       required this.isDeleteEmployee,
       required this.isManageDue,
+      required this.isEditCustomer,
       required this.adminId});
 
   @override
@@ -360,20 +383,21 @@ class _PermissionTabState extends State<PermissionTab> {
       isLoading = false,
       isDeleteCustomer = false,
       isDeleteEmployee = false,
-      isManageDue = false
-  ;
+      isManageDue = false,
+      isEditCustomer = false;
   @override
   void initState() {
     // TODO: implement initState
-      isAdmin = widget.isAdmin!;
-      isInventory = widget.isinventory!;
-      isMakeAdmin = widget.isMakeAdmin!;
-      isMakeCustomer = widget.isMakeCustomer!;
-      isProduct = widget.isproduct!;
-      isTransaction = widget.istransaction!;
-      isManageDue = widget.isManageDue ?? false;
-      isDeleteEmployee = widget.isDeleteEmployee ?? false;
-      isDeleteCustomer = widget.isDeleteCustomer ?? false;
+    isAdmin = widget.isAdmin!;
+    isInventory = widget.isinventory!;
+    isMakeAdmin = widget.isMakeAdmin!;
+    isMakeCustomer = widget.isMakeCustomer!;
+    isProduct = widget.isproduct!;
+    isTransaction = widget.istransaction!;
+    isManageDue = widget.isManageDue ?? false;
+    isDeleteEmployee = widget.isDeleteEmployee ?? false;
+    isDeleteCustomer = widget.isDeleteCustomer ?? false;
+    isEditCustomer = widget.isEditCustomer ?? false;
     super.initState();
   }
 
@@ -411,6 +435,7 @@ class _PermissionTabState extends State<PermissionTab> {
                         isDeleteEmployee = status;
                         isDeleteCustomer = status;
                         isManageDue = status;
+                        isEditCustomer = status;
                       });
                     },
                   ),
@@ -475,14 +500,10 @@ class _PermissionTabState extends State<PermissionTab> {
                   ),
                 ),
                 ListTile(
-                  // leading: Icon(Icons.dark_mode),
                   title: const Text(
                     'Create Customers',
                     style: kProductNameStyle,
                   ),
-                  onTap: () {
-                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                  },
                   trailing: Switch(
                     activeColor: kMainColor,
                     value: isMakeCustomer,
@@ -493,6 +514,23 @@ class _PermissionTabState extends State<PermissionTab> {
                               isMakeCustomer = status;
                             });
                           },
+                  ),
+                ),
+                ListTile(
+                  title: const Text(
+                    'Create Customers',
+                    style: kProductNameStyle,
+                  ),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isEditCustomer,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                      setState(() {
+                        isEditCustomer = status;
+                      });
+                    },
                   ),
                 ),
                 ListTile(
@@ -531,10 +569,10 @@ class _PermissionTabState extends State<PermissionTab> {
                     onChanged: isAdmin == true
                         ? null
                         : (status) {
-                      setState(() {
-                        isDeleteEmployee = status;
-                      });
-                    },
+                            setState(() {
+                              isDeleteEmployee = status;
+                            });
+                          },
                   ),
                 ),
                 ListTile(
@@ -552,10 +590,10 @@ class _PermissionTabState extends State<PermissionTab> {
                     onChanged: isAdmin == true
                         ? null
                         : (status) {
-                      setState(() {
-                        isDeleteCustomer = status;
-                      });
-                    },
+                            setState(() {
+                              isDeleteCustomer = status;
+                            });
+                          },
                   ),
                 ),
                 ListTile(
@@ -573,10 +611,10 @@ class _PermissionTabState extends State<PermissionTab> {
                     onChanged: isAdmin == true
                         ? null
                         : (status) {
-                      setState(() {
-                        isManageDue = status;
-                      });
-                    },
+                            setState(() {
+                              isManageDue = status;
+                            });
+                          },
                   ),
                 ),
               ],
@@ -584,7 +622,7 @@ class _PermissionTabState extends State<PermissionTab> {
             Align(
               alignment: Alignment.bottomCenter,
               child: InkWell(
-                onTap: () async{
+                onTap: () async {
                   if (kDebugMode) {
                     print(isProduct);
                   }
@@ -603,14 +641,18 @@ class _PermissionTabState extends State<PermissionTab> {
                     'isDeleteEmployee': isDeleteEmployee,
                   };
                   print(info);
-                  try{
+                  try {
                     await NetworkUtility.updateAdmin(info, widget.adminId);
-                  }on FirebaseException catch (e){
-                    if(kDebugMode){
+                  } on FirebaseException catch (e) {
+                    if (kDebugMode) {
                       print('error: $e');
                     }
-                    snackBar(text: e.message!, context: context, color: kRedColor, duration: 30);
-                  }finally{
+                    snackBar(
+                        text: e.message!,
+                        context: context,
+                        color: kRedColor,
+                        duration: 30);
+                  } finally {
                     setState(() {
                       isLoading = false;
                     });

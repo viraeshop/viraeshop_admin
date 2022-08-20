@@ -11,6 +11,7 @@ import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 
+import 'due/due_receipt.dart';
 import 'reciept_screen.dart';
 
 class CustomerTransactionScreen extends StatefulWidget {
@@ -265,8 +266,10 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) {
-                                          return ReceiptScreen(
+                                          return DueReceipt(
                                             data: dataTemp[index],
+                                            title: 'Receipt',
+                                            isOnlyShow: true,
                                           );
                                         },
                                       ),

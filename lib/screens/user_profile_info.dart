@@ -12,7 +12,7 @@ import 'package:viraeshop_admin/settings/general_crud.dart';
 class UserProfileInfo extends StatelessWidget {
   final dynamic userInfo;
   final String docId;
-  const UserProfileInfo({required this.userInfo, required this.docId});
+  const UserProfileInfo({required this.userInfo, required this.docId, Key? key}): super(key: key);
   @override
   Widget build(BuildContext context) {
     return UpdateUser(userInfo: userInfo, userId: docId);

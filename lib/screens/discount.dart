@@ -9,16 +9,16 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 
 class DiscountScreen extends StatefulWidget {
   final bool isItems;
-  final keyStore;
-  DiscountScreen({this.isItems = false, this.keyStore = ''});
+  final String keyStore;
+  const DiscountScreen({this.isItems = false, this.keyStore = '', Key? key}): super(key: key);
 
   @override
   _DiscountScreenState createState() => _DiscountScreenState();
 }
 
 class _DiscountScreenState extends State<DiscountScreen> {
-  TextEditingController _controller = TextEditingController();
-  TextEditingController _percentController = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _percentController = TextEditingController();
   static Box box = Hive.box('cartDetails');
   num discountAmount = 0.0;
   static num originalTotalPrice = 0;
@@ -27,20 +27,23 @@ class _DiscountScreenState extends State<DiscountScreen> {
   String cashHint = '';
   String percentHint = '';
   List numbers = List.generate(11, (index) => index.toString());
-
+  num totalPrice = box.get('totalPrice');
   @override
   void initState() {
     // TODO: implement initState
     if (widget.isItems) {
       Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
-      item!.price = item.unitPrice * item.quantity;
+      totalPrice -= item!.price;
+      item.price = item.unitPrice * item.quantity;
       cashHint = item.discountValue.toString();
       percentHint = item.discountPercent.toString();
       originalTotalPrice = item.price;
       currentTotalPrice = originalTotalPrice;
     } else {
-      originalTotalPrice = box.get('totalPrice', defaultValue: 0.0) + box.get('discountAmount', defaultValue: 0);
+      originalTotalPrice = box.get('totalPrice', defaultValue: 0.0);
       currentTotalPrice = originalTotalPrice;
+      cashHint = box.get('discountAmount', defaultValue: 0.0).toString();
+      percentHint = box.get('discountPercent', defaultValue: 0.0).round().toString();
     }
     super.initState();
   }
@@ -98,7 +101,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               letterSpacing: 1.3,
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: MediaQuery.of(context).size.width * 0.4,
                             child: TextField(
                                 style: kProductNameStyle,
@@ -116,10 +119,10 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   ),
                                   focusedBorder: const UnderlineInputBorder(
                                     borderSide:
-                                        const BorderSide(color: kMainColor),
+                                        BorderSide(color: kMainColor),
                                   ),
                                   enabledBorder: const UnderlineInputBorder(
-                                    borderSide: const BorderSide(
+                                    borderSide: BorderSide(
                                         color: kSubMainColor, width: 2.0),
                                   ),
                                 ),
@@ -161,7 +164,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               letterSpacing: 1.3,
                             ),
                           ),
-                          Container(
+                          SizedBox(
                             width: MediaQuery.of(context).size.width * 0.4,
                             child: TextField(
                                 style: kProductNameStyle,
@@ -271,27 +274,18 @@ class _DiscountScreenState extends State<DiscountScreen> {
                           alignment: Alignment.bottomCenter,
                           child: InkWell(
                             onTap: () {
-                              num newDiscountAmount = box.get('discountAmount', defaultValue: 0);
-                              num newDiscountPercent = box.get('discountPercent', defaultValue: 0);
-                              if (widget.isItems) {
-                                num totalPrice = box.get('totalPrice');
-                                Cart? item =
-                                    Hive.box<Cart>('cart').get(widget.keyStore);
-                                newDiscountAmount -= item!.discountValue;
-                                newDiscountPercent -= item.discountPercent;
-                                totalPrice += item.discountValue;
-                                item.price -= discountAmount;
+                              // num newDiscountAmount = box.get('discountAmount', defaultValue: 0);
+                              // num newDiscountPercent = box.get('discountPercent', defaultValue: 0);
+                              if (widget.isItems){
+                                Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
+                                item!.price = currentTotalPrice;
                                 item.discountPercent = discountPercent;
                                 item.discountValue = discountAmount;
-                                box.put('totalPrice', totalPrice - discountAmount);
-                                box.put('discountAmount', newDiscountAmount + discountAmount);
-                                box.put('discountPercent', newDiscountPercent + discountPercent);
-                                Hive.box<Cart>('cart')
-                                    .put(widget.keyStore, item);
+                                Hive.box<Cart>('cart').put(widget.keyStore, item);
+                                box.put('totalPrice', totalPrice + currentTotalPrice);
                               }else{
-                                box.put('discountAmount', newDiscountAmount + discountAmount);
-                                box.put('discountPercent', newDiscountPercent + discountPercent);
-                                box.put('totalPrice', originalTotalPrice - discountAmount);
+                                box.put('discountAmount', discountAmount);
+                                box.put('discountPercent', discountPercent);
                               }
                               Navigator.pop(context);
                             },

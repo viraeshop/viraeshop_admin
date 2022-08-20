@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 class BluetoothPrinter extends StatefulWidget {
   final List items;
   final bool isWithBusinessName;
+  final List payList;
   final String invoiceId,
       name,
       mobile,
@@ -26,7 +28,7 @@ class BluetoothPrinter extends StatefulWidget {
       due,
       businessName
   ;
-  BluetoothPrinter(
+  const BluetoothPrinter(
       {required this.items,
         required this.invoiceId,
         required this.name,
@@ -39,8 +41,10 @@ class BluetoothPrinter extends StatefulWidget {
         required this.subTotal,
         required this.quantity,
         required this.isWithBusinessName,
+        required this.payList,
         this.businessName = '',
-      });
+        Key? key,
+      }) : super(key: key);
   @override
   _BluetoothPrinterState createState() => _BluetoothPrinterState();
 }
@@ -253,6 +257,21 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         align: PosAlign.right,
       )
     );
+    if(widget.payList.isNotEmpty){
+      for(var pay in widget.payList){
+        Timestamp timestamp = pay['date'];
+        final formatter = DateFormat('MM/dd/yyyy');
+        String dateTime = formatter.format(
+          timestamp.toDate(),
+        );
+        bytes += receipt.text(
+            '$dateTime Pay ${pay['paid']}',
+            styles: const PosStyles(
+              align: PosAlign.right,
+            )
+        );
+      }
+    }
     bytes += receipt.text(
       'Due: ${widget.due}BDT',
       styles: const PosStyles(

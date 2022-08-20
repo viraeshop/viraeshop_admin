@@ -4,18 +4,22 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class NewTextField extends StatelessWidget {
   final TextEditingController controller;
-  bool readOnly;
-  final bool? secure;
-  int lines;
-  dynamic prefix;
-  dynamic prefixIcon;
-  String hintText, helperText, labelText;
-  String? Function(String?)? validator;
-  void Function(String)? onChanged;
+  final bool readOnly;
+  final bool secure;
+  final int lines;
+  final dynamic prefix;
+  final dynamic prefixIcon;
+  final String hintText;
+  final String helperText;
+  final String labelText;
+  final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
+  final void Function(String)? onSubmitted;
+  final void Function()? onTap;
   final int? maxLength;
-  NewTextField({
-    this.prefixIcon = null,
-    this.prefix = null,
+ const NewTextField({
+    this.prefixIcon,
+    this.prefix,
     this.readOnly = false,
     this.lines = 1,
     this.hintText = '',
@@ -24,22 +28,27 @@ class NewTextField extends StatelessWidget {
     this.validator,
     this.maxLength,
     this.onChanged,
+    this.onSubmitted,
+    this.onTap,
     this.secure = false,
     required this.controller,
-  });
+    Key? key,
+  }): super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      onTap: onTap,
       style: kTableCellStyle,
       cursorColor: kNewTextColor,
-      obscureText: secure!,
+      obscureText: secure,
       readOnly: readOnly,
       maxLines: lines,
       validator: validator,
       maxLength: maxLength,
       onChanged: onChanged,
+      onFieldSubmitted: onSubmitted,
       decoration: InputDecoration(
         prefixStyle: kTableCellStyle,
         prefixText: prefix,
@@ -54,13 +63,6 @@ class NewTextField extends StatelessWidget {
           color: kNewTextColor,
           fontFamily: 'SourceSans',
         ),
-        // border: OutlineInputBorder(
-        //   borderRadius: BorderRadius.circular(10.0),
-        //   borderSide: BorderSide(
-        //     color: kBlackColor,
-        //     width: 3.0,
-        //   ),
-        // ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
           borderSide: const BorderSide(

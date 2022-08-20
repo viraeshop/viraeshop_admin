@@ -8,9 +8,9 @@ class TransacFunctions {
       if(isEmployee){
         name = transactionList[0]['employee_name'];
       }else{
-        String? businessName = transactionList[0]['user_info']['business_name'];
-        String username = transactionList[0]['user_info']['name'];
-        if( businessName != null){
+        String businessName = transactionList[0]['user_info']['business_name'] ?? '';
+        String username = transactionList[0]['user_info']['name'] ?? '';
+        if( businessName.isNotEmpty){
           name = businessName;
         }else{
           name = username;

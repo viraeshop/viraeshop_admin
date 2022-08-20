@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/admininfoscreen.dart';
+import 'package:viraeshop_admin/screens/edit_employee.dart';
 
 import 'new_admin_user.dart';
 

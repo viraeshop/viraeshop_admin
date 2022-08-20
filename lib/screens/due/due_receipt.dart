@@ -12,6 +12,7 @@ import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../../components/ui_components/delete_popup.dart';
+import '../../configs/baxes.dart';
 import '../transactions/non_inventory_transaction_info.dart';
 
 class DueReceipt extends StatefulWidget {
@@ -56,6 +57,7 @@ class _DueReceiptState extends State<DueReceipt> {
     items = item;
     quantity = totalQuantity.toString();
     due = widget.data['due'];
+    print('due: $due');
     paid = widget.data['paid'];
     payList = widget.data['pay_list'] ?? [];
     role = widget.data['customer_role'];
@@ -63,6 +65,7 @@ class _DueReceiptState extends State<DueReceipt> {
     subTotal = widget.data['price'];
     super.initState();
   }
+
   bool isManageDue = Hive.box('adminInfo').get('isManageDue');
   @override
   Widget build(BuildContext context) {
@@ -84,35 +87,58 @@ class _DueReceiptState extends State<DueReceipt> {
           centerTitle: true,
           titleTextStyle: kTextStyle1,
           actions: [
-           if(isManageDue) IconButton(
-                onPressed: (){
-                  showDialog(context: context, builder: (context){
-                    return DeletePopup(
-                      onDelete: () async{
-                        setState(() {
-                          isLoading = true;
-                        });
-                        Navigator.pop(context);
-                        try{
-                          await NetworkUtility.deleteInvoice(widget.data['invoice_id']);
-                          Navigator.pop(context);
-                        } on FirebaseException catch (e) {
-                          if (kDebugMode) {
-                            print(e.message);
-                          }
-                        } finally {
-                          setState(() {
-                            isLoading = false;
-                          });
-                        }
-                      },
-                    );
-                  });
+            if (isManageDue)
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return DeletePopup(
+                          onDelete: () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            Navigator.pop(context);
+                            try {
+                              await NetworkUtility.deleteInvoice(
+                                  widget.data['invoice_id']);
+                              await NetworkUtility.updateProducts(items, true);
+                              List products =
+                                  Hive.box(productsBox).get(productsKey);
+                              for (var item in items) {
+                                if (item['isInventory']) {
+                                  final itemId = item['product_id'];
+                                  for (var product in products) {
+                                    if (product['productId'] == itemId) {
+                                      int quantity = product['quantity'] +
+                                          item['quantity'];
+                                      product['quantity'] = quantity;
+                                    }
+                                  }
+                                }
+                              }
+                              Hive.box(productsBox).put(productsKey, products);
+                              Future.delayed(const Duration(milliseconds: 0),
+                                  () {
+                                Navigator.pop(context);
+                              });
+                            } on FirebaseException catch (e) {
+                              if (kDebugMode) {
+                                print(e.message);
+                              }
+                            } finally {
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          },
+                        );
+                      });
                 },
                 icon: const Icon(Icons.delete),
                 color: kRedColor,
-              iconSize: 30.0,
-            )
+                iconSize: 30.0,
+              )
           ],
         ),
         body: SingleChildScrollView(
@@ -131,7 +157,7 @@ class _DueReceiptState extends State<DueReceipt> {
                     child: Image.asset('assets/images/DONE.png'),
                   ),
                   const Text(
-                    'Call 01710735425 01715041368',
+                    'Call 01710735425 01324430921',
                     style: kProductNameStylePro,
                   ),
                   const Text(
@@ -184,10 +210,11 @@ class _DueReceiptState extends State<DueReceipt> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if(role != 'general')Text(
-                    '${widget.data['user_info']['business_name']}',
-                    style: kProductNameStyle,
-                  ),
+                  if (role != 'general')
+                    Text(
+                      '${widget.data['user_info']['business_name']}',
+                      style: kProductNameStyle,
+                    ),
                   Text(
                     '${widget.data['user_info']['name']}',
                     style: kProductNameStyle,
@@ -261,55 +288,58 @@ class _DueReceiptState extends State<DueReceipt> {
                       style: kProductNameStylePro,
                     ),
                     const SizedBox(height: 10),
-                    if (isDiscount) SizedBox(
-                      width: 150.0,
-                      child: TextField(
-                        controller: discountController,
-                        style: kProductNameStylePro,
-                        keyboardType: TextInputType.number,
-                        onChanged: (value){
-                          if(value.isEmpty){
-                            setState(() {
-                              subTotal = widget.data['price'];
-                              due = widget.data['due'];
-                            });
-                          }
-                        },
-                        decoration: InputDecoration(
-                          suffix: IconButton(
-                            onPressed: () {
+                    if (isDiscount && !widget.isOnlyShow)
+                      SizedBox(
+                        width: 150.0,
+                        child: TextField(
+                          controller: discountController,
+                          style: kProductNameStylePro,
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            if (value.isEmpty) {
                               setState(() {
-                                discount = discountController.text.isNotEmpty ? num.parse(discountController.text) : discount;
-                                subTotal -= discount;
-                                due -= discount;
-                                isDiscount = false;
+                                subTotal = widget.data['price'];
+                                due = widget.data['due'];
                               });
-                            },
-                            icon: const Icon(Icons.done),
-                            iconSize: 20.0,
-                            color: kNewMainColor,
-                          ),
-                          border: const UnderlineInputBorder(
-                            borderSide:
-                            BorderSide(color: kSubMainColor),
-                          ),
-                          focusedBorder: const UnderlineInputBorder(
-                            borderSide:
-                            BorderSide(color: kNewMainColor),
+                            }
+                          },
+                          decoration: InputDecoration(
+                            suffix: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  discount = discountController.text.isNotEmpty
+                                      ? num.parse(discountController.text)
+                                      : discount;
+                                  subTotal -= discount;
+                                  due -= discount;
+                                  isDiscount = false;
+                                });
+                              },
+                              icon: const Icon(Icons.done),
+                              iconSize: 20.0,
+                              color: kNewMainColor,
+                            ),
+                            border: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: kSubMainColor),
+                            ),
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: kNewMainColor),
+                            ),
                           ),
                         ),
+                      )
+                    else
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            isDiscount = true;
+                          });
+                        },
+                        child: Text(
+                          'Discount: ${discount.toString()}',
+                          style: kProductNameStylePro,
+                        ),
                       ),
-                    ) else TextButton(
-                      onPressed: (){
-                        setState(() {
-                          isDiscount = true;
-                        });
-                      },
-                      child: Text(
-                        'Discount: ${discount.toString()}',
-                        style: kProductNameStylePro,
-                      ),
-                    ),
                     Text(
                       'Sub Total: ${subTotal.toString()}',
                       style: kProductNameStylePro,
@@ -381,6 +411,9 @@ class _DueReceiptState extends State<DueReceipt> {
                                           'paid':
                                               num.parse(controller.text ?? '0'),
                                         });
+                                        if (controller.text != '0') {
+                                          paid += num.parse(controller.text);
+                                        }
                                         isEditing = false;
                                       });
                                     },
@@ -483,12 +516,13 @@ class _DueReceiptState extends State<DueReceipt> {
                           'discount': discount,
                           'due': due,
                           'pay_list': payList,
+                          'paid': paid,
                         });
                       } catch (e) {
                         if (kDebugMode) {
                           print(e);
                         }
-                      }finally{
+                      } finally {
                         setState(() {
                           isLoading = false;
                         });
@@ -508,8 +542,11 @@ class _DueReceiptState extends State<DueReceipt> {
                         MaterialPageRoute(
                           builder: (context) {
                             return BluetoothPrinter(
+                              payList: payList,
                               isWithBusinessName: role != 'general',
-                              businessName: widget.data['user_info']['business_name'],
+                              businessName: widget.data['user_info']
+                                      ['business_name'] ??
+                                  '',
                               quantity: quantity,
                               subTotal: widget.data['price'].toString(),
                               items: items,

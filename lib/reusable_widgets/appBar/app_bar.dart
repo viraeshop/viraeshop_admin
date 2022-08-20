@@ -16,7 +16,7 @@ myAppBar({messageOnPress, notifyOnPress}) {
       centerTitle: true,
       expandedTitleScale: 1.0,
       title: SizedBox(
-          height: 20,
+        height: 20,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -34,14 +34,17 @@ myAppBar({messageOnPress, notifyOnPress}) {
             ValueListenableBuilder(
                 valueListenable: Hive.box('customer').listenable(),
                 builder: (context, Box box, childs) {
+                  String name = box.get('role') != 'general' && box.isNotEmpty
+                      ? box.get('business_name', defaultValue: '') +
+                          '(${box.get('name')})'
+                      : box.get('name', defaultValue: '');
                   return Text(
-                  box.get('name', defaultValue: ''),
-                  overflow: TextOverflow.ellipsis,
-                  style: kDrawerTextStyle2,
-                  softWrap: true,
-                );
-              }
-            ),
+                    name,
+                    overflow: TextOverflow.ellipsis,
+                    style: kDrawerTextStyle2,
+                    softWrap: true,
+                  );
+                }),
           ],
         ),
       ),
@@ -68,24 +71,25 @@ myAppBar({messageOnPress, notifyOnPress}) {
         //   width: 10.0,
         // ),
         ValueListenableBuilder(
-                    valueListenable: Hive.box('customer').listenable(),
-                    builder: (context, Box box, childs) {
-                        return SizedBox(
-                          width: 35,
-                          child: IconButton(
-                                color: kBackgroundColor,
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => const CustomersScreen()));
-                                },
-                                icon: Icon(box.isEmpty ? Icons.person_add_alt_outlined : Icons.person),
-                                iconSize: 35.0,
-                              ),
-                        );
-
-                    }),
+            valueListenable: Hive.box('customer').listenable(),
+            builder: (context, Box box, childs) {
+              return SizedBox(
+                width: 35,
+                child: IconButton(
+                  color: kBackgroundColor,
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CustomersScreen()));
+                  },
+                  icon: Icon(box.isEmpty
+                      ? Icons.person_add_alt_outlined
+                      : Icons.person),
+                  iconSize: 35.0,
+                ),
+              );
+            }),
         // SizedBox(
         //    width: 20.0,
         //  ),

@@ -39,6 +39,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
   String? dropdownValue;
   num paid = 0;
   String imagePath = '';
+  int printTimes = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -171,6 +172,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                       setState(() {
                         isLoading = true;
                         invoiceNo = invoiceId;
+                        print('Getting called times: $printTimes');
                       });
                       generalCrud.searchInvoice(invoiceId).then((value) {
                         setState(() {
@@ -184,6 +186,9 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         });
                         shopList = value.get('shop');
                         currentShop = shopList[0];
+                        if (kDebugMode) {
+                          print('Current Shop: $currentShop');
+                        }
                         dropdownValue = currentShop['business_name'];
                         receipt = currentShop['images'].isNotEmpty
                             ? currentShop['images'][0]
@@ -235,20 +240,20 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         value: dropdownValue,
                         items: shopNames.map((e) {
                           return DropdownMenuItem(
+                            value: e,
                             child: Text(
                               e,
                               style: kTableCellStyle,
                             ),
-                            value: e,
                           );
                         }).toList(),
                         onChanged: (value) {
                           Map shop = {};
-                          shopList.forEach((element) {
+                          for (var element in shopList) {
                             if (element['business_name'] == value.toString()) {
                               shop = element;
                             }
-                          });
+                          }
                           setState(() {
                             dropdownValue = value.toString();
                             currentShop = shop;
@@ -341,7 +346,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         onTap: () {
                           List updatedShopList = [];
                           num totalPaid = 0;
-                          shopList.forEach((element) {
+                          for (var element in shopList) {
                             if (dropdownValue == element['business_name']) {
                               List imageList = element['images'],
                                   payLists = element['pay_list'];
@@ -350,9 +355,9 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                 'paid': num.parse(controllers[7].text),
                                 'date': Timestamp.now(),
                               });
-                              payLists.forEach((element) {
+                              for (var element in payLists) {
                                 totalPaid += element['paid'];
-                              });
+                              }
                               Map updatedShop = {
                                 'business_name': element['business_name'],
                                 'address': element['address'],
@@ -371,7 +376,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                             } else {
                               updatedShopList.add(element);
                             }
-                          });
+                          }
                           print('done making map');
                           setState(() {
                             isLoading = true;
@@ -393,6 +398,9 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                 buildContext: context,
                                 msg: 'Error occurred');
                           });
+                          if (kDebugMode) {
+                            print('Current Shop(1): $currentShop');
+                          }
                         }),
                     const SizedBox(
                       width: 10.0,
@@ -401,6 +409,9 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         title: 'View',
                         width: 150.0,
                         onTap: () {
+                          if (kDebugMode) {
+                            print('Current Shop(2): $currentShop');
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) {

@@ -8,6 +8,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/invoice.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
+import 'package:viraeshop_admin/screens/due/due_receipt.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
 
@@ -44,7 +45,7 @@ class _DoneScreenState extends State<DoneScreen> {
     });
     return ModalProgressHUD(
       inAsyncCall: isLoading,
-      progressIndicator: CircularProgressIndicator(color: kMainColor),
+      progressIndicator: const CircularProgressIndicator(color: kMainColor),
       child: SafeArea(
         child: Scaffold(
           body: Container(
@@ -58,11 +59,11 @@ class _DoneScreenState extends State<DoneScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.done, size: 100.0, color: kMainColor),
-                        SizedBox(
+                        const Icon(Icons.done, size: 100.0, color: kMainColor),
+                        const SizedBox(
                           height: 50.0,
                         ),
-                        Text(
+                        const Text(
                           'Done',
                           style: TextStyle(
                             color: kSubMainColor,
@@ -72,12 +73,12 @@ class _DoneScreenState extends State<DoneScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20.0,
                         ),
                         Text(
                           'BDT $totalPrice',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: kSubMainColor,
                             fontFamily: 'Montserrat',
                             fontSize: 30,
@@ -98,7 +99,7 @@ class _DoneScreenState extends State<DoneScreen> {
                         Hive.box<Shop>('shopList').clear();
                         Navigator.pop(context);
                       },
-                      icon: Icon(FontAwesomeIcons.chevronLeft),
+                      icon: const Icon(FontAwesomeIcons.chevronLeft),
                       iconSize: 30.0,
                       color: kMainColor,
                     ),
@@ -114,42 +115,25 @@ class _DoneScreenState extends State<DoneScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) {
-                                  return ReceiptScreen(data: widget.info);
+                                  return DueReceipt(
+                                      title: 'Receipt',
+                                      isOnlyShow: true,
+                                      data: widget.info,
+                                  );
                                 },
                               ),
                             );
-                            // snackBar(
-                            //     'Please wait while your receipt starts downloading',
-                            //     context);
-                            // Invoice()
-                            //     .createPDF(
-                            //   totalItems: totalItems,
-                            //   totalPrice: totalPrice,
-                            //   items: items,
-                            //   discountAmount: discountAmount,
-                            //   subTotal: subTotal,
-                            // )
-                            //     .then((value) {
-                            //   snackBar(
-                            //     'Receipt started downloading',
-                            //     context);
-                            // }).catchError((error) {
-                            //   print(error);
-                            //   snackBar(
-                            //     'Failed to download receipt! Please try again...',
-                            //     context);
-                            // });
                           },
                           child: Container(
-                            padding: EdgeInsets.all(10.0),
-                            margin: EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(10.0),
+                            margin: const EdgeInsets.all(10.0),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: kSubMainColor,
                               ),
                               borderRadius: BorderRadius.circular(7.0),
                             ),
-                            child: Center(
+                            child: const Center(
                               child: Text(
                                 'Download Receipt',
                                 style: kProductNameStyle,
@@ -167,17 +151,17 @@ class _DoneScreenState extends State<DoneScreen> {
                             Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => HomeScreen()),
+                                    builder: (context) => const HomeScreen()),
                                 (route) => false);
                           },
                           child: Container(
-                            padding: EdgeInsets.all(10.0),
-                            margin: EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(10.0),
+                            margin: const EdgeInsets.all(10.0),
                             decoration: BoxDecoration(
                               color: kMainColor,
                               borderRadius: BorderRadius.circular(7.0),
                             ),
-                            child: Center(
+                            child: const Center(
                               child: Text(
                                 'Start a new sale',
                                 style: kDrawerTextStyle1,

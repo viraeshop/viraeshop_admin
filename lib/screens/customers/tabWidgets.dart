@@ -1,14 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
 
+import '../../configs/baxes.dart';
+import '../customer_transactions.dart';
 import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';
+import '../transactions/transaction_details.dart';
 
 class SalesTab extends StatefulWidget {
   final String userId;
@@ -21,7 +26,15 @@ class SalesTab extends StatefulWidget {
 
 class _SalesTabState extends State<SalesTab> {
   List transactions = [];
+  List transactionBackup = [];
   bool isLoading = true, isError = false;
+  num totalPaid = 0;
+  num totalDue = 0;
+  num totalAmount = 0;
+  DateTime begin = DateTime.now();
+  DateTime end = DateTime.now();
+  bool isPaid = false;
+  bool isDue = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -35,9 +48,13 @@ class _SalesTabState extends State<SalesTab> {
       final data = snapshot.docs;
       for (var element in data) {
         transactions.add(element.data());
+        transactionBackup.add(element.data());
         if (kDebugMode) {
           print('running');
         }
+        totalPaid += element.get('paid');
+        totalDue += element.get('due');
+        totalAmount += element.get('price');
       }
       setState(() {
         isLoading = false;
@@ -54,38 +71,264 @@ class _SalesTabState extends State<SalesTab> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: transactions.isNotEmpty && isError == false
-          ? ListView.builder(
-              itemCount: transactions.length,
-              shrinkWrap: true,
-              itemBuilder: (BuildContext context, int i) {
-                List items = transactions[i]['items'];
-                String description = '';
-                for (var element in items) {
-                  description +=
-                      '${element['quantity']} X ${element['product_name']}, ';
-                }
-                Timestamp timestamp = transactions[i]['date'];
-                String date = DateFormat.yMMMd().format(timestamp.toDate());
-                return OrderTranzCard(
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return DueReceipt(
-                              title: 'Receipt',
-                              data: transactions[i],
-                              isOnlyShow: true,
+      child: transactionBackup.isNotEmpty && isError == false
+          ? Stack(
+              fit: StackFit.expand,
+              children: [
+                FractionallySizedBox(
+                  alignment: Alignment.topCenter,
+                  heightFactor: 0.88,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 70.0),
+                    child: Column(
+                      children: List.generate(
+                        transactions.length,
+                        (int i) {
+                          List items = transactions[i]['items'];
+                          String description = '';
+                          for (var element in items) {
+                            description +=
+                                '${element['quantity']} X ${element['product_name']}, ';
+                          }
+                          Timestamp timestamp = transactions[i]['date'];
+                          String date =
+                              DateFormat.yMMMd().format(timestamp.toDate());
+                          String customerName = transactions[i]['customer_role'] == 'general' ? transactions[i]['user_info']
+                          ['name'] : transactions[i]['user_info']['business_name'] + '(${transactions[i]['user_info']['name']})';
+                          return OrderTranzCard(
+                            onTap: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return DueReceipt(
+                                  title: 'Receipt',
+                                  data: transactions[i],
+                                  isOnlyShow: true,
+                                );
+                              }));
+                            },
+                            date: date,
+                            price: transactions[i]['price'].toString(),
+                            employeeName: transactions[i]['employee_name'],
+                            customerName: customerName,
+                            desc: description,
+                            invoiceId: transactions[i]['invoice_id'],
                           );
-                        }));
-                      },
-                      date: date,
-                      price: transactions[i]['price'].toString(),
-                      employeeName: transactions[i]['employee_id'],
-                      customerName: transactions[i]['user_info']['name'],
-                      desc: description,
-                      invoiceId: transactions[i]['invoice_id'],
-                    );
-              },
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    height: 70.0,
+                    padding: const EdgeInsets.all(10.0),
+                    decoration: const BoxDecoration(
+                      color: kBackgroundColor,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.black26,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        dateWidget(
+                          borderColor: kSubMainColor,
+                          color: kSubMainColor,
+                          title: begin.toString().split(' ')[0],
+                          onTap: () {
+                            buildMaterialDatePicker(context, true);
+                          },
+                        ),
+                        const Icon(
+                          Icons.arrow_forward,
+                          color: kSubMainColor,
+                          size: 20.0,
+                        ),
+                        dateWidget(
+                            borderColor: kSubMainColor,
+                            color: kSubMainColor,
+                            onTap: () {
+                              buildMaterialDatePicker(context, false);
+                            },
+                            title: end.isAtSameMomentAs(DateTime.now())
+                                ? 'To this date..'
+                                : end.toString().split(' ')[0]),
+                        const SizedBox(
+                          width: 20.0,
+                        ),
+                        roundedTextButton(
+                            borderColor: kSubMainColor,
+                            textColor: kSubMainColor,
+                            onTap: () {
+                              setState(() {
+                                transactions = dateFilter(
+                                    transactionBackup, begin, end);
+                                totalPaid = 0;
+                                totalDue = 0;
+                                totalAmount = 0;
+                                for (var element in transactions) {
+                                  totalPaid += element['paid'];
+                                  totalDue += element['due'];
+                                  totalAmount += element['price'];
+                                }
+                              });
+                            }),
+                        const SizedBox(
+                          width: 20.0,
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              transactions = transactionBackup;
+                              totalPaid = 0;
+                              totalDue = 0;
+                              totalAmount = 0;
+                              for (var element in transactions) {
+                                totalPaid += element['paid'];
+                                totalPaid += element['advance'];
+                                totalDue += element['due'];
+                                totalAmount += element['price'];
+                              }
+                            });
+                          },
+                          icon: const Icon(Icons.refresh),
+                          color: kSubMainColor,
+                          iconSize: 30.0,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                FractionallySizedBox(
+                  heightFactor: 0.12,
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: double.infinity,
+                    color: kSubMainColor,
+                    padding: const EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                       isDue ? const SizedBox() : GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              isPaid = !isPaid;
+                              if(isPaid){
+                                transactions = transactionBackup.where((element) => element['paid'] != 0).toList();
+                              }else{
+                                transactions = transactionBackup;
+                              }
+                            });
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Total Paid:',
+                                style: TextStyle(
+                                  color: kBackgroundColor,
+                                  fontSize: 15.0,
+                                  letterSpacing: 1.3,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                ' ${totalPaid.toString()}$bdtSign',
+                                style: const TextStyle(
+                                  color: kMainColor,
+                                  fontSize: 15.0,
+                                  letterSpacing: 1.3,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        isPaid ? const SizedBox() : GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              isDue = !isDue;
+                              if(isDue){
+                                transactions = transactionBackup.where((element) => element['due'] != 0).toList();
+                              }else{
+                                transactions = transactionBackup;
+                              }
+                            });
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Total Due:',
+                                style: TextStyle(
+                                  color: kBackgroundColor,
+                                  fontSize: 15.0,
+                                  letterSpacing: 1.3,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                ' ${totalDue.toString()}$bdtSign',
+                                style: const TextStyle(
+                                  color: kRedColor,
+                                  fontSize: 15.0,
+                                  letterSpacing: 1.3,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Total Amount:',
+                              style: TextStyle(
+                                color: kBackgroundColor,
+                                fontSize: 15.0,
+                                letterSpacing: 1.3,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Text(
+                              ' ${totalAmount.toString()}$bdtSign',
+                              style: const TextStyle(
+                                color: kNewMainColor,
+                                fontSize: 15.0,
+                                letterSpacing: 1.3,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             )
           : isLoading
               ? const Center(
@@ -104,6 +347,36 @@ class _SalesTabState extends State<SalesTab> {
                   ),
                 ),
     );
+  }
+
+  buildMaterialDatePicker(BuildContext context, bool isBegin) async {
+    DateTime date = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: date,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+      initialEntryMode: DatePickerEntryMode.calendar,
+      initialDatePickerMode: DatePickerMode.day,
+      fieldHintText: 'Month/Date/Year',
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light(),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != begin) {
+      if (isBegin) {
+        setState(() {
+          begin = picked;
+        });
+      } else {
+        setState(() {
+          end = picked;
+        });
+      }
+    }
   }
 }
 
@@ -133,14 +406,17 @@ class _OrdersTabState extends State<OrdersTab> {
           element.data(),
         );
       }
-      setState(() {
-        isLoading = false;
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+        setState(() {
+          isLoading = false;
+        });
       });
     }).catchError((error) {
-      print(error);
-      setState(() {
-        isLoading = false;
-        isError = true;
+      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+        setState(() {
+          isLoading = false;
+          isError = true;
+        });
       });
     });
     super.initState();
@@ -161,20 +437,20 @@ class _OrdersTabState extends State<OrdersTab> {
                       '${element['quantity']}x ${element['product_name']} ';
                 }
                 Timestamp timestamp = orders[i]['date'];
-                String date = DateFormat.yMMMd().format(timestamp.toDate());                
+                String date = DateFormat.yMMMd().format(timestamp.toDate());
                 return OrderTranzCard(
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return OrderInfoView(order: orders[i]);
-                        }));
-                      },
-                      date: date,
-                      price: orders[i]['price'].toString(),
-                      employeeName: 'Riyadh',
-                      customerName: orders[i]['customer_info']['customer_name'],
-                      desc: description,
-                    );
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return OrderInfoView(order: orders[i]);
+                    }));
+                  },
+                  date: date,
+                  price: orders[i]['price'].toString(),
+                  employeeName: 'Riyadh',
+                  customerName: orders[i]['customer_info']['customer_name'],
+                  desc: description,
+                );
               },
             )
           : isLoading

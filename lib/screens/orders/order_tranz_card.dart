@@ -14,8 +14,9 @@ class OrderTranzCard extends StatelessWidget {
       required this.customerName,
       required this.onTap,
       this.invoiceId,
+      Key? key
       }
-  );
+  ) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -59,25 +60,23 @@ class OrderTranzCard extends StatelessWidget {
                       const SizedBox(
                         width: 10.0,
                       ),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Text(
-                              'by $employeeName',
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: kProductCardColor,
-                                fontSize: 15.0,
-                                fontFamily: 'Montserrat',
-                                letterSpacing: 1.3,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      Column(
+                        children: [
+                          Text(
+                            'by $employeeName',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: kProductCardColor,
+                              fontSize: 10.0,
+                              fontFamily: 'Montserrat',
+                              letterSpacing: 1.3,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(
-                              height: 5.0,
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(
+                            height: 5.0,
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -127,7 +126,13 @@ class OrderTranzCard extends StatelessWidget {
                         child: Text(
                           customerName,
                           overflow: TextOverflow.ellipsis,
-                          style: kProductNameStylePro,
+                          style: const TextStyle(
+                            color: kSubMainColor,
+                            fontFamily: 'Montserrat',
+                            fontSize: 10,
+                            letterSpacing: 1.3,
+                            fontWeight: FontWeight.bold,
+                          ),
 
                         ),
                       ),

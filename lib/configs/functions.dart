@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 
-Future<void> updateProductInventory(String docPath, num productQuantity) {
+Future<void> updateProductInventory(String docPath, num productQuantity, [bool isReturn = false]) {
   DocumentReference documentReference = FirebaseFirestore.instance
       .collection('products')
       .doc('items')
@@ -20,7 +20,12 @@ Future<void> updateProductInventory(String docPath, num productQuantity) {
       throw Exception("not found!");
     }
     var totalProductQuantity = snapshot.get('quantity');
-    var newTotal = totalProductQuantity - productQuantity;
+    var newTotal = 0;
+    if(isReturn){
+      newTotal = totalProductQuantity + productQuantity;
+    }else{
+      newTotal = totalProductQuantity - productQuantity;
+    }
     // Perform an update on the document
     transaction.update(documentReference, {'quantity': newTotal});
     // Return the new count
@@ -56,5 +61,18 @@ List searchEngine({required String value,required String key,required List temps
     return field.contains(valueLower) || field2.contains(valueLower);
   }).toList();
   return filteredList;
+}
+
+List dateFilter (List data, DateTime begin, DateTime end){
+  return data.where((element) {
+    Timestamp timestamp = element['date'];
+    DateTime date = timestamp.toDate();
+    begin = DateTime(begin.year, begin.month, begin.day);
+    end = DateTime(end.year, end.month, end.day);
+    DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+    return ((begin.isAfter(dateFormatted) ||
+        begin.isAtSameMomentAs(dateFormatted)) &&
+        (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted)));
+  }).toList();
 }
 

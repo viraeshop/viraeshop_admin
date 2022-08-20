@@ -6,6 +6,11 @@ class GeneralProvider extends ChangeNotifier {
   List suppliersBackup= [];
   List<bool> addedToCart = List.generate(10, (index) => false);
   bool isStarted = false;
+  bool isEditUser = false;
+  void onUserEdit (bool value){
+    isEditUser = value;
+    notifyListeners();
+  }
   void addAdvert(String value) {
     advertSelected.add(value);
     notifyListeners();

@@ -20,7 +20,8 @@ class Customers extends StatefulWidget {
 
 class _CustomersState extends State<Customers> {
   GeneralCrud generalCrud = GeneralCrud();
-  num storeCredit = 0;
+  num agentsBalances = 0;
+  num agentsBalancesBackup = 0;
   List customersList = [];
   List tempStore = [];
   initSearch(String value) {
@@ -28,10 +29,12 @@ class _CustomersState extends State<Customers> {
       setState(
         () {
           customersList = tempStore;
+          agentsBalances = agentsBalancesBackup;
         },
       );
     }
     List items = [];
+    num balances = 0;
     items = customersList.where((element) {
       final nameLower = element['name'].toLowerCase();
       final mobile = element['mobile'];
@@ -39,7 +42,9 @@ class _CustomersState extends State<Customers> {
       widget.role != 'general' && element['business_name'] != null
           ? element['business_name'].toLowerCase()
           : '';
-      print(businessName);
+      if(element['role'] == 'agents'){
+        balances += element['wallet'];
+      }
       final valueLower = value.toLowerCase();
       return nameLower.contains(valueLower) ||
           mobile.contains(valueLower) ||
@@ -63,6 +68,7 @@ class _CustomersState extends State<Customers> {
     final List filtered = items;
     setState(() {
       customersList = filtered;
+      agentsBalances = balances;
       // if(customersList.isEmpty && value.length != 0){
       //   customersList = tempStore;
       // }
@@ -79,7 +85,8 @@ class _CustomersState extends State<Customers> {
         setState(() {
           customersList.add(element.data());
           if(widget.role == 'agents'){
-            storeCredit += element.get('wallet');
+            agentsBalances += element.get('wallet');
+            agentsBalancesBackup += element.get('wallet');
           }
         });
       }
@@ -106,7 +113,7 @@ class _CustomersState extends State<Customers> {
           children: [
             FractionallySizedBox(
               alignment: Alignment.topCenter,
-              heightFactor: widget.role == 'agents' && !widget.isSelectCustomer ?  0.88 : 1,
+              heightFactor: widget.role == 'agents'?  0.88 : 1,
               child: ListView.builder(
                   itemCount: customersList.length + 1,
                   itemBuilder: (context, i) {
@@ -180,6 +187,22 @@ class _CustomersState extends State<Customers> {
                                   '${customersList[i - 1]['email']}',
                                   style: kProductNameStylePro,
                                 ),
+                              if(widget.role == 'agents')
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${customersList[i - 1]['wallet']}$bdtSign',
+                                      style: const TextStyle(
+                                        color: kNewMainColor,
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 15,
+                                        letterSpacing: 1.3,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  ],
+                                )
                             ],
                           ),
                         ),
@@ -188,7 +211,7 @@ class _CustomersState extends State<Customers> {
                   },
                 ),
             ),
-            if(widget.role == 'agents' && !widget.isSelectCustomer) FractionallySizedBox(
+            if(widget.role == 'agents') FractionallySizedBox(
               alignment: Alignment.bottomCenter,
               heightFactor: 0.12,
               child: Container(
@@ -197,55 +220,28 @@ class _CustomersState extends State<Customers> {
                 padding: const EdgeInsets.all(10.0),
                 child: Row(
                   mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+                  MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: const [
-                        Text(
-                          'Receivables',
-                          style: TextStyle(
-                            color: kBackgroundColor,
-                            fontSize: 15.0,
-                            letterSpacing: 1.3,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                        Text(
-                          'BDT 0.0',
-                          style: TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: 15.0,
-                            letterSpacing: 1.3,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      'Total Balance:',
+                      style: TextStyle(
+                        color: kBackgroundColor,
+                        fontSize: 20.0,
+                        letterSpacing: 1.3,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Store Credits',
-                          style: TextStyle(
-                            color: kBackgroundColor,
-                            fontSize: 15.0,
-                            letterSpacing: 1.3,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                        Text(
-                          '${storeCredit.toString()}$bdtSign',
-                          style: const TextStyle(
-                            color: kMainColor,
-                            fontSize: 15.0,
-                            letterSpacing: 1.3,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                      ],
+                    Text(
+                      ' ${agentsBalances.toString()}$bdtSign',
+                      style: const TextStyle(
+                        color: kMainColor,
+                        fontSize: 15.0,
+                        letterSpacing: 1.3,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -274,6 +270,9 @@ void onCustomerTap(BuildContext context, Map customersList) {
     'idImage': customersList['idImage'],
     'idNumber': customersList['idNumber'],
   };
+  if(customersList['role'] != 'general'){
+    userInfo['business_name'] = customersList['business_name'];
+  }
   if (customersList['role'] == 'agents') {
     userInfo['wallet'] = customersList['wallet'];
   }

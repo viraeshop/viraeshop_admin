@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -26,9 +28,9 @@ class SupplierPay extends StatefulWidget {
 }
 
 class _SupplierPayState extends State<SupplierPay> {
-  Uint8List? profileBytes;
+  Uint8List? imageBytes;
   String? profileLink;
-  String? profilePath;
+  String? imageFilePath;
   final TextEditingController invoiceCont = TextEditingController();
   final TextEditingController refCont = TextEditingController();
   final TextEditingController invoiceAmountCont = TextEditingController();
@@ -36,10 +38,13 @@ class _SupplierPayState extends State<SupplierPay> {
   final TextEditingController dueAmountCont = TextEditingController();
   final TextEditingController noteCont = TextEditingController();
   Timestamp timestamp = Timestamp.now();
-  Map shop = {};
-  List<Map> paymentInfo = [];
+  Map<String, dynamic> supplierInvoice = {};
   bool isLoading = false;
+  bool invoiceExist = false;
   StreamSubscription? boxStream;
+  List payList = [];
+  List images = [];
+  num paidAmount = 0;
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -59,7 +64,10 @@ class _SupplierPayState extends State<SupplierPay> {
             iconSize: 20.0,
             color: kSubMainColor,
           ),
-          title: const Text('Supplier Pay', style: kAppBarTitleTextStyle,),
+          title: const Text(
+            'Supplier Pay',
+            style: kAppBarTitleTextStyle,
+          ),
         ),
         body: Container(
           color: kBackgroundColor,
@@ -72,25 +80,56 @@ class _SupplierPayState extends State<SupplierPay> {
                 const SizedBox(
                   height: 20.0,
                 ),
-                imagePickerWidget(
-                  imagePath: profilePath,
-                  images: profileBytes,
-                  onTap: () async {
-                    if(kIsWeb){
-                      final Tuple2<Uint8List?, String?> images = await getImageWeb('supplier_payments');
-                      setState((){
-                        profileBytes = images.item1;
-                        profileLink = images.item2;
-                      });
-                    }else{
-                      final Tuple2<String?, String?> images = await getImageNative('supplier_payments');
-                      setState((){
-                        profilePath = images.item1;
-                        profileLink = images.item2;
-                      });
-                    }
-                  },
-                ),
+                images.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () async {
+                          if (kIsWeb) {
+                            final Tuple2<Uint8List?, String?> images =
+                                await getImageWeb('supplier_payments');
+                            setState(() {
+                              imageBytes = images.item1;
+                              this.images.add(images.item2);
+                            });
+                          } else {
+                            final Tuple2<String?, String?> images =
+                                await getImageNative('supplier_payments');
+                            setState(() {
+                              imageFilePath = images.item1;
+                              this.images.add(images.item2);
+                            });
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.0),
+                          child: CachedNetworkImage(
+                            imageUrl: images[0],
+                            fit: BoxFit.cover,
+                            height: 150,
+                            width: 150,
+                          ),
+                        ),
+                      )
+                    : imagePickerWidget(
+                        imagePath: imageFilePath,
+                        images: imageBytes,
+                        onTap: () async {
+                          if (kIsWeb) {
+                            final Tuple2<Uint8List?, String?> images =
+                                await getImageWeb('supplier_payments');
+                            setState(() {
+                              imageBytes = images.item1;
+                              this.images.add(images.item2);
+                            });
+                          } else {
+                            final Tuple2<String?, String?> images =
+                                await getImageNative('supplier_payments');
+                            setState(() {
+                              imageFilePath = images.item1;
+                              this.images.add(images.item2);
+                            });
+                          }
+                        },
+                      ),
                 const SizedBox(
                   height: 10.0,
                 ),
@@ -113,46 +152,43 @@ class _SupplierPayState extends State<SupplierPay> {
                       child: ValueListenableBuilder(
                           valueListenable: Hive.box('shops').listenable(),
                           builder: (context, Box box, childs) {
-                            shop = box.toMap();
-                            String shopName =
-                                box.get('business_name', defaultValue: 'Supplier');
-                           boxStream =  box.watch().listen((event) async {
-                             setState(() {
-                                isLoading = true;
+                            if (!supplierInvoice.containsKey('business_name') && box.isNotEmpty) {
+                              supplierInvoice.addAll({
+                                'business_name': box.get('business_name'),
+                                'name': box.get('supplier_name'),
+                                'address': box.get('address'),
+                                'mobile': box.get('mobile'),
+                                'email': box.get('email'),
                               });
-                              try {
-                                final data =
-                                    await NetworkUtility.getSupplierPayment(
-                                        shopName);
-                                if (data.exists) {
-                                  List<Map> paymentInfo = data.get('payments');
-                                  List payList = [];
-                                  List images = [];
-                                  for (var info in paymentInfo) {
-                                    payList.add({
-                                      'date': info['date'],
-                                      'paid': info['pay_amount'],
-                                    });
-                                    images.add(info['image']);
-                                  }
+                            }
+                            if (supplierInvoice.isNotEmpty && box.isNotEmpty) {
+                              if (supplierInvoice['business_name'] !=
+                                  box.get('business_name')) {
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((timeStamp) {
                                   setState(() {
-                                    this.paymentInfo = paymentInfo;
-                                    shop['pay_list'] = payList;
-                                    shop['images'] = images;
+                                    supplierInvoice.clear();
+                                    images.clear();
+                                    payList.clear();
+                                    imageBytes?.clear();
+                                    invoiceCont.clear();
+                                    invoiceAmountCont.clear();
+                                    dueAmountCont.clear();
+                                    payAmountCont.clear();
+                                    refCont.clear();
+                                    noteCont.clear();
+                                    paidAmount = 0;
+                                    invoiceExist = false;
+                                    imageFilePath = '';
                                   });
-                                }
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              } catch (e) {
-                                if (kDebugMode) {
-                                  print(e);
-                                }
-                                setState(() {
-                                  isLoading = false;
                                 });
                               }
-                            });
+                            }
+                            String shopName = supplierInvoice.isEmpty
+                                ? box.get('business_name',
+                                    defaultValue: 'Supplier')
+                                : supplierInvoice['business_name'] ??
+                                    'Supplier';
                             return Text(
                               shopName,
                               style: kTotalTextStyle,
@@ -179,6 +215,51 @@ class _SupplierPayState extends State<SupplierPay> {
                             ),
                             NewTextField(
                               controller: invoiceCont,
+                              onSubmitted: (value) async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                try {
+                                  final supplierInvoice =
+                                      await NetworkUtility.getSupplierPayment(
+                                          value);
+                                  Hive.box('shops').clear();
+                                  if (supplierInvoice.exists) {
+                                    if(supplierInvoice.get('isSupplierInvoice')){
+                                      setState(() {
+                                        invoiceExist = supplierInvoice.exists;
+                                        this.supplierInvoice = supplierInvoice
+                                            .data() as Map<String, dynamic>;
+                                        dueAmountCont.text =
+                                            supplierInvoice.get('due').toString();
+                                        payAmountCont.text =
+                                            supplierInvoice.get('paid')
+                                                .toString();
+                                        paidAmount = supplierInvoice.get('paid');
+                                        invoiceAmountCont.text = supplierInvoice
+                                            .get('buy_price')
+                                            .toString();
+                                        refCont.text =
+                                            supplierInvoice.get('ref_no');
+                                        noteCont.text =
+                                            supplierInvoice.get('description');
+                                        images
+                                            .addAll(
+                                            supplierInvoice.get('images'));
+                                        payList = supplierInvoice.get('pay_list');
+                                      });
+                                    }
+                                  }
+                                } on FirebaseException catch (e) {
+                                  if (kDebugMode) {
+                                    print(e);
+                                  }
+                                } finally {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              },
                             ),
                           ],
                         ),
@@ -243,6 +324,15 @@ class _SupplierPayState extends State<SupplierPay> {
                             ),
                             NewTextField(
                               controller: payAmountCont,
+                              onChanged: (value) {
+                                num due =
+                                    num.parse(invoiceAmountCont.text ?? '0') -
+                                        (num.parse(value) + paidAmount);
+                                setState(() {
+                                  dueAmountCont.text =
+                                      due >= 0 ? due.toString() : '0';
+                                });
+                              },
                             ),
                           ],
                         ),
@@ -284,33 +374,49 @@ class _SupplierPayState extends State<SupplierPay> {
                       width: 150.0,
                       title: 'Update',
                       onTap: () async {
-                        setState((){
+                        setState(() {
                           isLoading = true;
                         });
-                        Map data = {
-                          'invoice_no': invoiceCont.text,
-                          'pay_amount': payAmountCont.text,
-                          'due_amount': dueAmountCont.text,
-                          'invoice_amount': invoiceAmountCont.text,
-                          'ref_no': refCont.text,
-                          'note': noteCont.text,
-                          'business_name': shop['business_name'],
-                          'supplier_name': shop['supplier_name'],
-                          'image': profileLink,
-                          'date': Timestamp.now(),
-                        };
-                        print(paymentInfo);
-                        paymentInfo.add(data);
-                        try{
-                          await NetworkUtility.supplierPayment(shop['business_name'], {
-                            'payments': paymentInfo,
+                        if ((num.parse(invoiceAmountCont.text) -
+                                (paidAmount +=
+                                    num.parse(payAmountCont.text ?? '0'))) >=
+                            0) {
+                          paidAmount += num.parse(payAmountCont.text ?? '0');
+                          payList.add({
+                            'paid': num.parse(payAmountCont.text ?? '0'),
+                            'date': Timestamp.now(),
                           });
-                        }catch (e){
+                        }
+                        supplierInvoice['pay_list'] = payList;
+                        supplierInvoice['images'] = images;
+                        Map<String, dynamic> data = {
+                          'invoice_id': invoiceCont.text,
+                          'isSupplierInvoice': true,
+                          'paid': paidAmount,
+                          'due': num.parse(dueAmountCont.text ?? '0'),
+                          'buy_price': num.parse(invoiceAmountCont.text ?? '0'),
+                          'ref_no': refCont.text,
+                          'description': noteCont.text,
+                          'business_name': supplierInvoice['business_name'],
+                          'name': supplierInvoice['name'],
+                          'date': invoiceExist
+                              ? supplierInvoice['date']
+                              : Timestamp.now(),
+                          'address': supplierInvoice['address'],
+                          'mobile': supplierInvoice['mobile'],
+                          'email': supplierInvoice['email'],
+                          'pay_list': payList,
+                          'images': images,
+                        };
+                        try {
+                          await NetworkUtility.supplierPayment(
+                              invoiceCont.text, data);
+                        } catch (e) {
                           if (kDebugMode) {
                             print(e);
                           }
-                        }finally{
-                          setState((){
+                        } finally {
+                          setState(() {
                             isLoading = false;
                           });
                         }
@@ -319,13 +425,12 @@ class _SupplierPayState extends State<SupplierPay> {
                     buttons(
                       width: 150.0,
                       title: 'View',
-                      onTap: paymentInfo.isEmpty ? null :  () {
+                      onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
                             return NonInventoryInfo(
-                              isSupplierPay: true,
-                              data: shop,
+                              data: supplierInvoice,
                               invoiceId: invoiceCont.text,
                               date: timestamp,
                             );
@@ -342,6 +447,7 @@ class _SupplierPayState extends State<SupplierPay> {
       ),
     );
   }
+
   @override
   void dispose() {
     // TODO: implement dispose

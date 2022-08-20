@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
@@ -52,9 +53,6 @@ class SupplierInfo extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ListTile(
-                  // leading: CircleAvatar(
-                  //   backgroundColor: kBackgroundColor,
-                  //   radius: 40.0,
                   leading: const Icon(
                     Icons.person,
                     color: kSubMainColor,
@@ -76,13 +74,31 @@ class SupplierInfo extends StatelessWidget {
                     color: kSubMainColor,
                     size: 20.0,
                   ),
-                  title: Text(
-                    mobile,
-                    style: kProductNameStylePro,
+                  title: TextButton(
+                    onPressed: () async{
+                      final url = Uri.parse('tel:$mobile');
+                      if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                      }
+                    },
+                    child: Text(
+                      mobile,
+                      style: kProductNameStylePro,
+                    ),
                   ),
-                  subtitle: Text(
-                    optionalMobile,
-                    style: kProductNameStylePro,
+                  subtitle: TextButton(
+                    onPressed: () async{
+                      if(optionalMobile.isNotEmpty){
+                        final url = Uri.parse('tel:$mobile');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url);
+                        }
+                      }
+                    },
+                    child: Text(
+                      optionalMobile,
+                      style: kProductNameStylePro,
+                    ),
                   ),
                 ),
                 ListTile(

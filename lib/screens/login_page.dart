@@ -122,6 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                                     'isManageDue': adminInfo.get('isManageDue'),
                                     'isDeleteCustomer': adminInfo.get('isDeleteCustomer'),
                                     'isDeleteEmployee': adminInfo.get('isDeleteEmployee'),
+                                    'isEditCustomer': adminInfo.get('isEditCustomer'),
                                   });
                                   setState(() {
                                     _isStart = false;

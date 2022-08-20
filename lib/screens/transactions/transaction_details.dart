@@ -26,6 +26,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   List employCus = [];
   List transactionData = [];
   List nonInventory = [];
+  List supplierInvoices = [];
   GeneralCrud generalCrud = GeneralCrud();
   int percentageCounter(num value, total) {
     num percent = 0;
@@ -41,10 +42,10 @@ class _TransactionDetailsState extends State<TransactionDetails> {
     return sum;
   }
 
-  Tuple4<String, String, String, String> groupTuple =
-      const Tuple4('0', '0', '0', '0');
-  Tuple4<String, String, String, String> groupTupleTemp =
-      const Tuple4('0', '0', '0', '0');
+  Tuple6<String, String, String, String, String, String> groupTuple =
+      const Tuple6('0', '0', '0', '0', '0', '0');
+  Tuple6<String, String, String, String, String, String> groupTupleTemp =
+  const Tuple6('0', '0', '0', '0', '0', '0');
   Tuple5<num, num, num, num, num> totals =
       const Tuple5<num, num, num, num, num>(0, 0, 0, 0, 0);
   Tuple5<num, num, num, num, num> totalsTemp =
@@ -73,64 +74,75 @@ class _TransactionDetailsState extends State<TransactionDetails> {
       num empCusSales = 0,
           empCusDue = 0,
           nonInventorySales = 0,
-          nonInventoryDue = 0;
-      data.forEach((element) {
-        //setState((){
-          transactionData.add(element.data());
-        //});
-        if (element.get('isWithNonInventory') == true) {
-          setState((){
+          nonInventoryDue = 0,
+          supplierPaid = 0,
+          supplierDue = 0;
+      for (var element in data) {
+        transactionData.add(element.data());
+        final invoice = element.data() as Map<String, dynamic>;
+        if(!invoice.containsKey('isSupplierInvoice')){
+          if (element.get('isWithNonInventory') == true) {
             nonInventory.add(element.data());
-          });
-          element.get('shop').forEach((shop) {
-            nonInventorySales += shop['price'];
-            nonInventoryDue += shop['due'];
-            totalTemp.update('totalProfit', (value) {
-              return value + shop['profit'];
+            element.get('shop').forEach((shop) {
+              nonInventorySales += shop['price'];
+              nonInventoryDue += shop['due'];
+              totalTemp.update('totalProfit', (value) {
+                return value + shop['profit'];
+              });
+              totalTemp.update('totalPaid', (value) {
+                return value + shop['paid'];
+              });
+              totalTemp.update('totalDue', (value) {
+                return value + shop['due'];
+              });
             });
-          });
-        }
-        setState((){
+          }
           employCus.add(element.data());
-        });
-        empCusSales += element.get('price');
-        empCusDue += element.get('due');
-        totalTemp.update('totalSales', (value) {
-          return value + element.get('price');
-        });
+          empCusSales += element.get('price');
+          empCusDue += element.get('due');
+          totalTemp.update('totalSales', (value) {
+            return value + element.get('price');
+          });
+          totalTemp.update('totalProfit', (value){
+            return value + element.get('profit');
+          });
+        }else{
+          supplierInvoices.add(invoice);
+          supplierPaid += invoice['paid'];
+          supplierDue += invoice['due'];
+        }
         totalTemp.update('totalDue', (value) {
           return value + element.get('due');
         });
         totalTemp.update('totalPaid', (value) {
           return value + element.get('paid');
         });
-        totalTemp.update('totalProfit', (value){
-          return value + element.get('profit');
-        });
-      });
+      }
       await generalCrud.getExpenses().then((snapshot) {
         isLoading = false;
         final data = snapshot.docs;
-        data.forEach((element) {
-         //setState(() {
-            transactionData.add(element.data());
-         //});
+        for (var element in data) {
+          //setState(() {
+          transactionData.add(element.data());
+          //});
           totalTemp.update('totalExpense', (value) {
             return value + element.get('cost');
           });
-        });
-      }).catchError((error){
+        }
+      }).catchError((error) {
         isLoading = false;
         print(error);
       });
-      groupTuple = Tuple4(
+      groupTuple = Tuple6(
         empCusSales.toString(),
         empCusDue.toString(),
         nonInventorySales.toString(),
         nonInventoryDue.toString(),
+        supplierPaid.toString(),
+        supplierDue.toString(),
       );
       //setState((){
-        groupTupleTemp = groupTuple;
+      groupTupleTemp = groupTuple;
       //});
       totals = Tuple5<num, num, num, num, num>(
           totalTemp['totalSales']!,
@@ -138,7 +150,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
           totalTemp['totalPaid']!,
           totalTemp['totalExpense']!,
           totalTemp['totalProfit']!);
-      setState((){
+      setState(() {
         totalsTemp = totals;
         num totalValue = sumTotal(totals);
         salesPercent = percentageCounter(totals.item1, totalValue);
@@ -148,7 +160,8 @@ class _TransactionDetailsState extends State<TransactionDetails> {
         profitPercent = percentageCounter(totals.item5, totalValue);
         isLoading = false;
       });
-    }).catchError((error){
+      print('Total Invoices: ${transactionData.length}');
+    }).catchError((error) {
       print(error);
       setState(() {
         isLoading = false;
@@ -161,7 +174,6 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   DateTime end = DateTime.now();
   @override
   Widget build(BuildContext context) {
-    //print('employCus: $employCus');
     return ModalProgressHUD(
       inAsyncCall: isLoading,
       progressIndicator: const SizedBox(
@@ -189,6 +201,26 @@ class _TransactionDetailsState extends State<TransactionDetails> {
             iconSize: 20.0,
           ),
           elevation: 0.0,
+          actions: [
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  groupTupleTemp = groupTuple;
+                  totalsTemp = totals;
+                  num totalValue = sumTotal(totals);
+                  salesPercent = percentageCounter(totals.item1, totalValue);
+                  duePercent = percentageCounter(totals.item2, totalValue);
+                  paidPercent = percentageCounter(totals.item3, totalValue);
+                  expensePercent = percentageCounter(totals.item4, totalValue);
+                  profitPercent = percentageCounter(totals.item5, totalValue);
+                  isLoading = false;
+                });
+              },
+              icon: const Icon(Icons.refresh),
+              color: kSubMainColor,
+              iconSize: 30.0,
+            ),
+          ],
         ),
         body: isLoading
             ? Container()
@@ -223,7 +255,26 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                           );
                         },
                         title: 'Non-Inventory Items',
-                        textWidget: rowWidget(groupTupleTemp.item3, groupTupleTemp.item4),
+                        textWidget: rowWidget(
+                            groupTupleTemp.item3, groupTupleTemp.item4),
+                      ),
+                      /// Supplier
+                      InfoWidget(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  NonInventoryTransactionShops(
+                                      data: supplierInvoices,
+                                  isSupplier: true,
+                                  ),
+                            ),
+                          );
+                        },
+                        title: 'Suppliers Transactions',
+                        textWidget: rowWidget(
+                            groupTupleTemp.item5, groupTupleTemp.item6, 'Payments'),
                       ),
                       InfoWidget(
                         onTap: () {
@@ -241,7 +292,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                       ),
 
                       ///Pie chart will be here
-                      Container(
+                      SizedBox(
                         height: 220.0,
                         width: double.infinity,
                         child: SfCircularChart(
@@ -280,6 +331,11 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                                       x: 'Total Expense',
                                       y: expensePercent,
                                       color: kBlueColor,
+                                    ),
+                                    TransactionData(
+                                      x: 'TotalProfit',
+                                      y: profitPercent,
+                                      color: kNewMainColor,
                                     ),
                                   ],
                                   pointColorMapper: (TransactionData data, _) =>
@@ -425,6 +481,7 @@ Tuple5<num, num, num, num, num> dateTotalTuple(
     List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0, expense = 0, paid = 0, profit = 0;
   //print('Date data: $items');
+  List filter = [];
   items.forEach((element) {
     Timestamp timestamp = element['date'];
     DateTime date = timestamp.toDate();
@@ -434,31 +491,39 @@ Tuple5<num, num, num, num, num> dateTotalTuple(
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-      print('Expense: ${element.containsKey('cost')}');
+      filter.add(element);
+      // print('Invoice: ${element['invoice_id']}: $element');
       if (element.containsKey('cost')) {
         expense += element['cost'];
       } else {
-        if (element['isWithNonInventory'] == true) {
-          element['shop'].forEach((shop) {
-            sale += shop['price'];
-            profit += shop['profit'];
-          });
+        if(!element.containsKey('isSupplierInvoice')){
+          if (element['isWithNonInventory']) {
+            element['shop'].forEach((shop) {
+              due += shop['due'];
+              profit += shop['profit'];
+              paid += shop['paid'];
+            });
+          }
+          sale += element['price'];
+          profit += element['profit'];
         }
-        sale += element['price'];
         due += element['due'];
         paid += element['paid'];
-        profit += element['profit'];
       }
     }
   });
+  print('Total filtered Invoices: ${filter.length}');
   Tuple5<num, num, num, num, num> data =
       Tuple5<num, num, num, num, num>(sale, due, paid, expense, profit);
   return data;
 }
 
-Tuple4<String, String, String, String> dateTuple3(
+Tuple6<String, String, String, String, String, String> dateTuple3(
     List items, DateTime begin, DateTime end) {
-  num inventorySale = 0, inventoryDue = 0, nonInventorySales = 0, nonInventoryDue = 0;
+  num inventorySale = 0,
+      inventoryDue = 0,
+      nonInventorySales = 0,
+      nonInventoryDue = 0, supplierPaid = 0, supplierDue = 0;
   items.forEach((element) {
     Timestamp timestamp = element['date'];
     DateTime date = timestamp.toDate();
@@ -469,23 +534,31 @@ Tuple4<String, String, String, String> dateTuple3(
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
       if (element.containsValue('cost') == false) {
-        if (element['isWithNonInventory'] == true) {
-          element['shop'].forEach((shop) {
-            nonInventorySales += shop['price'];
-            nonInventoryDue += shop['due'];
-          });
+        if(element.containsKey('isSupplierInvoice')){
+          supplierPaid += element['paid'];
+          supplierDue += element['due'];
+        }else{
+          if (element['isWithNonInventory'] == true) {
+            element['shop'].forEach((shop) {
+              nonInventorySales += shop['price'];
+              nonInventoryDue += shop['due'];
+            });
+          }
+          inventorySale += element['price'];
+          inventoryDue += element['due'];
         }
-        inventorySale += element['price'];
-        inventoryDue += element['due'];
-      }
+        }
     }
   });
-  Tuple4<String, String, String, String> data = Tuple4<String, String, String, String>(
-      inventorySale.toString(),
-      inventoryDue.toString(),
-      nonInventorySales.toString(),
-      nonInventoryDue.toString(),
-      );
+  Tuple6<String, String, String, String, String, String> data =
+      Tuple6<String, String, String, String, String, String>(
+    inventorySale.toString(),
+    inventoryDue.toString(),
+    nonInventorySales.toString(),
+    nonInventoryDue.toString(),
+    supplierPaid.toString(),
+    supplierDue.toString(),
+  );
   return data;
 }
 
@@ -606,11 +679,11 @@ Widget cardWidget(String title) {
   );
 }
 
-Widget rowWidget(String sales, due) {
+Widget rowWidget(String sales, due, [title = 'Sales']) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      specialText('Sales', sales),
+      specialText(title, sales),
       specialText('Due', due),
     ],
   );

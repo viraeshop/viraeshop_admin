@@ -67,19 +67,22 @@ class NetworkUtility {
     await _firestore.collection('users').doc(userId).delete();
   }
 
-  static Future<void> supplierPayment(String businessName, data) async {
-    await _firestore.collection('supplier_pay').doc(businessName).set(data);
+  static Future<void> supplierPayment(String invoiceId, data) async {
+    await _firestore.collection('transaction').doc(invoiceId).set(data);
   }
 
-  static Future<DocumentSnapshot> getSupplierPayment(
-      String businessName) async {
-    return _firestore.collection('supplier_pay').doc(businessName).get();
+  static Future<DocumentSnapshot> getSupplierPayment(String invoiceId) async {
+    return _firestore.collection('transaction').doc(invoiceId).get();
   }
 
   static Future<void> updateUser(String userId, data) async {
     await _firestore.collection('customers').doc(userId).update(data);
   }
-
+  static Future<bool> isUserExist (String mobile) async{
+   final user = await _firestore.collection('customers').where('mobile', isEqualTo: mobile).get();
+   // if uer is not empty then user already registered else he's not
+   return user.docs.isNotEmpty;
+  }
   static Future<String> uploadImageFromNative(
       File file, String fileName, folder) async {
     await _storage.ref().child('$folder/$fileName').putFile(file, metadata);
@@ -130,10 +133,16 @@ class NetworkUtility {
   static Future<void> makeTransaction(String docId, transInfo) async {
     await _firestore.collection('transaction').doc(docId).set(transInfo);
   }
-  static Future<void> updateProducts(List<Cart> cartItems) async {
+  static Future<void> updateProducts(List cartItems, [bool isReturn = false]) async {
     for (var element in cartItems) {
-      if(element.isInventory!){
-        await updateProductInventory(element.productId, element.quantity);
+      if(element is Cart){
+        if(element.isInventory!){
+          await updateProductInventory(element.productId, element.quantity, isReturn);
+        }
+      }else{
+        if(element['isInventory']){
+          await updateProductInventory(element['product_id'], element['quantity'], isReturn);
+        }
       }
     }
   }

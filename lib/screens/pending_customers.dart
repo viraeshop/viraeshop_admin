@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
-import 'package:viraeshop_admin/screens/admininfoscreen.dart';
+import 'package:viraeshop_admin/screens/edit_employee.dart';
 
 import 'new_admin_user.dart';
 

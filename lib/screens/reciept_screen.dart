@@ -124,7 +124,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                     child: Image.asset('assets/images/DONE.png'),
                   ),
                   const Text(
-                    'Call 01710735425 01715041368',
+                    'Call 01710735425 01324430921',
                     style: kProductNameStylePro,
                   ),
                   const Text(
@@ -405,6 +405,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                         MaterialPageRoute(
                           builder: (context) {
                             return BluetoothPrinter(
+                              payList: const [],
                               isWithBusinessName: role != 'general',
                               businessName: widget.isFromOrder ? widget.data['customer_info']['business_name'] : widget.data['user_info']['business_name'],
                               quantity: quantity,

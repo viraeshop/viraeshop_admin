@@ -759,9 +759,9 @@ Widget customerInfo({required Map info}) {
         ListTile(
           onTap: () async {
             final phone = info['mobile'];
-            final url = 'tel:$phone';
-            if (await canLaunch(url)) {
-              await launch(url);
+            final url = Uri.parse('tel:$phone');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url);
             }
           },
           leading: const Icon(

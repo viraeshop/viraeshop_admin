@@ -10,6 +10,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/desktop_orders.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
+import 'package:viraeshop_admin/screens/edit_employee.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
@@ -146,19 +147,17 @@ class _AppDrawerState extends State<AppDrawer> {
                       alignment: Alignment.centerRight,
                       child: InkWell(
                         onTap: () {
-                          if (widget.isBigScreen == true) {
-                            Provider.of<Configs>(context, listen: false)
-                                .updateWidget(
-                              const UserProfile(),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const UserProfile(),
-                              ),
-                            );
-                          }
+                          Map adminInfo = Hive.box('adminInfo').toMap();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return EditUserScreen(
+                                    selfAdmin: true,
+                                    adminInfo: adminInfo);
+                              },
+                            ),
+                          );
                         },
                         child: Container(
                           width: 150.0,
@@ -517,12 +516,14 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     icon: Icons.attach_money,
                     title: 'Due',
-                    onTap: !isManageDue ? null : () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const DueScreen(),
-                      ),
-                    ),
+                    onTap: !isManageDue
+                        ? null
+                        : () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DueScreen(),
+                              ),
+                            ),
                   ),
                   ReusableTile(
                       icon: FontAwesomeIcons.userCog,

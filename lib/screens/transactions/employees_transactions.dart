@@ -22,8 +22,8 @@ class _EmployeesState extends State<Employees> {
   Map<String, List> transactionData = {};
   Map<String, Tuple2> balances = {};
   Map<String, Tuple2> balancesTemp = {};
-  Tuple2 totalBalance = Tuple2<num, num>(0, 0);
-  Tuple2 totalBalanceTemp = Tuple2<num, num>(0, 0);
+  Tuple2 totalBalance = const Tuple2<num, num>(0, 0);
+  Tuple2 totalBalanceTemp = const Tuple2<num, num>(0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
   Set employees = Set();
@@ -66,12 +66,12 @@ class _EmployeesState extends State<Employees> {
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: balancesTemp.isEmpty,
-      progressIndicator: SizedBox(
+      progressIndicator: const SizedBox(
         height: 100.0,
         width: 100.0,
         child: LoadingIndicator(
           indicatorType: Indicator.lineScale,
-          colors: const [kMainColor, kBlueColor, kRedColor, kYellowColor],
+          colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
           strokeWidth: 2,
         ),
       ),
@@ -81,11 +81,11 @@ class _EmployeesState extends State<Employees> {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(FontAwesomeIcons.chevronLeft),
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kSubMainColor,
-            iconSize: 20.0,
+            iconSize: 30.0,
           ),
-          title: Text(
+          title: const Text(
             'Employees',
             style: kAppBarTitleTextStyle,
           ),
@@ -97,7 +97,7 @@ class _EmployeesState extends State<Employees> {
                   totalBalanceTemp = totalBalance;
                 });
               },
-              icon: Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh),
               color: kSubMainColor,
               iconSize: 20.0,
             ),
@@ -113,7 +113,7 @@ class _EmployeesState extends State<Employees> {
                       heightFactor: 0.7,
                       alignment: Alignment.topCenter,
                       child: ListView.builder(
-                          padding: EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(10.0),
                           itemCount: balancesTemp.keys.toList().length,
                           itemBuilder: (context, i) {
                             return InfoWidget(
@@ -127,7 +127,7 @@ class _EmployeesState extends State<Employees> {
                                     MaterialPageRoute(builder: (context) {
                                       return UserTransactionScreen(
                                         data: transactionData[transactionData.keys.toList()[i]]!,
-                                        name: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], widget.data),
+                                        name: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
                                       );
                                     }),
                                   );
@@ -138,11 +138,11 @@ class _EmployeesState extends State<Employees> {
                       heightFactor: 0.3,
                       alignment: Alignment.bottomCenter,
                       child: Container(
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
                           color: kBackgroundColor,
                           boxShadow: [
-                            BoxShadow(
+                            const BoxShadow(
                               color: Colors.black12,
                               offset: Offset(0, 0),
                               spreadRadius: 2.0,
@@ -162,7 +162,7 @@ class _EmployeesState extends State<Employees> {
                                     buildMaterialDatePicker(context, true);
                                   },
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.arrow_forward,
                                   color: kSubMainColor,
                                   size: 20.0,
@@ -174,7 +174,7 @@ class _EmployeesState extends State<Employees> {
                                     title: end.isAtSameMomentAs(DateTime.now())
                                         ? 'To this date..'
                                         : end.toString().split(' ')[0]),
-                                SizedBox(
+                                const SizedBox(
                                   width: 20.0,
                                 ),
                                 roundedTextButton(onTap: () {
@@ -205,7 +205,7 @@ class _EmployeesState extends State<Employees> {
                                   title: 'Total Sales',
                                   color: kYellowColor,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   width: 20.0,
                                 ),
                                 SpecialContainer(

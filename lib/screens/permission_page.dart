@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -6,9 +5,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/password_screen.dart';
 
 class PermissionPage extends StatefulWidget {
-  final bool isEdit;
-  var adminInfo;
-  PermissionPage({this.isEdit = false, adminInfo = ''});
+  const PermissionPage({Key? key}): super(key: key);
   @override
   State<PermissionPage> createState() => _PermissionPageState();
 }
@@ -24,6 +21,7 @@ class _PermissionPageState extends State<PermissionPage> {
     'isDeleteCustomer': false,
     'isDeleteEmployee': false,
     'isManageDue': false,
+    'isEditCustomer': false,
   };
   @override
   Widget build(BuildContext context) {
@@ -73,6 +71,7 @@ class _PermissionPageState extends State<PermissionPage> {
                         bools['isDeleteCustomer'] = status;
                         bools['isManageDue'] = status;
                         bools['isDeleteEmployee'] = status;
+                        bools['isEditCustomer'] = status;
                       });
                     },
                   ),
@@ -159,6 +158,27 @@ class _PermissionPageState extends State<PermissionPage> {
                               bools['isMakeCustomer'] = status;
                             });
                           },
+                  ),
+                ),
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Edit Customers',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: bools['isEditCustomer']!,
+                    onChanged: bools['isAdmin'] == true
+                        ? null
+                        : (status) {
+                      setState(() {
+                        bools['isEditCustomer'] = status;
+                      });
+                    },
                   ),
                 ),
                 ListTile(
@@ -262,6 +282,7 @@ class _PermissionPageState extends State<PermissionPage> {
                     'isDeleteCustomer': bools['isDeleteCustomer'],
                     'isDeleteEmployee': bools['isDeleteEmployee'],
                     'isManageDue': bools['isManageDue'],
+                    'isEditCustomer': bools['isEditCustomer'],
                   }).whenComplete(() {
                     Navigator.push(
                       context,
@@ -280,7 +301,7 @@ class _PermissionPageState extends State<PermissionPage> {
                     border: Border.all(color: kMainColor),
                   ),
                   child: const Center(
-                    child: const Text(
+                    child: Text(
                       'Next',
                       style: kButtonTextStyle,
                     ),

@@ -619,7 +619,6 @@ class _TabWidgetState extends State<TabWidget> {
                 children: [
                   InkWell(
                     onTap: () {
-                      if (Hive.box('customer').isNotEmpty) {
                         // List<Cart> cart = Hive.box<Cart>('cart').values.toList();
                         // print(cart[0].productName);
                         Navigator.push(
@@ -628,9 +627,6 @@ class _TabWidgetState extends State<TabWidget> {
                             builder: (context) => const ShoppingCart(),
                           ),
                         );
-                      } else {
-                        toast(context: context, title: 'You Forgot to add Customer', color: kRedColor,);
-                      }
                     },
                     child: ValueListenableBuilder(
                         valueListenable: Hive.box('cartDetails').listenable(),

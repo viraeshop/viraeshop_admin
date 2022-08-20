@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -16,6 +17,7 @@ import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
+import 'general_provider.dart';
 import 'home_screen.dart';
 
 class UpdateUser extends StatefulWidget {
@@ -52,6 +54,8 @@ class _UpdateUserState extends State<UpdateUser> {
   AdminCrud adminCrud = AdminCrud();
   GeneralCrud generalCrud = GeneralCrud();
   bool isDeleteCustomer = Hive.box('adminInfo').get('isDeleteCustomer');
+  bool isEditCustomer =
+      Hive.box('adminInfo').get('isEditCustomer', defaultValue: false);
   @override
   void initState() {
     // TODO: implement initState
@@ -93,7 +97,7 @@ class _UpdateUserState extends State<UpdateUser> {
       SalesTab(userId: widget.userId),
       OrdersTab(userId: widget.userId),
     ];
-    if (widget.userInfo['role'] == 'agents') {
+    if (widget.userInfo['role'] == 'agents' && isEditCustomer) {
       _tabs.add(
         const Tab(
           text: 'Account',
@@ -132,41 +136,66 @@ class _UpdateUserState extends State<UpdateUser> {
               centerTitle: true,
               titleTextStyle: kTextStyle1,
               actions: [
-                !isDeleteCustomer ? const SizedBox() : IconButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return DeletePopup(
-                          onDelete: () async {
-                            setState(() {
-                              showFields = true;
-                            });
-                            Navigator.pop(context);
-                            try {
-                              await NetworkUtility.deleteCustomer(
-                                  widget.userId);
-                              Navigator.pop(context);
-                            } on FirebaseException catch (e) {
-                              if (kDebugMode) {
-                                print(e.message);
-                              }
-                            } finally {
-                              setState(() {
-                                showFields = false;
-                              });
-                            }
-                          },
-                        );
+                if (isEditCustomer)
+                  Consumer<GeneralProvider>(builder: (context, user, childs) {
+                    return IconButton(
+                      onPressed: () {
+                        Provider.of<GeneralProvider>(context, listen: false)
+                            .onUserEdit(!user.isEditUser);
                       },
+                      icon: Icon(
+                        user.isEditUser ? Icons.done : Icons.edit,
+                      ),
+                      color: kSubMainColor,
+                      iconSize: 20.0,
                     );
-                  },
-                  icon: const Icon(
-                    Icons.delete,
-                  ),
-                  color: kSubMainColor,
-                  iconSize: 20.0,
+                  }),
+                const SizedBox(
+                  width: 5.0,
                 ),
+                if (isDeleteCustomer)
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return DeletePopup(
+                            onDelete: () async {
+                              setState(() {
+                                showFields = true;
+                              });
+                              Navigator.pop(context);
+                              try {
+                                Box customerBox = Hive.box('customer');
+                                await NetworkUtility.deleteCustomer(
+                                    widget.userId);
+                                if (customerBox.isNotEmpty &&
+                                    customerBox.get('id') == widget.userId) {
+                                  customerBox.clear();
+                                }
+                                // Future.delayed(const Duration(milliseconds: 0), (){
+                                //   Navigator.pop(context);
+                                // });
+                              } on FirebaseException catch (e) {
+                                if (kDebugMode) {
+                                  print(e.message);
+                                }
+                              } finally {
+                                setState(() {
+                                  showFields = false;
+                                });
+                              }
+                            },
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                    ),
+                    color: kSubMainColor,
+                    iconSize: 20.0,
+                  ),
               ],
             ),
             body: TabBarView(
@@ -293,11 +322,16 @@ class _UpdateUserState extends State<UpdateUser> {
                                         .then((successfull) {
                                       // Navigator.pop(context);
                                       Box box = Hive.box('customer');
-                                      if(box.isNotEmpty){
+                                      if (box.isNotEmpty) {
                                         String role = box.get('role');
-                                        if(role == 'agents'){
-                                          num wallet = box.get('wallet', defaultValue: 0.0);
-                                          box.put('wallet', wallet + num.parse(walletController.text));
+                                        if (role == 'agents') {
+                                          num wallet = box.get('wallet',
+                                              defaultValue: 0.0);
+                                          box.put(
+                                              'wallet',
+                                              wallet +
+                                                  num.parse(
+                                                      walletController.text));
                                         }
                                       }
                                       setState(() {
@@ -628,7 +662,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                 passwordController.text != '' &&
                                 selected_verification != '') {
                               //
-                              var upd_user = {};
+                              var updUser = {};
                               setState(() {
                                 showFields = false;
                               });
@@ -636,7 +670,7 @@ class _UpdateUserState extends State<UpdateUser> {
                               // print(jsonEncode(upd_user) + widget.user_id);
                               if (widget.userInfo['role'] == 'agents') {
                                 setState(() {
-                                  upd_user = {
+                                  updUser = {
                                     'name': nameController.text,
                                     'email': _emailController.text,
                                     'phone': phoneController.text,
@@ -650,7 +684,7 @@ class _UpdateUserState extends State<UpdateUser> {
                               adminCrud
                                   .updateCustomer(
                                       cid: widget.userId,
-                                      cusData: upd_user,
+                                      cusData: updUser,
                                       collection: widget.userInfo['agents'])
                                   .then((val) {
                                 if (val) {

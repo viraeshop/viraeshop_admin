@@ -56,6 +56,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
   num advance = 0;
   num due = 0;
   num paid = 0;
+  String selected = '';
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -84,62 +85,65 @@ class _ShoppingCartState extends State<ShoppingCart> {
             style: kAppBarTitleTextStyle,
           ),
           actions: [
-              ValueListenableBuilder(
-                  valueListenable: Hive.box('customer').listenable(),
-                  builder: (context, Box box, childs) {
-                    String username = box.get('name', defaultValue: '');
-                    if (box.values.isEmpty) {
-                      return IconButton(
-                        color: kMainColor,
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const CustomersScreen()));
-                        },
-                        icon: const Icon(FontAwesomeIcons.userPlus),
-                      );
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
+            ValueListenableBuilder(
+                valueListenable: Hive.box('customer').listenable(),
+                builder: (context, Box box, childs) {
+                  String username = box.get('role') != 'general'
+                      ? box.get('business_name', defaultValue: '') +
+                          '(${box.get('name')})'
+                      : box.get('name', defaultValue: '');
+                  if (box.values.isEmpty) {
+                    return IconButton(
+                      color: kMainColor,
+                      onPressed: () {
+                        Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const CustomersScreen(),
+                                builder: (context) => const CustomersScreen()));
+                      },
+                      icon: const Icon(FontAwesomeIcons.userPlus),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CustomersScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: kSubMainColor),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              FontAwesomeIcons.userPlus,
+                              color: kSubMainColor,
+                              size: 10.0,
                             ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(6.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: kSubMainColor),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                FontAwesomeIcons.userPlus,
+                            const SizedBox(width: 7.0),
+                            Text(
+                              username,
+                              style: const TextStyle(
                                 color: kSubMainColor,
-                                size: 10.0,
+                                fontFamily: 'Montserrat',
+                                fontSize: 10,
+                                letterSpacing: 1.3,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(width: 7.0),
-                              Text(
-                                username,
-                                style: const TextStyle(
-                                  color: kSubMainColor,
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 10,
-                                  letterSpacing: 1.3,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  }),
+                    ),
+                  );
+                }),
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: IconButton(
@@ -153,7 +157,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                           padding: const EdgeInsets.all(10.0),
                           child: Column(
                             children: [
-                              const Text('Are you sure you want to clear your cart?'),
+                              const Text(
+                                  'Are you sure you want to clear your cart?'),
                               const SizedBox(height: 20),
                               InkWell(
                                 child: Container(
@@ -242,8 +247,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   ),
                                 ),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.only(right: 10.0, top: 10.0),
+                                  padding: const EdgeInsets.only(
+                                      right: 10.0, top: 10.0),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -252,14 +257,12 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                               Hive.box('cartDetails')
                                                   .listenable(),
                                           builder: (context, Box box, childs) {
-                                            num prices = box
-                                                .get('totalPrice',
-                                                    defaultValue: 0);
-
-                                              totalPrice = prices;
+                                            num prices = box.get('totalPrice',
+                                                defaultValue: 0);
+                                            totalPrice = prices;
                                             num discounts = box.get(
-                                                    'discountAmount',
-                                                    defaultValue: 0);
+                                                'discountAmount',
+                                                defaultValue: 0);
                                             num discountPercent = box.get(
                                                 'discountPercent',
                                                 defaultValue: 0);
@@ -323,8 +326,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                   .listenable(),
                                           builder: (context, Box box, childs) {
                                             var totalPrice =
-                                                box.get('totalPrice');
-
+                                                box.get('totalPrice') -
+                                                    box.get('discountAmount',
+                                                        defaultValue: 0);
                                             return Text(
                                               'Sub-Total: ${totalPrice.toString()}',
                                               style: const TextStyle(
@@ -345,54 +349,85 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.all(10.0),
-                                      child: TypableText(
-                                        isDesc: isDesc,
-                                        controller: descController,
-                                        switchOn: () {
-                                          setState(() {
-                                            isDesc = true;
-                                           // paid = 0;
-                                          });
-                                        },
-                                        switchOff: () {
-                                          setState(() {
-                                            isDesc = false;
-                                          });
-                                        },
-                                        onChanged: (e) {
-                                          setState(() {
-                                            due = totalPrice - num.parse(e);
-                                            advance = num.parse(e);
-
-                                          });
-                                        },
-                                        keyboardType:
-                                        TextInputType.number,
+                                      child: ValueListenableBuilder(
+                                        valueListenable: Hive.box('cartDetails').listenable(),
+                                        builder: (context, Box box, childs) {
+                                          num discount = box.get('discountAmount', defaultValue: 0);
+                                          if(advance != 0){
+                                            due = totalPrice - advance - discount;
+                                          }
+                                          return TypableText(
+                                            isDesc: isDesc,
+                                            controller: descController,
+                                            switchOn: () {
+                                              setState(() {
+                                                isDesc = true;
+                                                selected = '';
+                                                due = 0;
+                                                paid = 0;
+                                                // paid = 0;
+                                              });
+                                            },
+                                            switchOff: () {
+                                              setState(() {
+                                                isDesc = false;
+                                              });
+                                            },
+                                            onChanged: (e) {
+                                              setState(() {
+                                                due = totalPrice - num.parse(e) - discount;
+                                                advance = num.parse(e);
+                                              });
+                                            },
+                                            keyboardType: TextInputType.number,
+                                          );
+                                        }
                                       ),
                                     ),
                                   ],
                                 ),
                                 Padding(
-                                    padding: const EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      TextButton(
-                                        onPressed: (){
-                                          setState((){
+                                      ValueListenableBuilder(
+                                        valueListenable: Hive.box('cartDetails')
+                                            .listenable(),
+                                        builder: (context, Box box, childs) {
+                                          num totalPrice =
+                                              box.get('totalPrice');
+                                          num discount = box.get(
+                                              'discountAmount',
+                                              defaultValue: 0);
+                                          if (selected == 'due') {
+                                            // selected = 'due';
                                             paid = 0;
                                             advance = 0;
-                                            due = totalPrice;
+                                            due = totalPrice - discount;
                                             descController.text = '0';
-                                          });
+                                          }
+                                          return TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  selected = 'due';
+                                                  paid = 0;
+                                                  advance = 0;
+                                                  due = totalPrice - discount;
+                                                  descController.text = '0';
+                                                });
+                                              },
+                                              child: Text(
+                                                'Due: ${due.toString()}',
+                                                style: const TextStyle(
+                                                  color: kSubMainColor,
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 15,
+                                                  letterSpacing: 1.3,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ));
                                         },
-                                        child: Text('Due: ${due.toString()}', style: const TextStyle(
-                                          color: kSubMainColor,
-                                          fontFamily: 'Montserrat',
-                                          fontSize: 15,
-                                          letterSpacing: 1.3,
-                                          fontWeight: FontWeight.bold,
-                                        ),),
                                       ),
                                     ],
                                   ),
@@ -402,23 +437,46 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
-                                      TextButton(
-                                        onPressed: (){
-                                          setState((){
-                                            paid = totalPrice;
-                                            advance = 0;
-                                            due = 0;
-                                            descController.text = '0';
-                                          });
-                                        },
-                                        child: Text('Paid: ${paid.toString()}', style: const TextStyle(
-                                          color: kSubMainColor,
-                                          fontFamily: 'Montserrat',
-                                          fontSize: 15,
-                                          letterSpacing: 1.3,
-                                          fontWeight: FontWeight.bold,
-                                        ),),
-                                      ),
+                                      ValueListenableBuilder(
+                                          valueListenable:
+                                              Hive.box('cartDetails')
+                                                  .listenable(),
+                                          builder: (context, Box box, childs) {
+                                            num totalPrice =
+                                                box.get('totalPrice');
+                                            num discount = box.get(
+                                                'discountAmount',
+                                                defaultValue: 0);
+                                            if (selected == 'paid') {
+                                              // selected = 'due';
+
+                                              paid = totalPrice - discount;
+                                              advance = 0;
+                                              due = 0;
+                                              descController.text = '0';
+                                            }
+                                            return TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  selected = 'paid';
+                                                  paid = totalPrice - discount;
+                                                  advance = 0;
+                                                  due = 0;
+                                                  descController.text = '0';
+                                                });
+                                              },
+                                              child: Text(
+                                                'Paid: ${paid.toString()}',
+                                                style: const TextStyle(
+                                                  color: kSubMainColor,
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 15,
+                                                  letterSpacing: 1.3,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            );
+                                          }),
                                     ],
                                   ),
                                 ),
@@ -455,7 +513,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                   .listenable(),
                                           builder: (context, Box box, childs) {
                                             var totalPrice =
-                                                box.get('totalPrice');
+                                                box.get('totalPrice') -
+                                                    box.get('discountAmount',
+                                                        defaultValue: 0);
                                             int totalItems =
                                                 box.get('totalItems');
                                             return Text(
@@ -474,20 +534,24 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     ),
                                   ),
                                   onTap: () {
-                                   if(paid == 0 && due == 0 && advance == 0){
-                                     toast(context: context, title: 'You have not complete the payment status!', color: kRedColor);
-                                   }else{
-                                     Navigator.push(
-                                       context,
-                                       MaterialPageRoute(
-                                         builder: (context) => PaymentScreen(
-                                           paid: paid,
-                                           due: due,
-                                           advance: advance,
-                                         ),
-                                       ),
-                                     );
-                                   }
+                                    if (paid == 0 && due == 0 && advance == 0) {
+                                      toast(
+                                          context: context,
+                                          title:
+                                              'You have not complete the payment status!',
+                                          color: kRedColor);
+                                    } else {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PaymentScreen(
+                                            paid: paid,
+                                            due: due,
+                                            advance: advance,
+                                          ),
+                                        ),
+                                      );
+                                    }
                                   },
                                 ),
                               ),
@@ -650,14 +714,20 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                                   'Once you edit this product, the discount that\'s been already applied to it will be removed. Would you like to proceed?',
                               onTap: () {
                                 Box box = Hive.box('cartDetails');
-                                Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
-                                num totalDiscountVal = box.get('discountAmount', defaultValue: 0);
-                                num totalDiscountPer = box.get('discountPercent', defaultValue: 0);
-                                box.put('discountAmount', totalDiscountVal - item!.discountValue);
-                                box.put('discountPercent', totalDiscountPer - item.discountPercent);
+                                Cart? item =
+                                    Hive.box<Cart>('cart').get(widget.keyStore);
+                                num totalDiscountVal =
+                                    box.get('discountAmount', defaultValue: 0);
+                                num totalDiscountPer =
+                                    box.get('discountPercent', defaultValue: 0);
+                                box.put('discountAmount',
+                                    totalDiscountVal - item!.discountValue);
+                                box.put('discountPercent',
+                                    totalDiscountPer - item.discountPercent);
                                 item.discountValue = 0;
                                 item.discountPercent = 0;
-                                Hive.box<Cart>('cart').put(widget.keyStore, item);
+                                Hive.box<Cart>('cart')
+                                    .put(widget.keyStore, item);
                                 Navigator.pop(context);
                                 Navigator.push(
                                   context,
@@ -698,37 +768,42 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                 thickness: 4.0,
               ),
               ValueListenableBuilder(
-                valueListenable: Hive.box<Cart>('cart').listenable(),
-                builder: (context, Box box, childs) {
-                  Cart? item = box.get(widget.keyStore);
-                  bool isDiscount = item!.discountValue != 0;
-                  return Container(
-                    color: isDiscount ? kRedColor : kBackgroundColor,
-                    //width: double.infinity,
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
-                              return DiscountScreen(
-                                keyStore: widget.keyStore,
-                                isItems: true,
-                              );
-                            }));
-                          },
-                          icon: Icon(Icons.local_offer,
-                              size: 20.0, color: isDiscount ? kBackgroundColor : Colors.red),
-                        ),
-                        Text('Discount', style: isDiscount ? kDrawerTextStyle2 : kProductNameStylePro,
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              ),
+                  valueListenable: Hive.box<Cart>('cart').listenable(),
+                  builder: (context, Box box, childs) {
+                    Cart? item = box.get(widget.keyStore);
+                    bool isDiscount = item!.discountValue != 0;
+                    return Container(
+                      color: isDiscount ? kRedColor : kBackgroundColor,
+                      //width: double.infinity,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return DiscountScreen(
+                                  keyStore: widget.keyStore,
+                                  isItems: true,
+                                );
+                              }));
+                            },
+                            icon: Icon(Icons.local_offer,
+                                size: 20.0,
+                                color:
+                                    isDiscount ? kBackgroundColor : Colors.red),
+                          ),
+                          Text(
+                            'Discount',
+                            style: isDiscount
+                                ? kDrawerTextStyle2
+                                : kProductNameStylePro,
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
             ],
           ),
         ),

@@ -681,6 +681,8 @@ Future<void> getNonInventoryDialog({
                                       children: [
                                         Text(
                                           shops[index-1]['business_name'],
+                                          softWrap: true,
+                                          overflow: TextOverflow.ellipsis,
                                           style: kTableCellStyle,
                                         ),
                                         const SizedBox(
@@ -688,6 +690,8 @@ Future<void> getNonInventoryDialog({
                                         ),
                                         Text(
                                           shops[index-1]['supplier_name'],
+                                          softWrap: true,
+                                          overflow: TextOverflow.fade,
                                           style: kTableCellStyle,
                                         ),
                                       ],

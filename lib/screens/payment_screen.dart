@@ -51,7 +51,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     amountReceived = widget.advance != 0 ? widget.advance : widget.paid;
     for (var element in cartItems) {
       if(element.isInventory!){
-        profit += (element.unitPrice - element.buyPrice);
+        profit += element.price - (element.buyPrice * element.quantity);
       }
       Map cartProduct = {
         'product_name': element.productName,
@@ -160,7 +160,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       print('Profit: $profit');
                     }
                     Map<String, dynamic> transInfo = {
-                      'price': totalPrice,
+                      'price': totalPrice - discount,
                       'quantity': totalQuantity.toString(),
                       'date': Timestamp.now(),
                       'employee_id': adminId,
@@ -203,15 +203,31 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       if (customerRole == 'agents') {
                         num wallet = customerBox.get('wallet', defaultValue: 0);
                         num balanceToPay = totalPrice - discount;
-                        if (wallet >= balanceToPay) {
-                          num balance = wallet - balanceToPay;
-                          await NetworkUtility.updateWallet(customerId, {
-                            'wallet': balance,
-                          });
-                          if (kDebugMode) {
-                            print('balance: $balance');
+                        if(widget.paid == 0){
+                          if (wallet >= balanceToPay) {
+                            num balance = wallet - balanceToPay;
+                            await NetworkUtility.updateWallet(customerId, {
+                              'wallet': balance,
+                            });
+                            if (kDebugMode) {
+                              print('balance: $balance');
+                            }
+                            customerBox.put('wallet', balance);
+                            await NetworkUtility.makeTransaction(
+                                invoiceNo, transInfo);
+                            await NetworkUtility.updateProducts(cartItems);
+                            Future.delayed(const Duration(milliseconds: 0), () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return DoneScreen(info: transInfo);
+                                }),
+                              );
+                            });
+                          }else{
+                            toast(context: context, title: 'Sorry customer has insufficient balance in his account');
                           }
-                          customerBox.put('wallet', balance);
+                        }else{
                           await NetworkUtility.makeTransaction(
                               invoiceNo, transInfo);
                           await NetworkUtility.updateProducts(cartItems);
@@ -223,8 +239,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               }),
                             );
                           });
-                        }else{
-                          toast(context: context, title: 'Sorry customer has insufficient balance in his account');
                         }
                       } else {
                         await NetworkUtility.makeTransaction(
@@ -263,7 +277,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        'Charge BDT ${totalPrice.toString()}',
+                        'Charge BDT ${(totalPrice- discount).toString()}',
                         style: kDrawerTextStyle1,
                       ),
                     ),

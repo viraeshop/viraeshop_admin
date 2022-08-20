@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuple/tuple.dart';
@@ -38,7 +39,9 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    print(widget.data);
+    if (kDebugMode) {
+      print(widget.data);
+    }
     List customerId = [];
     for (var element in widget.data) {
       customerId.add(element['customer_id']);
@@ -85,7 +88,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
     for (var customer in customers) {
       List items = widget.data.where((element) {
         final nameLower = element['user_info']['name'].toLowerCase();
-        final valueLower = value.toLowerCase();
+        final valueLower = customer.toLowerCase();
         return nameLower.contains(valueLower);
       }).toList();
       setState(() {
@@ -143,7 +146,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
             },
             icon: const Icon(Icons.refresh),
             color: kBackgroundColor,
-            iconSize: 20.0,
+            iconSize: 30.0,
           ),
         ],
       ),

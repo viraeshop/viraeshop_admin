@@ -86,7 +86,7 @@ void snackBar(
     int duration = 6,
     color = kNewTextColor}) {
   final snacks = SnackBar(
-    duration: const Duration(milliseconds: 6),
+    duration: Duration(milliseconds: duration),
     backgroundColor: color,
     content: Text(
       text,

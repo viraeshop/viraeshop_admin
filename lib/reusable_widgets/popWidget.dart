@@ -209,6 +209,6 @@ class _PopWidgetState extends State<PopWidget> {
           ),
         ),
       ],
-    );;
+    );
   }
 }

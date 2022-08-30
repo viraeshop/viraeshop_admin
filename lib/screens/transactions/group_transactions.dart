@@ -29,7 +29,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
   void initState() {
     // TODO: implement initState
     List generalItems = [], agentsItems = [], architectItems = [];
-    widget.data.forEach((element) {
+    for (var element in widget.data) {
       if (element['customer_role'] == 'general') {
         generalItems.add(element);
       } else if (element['customer_role'] == 'agents') {
@@ -42,7 +42,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
         transactionData['Agents'] = agentsItems;
         transactionData['Architects'] = architectItems;
       });
-    });
+    }
     setState(() {
       balances = <String, Tuple2>{
         'General': tuple(transactionData['General']!),
@@ -256,17 +256,17 @@ class _GroupTransactionsState extends State<GroupTransactions> {
 
 Tuple2 tuple(List items) {
   num sale = 0, due = 0;
-  items.forEach((element) {
+  for (var element in items) {
     sale += element['price'];
     due += element['due'];
-  });
+  }
   Tuple2 data = Tuple2<num, num>(sale, due);
   return data;
 }
 
 Tuple2 dateTuple(List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0;
-  items.forEach((element) {
+  for (var element in items) {
     Timestamp timestamp = element['date'];
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
@@ -278,7 +278,7 @@ Tuple2 dateTuple(List items, DateTime begin, DateTime end) {
       sale += element['price'];
       due += element['due'];
     }
-  });
+  }
   Tuple2 data = Tuple2<num, num>(sale, due);
   return data;
 }

@@ -5,67 +5,57 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
+import 'package:viraeshop_admin/configs/generate_statement.dart';
 import 'package:viraeshop_admin/configs/invoices/customer_goods_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/print_customer_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
+import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 
-import '../customers/preferences.dart';
-import 'customer_transactions.dart';
-import 'non_inventory_transaction_info.dart';
-import 'user_transaction_screen.dart';
+import '../due/due_receipt.dart';
+import '../reciept_screen.dart';
 
-class NonInventoryTransactions extends StatefulWidget {
+class CustomerTransactionScreen extends StatefulWidget {
   final String name;
   final List data;
-  final bool isSupplier;
-  const NonInventoryTransactions(
-      {required this.data,
-      required this.name,
-      this.isSupplier = false,
-      Key? key})
-      : super(key: key);
+ const CustomerTransactionScreen({required this.data, required this.name, Key? key}) : super(key: key);
 
   @override
-  _NonInventoryTransactionsState createState() =>
-      _NonInventoryTransactionsState();
+  _CustomerTransactionScreenState createState() =>
+      _CustomerTransactionScreenState();
 }
 
-class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
-  List data = [], initialData = [];
+class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
+  List data = [];
   List dataTemp = [];
-  Tuple4<num, num, num, num> totals =
-      const Tuple4<num, num, num, num>(0, 0, 0, 0);
-  Tuple4<num, num, num, num> totalsTemp =
-      const Tuple4<num, num, num, num>(0, 0, 0, 0);
+  Tuple3<num, num, num> totals = const Tuple3<num, num, num>(0, 0, 0);
+  Tuple3<num, num, num> totalsTemp = const Tuple3<num, num, num>(0, 0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
   @override
   void initState() {
     // TODO: implement initState
-    initialData = widget.data;
+    num totalPaid = 0, totalDue = 0, totalAmount = 0;
     for (var element in widget.data) {
-      if (element.containsKey('isSupplierInvoice')) {
-        data.add(element);
-        dataTemp.add(element);
-      } else {
-        element['shop'].forEach((shop) {
-          if (shop['business_name'] == widget.name) {
-            shop['invoice_id'] = element['invoice_id'];
-            shop['date'] = element['date'];
-            data.add(shop);
-            dataTemp.add(shop);
-          }
-        });
+      totalPaid += element['paid'];
+      if(element['paid'] == 0 && element['advance'] != 0){
+        totalPaid += element['advance'];
       }
+      totalDue += element['due'];
+      totalAmount += element['price'];
     }
-    totalsTemp = tupleTotal(data, begin, end, false);
-    totals = totalsTemp;
+    setState(() {
+      data = widget.data;
+      dataTemp = data;
+      totals = Tuple3<num, num, num>(totalPaid, totalDue, totalAmount);
+      totalsTemp = totals;
+    });
     super.initState();
   }
 
   initSearch(String value) {
-    if (value.isEmpty) {
+    if (value.length == 0) {
       setState(
         () {
           dataTemp = data;
@@ -85,11 +75,11 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
       dataTemp = filtered;
     });
   }
-
-  bool showPaid = true;
-  bool showDue = true;
+  bool showPaid = false;
+  bool showDue = false;
   @override
   Widget build(BuildContext context) {
+    
     var screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -125,7 +115,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
             },
             icon: const Icon(Icons.refresh),
             color: kBackgroundColor,
-            iconSize: 30.0,
+            iconSize: 20.0,
           ),
         ],
       ),
@@ -138,7 +128,6 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
             heightFactor: 0.76,
             child: SingleChildScrollView(
               // padding: EdgeInsets.all(15.0),
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(
                 children: [
                   Container(
@@ -154,8 +143,8 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.isSupplier ? 'Total Payment' : 'Total Sales',
+                        const Text(
+                          'Total Sales',
                           style: kDrawerTextStyle1,
                         ),
                         const SizedBox(
@@ -164,9 +153,9 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            nonInventoryDateWidget(
-                              color: kBackgroundColor,
+                            dateWidget(
                               borderColor: kBackgroundColor,
+                              color: kBackgroundColor,
                               title: begin.toString().split(' ')[0],
                               onTap: () {
                                 buildMaterialDatePicker(context, true);
@@ -177,9 +166,9 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                               color: kSubMainColor,
                               size: 20.0,
                             ),
-                            nonInventoryDateWidget(
-                                color: kBackgroundColor,
-                                borderColor: kBackgroundColor,
+                            dateWidget(
+                              borderColor: kBackgroundColor,
+                              color: kBackgroundColor,
                                 onTap: () {
                                   buildMaterialDatePicker(context, false);
                                 },
@@ -195,8 +184,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                               onTap: () {
                                 setState(() {
                                   dataTemp = dateTupleList(data, begin, end);
-                                  totalsTemp =
-                                      tupleTotal(data, begin, end, true);
+                                  totalsTemp = tuple(data, begin, end);
                                 });
                               },
                             ),
@@ -228,7 +216,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                         ),
                         const DataColumn(
                           label: Text(
-                            'Invoice No',
+                            'Invoice No.',
                             style: kTotalSalesStyle,
                           ),
                         ),
@@ -236,6 +224,15 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                           onSort: (i, value) {
                             setState(() {
                               showPaid = !showPaid;
+                              showDue = !showDue;
+                              if(showDue){
+                                showDue = false;
+                              }
+                              if(showPaid){
+                                dataTemp = data.where((element) => element['paid'] != 0).toList();
+                              }else{
+                                dataTemp = data;
+                              }
                             });
                           },
                           label: const Text(
@@ -247,6 +244,15 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                           onSort: (i, value) {
                             setState(() {
                               showDue = !showDue;
+                              showDue = !showDue;
+                              if(showPaid){
+                                showPaid = false;
+                              }
+                              if(showDue){
+                                dataTemp = data.where((element) => element['due'] != 0).toList();
+                              }else{
+                                dataTemp = data;
+                              }
                             });
                           },
                           label: const Text(
@@ -256,20 +262,14 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                         ),
                         const DataColumn(
                           label: Text(
-                            'Buying',
+                            'Amount',
                             style: kTotalSalesStyle,
                           ),
                         ),
-                        if (!widget.isSupplier)
-                          const DataColumn(
-                            label: Text(
-                              'Amount',
-                              style: kTotalSalesStyle,
-                            ),
-                          ),
                       ],
-                      rows: List.generate(dataTemp.length, (index) {
-                        int counter = index;
+                      rows: List.generate(
+                          dataTemp.length, (index) {
+                        int counter = index + 1;
                         return DataRow(
                           cells: [
                             DataCell(
@@ -283,21 +283,20 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                                 '${dataTemp[index]['invoice_id']}',
                                 style: kCustomerCellStyle,
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return NonInventoryInfo(
-                                        data: dataTemp[index],
-                                        date: dataTemp[index]['date'],
-                                        invoiceId: dataTemp[index]
-                                            ['invoice_id'],
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return DueReceipt(
+                                          data: dataTemp[index],
+                                          title: 'Receipt',
+                                          isOnlyShow: true,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }
                             ),
                             DataCell(
                               Text(
@@ -313,17 +312,10 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                             ),
                             DataCell(
                               Text(
-                                dataTemp[index]['buy_price'].toString(),
+                                dataTemp[index]['price'].toString(),
                                 style: kTotalTextStyle,
                               ),
                             ),
-                            if (!widget.isSupplier)
-                              DataCell(
-                                Text(
-                                  dataTemp[index]['price'].toString(),
-                                  style: kTotalTextStyle,
-                                ),
-                              ),
                           ],
                         );
                       }),
@@ -339,122 +331,107 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
             child: Container(
               color: kBackgroundColor,
               padding: const EdgeInsets.all(15.0),
-              child: Column(
-                children: [
-                  LimitedBox(
-                    maxHeight: 140,
-                    child: GridView(
-                      // physics: NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 10.0,
-                        crossAxisSpacing: 10.0,
-                        childAspectRatio: 1,
-                      ),
-                      children: [
-                        showPaid == true
-                            ? SpecialContainer(
-                                value: totalsTemp.item1.toString(),
-                                title: 'Total Paid',
-                                color: kNewTextColor,
-                              )
-                            : const SizedBox(),
-                        showDue == true
-                            ? SpecialContainer(
-                                value: totalsTemp.item2.toString(),
-                                title: 'Total Due',
-                                color: kRedColor,
-                              )
-                            : const SizedBox(),
-                        SpecialContainer(
-                          value: totalsTemp.item3.toString(),
-                          title: 'Buying Amount',
-                          color: kNewTextColor,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    LimitedBox(
+                      maxHeight: 140,
+                      child: GridView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: 10.0,
+                          crossAxisSpacing: 10.0,
+                          childAspectRatio: 1,
                         ),
-                        if (!widget.isSupplier)
+                        children: [
+                          showDue ? const SizedBox() : SpecialContainer(
+                            value: totalsTemp.item1.toString(),
+                            title: 'Total Paid',
+                            color: kNewTextColor,
+                          ),
+                         showPaid ? const SizedBox() : SpecialContainer(
+                            value: totalsTemp.item2.toString(),
+                            title: 'Total Due',
+                            color: kRedColor,
+                          ),
                           SpecialContainer(
-                            value: totalsTemp.item4.toString(),
-                            title: 'Sales Amount',
+                            value: totalsTemp.item3.toString(),
+                            title: 'Amount',
                             color: kBlueColor,
                           ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      buttons(
-                        title: 'Save PDF',
-                        onTap: () {
-                          try{
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        buttons(
+                          title: 'Save PDF',
+                          onTap: () {
+                            try{
+                              shareCustomerStatement(
+                                name: widget.name,
+                                email: dataTemp[0]['user_info']['email'] ?? '',
+                                mobile: dataTemp[0]['user_info']['mobile'],
+                                address: dataTemp[0]['user_info']['address'],
+                                isInventory: true,
+                                items: data,
+                                begin: begin,
+                                end: end,
+                                totalAmount: totalsTemp.item3.toString(),
+                                totalDue: totalsTemp.item2.toString(),
+                                totalPay: totalsTemp.item1.toString(),
+                                isSave: true,
+                              );
+                              toast(context: context, title: 'Saved', color: kNewMainColor);
+                            }catch (e){
+                              if(kDebugMode){
+                                print(e);
+                              }
+                            }
+                          },
+                        ),
+                        buttons(
+                          onTap: () {
                             shareCustomerStatement(
                               name: widget.name,
-                              email: dataTemp[0]['email'] ?? '',
-                              mobile: dataTemp[0]['mobile'],
-                              address: dataTemp[0]['address'],
-                              isInventory: false,
+                              email: dataTemp[0]['user_info']['email'] ?? '',
+                              mobile: dataTemp[0]['user_info']['mobile'],
+                              address: dataTemp[0]['user_info']['address'],
+                              isInventory: true,
                               items: data,
                               begin: begin,
                               end: end,
-                              isSupplier: widget.isSupplier,
-                              totalSale: totalsTemp.item4.toString(),
                               totalAmount: totalsTemp.item3.toString(),
                               totalDue: totalsTemp.item2.toString(),
                               totalPay: totalsTemp.item1.toString(),
-                              isSave: true,
                             );
-                            toast(context: context, title: 'Saved', color: kNewMainColor);
-                          }catch (e){
-                            if(kDebugMode){
-                              print(e);
-                            }
-                          }
-                        },
-                      ),
-                      buttons(
-                        onTap: () {
-                          shareCustomerStatement(
-                            name: widget.name,
-                            email: dataTemp[0]['email'] ?? '',
-                            mobile: dataTemp[0]['mobile'],
-                            address: dataTemp[0]['address'],
-                            isInventory: false,
-                            isSupplier: widget.isSupplier,
-                            items: data,
-                            begin: begin,
-                            end: end,
-                            totalSale: totalsTemp.item4.toString(),
-                            totalAmount: totalsTemp.item3.toString(),
-                            totalDue: totalsTemp.item2.toString(),
-                            totalPay: totalsTemp.item1.toString(),
-                          );
-                        },
-                        title: 'Share',
-                      ),
-                      buttons(
-                          onTap: () {
-                            shareCustomerStatement(
+                          },
+                          title: 'Share',
+                        ),
+                        buttons(
+                            onTap: () {
+                              shareCustomerStatement(
                                 name: widget.name,
-                                email: dataTemp[0]['email'] ?? '',
-                                mobile: dataTemp[0]['mobile'],
-                                address: dataTemp[0]['address'],
-                                isInventory: false,
+                                email: dataTemp[0]['user_info']['email'] ?? '',
+                                mobile: dataTemp[0]['user_info']['mobile'],
+                                address: dataTemp[0]['user_info']['address'],
+                                isInventory: true,
                                 items: data,
                                 begin: begin,
-                                isSupplier: widget.isSupplier,
                                 end: end,
-                                totalSale: totalsTemp.item4.toString(),
                                 totalAmount: totalsTemp.item3.toString(),
                                 totalDue: totalsTemp.item2.toString(),
                                 totalPay: totalsTemp.item1.toString(),
                                 isPrint: true
-                            );
-                          },
-                          title: 'Print'),
-                    ],
-                  ),
-                ],
+                              );
+                            },
+                            title: 'Print'),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -469,7 +446,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
       context: context,
       initialDate: date,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2300),
+      lastDate: DateTime(2100),
       initialEntryMode: DatePickerEntryMode.calendar,
       initialDatePickerMode: DatePickerMode.day,
       fieldHintText: 'Month/Date/Year',
@@ -494,37 +471,44 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
   }
 }
 
-Tuple4<num, num, num, num> tupleTotal(
-    List items, DateTime begin, DateTime end, bool isDate) {
-  num sale = 0, due = 0, paid = 0, buy = 0;
-  if (isDate == true) {
-    for (var element in items) {
-      Timestamp timestamp = element['date'];
-      DateTime date = timestamp.toDate();
-      begin = DateTime(begin.year, begin.month, begin.day);
-      end = DateTime(end.year, end.month, end.day);
-      DateTime dateFormatted = DateTime(date.year, date.month, date.day);
-      if ((begin.isAfter(dateFormatted) ||
-              begin.isAtSameMomentAs(dateFormatted)) &&
-          (end.isBefore(dateFormatted) ||
-              end.isAtSameMomentAs(dateFormatted))) {
-        paid += element['paid'];
-        sale += element['price'];
-        due += element['due'];
-        buy += element['buy_price'];
-      }
-    }
-  } else {
-    for (var element in items) {
+Tuple3<num, num, num> tuple(List items, DateTime begin, DateTime end) {
+  num sale = 0, due = 0, paid = 0;
+  for (var element in items) {
+    Timestamp timestamp = element['date'];
+    DateTime date = timestamp.toDate();
+    begin = DateTime(begin.year, begin.month, begin.day);
+    end = DateTime(end.year, end.month, end.day);
+    DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+    if ((begin.isAfter(dateFormatted) ||
+            begin.isAtSameMomentAs(dateFormatted)) &&
+        (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
       paid += element['paid'];
-      sale += element['price'] ?? 0;
+      if(element['paid'] == 0 && element['advance'] != 0){
+        paid += element['advance'];
+      }
+      sale += element['price'];
       due += element['due'];
-      buy += element['buy_price'];
     }
   }
-  Tuple4<num, num, num, num> data =
-      Tuple4<num, num, num, num>(paid, due, buy, sale);
+  Tuple3<num, num, num> data = Tuple3<num, num, num>(paid, due, sale);
   return data;
+}
+
+List dateTupleList(List items, DateTime begin, DateTime end) {
+  List filteredData = [];
+  for (var element in items) {
+    Timestamp timestamp = element['date'];
+    DateTime date = timestamp.toDate();
+    begin = DateTime(begin.year, begin.month, begin.day);
+    end = DateTime(end.year, end.month, end.day);
+    DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+    if ((begin.isAfter(dateFormatted) ||
+            begin.isAtSameMomentAs(dateFormatted)) &&
+        (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
+      filteredData.add(element);
+    }
+  }
+  return filteredData;
 }
 
 Widget infoCard(String title, Color color) {
@@ -554,7 +538,7 @@ Widget infoCard(String title, Color color) {
   );
 }
 
-Widget nonInventoryDateWidget({
+Widget dateWidget({
   required String title,
   Color borderColor = kMainColor,
   // ignore: avoid_init_to_null
@@ -597,45 +581,48 @@ Widget nonInventoryDateWidget({
   );
 }
 
-// Widget searchBar() {
-//   return Row(
-//     children: [
-//       Container(
-//         width: 170.0,
-//         height: 50.0,
-//         padding: EdgeInsets.all(10.0),
-//         decoration: BoxDecoration(
-//           border: Border.all(
-//             color: kBackgroundColor,
-//             width: 3.0,
-//           ),
-//           borderRadius: BorderRadius.circular(20.0),
-//         ),
-//         child: Center(
-//           child: TextField(
-//             cursorColor: kBackgroundColor,
-//             textAlign: TextAlign.center,
-//             textAlignVertical: TextAlignVertical.center,
-//             decoration: InputDecoration(
-//               hintText: 'Search',
-//               hintStyle: TextStyle(
-//                 fontFamily: 'SourceSans',
-//                 fontSize: 15.0,
-//                 color: kBackgroundColor,
-//                 letterSpacing: 1.3,
-//               ),
-//               border: InputBorder.none,
-//             ),
-//           ),
-//         ),
-//       ),
-//       SizedBox(
-//         width: 20.0,
-//       ),
-//       roundedTextButton(
-//         borderColor: kBackgroundColor,
-//         textColor: kBackgroundColor,
-//       ),
-//     ],
-//   );
-// }
+Widget searchBar(void Function(String)? onChanged) {
+  return Row(
+    children: [
+      Container(
+        width: 170.0,
+        height: 50.0,
+        padding: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: kBackgroundColor,
+            width: 3.0,
+          ),
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Center(
+          child: TextField(
+            cursorColor: kBackgroundColor,
+            textAlign: TextAlign.center,
+            style: kDrawerTextStyle2,
+            textAlignVertical: TextAlignVertical.center,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.all(10.0),
+              hintText: 'Search',
+              hintStyle: TextStyle(
+                fontFamily: 'SourceSans',
+                fontSize: 15.0,
+                color: kBackgroundColor,
+                letterSpacing: 1.3,
+              ),
+              border: InputBorder.none,
+            ),
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+      // SizedBox(
+      //   width: 20.0,
+      // ),
+      // roundedTextButton(
+      //   borderColor: kBackgroundColor,
+      //   textColor: kBackgroundColor,
+      // ),
+    ],
+  );
+}

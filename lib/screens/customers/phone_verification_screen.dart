@@ -16,7 +16,8 @@ class PhoneVerificationScreen extends StatefulWidget {
     required this.number,
     this.verificationId,
     this.confirmationResult,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<PhoneVerificationScreen> createState() =>

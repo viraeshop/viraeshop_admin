@@ -107,7 +107,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
                           Hive.box('cartDetails').put('totalItems', totalItems);
                           if (item.isInventory == false) {
                             Hive.box<Shop>('shopList')
-                                .deleteAt(widget.keyStore);
+                                .delete(widget.keyStore);
                           }
                           Hive.box<Cart>('cart')
                               .delete(widget.keyStore)

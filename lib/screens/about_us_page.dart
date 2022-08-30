@@ -18,14 +18,14 @@ class AboutUsPage extends StatelessWidget {
             onPressed: (){
               Navigator.pop(context);
             },
-            icon: Icon(FontAwesomeIcons.chevronLeft),
+            icon: const Icon(FontAwesomeIcons.chevronLeft),
           iconSize: 20.0,
           color: kSubMainColor,
         ),
       ),
       backgroundColor: kBackgroundColor,
       body: Container(
-        padding: EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(15.0),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -35,12 +35,12 @@ class AboutUsPage extends StatelessWidget {
                 height: 150.0,
                 width: 150.0,
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20.0,
               ),
-              Text(
+              const Text(
                 'About Us',
-                style: TextStyle(
+                style: const TextStyle(
                   color: kSubMainColor,
                   fontFamily: 'Montserrat',
                   fontSize: 30,
@@ -48,21 +48,21 @@ class AboutUsPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10.0,
               ),
-              Text(
+              const Text(
                 'Viraeshop is a subsidiary of Modernarc, a company that specializes in offering Architectural services. We sells different kinds of building materials such as Wall-panels, Interior designs, chairs and much more...',
                 softWrap: true,
                 textAlign: TextAlign.justify,
-                style: TextStyle(
+                style: const TextStyle(
                   color: kSubMainColor,
                   fontFamily: 'Montserrat',
                   fontSize: 20,
                   letterSpacing: 1.3,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 15.0,
               ),
           Linkify(
@@ -74,13 +74,13 @@ class AboutUsPage extends StatelessWidget {
               }
             },
             text: "Privacy Policy: $path",
-            style: TextStyle(
+            style: const TextStyle(
               color: kSubMainColor,
               fontFamily: 'Montserrat',
               fontSize: 15,
               letterSpacing: 1.3,
             ),
-            linkStyle: TextStyle(
+            linkStyle: const TextStyle(
               color: Colors.lightBlueAccent,
               fontFamily: 'Montserrat',
               fontSize: 12,

@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:file_saver/file_saver.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
@@ -7,90 +9,105 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:tuple/tuple.dart';
+import 'package:pdf/pdf.dart' as pdf;
+import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
+
 /// share statement
-  Future<void> shareStatement({    
-    bool isWithAddress = true,
-    bool isEmployee = false,
-    required Map<String, Tuple3> items,          
-    mobile,
-    address,
-    name,
-    email,
-    totalAmount,
-    totalDue,
-    totalPay,    
-    required DateTime begin, end,    
-  }) async {
-    //Create a new PDF document
-    String invoiceId = randomNumeric(3);
-    Uint8List imageBytes =
-        (await rootBundle.load('assets/images/DONE.png')).buffer.asUint8List();
-    PdfDocument document = PdfDocument();
-    document.pageSettings.orientation = PdfPageOrientation.portrait;
-    document.pageSettings.size = PdfPageSize.a4;
-    document.pageSettings.margins.all = 50;
-    PdfPage page = document.pages.add();
-    PdfGraphics graphics = page.graphics;
-    PdfSolidBrush brushColor = PdfSolidBrush(PdfColor(55, 63, 74));
-    PdfColor color = PdfColor(55, 63, 74);
-    PdfGrid grid = PdfGrid();
-    PdfFont timesRoman = PdfStandardFont(PdfFontFamily.timesRoman, 14,
-        style: PdfFontStyle.regular);   
+Future<void> shareStatement({
+  bool isWithAddress = true,
+  bool isEmployee = false,
+  required Map<String, Tuple3> items,
+  Map<String, dynamic> data = const {},
+  bool isSave = false,
+  bool isPrint = false,
+  name,
+  totalAmount,
+  totalDue,
+  totalPay,
+  required DateTime begin,
+  end,
+}) async {
+  //Create a new PDF document
+  String invoiceId = randomNumeric(3);
+  Uint8List imageBytes =
+      (await rootBundle.load('assets/images/DONE.png')).buffer.asUint8List();
+  PdfDocument document = PdfDocument();
+  document.pageSettings.orientation = PdfPageOrientation.portrait;
+  document.pageSettings.size = PdfPageSize.a4;
+  document.pageSettings.margins.all = 50;
+  PdfPage page = document.pages.add();
+  PdfGraphics graphics = page.graphics;
+  PdfPageTemplateElement footer = PdfPageTemplateElement(
+      Rect.fromLTWH(0, 0, document.pageSettings.size.width, 50));
+  PdfSolidBrush brushColor = PdfSolidBrush(PdfColor(55, 63, 74));
+  PdfColor color = PdfColor(55, 63, 74);
+  PdfGrid grid = PdfGrid();
+  PdfFont timesRoman =
+      PdfStandardFont(PdfFontFamily.courier, 18, style: PdfFontStyle.regular);
+  //Create the page number field
+  PdfPageNumberField pageNumber = PdfPageNumberField(
+    font: timesRoman,
+    brush: PdfSolidBrush(
+      PdfColor(53, 61, 77),
+    ),
+  );
+  pageNumber.numberStyle = PdfNumberStyle.numeric;
+  PdfPageCountField count = PdfPageCountField(
+    font: timesRoman,
+    brush: PdfSolidBrush(
+      PdfColor(53, 61, 77),
+    ),
+  );
 
-    /// Logo
-    page.graphics.drawImage(PdfBitmap(imageBytes),
-        Rect.fromLTWH(graphics.clientSize.width - 100, 15, 100, 100));
-
-    /// Customer name
-    PdfTextElement element = PdfTextElement(
-      text: name,
-      font: PdfStandardFont(
-        PdfFontFamily.timesRoman,
-        16,
-        style: PdfFontStyle.bold,
+//set the number style for page count
+  count.numberStyle = PdfNumberStyle.numeric;
+  PdfCompositeField compositeField = PdfCompositeField(
+      font: timesRoman,
+      brush: PdfSolidBrush(
+        PdfColor(53, 61, 77),
       ),
-    );
-    element.brush = brushColor;
-    PdfLayoutResult result = element.draw(
-      page: page,
-      bounds: Rect.fromLTWH(10, 115, 0, 0),
-    )!;
+      text: 'Page {0} of {1}',
+      fields: <PdfAutomaticField>[pageNumber, count]);
+  compositeField.bounds = footer.bounds;
 
-// if(isWithAddress){
-//    /// customer mobile    
-//     element = PdfTextElement(
-//       text: mobile,
-//       font: timesRoman,
-//     );
-//     element.brush = brushColor;
-//     result = element.draw(
-//       page: page,
-//       bounds: Rect.fromLTWH(10, 130, 0, 0),
-//     )!;
-//     /// customer email    
-//     element = PdfTextElement(
-//       text: email,
-//       font: timesRoman,
-//     );
-//     element.brush = brushColor;
-//     result = element.draw(
-//       page: page,
-//       bounds: Rect.fromLTWH(10, 145, 0, 0),
-//     )!;
-//     /// customer address
-//     element = PdfTextElement(text: address, font: timesRoman);
-//     element.brush = brushColor;
-//     result = element.draw(
-//       page: page,
-//       bounds: Rect.fromLTWH(10, 160, 0, 0),
-//     )!;
-// }  
+//Add the composite field in footer
+  compositeField.draw(footer.graphics,
+      Offset(290, 50 - PdfStandardFont(PdfFontFamily.timesRoman, 19).height));
 
-    /// designation
-     element = PdfTextElement(text: 'Total Sales', font: PdfStandardFont(PdfFontFamily.timesRoman, 16,
-      style: PdfFontStyle.bold,),);
+//Add the footer at the bottom of the document
+  document.template.bottom = footer;
+
+  /// Logo
+  page.graphics.drawImage(PdfBitmap(imageBytes),
+      Rect.fromLTWH(graphics.clientSize.width - 100, 15, 100, 100));
+
+  /// Customer name
+  PdfTextElement element = PdfTextElement(
+    text: name,
+    font: PdfStandardFont(
+      PdfFontFamily.timesRoman,
+      16,
+      style: PdfFontStyle.bold,
+    ),
+  );
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 135, 0, 0))!;
+  PdfLayoutResult result = element.draw(
+    page: page,
+    bounds: const Rect.fromLTWH(10, 115, 0, 0),
+  )!;
+
+  /// Title
+  element = PdfTextElement(
+    text: 'Transaction Details',
+    font: PdfStandardFont(
+      PdfFontFamily.timesRoman,
+      16,
+      style: PdfFontStyle.bold,
+    ),
+  );
+  element.brush = PdfSolidBrush(PdfColor(53, 61, 77));
+  result =
+      element.draw(page: page, bounds: const Rect.fromLTWH(10, 135, 0, 0))!;
 
   /// Dates
   String beginDate = DateFormat.yMMMd().format(begin);
@@ -100,32 +117,36 @@ import 'package:tuple/tuple.dart';
 
   /// draw date
   element = PdfTextElement(text: beginDate, font: timesRoman);
-  element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 155, 0, 0))!;
+  element.brush = PdfSolidBrush(PdfColor(19, 24, 68));
+  result =
+      element.draw(page: page, bounds: const Rect.fromLTWH(10, 155, 0, 0))!;
 
   /// to
-  element = PdfTextElement(text: 'TO', font: timesRoman);
-  element.brush = brushColor;
-  result = element.draw(
-      page: page, bounds: Rect.fromLTWH(beginSize.width + 20, 155, 0, 0))!;
+  if (beginDate != endDate) {
+    element = PdfTextElement(text: 'TO', font: timesRoman);
+    element.brush = PdfSolidBrush(PdfColor(53, 61, 77));
+    result = element.draw(
+        page: page, bounds: Rect.fromLTWH(beginSize.width + 20, 155, 0, 0))!;
 
-  /// end date
-  element = PdfTextElement(text: endDate, font: timesRoman);
-  element.brush = brushColor;
-  result = element.draw(
-    page: page,
-    bounds: Rect.fromLTWH(beginSize.width + 50, 155, 0, 0),
-  )!;
+    /// end date
+    element = PdfTextElement(text: endDate, font: timesRoman);
+    element.brush = PdfSolidBrush(PdfColor(19, 24, 68));
+    result = element.draw(
+      page: page,
+      bounds: Rect.fromLTWH(beginSize.width + 50, 155, 0, 0),
+    )!;
+  }
 
-  /// Horizontal Line
-  // graphics.drawLine(
-  //     PdfPen(color, width: 1),
-  //     Offset(0, result.bounds.bottom + 10),
-  //     Offset(graphics.clientSize.width, result.bounds.bottom + 10));
+  /// Table
   grid.columns.add(count: 5);
   PdfGridRow headerRow = grid.rows.add();
+  headerRow.style = PdfGridRowStyle(
+    backgroundBrush: PdfSolidBrush(PdfColor(53, 61, 77)),
+    textBrush: PdfSolidBrush(PdfColor(255, 255, 255)),
+    textPen: PdfPens.white,
+  );
   headerRow.cells[0].value = 'SL';
-  headerRow.cells[1].value = 'Customer name/Id';
+  headerRow.cells[1].value = 'Name';
   headerRow.cells[2].value = 'Paid';
   headerRow.cells[3].value = 'Due';
   headerRow.cells[4].value = 'Amount';
@@ -134,8 +155,8 @@ import 'package:tuple/tuple.dart';
     ++index;
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
-        index >= 10 ? '${index.toString()}' : '0${index.toString()}';
-    row.cells[1].value = '$element';
+        index >= 10 ? index.toString() : '0${index.toString()}';
+    row.cells[1].value = TransacFunctions.nameProvider(element, data[element]);
     row.cells[2].value = '${items[element]!.item1}';
     row.cells[3].value = '${items[element]!.item2}';
     row.cells[4].value = '${items[element]!.item3}';
@@ -150,21 +171,31 @@ import 'package:tuple/tuple.dart';
 //Creates the grid cell styles
   PdfGridCellStyle cellStyle = PdfGridCellStyle();
   cellStyle.borders.all = PdfPens.white;
-  cellStyle.borders.bottom = PdfPen(PdfColor(23,23,23),);
-  cellStyle.font = PdfStandardFont(PdfFontFamily.timesRoman, 14);
+  cellStyle.borders.bottom = PdfPen(
+    PdfColor(23, 23, 23),
+  );
+  cellStyle.font = PdfStandardFont(PdfFontFamily.courier, 12);
   cellStyle.textBrush = PdfSolidBrush(color);
 //Adds cell customizations
   for (int i = 0; i < grid.rows.count; i++) {
     PdfGridRow row = grid.rows[i];
-    for (int j = 0; j < row.cells.count; j++) {
-      row.cells[j].style = cellStyle;
-      if (j == 0 || j == 1) {
+    if (i == 0) {
+      for (int h = 0; h < row.cells.count; h++) {
+        row.cells[h].style = PdfGridCellStyle(
+          font: PdfStandardFont(PdfFontFamily.courier, 16),
+          textBrush: PdfSolidBrush(PdfColor(255, 255, 255)),
+          cellPadding: PdfPaddings(top: 5.0, bottom: 5.0),
+        );
+        row.cells[h].stringFormat = PdfStringFormat(
+          alignment: PdfTextAlignment.center,
+          lineAlignment: PdfVerticalAlignment.middle,
+        );
+      }
+    } else {
+      for (int j = 0; j < row.cells.count; j++) {
+        row.cells[j].style = cellStyle;
         row.cells[j].stringFormat = PdfStringFormat(
             alignment: PdfTextAlignment.left,
-            lineAlignment: PdfVerticalAlignment.middle);
-      } else {
-        row.cells[j].stringFormat = PdfStringFormat(
-            alignment: PdfTextAlignment.right,
             lineAlignment: PdfVerticalAlignment.middle);
       }
     }
@@ -177,32 +208,49 @@ import 'package:tuple/tuple.dart';
     format: layoutFormat,
   )!;
 
-    // vat
-    String totalPays = 'Total Pay $totalPay';
-    Size vatSize = timesRoman.measureString(totalPays);
-    gridResult.page.graphics.drawString(totalPays, timesRoman,
-        brush: PdfSolidBrush(color),
-        bounds: Rect.fromLTWH(graphics.clientSize.width - vatSize.width,
-            gridResult.bounds.bottom + 30, 0, 0));
+  /// total paid
+  String totalPays = 'Total Pay $totalPay BDT';
+  Size vatSize = timesRoman.measureString(totalPays);
+  gridResult.page.graphics.drawString(totalPays, timesRoman,
+      brush: PdfSolidBrush(color),
+      bounds: Rect.fromLTWH(graphics.clientSize.width - vatSize.width,
+          gridResult.bounds.bottom + 30, 0, 0));
 
-    ///to add Discount
-    String totalDues = 'Total Pay $totalDue';
-    Size textSize1 = timesRoman.measureString(totalDues);
-    gridResult.page.graphics.drawString(
-        totalDues, timesRoman,
-        brush: PdfBrushes.darkRed,
-        bounds: Rect.fromLTWH(graphics.clientSize.width - textSize1.width,
-            gridResult.bounds.bottom + 50, 0, 0));
-    // sub total
-    String totalAmounts = 'Total Amount $totalAmount BDT';
-    Size subTotalSize = timesRoman.measureString(totalAmounts);
-    gridResult.page.graphics.drawString(totalAmounts, timesRoman,
-        brush: PdfSolidBrush(color),
-        bounds: Rect.fromLTWH(graphics.clientSize.width - subTotalSize.width,
-            gridResult.bounds.bottom + 70, 0, 0));    
-    //Save the document
-    List<int> bytes = document.save();
-    // print 
-    await Printing.sharePdf(bytes: Uint8List.fromList(bytes), filename: 'viraeshop_statement$invoiceId.pdf');   
-    document.dispose();
+  ///total due
+  String totalDues = 'Total Due $totalDue BDT';
+  Size textSize1 = timesRoman.measureString(totalDues);
+  gridResult.page.graphics.drawString(totalDues, timesRoman,
+      brush: PdfSolidBrush(PdfColor(215, 44, 67)),
+      bounds: Rect.fromLTWH(graphics.clientSize.width - textSize1.width,
+          gridResult.bounds.bottom + 50, 0, 0));
+  // sub total
+  String totalAmounts = 'Total Amount $totalAmount BDT';
+  Size subTotalSize = timesRoman.measureString(totalAmounts);
+  gridResult.page.graphics.drawString(totalAmounts, timesRoman,
+      brush: PdfSolidBrush(color),
+      bounds: Rect.fromLTWH(graphics.clientSize.width - subTotalSize.width,
+          gridResult.bounds.bottom + 70, 0, 0));
+  //Save the document
+  List<int> bytes = document.save();
+  // print
+  if (isSave) {
+    try {
+      await FileSaver.instance.saveFile(
+          '$name Transaction statement$invoiceId.pdf',
+          Uint8List.fromList(bytes),
+          'PDF');
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+  } else if (isPrint) {
+    await Printing.layoutPdf(
+        onLayout: (pdf.PdfPageFormat format) => Uint8List.fromList(bytes));
+  } else {
+    await Printing.sharePdf(
+        bytes: Uint8List.fromList(bytes),
+        filename: '$name Transaction statement$invoiceId.pdf');
   }
+  document.dispose();
+}

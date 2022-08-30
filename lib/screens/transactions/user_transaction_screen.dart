@@ -11,10 +11,11 @@ import 'package:viraeshop_admin/configs/pos_printer.dart';
 import 'package:viraeshop_admin/configs/print_statement.dart';
 import 'package:viraeshop_admin/configs/share_statement.dart';
 import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
 
-import '../customer_transactions.dart';
+import 'customer_transactions.dart';
 
 class UserTransactionScreen extends StatefulWidget {
   final String name;
@@ -54,8 +55,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
           items.add(element);
         }
       }
-        transactionData[customer] = items;
-        tempTransactionData[customer] = items;
+      transactionData[customer] = items;
+      tempTransactionData[customer] = items;
     }
     setState(() {
       balances = {
@@ -66,7 +67,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
       totalBalance = tuple(widget.data);
       totalBalanceTemp = totalBalance;
       customers = customerSet;
-   });
+    });
     super.initState();
   }
 
@@ -104,8 +105,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
   }
 
   /// this is the list of customer id's used as keys of map
-  bool showPaid = true;
-  bool showDue = true;
+  bool showPaid = false;
+  bool showDue = false;
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -142,6 +143,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                 balancesTemp = balances;
                 totalBalanceTemp = totalBalance;
                 tempTransactionData = transactionData;
+                showPaid = false;
+                showDue = false;
               });
             },
             icon: const Icon(Icons.refresh),
@@ -264,6 +267,33 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                           onSort: (i, value) {
                             setState(() {
                               showPaid = !showPaid;
+                              if(showDue){
+                                showDue = false;
+                              }
+                              if (showPaid) {
+                                Set customers = {};
+                                for (var element in widget.data){
+                                  if(element['paid'] != 0){
+                                    customers.add(element['customer_id']);
+                                  }
+                                }
+                                tempTransactionData = {
+                                  for (var element in customers)
+                                    element: widget.data
+                                        .where((invoice) =>
+                                            invoice['paid'] != 0 &&
+                                            invoice['customer_id']
+                                                .contains(element))
+                                        .toList()
+                                };
+                                balancesTemp = {
+                                  for (var element in customers)
+                                    element: tuple(tempTransactionData[element]!)
+                                };
+                              } else {
+                                tempTransactionData = transactionData;
+                                balancesTemp = balances;
+                              }
                             });
                           },
                           label: const Text(
@@ -275,6 +305,33 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                           onSort: (i, value) {
                             setState(() {
                               showDue = !showDue;
+                              if(showPaid){
+                                showPaid = false;
+                              }
+                              if (showDue) {
+                                Set customers = {};
+                                for (var element in widget.data){
+                                  if(element['due'] != 0){
+                                    customers.add(element['customer_id']);
+                                  }
+                                }
+                                tempTransactionData = {
+                                  for (var element in customers)
+                                    element: widget.data
+                                        .where((invoice) =>
+                                    invoice['due'] != 0 &&
+                                        invoice['customer_id']
+                                            .contains(element))
+                                        .toList()
+                                };
+                                balancesTemp = {
+                                  for (var element in customers)
+                                    element: tuple(tempTransactionData[element]!)
+                                };
+                              } else {
+                                tempTransactionData = transactionData;
+                                balancesTemp = balances;
+                              }
                             });
                           },
                           label: const Text(
@@ -313,11 +370,12 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                   MaterialPageRoute(
                                     builder: (context) {
                                       return CustomerTransactionScreen(
-                                        data: tempTransactionData[keys[index]]!,
-                                        name:TransacFunctions.nameProvider(
-                                            balancesTemp.keys.toList()[index],
-                                            tempTransactionData[keys[index]]!)
-                                      );
+                                          data:
+                                              tempTransactionData[keys[index]]!,
+                                          name: TransacFunctions.nameProvider(
+                                              balancesTemp.keys.toList()[index],
+                                              tempTransactionData[
+                                                  keys[index]]!));
                                     },
                                   ),
                                 );
@@ -373,20 +431,20 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                           childAspectRatio: 1,
                         ),
                         children: [
-                          showPaid == true
-                              ? SpecialContainer(
+                          showDue
+                              ? const SizedBox()
+                              : SpecialContainer(
                                   value: totalBalanceTemp.item1.toString(),
                                   title: 'Total Paid',
                                   color: kNewTextColor,
-                                )
-                              : const SizedBox(),
-                          showDue == true
-                              ? SpecialContainer(
+                                ),
+                          showPaid
+                              ? const SizedBox()
+                              : SpecialContainer(
                                   value: totalBalanceTemp.item2.toString(),
                                   title: 'Total Due',
                                   color: kRedColor,
-                                )
-                              : const SizedBox(),
+                                ),
                           SpecialContainer(
                             value: totalBalanceTemp.item3.toString(),
                             title: 'Amount',
@@ -401,60 +459,60 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                         buttons(
                           title: 'Save PDF',
                           onTap: () {
-                            generateStatement(
-                                items: balances,
+                            try {
+                              shareStatement(
+                                items: balancesTemp,
+                                data: tempTransactionData,
                                 begin: begin,
-                                name: widget.name,
                                 end: end,
+                                name: widget.name ?? '',
                                 totalAmount: totalBalanceTemp.item3.toString(),
                                 totalDue: totalBalanceTemp.item2.toString(),
-                                totalPay: totalBalanceTemp.item1.toString());
+                                totalPay: totalBalanceTemp.item1.toString(),
+                                isSave: true,
+                              );
+                              toast(
+                                context: context,
+                                title: 'saved',
+                                color: kNewMainColor,
+                              );
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print(e);
+                              }
+                            }
                           },
                         ),
                         buttons(
                           onTap: () {
                             shareStatement(
-                                items: balances,
-                                begin: begin,
-                                end: end,
-                                totalAmount: totalBalanceTemp.item3.toString(),
-                                totalDue: totalBalanceTemp.item2.toString(),
-                                totalPay: totalBalanceTemp.item1.toString());
+                              items: balancesTemp,
+                              data: tempTransactionData,
+                              begin: begin,
+                              end: end,
+                              name: widget.name ?? '',
+                              totalAmount: totalBalanceTemp.item3.toString(),
+                              totalDue: totalBalanceTemp.item2.toString(),
+                              totalPay: totalBalanceTemp.item1.toString(),
+                            );
                           },
                           title: 'Share',
                         ),
                         buttons(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PosPrinter(
-                                  address: '',
-                                  advance: '',
-                                  discountAmount: '',
-                                  due: '',
-                                  invoiceId: '',
-                                  items: [],
-                                  mobile: '',
-                                  name: '',
-                                  paid: '',
-                                  quantity: '',
-                                  subTotal: '',
-                                ),
-                              ),
-                            );
-                            //   printStatement(
-                            //       items: balances,
-                            //       begin: begin,
-                            //       end: end,
-                            //       totalAmount:
-                            //           totalBalanceTemp.item3.toString(),
-                            //       totalDue: totalBalanceTemp.item2.toString(),
-                            //       totalPay: totalBalanceTemp.item1.toString());
-                            // },
-                            // title: 'Print'),
-                          },
-                        ),
+                            onTap: () {
+                              shareStatement(
+                                items: balancesTemp,
+                                data: tempTransactionData,
+                                begin: begin,
+                                end: end,
+                                name: widget.name ?? '',
+                                totalAmount: totalBalanceTemp.item3.toString(),
+                                totalDue: totalBalanceTemp.item2.toString(),
+                                totalPay: totalBalanceTemp.item1.toString(),
+                                isPrint: true,
+                              );
+                            },
+                            title: 'Print'),
                       ],
                     ),
                   ],
@@ -502,6 +560,9 @@ Tuple3<num, num, num> tuple(List items) {
   num sale = 0, due = 0, paid = 0;
   for (var element in items) {
     paid += element['paid'];
+    if(element['paid'] == 0){
+      paid += element['advance'];
+    }
     sale += element['price'];
     due += element['due'];
   }
@@ -523,6 +584,9 @@ Tuple3<num, num, num> dateTuple(List items, DateTime begin, DateTime end) {
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
       paid += element['paid'];
+      if(element['paid'] == 0 && element['advance'] != 0){
+        paid += element['advance'];
+      }
       sale += element['price'];
       due += element['due'];
     }
@@ -630,46 +694,3 @@ Widget dateWidget({
     ),
   );
 }
-
-// Widget searchBar() {
-//   return Row(
-//     children: [
-//       Container(
-//         width: 170.0,
-//         height: 50.0,
-//         padding: EdgeInsets.all(10.0),
-//         decoration: BoxDecoration(
-//           border: Border.all(
-//             color: kBackgroundColor,
-//             width: 3.0,
-//           ),
-//           borderRadius: BorderRadius.circular(20.0),
-//         ),
-//         child: Center(
-//           child: TextField(
-//             cursorColor: kBackgroundColor,
-//             textAlign: TextAlign.center,
-//             textAlignVertical: TextAlignVertical.center,
-//             decoration: InputDecoration(
-//               hintText: 'Search',
-//               hintStyle: TextStyle(
-//                 fontFamily: 'SourceSans',
-//                 fontSize: 15.0,
-//                 color: kBackgroundColor,
-//                 letterSpacing: 1.3,
-//               ),
-//               border: InputBorder.none,
-//             ),
-//           ),
-//         ),
-//       ),
-//       SizedBox(
-//         width: 20.0,
-//       ),
-//       roundedTextButton(
-//         borderColor: kBackgroundColor,
-//         textColor: kBackgroundColor,
-//       ),
-//     ],
-//   );
-// }

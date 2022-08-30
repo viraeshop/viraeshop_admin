@@ -18,6 +18,7 @@ import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/orders/customer_order_history.dart';
 import 'package:viraeshop_admin/screens/orders/order_configs.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../../components/home_screen_components/decision_components.dart';
 import '../../configs/configs.dart';
@@ -71,7 +72,7 @@ class _OrderInfoState extends State<OrderInfo>
     });
     super.initState();
   }
-
+  bool invoiceNumberTaken = true;
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -515,12 +516,27 @@ class _OrderInfoState extends State<OrderInfo>
                                         print('start');
                                         final String adminId = Hive.box('adminInfo')
                                             .get('adminId', defaultValue: 'adminId');
+                                        String adminName = Hive.box('adminInfo').get('name', defaultValue: '');
                                         String invoiceNo = randomNumeric(4);
+                                        while (invoiceNumberTaken){
+                                          final invoice = await NetworkUtility.getCustomerTransactionInvoicesByID(invoiceNo);
+                                          if (kDebugMode) {
+                                            print('Invoice Taken: ${invoice.exists}');
+                                          }
+                                          setState(() {
+                                            if(!invoice.exists){
+                                              invoiceNumberTaken = false;
+                                            }else{
+                                              invoiceNo = randomNumeric(4);
+                                            }
+                                          });
+                                        }
                                         Map<String, dynamic> transInfo = {
                                           'price': box.get('totalPrice'),
                                           'quantity': box.get('totalItems'),
                                           'date': Timestamp.now(),
                                           'employee_id': adminId,
+                                          'employee_name': adminName,
                                           'items': box.get('items'),
                                           'invoice_id': invoiceNo,
                                           'is_inventory': true,
@@ -530,7 +546,7 @@ class _OrderInfoState extends State<OrderInfo>
                                           'customer_role': order['role'],
                                           'paid': orders.payStats == 'Paid'
                                               ? box.get('totalPrice')
-                                              : 0,
+                                              : orders.payStats == 'Advance' ? num.parse(controller.text) : 0,
                                           'due': orders.payStats == 'Due'
                                               ? box.get('totalPrice')
                                               : orders.payStats == 'Advance'
@@ -542,7 +558,7 @@ class _OrderInfoState extends State<OrderInfo>
                                               : 0,
                                           'discount': 0,
                                           'user_info': {
-                                            'name': order['customer_info']['name'],
+                                            'name': order['customer_info']['customer_name'],
                                             'email': order['customer_info']['email'],
                                             'address': order['customer_info']
                                                 ['address'],

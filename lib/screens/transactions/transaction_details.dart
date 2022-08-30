@@ -106,6 +106,11 @@ class _TransactionDetailsState extends State<TransactionDetails> {
           totalTemp.update('totalProfit', (value){
             return value + element.get('profit');
           });
+          if(element.get('paid') == 0 && element.get('advance') != 0){
+            totalTemp.update('totalPaid', (value) {
+              return value + element.get('advance');
+            });
+          }
         }else{
           supplierInvoices.add(invoice);
           supplierPaid += invoice['paid'];

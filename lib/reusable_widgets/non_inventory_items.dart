@@ -8,6 +8,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:numeric_keyboard/numeric_keyboard.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 
 import 'hive/shops_model.dart';
 
@@ -28,245 +29,254 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
   String desc = 'Add Description';
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        elevation: 0.0,
+    return GestureDetector(
+      onTap: (){
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
         backgroundColor: kBackgroundColor,
-        title: const Text('Sell a non-inventory item', style: kAppBarTitleTextStyle),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            FontAwesomeIcons.chevronLeft,
-            color: kSubMainColor,
-            size: 20.0,
+        appBar: AppBar(
+          elevation: 0.0,
+          backgroundColor: kBackgroundColor,
+          title: const Text('Sell a non-inventory item', style: kAppBarTitleTextStyle),
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              FontAwesomeIcons.chevronLeft,
+              color: kSubMainColor,
+              size: 20.0,
+            ),
+          ),
+          shape: const Border(
+            bottom: BorderSide(color: Colors.black12),
           ),
         ),
-        shape: const Border(
-          bottom: BorderSide(color: Colors.black12),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: TextField(
-                cursorColor: kMainColor,
-                style: const TextStyle(
-                  color: kMainColor,
-                  fontFamily: 'Montserrat',
-                  fontSize: 30,
-                  letterSpacing: 1.3,
-                ),
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                controller: _controller,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kMainColor),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.4,
+                child: TextField(
+                  cursorColor: kMainColor,
+                  style: const TextStyle(
+                    color: kMainColor,
+                    fontFamily: 'Montserrat',
+                    fontSize: 30,
+                    letterSpacing: 1.3,
                   ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kMainColor),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kMainColor, width: 2.0),
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: kMainColor),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: kMainColor),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: kMainColor, width: 2.0),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 50.0,
-            ),
-            isDesc == false
-                ? TextButton(
-                    onPressed: () {
-                      setState(() {
-                        isDesc = true;
-                      });
-                    },
-                    child: Text(
-                      desc,
-                      style: const TextStyle(
-                        color: kMainColor,
-                        fontFamily: 'Montserrat',
-                        fontSize: 15,
-                        letterSpacing: 1.3,
-                      ),
-                    ),
-                  )
-                : SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.5,
-                    child: TextField(
-                      cursorColor: kMainColor,
-                      style: const TextStyle(
-                        color: kSubMainColor,
-                        fontFamily: 'Montserrat',
-                        fontSize: 20,
-                        letterSpacing: 1.3,
-                      ),
-                      onChanged: (e) {
+              const SizedBox(
+                height: 50.0,
+              ),
+              isDesc == false
+                  ? TextButton(
+                      onPressed: () {
                         setState(() {
-                          desc = e;
+                          isDesc = true;
                         });
                       },
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.text,
-                      controller: descControl,
-                      decoration: InputDecoration(
-                        border: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: kMainColor),
+                      child: Text(
+                        desc,
+                        style: const TextStyle(
+                          color: kMainColor,
+                          fontFamily: 'Montserrat',
+                          fontSize: 15,
+                          letterSpacing: 1.3,
                         ),
-                        focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: kMainColor),
+                      ),
+                    )
+                  : SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      child: TextField(
+                        cursorColor: kMainColor,
+                        style: const TextStyle(
+                          color: kSubMainColor,
+                          fontFamily: 'Montserrat',
+                          fontSize: 20,
+                          letterSpacing: 1.3,
                         ),
-                        enabledBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: kMainColor, width: 2.0),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(
-                            Icons.done,
-                            color: kSubMainColor,
-                            size: 20.0,
+                        onChanged: (e) {
+                          setState(() {
+                            desc = e;
+                          });
+                        },
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.text,
+                        controller: descControl,
+                        decoration: InputDecoration(
+                          border: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: kMainColor),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              isDesc = false;
-                            });
-                          },
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: kMainColor),
+                          ),
+                          enabledBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: kMainColor, width: 2.0),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: const Icon(
+                              Icons.done,
+                              color: kSubMainColor,
+                              size: 20.0,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isDesc = false;
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),
-                  ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            TextButton(
-              onPressed: () {
-                getNonInventoryDialog(buildContext: context);
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ValueListenableBuilder(
-                      valueListenable: Hive.box('shops').listenable(),
-                      builder: (context, Box box, childs) {
-                        String shopName =
-                            box.get('business_name', defaultValue: 'Suppliers');
-                        return Text(
-                          shopName,
-                          style: kTotalTextStyle,
-                        );
-                      }),
-                  const Icon(
-                    FontAwesomeIcons.chevronRight,
-                    color: kBlackColor,
-                    size: 20.0,
-                  ),
-                ],
+              const SizedBox(
+                height: 10.0,
               ),
-            ),
-            const SizedBox(
-              height: 30.0,
-            ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: NumericKeyboard(
-                textColor: kSubMainColor,
-                onKeyboardTap: (value) {
-                  setState(
-                    () {
-                      nums.add(value);
+              TextButton(
+                onPressed: () {
+                  getNonInventoryDialog(buildContext: context);
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ValueListenableBuilder(
+                        valueListenable: Hive.box('shops').listenable(),
+                        builder: (context, Box box, childs) {
+                          String shopName =
+                              box.get('business_name', defaultValue: 'Suppliers');
+                          return Text(
+                            shopName,
+                            style: kTotalTextStyle,
+                          );
+                        }),
+                    const Icon(
+                      FontAwesomeIcons.chevronRight,
+                      color: kBlackColor,
+                      size: 20.0,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 30.0,
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: NumericKeyboard(
+                  textColor: kSubMainColor,
+                  onKeyboardTap: (value) {
+                    setState(
+                      () {
+                        nums.add(value);
+                        _controller.text = nums.join();
+                      },
+                    );
+                  },
+                  leftButtonFn: () {
+                    setState(() {
+                      nums.removeLast();
                       _controller.text = nums.join();
-                    },
-                  );
-                },
-                leftButtonFn: () {
-                  setState(() {
-                    nums.removeLast();
-                    _controller.text = nums.join();
-                  });
-                },
-                leftIcon: const Icon(
-                  Icons.backspace,
-                  size: 30.0,
-                  color: kSubMainColor,
+                    });
+                  },
+                  leftIcon: const Icon(
+                    Icons.backspace,
+                    size: 30.0,
+                    color: kSubMainColor,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 70.0,
-            ),
-            InkWell(
-              onTap: () {
-                Box box = Hive.box('cartDetails');
-                Box shopBox = Hive.box('shops');
-                Random random = Random();
-                Box<Cart> cart = Hive.box<Cart>('cart');
-                Box<Shop> shop = Hive.box<Shop>('shopList');
-                var price = num.parse(_controller.text);
-                int totalItems = box.get('totalItems', defaultValue: 0);
-                var totalPrice = box.get('totalPrice', defaultValue: 0.0);
-                box.put('totalItems', ++totalItems);
-                box.put(
-                  'totalPrice',
-                  totalPrice + price,
-                );
-                // print('keys: ${Hive.box<Cart>('cart').keys}');
-                box.put('isAdded', true);
-                int id = random.nextInt(100);
-                cart.put(
-                  id,
-                  Cart(
-                    productName: descControl.text,
-                    productId: id.toString(),
-                    price: num.parse(_controller.text),
-                    quantity: 1,
-                    unitPrice: num.parse(_controller.text),
-                    isInventory: false,
-                    shopName: shopBox.get('business_name'),
-                  ),
-                );
+              const SizedBox(
+                height: 100.0,
+              ),
+              InkWell(
+                onTap: () {
+                  Box shopBox = Hive.box('shops');
+                  if(shopBox.isNotEmpty){
+                    Box box = Hive.box('cartDetails');
+                    Random random = Random();
+                    Box<Cart> cart = Hive.box<Cart>('cart');
+                    Box<Shop> shop = Hive.box<Shop>('shopList');
+                    var price = num.parse(_controller.text);
+                    int totalItems = box.get('totalItems', defaultValue: 0);
+                    var totalPrice = box.get('totalPrice', defaultValue: 0.0);
+                    box.put('totalItems', ++totalItems);
+                    box.put(
+                      'totalPrice',
+                      totalPrice + price,
+                    );
+                    // print('keys: ${Hive.box<Cart>('cart').keys}');
+                    box.put('isAdded', true);
+                    int id = random.nextInt(100);
+                    cart.put(
+                      id,
+                      Cart(
+                        productName: descControl.text,
+                        productId: id.toString(),
+                        price: num.parse(_controller.text),
+                        quantity: 1,
+                        unitPrice: num.parse(_controller.text),
+                        isInventory: false,
+                        shopName: shopBox.get('business_name'),
+                      ),
+                    );
 
-                shop
-                    .put(
-                  id,
-                  Shop(
-                    name: shopBox.get('business_name'),
-                    price: price,
-                    address: shopBox.get('address'),
-                    email: shopBox.get('email'),
-                    mobile: shopBox.get('mobile'),
-                    description: descControl.text,
-                    buyPrice: 0,
+                    shop
+                        .put(
+                      id,
+                      Shop(
+                        name: shopBox.get('business_name'),
+                        price: price,
+                        address: shopBox.get('address'),
+                        email: shopBox.get('email'),
+                        mobile: shopBox.get('mobile'),
+                        description: descControl.text,
+                        buyPrice: 0,
+                      ),
+                    )
+                        .whenComplete(() {
+                      shopBox
+                          .clear()
+                          .whenComplete(() => Navigator.pop(context))
+                          .catchError((error) => print(error));
+                    }).catchError((error) => print(error));
+                  }else{
+                    toast(context: context, title: 'Supplier must\'nt be empty', color: kRedColor);
+                  }
+                },
+                child: Container(
+                  height: 50.0,
+                  padding: const EdgeInsets.all(10.0),
+                  margin: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    color: kMainColor,
+                    borderRadius: BorderRadius.circular(7.0),
                   ),
-                )
-                    .whenComplete(() {
-                  shopBox
-                      .clear()
-                      .whenComplete(() => Navigator.pop(context))
-                      .catchError((error) => print(error));
-                }).catchError((error) => print(error));
-              },
-              child: Container(
-                height: 50.0,
-                padding: const EdgeInsets.all(10.0),
-                margin: const EdgeInsets.all(10.0),
-                decoration: BoxDecoration(
-                  color: kMainColor,
-                  borderRadius: BorderRadius.circular(7.0),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Send to cart',
-                    style: kDrawerTextStyle1,
+                  child: const Center(
+                    child: Text(
+                      'Send to cart',
+                      style: kDrawerTextStyle1,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

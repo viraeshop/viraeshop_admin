@@ -88,7 +88,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
     super.initState();
   }
-
+  bool invoiceNumberTaken = true;
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -200,6 +200,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       isLoading = true;
                     });
                     try {
+                      while (invoiceNumberTaken){
+                        final invoice = await NetworkUtility.getCustomerTransactionInvoicesByID(invoiceNo);
+                        if (kDebugMode) {
+                          print('Invoice Taken: ${invoice.exists}');
+                        }
+                        setState(() {
+                          if(!invoice.exists){
+                            invoiceNumberTaken = false;
+                          }else{
+                            invoiceNo = randomNumeric(3);
+                            transInfo['invoice_id'] = invoiceNo;
+                            transInfo['docId'] = invoiceNo;
+                          }
+                        });
+                      }
                       if (customerRole == 'agents') {
                         num wallet = customerBox.get('wallet', defaultValue: 0);
                         num balanceToPay = totalPrice - discount;
@@ -261,7 +276,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           text: e.message!,
                           context: context,
                           color: kRedColor,
-                          duration: 50);
+                          duration: 1000);
                     } finally {
                       setState(() {
                         isLoading = false;

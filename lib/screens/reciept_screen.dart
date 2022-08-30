@@ -202,7 +202,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                       ),
                   if (widget.isFromOrder)
                     Text(
-                      '${widget.data['customer_info']['name']}',
+                      '${widget.data['customer_info']['customer_name']}',
                       style: kProductNameStyle,
                     )
                   else
@@ -261,13 +261,13 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                               style: kProductNameStylePro,
                             ),
                             Text(
-                              '${unitPrice.toString()}',
+                              unitPrice.toString(),
                               style: kProductNameStylePro,
                             ),
                           ],
                         ),
                         trailing: Text(
-                            '${widget.data['items'][i]['product_price'].toString()}',
+                            widget.data['items'][i]['product_price'].toString(),
                             style: kProductNameStylePro),
                       );
                     },
@@ -362,6 +362,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                   child: IconButton(
                     onPressed: () {
                       shareInvoice(
+                        date: DateFormat.yMMMd().format(date),
                         totalItems: quantity,
                         subTotal: widget.data['price'].toString(),
                         items: items,

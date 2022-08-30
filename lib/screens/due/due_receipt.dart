@@ -9,6 +9,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/invoice.dart';
 import 'package:viraeshop_admin/configs/share_invoice.dart';
 import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../../components/ui_components/delete_popup.dart';
@@ -118,10 +119,6 @@ class _DueReceiptState extends State<DueReceipt> {
                                 }
                               }
                               Hive.box(productsBox).put(productsKey, products);
-                              Future.delayed(const Duration(milliseconds: 0),
-                                  () {
-                                Navigator.pop(context);
-                              });
                             } on FirebaseException catch (e) {
                               if (kDebugMode) {
                                 print(e.message);
@@ -460,19 +457,30 @@ class _DueReceiptState extends State<DueReceipt> {
                   flex: 1,
                   child: IconButton(
                     onPressed: () {
-                      Invoice().createPDF(
-                        totalItems: quantity,
-                        subTotal: widget.data['price'].toString(),
-                        items: items,
-                        mobile: widget.data['user_info']['mobile'],
-                        address: widget.data['user_info']['address'],
-                        name: widget.data['user_info']['name'],
-                        advance: widget.data['advance'].toString(),
-                        due: widget.data['due'].toString(),
-                        paid: widget.data['paid'].toString(),
-                        discountAmount: widget.data['discount'].toString(),
-                        invoiceId: widget.data['invoice_id'],
-                      );
+                      try{
+                        shareInvoice(
+                          isSave: true,
+                          totalItems: items.length.toString(),
+                          totalQuantity: quantity,
+                          subTotal: widget.data['price'].toString(),
+                          items: items,
+                          mobile: widget.data['user_info']['mobile'],
+                          address: widget.data['user_info']['address'],
+                          name: widget.data['user_info']['name'],
+                          advance: widget.data['advance'].toString(),
+                          due: due.toString(),
+                          paid: paid.toString(),
+                          discountAmount: discount.toString(),
+                          invoiceId: widget.data['invoice_id'],
+                          date: DateFormat.yMMMd().format(date),
+                          payList: payList,
+                        );
+                        toast(context: context, title: 'Saved');
+                      }catch(e){
+                        if (kDebugMode) {
+                          print(e);
+                        }
+                      }
                     },
                     icon: const Icon(Icons.save),
                     color: Colors.white,
@@ -484,17 +492,20 @@ class _DueReceiptState extends State<DueReceipt> {
                   child: IconButton(
                     onPressed: () {
                       shareInvoice(
-                        totalItems: quantity,
+                        totalItems: items.length.toString(),
+                        totalQuantity: quantity,
                         subTotal: widget.data['price'].toString(),
                         items: items,
                         mobile: widget.data['user_info']['mobile'],
                         address: widget.data['user_info']['address'],
                         name: widget.data['user_info']['name'],
                         advance: widget.data['advance'].toString(),
-                        due: widget.data['due'].toString(),
-                        paid: widget.data['paid'].toString(),
-                        discountAmount: widget.data['discount'].toString(),
+                        due: due.toString(),
+                        paid: paid.toString(),
+                        discountAmount: discount.toString(),
                         invoiceId: widget.data['invoice_id'],
+                        date: DateFormat.yMMMd().format(date),
+                        payList: payList,
                       );
                     },
                     icon: const Icon(Icons.share),

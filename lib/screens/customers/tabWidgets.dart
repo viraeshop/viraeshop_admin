@@ -10,7 +10,7 @@ import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
 
 import '../../configs/baxes.dart';
-import '../customer_transactions.dart';
+import '../transactions/customer_transactions.dart';
 import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';
 import '../transactions/transaction_details.dart';
@@ -27,6 +27,7 @@ class SalesTab extends StatefulWidget {
 class _SalesTabState extends State<SalesTab> {
   List transactions = [];
   List transactionBackup = [];
+  List invoiceNo = [];
   bool isLoading = true, isError = false;
   num totalPaid = 0;
   num totalDue = 0;
@@ -49,10 +50,14 @@ class _SalesTabState extends State<SalesTab> {
       for (var element in data) {
         transactions.add(element.data());
         transactionBackup.add(element.data());
+        invoiceNo.add(element.id);
         if (kDebugMode) {
           print('running');
         }
         totalPaid += element.get('paid');
+        if(element.get('paid') == 0 && element.get('advance') != 0){
+          totalPaid += element.get('advance');
+        }
         totalDue += element.get('due');
         totalAmount += element.get('price');
       }
@@ -111,7 +116,7 @@ class _SalesTabState extends State<SalesTab> {
                             employeeName: transactions[i]['employee_name'],
                             customerName: customerName,
                             desc: description,
-                            invoiceId: transactions[i]['invoice_id'],
+                            invoiceId: invoiceNo[i],
                           );
                         },
                       ),
@@ -171,6 +176,9 @@ class _SalesTabState extends State<SalesTab> {
                                 totalAmount = 0;
                                 for (var element in transactions) {
                                   totalPaid += element['paid'];
+                                  if(element['paid'] == 0 && element['advance'] != 0){
+                                    totalPaid += element['advance'];
+                                  }
                                   totalDue += element['due'];
                                   totalAmount += element['price'];
                                 }
@@ -188,7 +196,9 @@ class _SalesTabState extends State<SalesTab> {
                               totalAmount = 0;
                               for (var element in transactions) {
                                 totalPaid += element['paid'];
-                                totalPaid += element['advance'];
+                                if(element['paid'] == 0 && element['advance'] != 0){
+                                  totalPaid += element['advance'];
+                                }
                                 totalDue += element['due'];
                                 totalAmount += element['price'];
                               }

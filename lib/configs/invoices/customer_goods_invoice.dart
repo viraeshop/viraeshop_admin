@@ -44,7 +44,7 @@ Future<void> generateCustomerStatement({
 
   /// Customer name
   PdfTextElement element = PdfTextElement(
-    text: name,
+    text: name ?? '',
     font: PdfStandardFont(
       PdfFontFamily.timesRoman,
       16,
@@ -54,7 +54,7 @@ Future<void> generateCustomerStatement({
   element.brush = brushColor;
   PdfLayoutResult result = element.draw(
     page: page,
-    bounds: Rect.fromLTWH(10, 115, 0, 0),
+    bounds: const Rect.fromLTWH(10, 115, 0, 0),
   )!;
     /// customer mobile    
     element = PdfTextElement(
@@ -64,7 +64,7 @@ Future<void> generateCustomerStatement({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 130, 0, 0),
+      bounds: const Rect.fromLTWH(10, 130, 0, 0),
     )!;
 
     /// customer email    
@@ -75,7 +75,7 @@ Future<void> generateCustomerStatement({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 145, 0, 0),
+      bounds: const Rect.fromLTWH(10, 145, 0, 0),
     )!;
 
     /// customer address
@@ -83,14 +83,14 @@ Future<void> generateCustomerStatement({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 160, 0, 0),
+      bounds: const Rect.fromLTWH(10, 160, 0, 0),
     )!;
 
   /// designation
   element = PdfTextElement(text: 'Total Sales', font: PdfStandardFont(PdfFontFamily.timesRoman, 16,
       style: PdfFontStyle.bold,),);
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 180, 0, 0))!;
+  result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 180, 0, 0))!;
 
   /// Dates
   String beginDate = DateFormat.yMMMd().format(begin);
@@ -101,7 +101,7 @@ Future<void> generateCustomerStatement({
   /// draw date
   element = PdfTextElement(text: beginDate, font: timesRoman);
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 200, 0, 0))!;
+  result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 200, 0, 0))!;
 
   /// to
   element = PdfTextElement(text: 'TO', font: timesRoman);

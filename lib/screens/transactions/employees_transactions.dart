@@ -12,7 +12,7 @@ import 'package:tuple/tuple.dart';
 
 class Employees extends StatefulWidget {
   final List data;
-  Employees({required this.data});
+  const Employees({required this.data, Key? key}) : super(key: key);
 
   @override
   _EmployeesState createState() => _EmployeesState();
@@ -26,34 +26,28 @@ class _EmployeesState extends State<Employees> {
   Tuple2 totalBalanceTemp = const Tuple2<num, num>(0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
-  Set employees = Set();
+  Set employees = {};
   @override
   void initState() {
     // TODO: implement initState
     List employeeId = [];
-    widget.data.forEach((element) {
+    for (var element in widget.data) {
       employeeId.add(element['employee_id']);
-    });
+    }
     Set employeeSet = Set.from(employeeId);
-    employeeSet.forEach((employee) {
+    for (var employee in employeeSet) {
       List items = [];
-      widget.data.forEach((element) {
+      for (var element in widget.data) {
         if (element['employee_id'] == employee) {
           items.add(element);
         }
         setState(() {
           transactionData[employee] = items;
         });
-      });
-    });
+      }
+    }
     setState(() {
-      balances = Map.fromIterable(
-        employeeSet,
-        key: (element) => element,
-        value: (element) {
-          return tuple(transactionData[element]!);
-        },
-      );
+      balances = { for (var element in employeeSet) element : tuple(transactionData[element]!) };
       balancesTemp = balances;
       totalBalance = tuple(widget.data);
       totalBalanceTemp = totalBalance;
@@ -142,7 +136,7 @@ class _EmployeesState extends State<Employees> {
                         decoration: const BoxDecoration(
                           color: kBackgroundColor,
                           boxShadow: [
-                            const BoxShadow(
+                            BoxShadow(
                               color: Colors.black12,
                               offset: Offset(0, 0),
                               spreadRadius: 2.0,
@@ -179,16 +173,10 @@ class _EmployeesState extends State<Employees> {
                                 ),
                                 roundedTextButton(onTap: () {
                                   setState(() {
-                                    balancesTemp = Map.fromIterable(
-                                      employees,
-                                      key: (element) => element,
-                                      value: (element) {
-                                        return dateTuple(
+                                    balancesTemp = { for (var element in employees) element : dateTuple(
                                             transactionData[element]!,
                                             begin,
-                                            end);
-                                      },
-                                    );
+                                            end) };
                                     totalBalanceTemp =
                                         dateTuple(widget.data, begin, end);
                                   });
@@ -261,17 +249,17 @@ class _EmployeesState extends State<Employees> {
 
 Tuple2 tuple(List items) {
   num sale = 0, due = 0;
-  items.forEach((element) {
+  for (var element in items) {
     sale += element['price'];
     due += element['due'];
-  });
+  }
   Tuple2 data = Tuple2<num, num>(sale, due);
   return data;
 }
 
 Tuple2 dateTuple(List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0;
-  items.forEach((element) {
+  for (var element in items) {
     Timestamp timestamp = element['date'];
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
@@ -283,7 +271,7 @@ Tuple2 dateTuple(List items, DateTime begin, DateTime end) {
       sale += element['price'];
       due += element['due'];
     }
-  });
+  }
   Tuple2 data = Tuple2<num, num>(sale, due);
   return data;
 }

@@ -377,6 +377,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                               setState(() {
                                                 due = totalPrice - num.parse(e) - discount;
                                                 advance = num.parse(e);
+                                                paid = advance;
                                               });
                                             },
                                             keyboardType: TextInputType.number,

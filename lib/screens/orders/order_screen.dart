@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -29,8 +30,7 @@ class _OrdersState extends State<Orders> {
     generalCrud.getOrder().then((snapshot) {
       final data = snapshot.docs;
 
-      data.forEach(
-        (element) {
+      for (var element in data) {
           order.add(element.data());
           if (element.get('seen') == false &&
               element.get('role') == 'general') {
@@ -42,8 +42,7 @@ class _OrdersState extends State<Orders> {
               element.get('role') == 'architect') {
             seenArc += 1;
           }
-        },
-      );
+        }
       List orders = order.where(
         (element) {
           if (orderStatusValue == 'Pending') {
@@ -60,7 +59,9 @@ class _OrdersState extends State<Orders> {
         isLoaded = true;
       });
     }).catchError((error) {
-      print(error);
+      if (kDebugMode) {
+        print(error);
+      }
       setState(() {
         statusMessage = 'Failed to fetch orders';
       });
@@ -77,8 +78,8 @@ class _OrdersState extends State<Orders> {
           centerTitle: true,
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          iconTheme: IconThemeData(color: kMainColor),
-          title: Text(
+          iconTheme: const IconThemeData(color: kMainColor),
+          title: const Text(
             'Orders',
             style: kAppBarTitleTextStyle,
           ),
@@ -89,12 +90,12 @@ class _OrdersState extends State<Orders> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('General'),
-                    SizedBox(
+                    const Text('General'),
+                    const SizedBox(
                       width: 5.0,
                     ),
                     seenGen == 0
-                        ? SizedBox()
+                        ? const SizedBox()
                         : NotificationTicker(
                             value: seenGen.toString(),
                           ),
@@ -105,12 +106,12 @@ class _OrdersState extends State<Orders> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Agents'),
-                    SizedBox(
+                    const Text('Agents'),
+                    const SizedBox(
                       width: 5.0,
                     ),
                     seenAgent == 0
-                        ? SizedBox()
+                        ? const SizedBox()
                         : NotificationTicker(
                             value: seenAgent.toString(),
                           ),
@@ -121,12 +122,12 @@ class _OrdersState extends State<Orders> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Architect'),
-                    SizedBox(
+                    const Text('Architect'),
+                    const SizedBox(
                       width: 5.0,
                     ),
                     seenArc == 0
-                        ? SizedBox()
+                        ? const SizedBox()
                         : NotificationTicker(
                             value: seenArc.toString(),
                           ),
@@ -137,7 +138,7 @@ class _OrdersState extends State<Orders> {
             indicatorColor: kMainColor,
             labelColor: kMainColor,
             unselectedLabelColor: kSubMainColor,
-            labelStyle: TextStyle(
+            labelStyle: const TextStyle(
               color: kMainColor,
               fontSize: 15.0,
               letterSpacing: 1.3,
@@ -148,27 +149,27 @@ class _OrdersState extends State<Orders> {
           actions: [
             DropdownButton<String>(
               underline: null,
-                items: [
+                items: const [
                   DropdownMenuItem(
+                    value: 'Pending',
                     child: Text(
                       'Pending',
                       style: kProductNameStylePro,
                     ),
-                    value: 'Pending',
                   ),
                   DropdownMenuItem(
+                    value: 'Confirmed',
                     child: Text(
                       'Confirmed',
                       style: kProductNameStylePro,
                     ),
-                    value: 'Confirmed',
                   ),
                   DropdownMenuItem(
+                    value: 'Canceled',
                     child: Text(
                       'Canceled',
                       style: kProductNameStylePro,
                     ),
-                    value: 'Canceled',
                   ),
                 ],
                 value: orderStatusValue,
@@ -193,7 +194,7 @@ class _OrdersState extends State<Orders> {
           ],
         ),
         body: isLoaded
-            ? TabBarView(
+            ? const TabBarView(
                 children: [
                   Order(role: 'general'),
                   Order(
@@ -215,7 +216,7 @@ class _OrdersState extends State<Orders> {
 
 class Order extends StatefulWidget {
   final String role;
-  Order({required this.role});
+  const Order({Key? key, required this.role}) : super(key: key);
   @override
   _OrderState createState() => _OrderState();
 }
@@ -229,138 +230,136 @@ class _OrderState extends State<Order> {
         orders = order.orders.where((element) {
           return element['role'] == widget.role;
         }).toList();
-        return Container(
-          child: ListView.builder(
-            itemCount: orders.length,
-            itemBuilder: (BuildContext context, int i) {
-              Timestamp dateTime = orders[i]['date'];
-              DateTime dates = dateTime.toDate();
-              String date = DateFormat.yMMMd().format(dates);
-              return Card(
-                color:
-                    orders[i]['seen'] == true ? kBackgroundColor : kStrokeColor,
-                child: Padding(
-                  padding: EdgeInsets.all(15.0),
-                  child: ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OrderInfo(
-                            orderId: orders[i]['orderId'],
-                            customerName: orders[i]['customer_info']['customer_name'],
-                          ),
-                        ),
-                      );
-                    },
-                    // leading: Text(
-                    //   '${i + 1}',
-                    //   style: TextStyle(
-                    //     color: kSubMainColor,
-                    //     fontFamily: 'Montserrat',
-                    //     fontSize: 20,
-                    //     fontWeight: orders[i]['seen'] == false
-                    //         ? FontWeight.bold
-                    //         : FontWeight.normal,
-                    //     letterSpacing: 1.3,
-                    //   ),
-                    // ),
-                    title: ListTile(
-                      leading: Icon(
-                        Icons.person,
-                        color: kSubMainColor,
-                        size: 25.0,
-                      ),
-                      title: Text(
-                        '${orders[i]['customer_info']['customer_name']}',
-                        style: TextStyle(
-                          color: kSubMainColor,
-                          fontFamily: 'Montserrat',
-                          fontSize: 17,
-                          fontWeight: orders[i]['seen'] == false
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          letterSpacing: 1.3,
+        return ListView.builder(
+          itemCount: orders.length,
+          itemBuilder: (BuildContext context, int i) {
+            Timestamp dateTime = orders[i]['date'];
+            DateTime dates = dateTime.toDate();
+            String date = DateFormat.yMMMd().format(dates);
+            return Card(
+              color:
+                  orders[i]['seen'] == true ? kBackgroundColor : kStrokeColor,
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OrderInfo(
+                          orderId: orders[i]['orderId'],
+                          customerName: orders[i]['customer_info']['customer_name'],
                         ),
                       ),
+                    );
+                  },
+                  // leading: Text(
+                  //   '${i + 1}',
+                  //   style: TextStyle(
+                  //     color: kSubMainColor,
+                  //     fontFamily: 'Montserrat',
+                  //     fontSize: 20,
+                  //     fontWeight: orders[i]['seen'] == false
+                  //         ? FontWeight.bold
+                  //         : FontWeight.normal,
+                  //     letterSpacing: 1.3,
+                  //   ),
+                  // ),
+                  title: ListTile(
+                    leading: const Icon(
+                      Icons.person,
+                      color: kSubMainColor,
+                      size: 25.0,
                     ),
-                    trailing: orders[i]['seen'] == false
-                        ? Text(
-                            'New',
-                            style: kProductNameStyle,
-                          )
-                        : SizedBox(),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          leading: Icon(
-                            Icons.event,
-                            color: kBlueColor,
-                            size: 25.0,
-                          ),
-                          title: Text(
-                            date,
-                            style: kCategoryNameStyle,
-                          ),
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.inventory_2_outlined,
-                            color: kSubMainColor,
-                            size: 25.0,
-                          ),
-                          title: Text(
-                              '${orders[i]['quantity'].toString()} Products AT ${orders[i]['price'].toString()}',
-                              style: kCategoryNameStyle),
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.payments,
-                            color: kNewTextColor,
-                            size: 25.0,
-                          ),
-                          title: Text(
-                            'Payment: ${orders[i]['payment_status']}',
-                            style: TextStyle(
-                              color: orders[i]['payment_status'] == 'Paid'
-                                  ? kNewTextColor
-                                  : orders[i]['payment_status'] == 'Due'
-                                      ? kRedColor
-                                      : kYellowColor,
-                              fontFamily: 'Montserrat',
-                              fontSize: 15,
-                              letterSpacing: 1.3,
-                            ),
-                          ),
-                        ),
-                        ListTile(
-                          leading: Icon(
-                            Icons.local_shipping_outlined,
-                            size: 25.0,
-                            color: kBlackColor,
-                          ),
-                          title: Text(
-                            'Delivery: ${orders[i]['delivery_status']}',
-                            style: TextStyle(
-                              color: orders[i]['delivery_status'] == 'Delivered'
-                                  ? kNewTextColor
-                                  : orders[i]['delivery_status'] == 'Cancel'
-                                      ? kRedColor
-                                      : kYellowColor,
-                              fontFamily: 'Montserrat',
-                              fontSize: 15,
-                              letterSpacing: 1.3,
-                            ),
-                          ),
-                        ),
-                      ],
+                    title: Text(
+                      '${orders[i]['customer_info']['customer_name']}',
+                      style: TextStyle(
+                        color: kSubMainColor,
+                        fontFamily: 'Montserrat',
+                        fontSize: 17,
+                        fontWeight: orders[i]['seen'] == false
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        letterSpacing: 1.3,
+                      ),
                     ),
                   ),
+                  trailing: orders[i]['seen'] == false
+                      ? const Text(
+                          'New',
+                          style: kProductNameStyle,
+                        )
+                      : const SizedBox(),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.event,
+                          color: kBlueColor,
+                          size: 25.0,
+                        ),
+                        title: Text(
+                          date,
+                          style: kCategoryNameStyle,
+                        ),
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.inventory_2_outlined,
+                          color: kSubMainColor,
+                          size: 25.0,
+                        ),
+                        title: Text(
+                            '${orders[i]['quantity'].toString()} Products AT ${orders[i]['price'].toString()}',
+                            style: kCategoryNameStyle),
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.payments,
+                          color: kNewTextColor,
+                          size: 25.0,
+                        ),
+                        title: Text(
+                          'Payment: ${orders[i]['payment_status']}',
+                          style: TextStyle(
+                            color: orders[i]['payment_status'] == 'Paid'
+                                ? kNewTextColor
+                                : orders[i]['payment_status'] == 'Due'
+                                    ? kRedColor
+                                    : kYellowColor,
+                            fontFamily: 'Montserrat',
+                            fontSize: 15,
+                            letterSpacing: 1.3,
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.local_shipping_outlined,
+                          size: 25.0,
+                          color: kBlackColor,
+                        ),
+                        title: Text(
+                          'Delivery: ${orders[i]['delivery_status']}',
+                          style: TextStyle(
+                            color: orders[i]['delivery_status'] == 'Delivered'
+                                ? kNewTextColor
+                                : orders[i]['delivery_status'] == 'Cancel'
+                                    ? kRedColor
+                                    : kYellowColor,
+                            fontFamily: 'Montserrat',
+                            fontSize: 15,
+                            letterSpacing: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );

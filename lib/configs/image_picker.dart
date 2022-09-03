@@ -108,7 +108,6 @@ Future<Tuple2<String?, String?>> getImageNative(String folder) async {
   String? path;
   String? productImageLink;
   if (result != null) {
-    Directory appDocDir = await getApplicationDocumentsDirectory();
     path = result.paths.first;
     String fileName = result.files.first.name;
     productImageLink = await NetworkUtility.uploadImageFromNative(

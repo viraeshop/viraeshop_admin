@@ -260,7 +260,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
   }
   void getImageWeb([bool isFirst = false]) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
-    print('image: ${result?.files.first}');
+    if (kDebugMode) {
+      print('image: ${result?.files.first}');
+    }
     if (result != null) {
       String? fileName = result.files.first.name;
 

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
@@ -8,7 +7,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/customers/register_customer.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
-import 'customers/customer_list.dart';
+import 'customer_list.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({Key? key}) : super(key: key);
@@ -19,6 +18,9 @@ class CustomersScreen extends StatefulWidget {
 
 class _CustomersScreenState extends State<CustomersScreen> {
   List<Tab> tabs = const [
+    Tab(
+      text: 'All',
+    ),
     Tab(text: 'General'),
     Tab(text: 'Agent'),
     Tab(text: 'Architect'),
@@ -76,6 +78,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
         ),
         body: const TabBarView(
           children: [
+            Customers(
+              role: 'All',
+              isSelectCustomer: true,
+            ),
             Customers(
               role: 'general',
               isSelectCustomer: true,

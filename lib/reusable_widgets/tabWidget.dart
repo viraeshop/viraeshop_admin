@@ -95,7 +95,7 @@ class _TabWidgetState extends State<TabWidget> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage(
-                    '$url',
+                    url,
                   ),
                   fit: BoxFit.contain,
                 ),
@@ -121,14 +121,6 @@ class _TabWidgetState extends State<TabWidget> {
         key!.currentContext?.findRenderObject() as RenderBox?;
     //print('Render Box: $box');
     offset = box?.localToGlobal(Offset.zero);
-    print(offset);
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //   print(key!.currentContext);
-    //   final RenderBox? box = key.currentContext?.findRenderObject() as RenderBox?;
-    //   print('Render Box: $box');
-    //   offset = box?.localToGlobal(Offset.zero);
-    //   //print(offset);
-    // });
     return offset!;
   }
 
@@ -362,6 +354,7 @@ class _TabWidgetState extends State<TabWidget> {
                               builder: (context) => PopWidget(
                                 image: productsList[index - 1]['image'],
                                 productName: productsList[index - 1]['name'],
+                                productCode: productsList[index - 1]['productId'],
                                 price: currentPrice.toString(),
                                 description: productsList[index - 1]
                                     ['description'],

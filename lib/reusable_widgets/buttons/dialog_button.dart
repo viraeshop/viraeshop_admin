@@ -41,7 +41,7 @@ class DialogButton extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 15.0,
-              color: isBorder ? kMainColor : kBackgroundColor,
+              color: isBorder ? kNewTextColor : kBackgroundColor,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w700,
             ),

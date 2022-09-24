@@ -6,6 +6,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 import 'order_info.dart';
+import 'order_product.dart';
 
 class OrderInfoView extends StatefulWidget {
   final order;
@@ -59,7 +60,7 @@ class _OrderInfoViewState extends State<OrderInfoView>
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(FontAwesomeIcons.chevronLeft),
+          icon: const Icon(FontAwesomeIcons.chevronLeft),
           color: kSubMainColor,
           iconSize: 25.0,
         ),
@@ -73,14 +74,14 @@ class _OrderInfoViewState extends State<OrderInfoView>
               //heightFactor: 0.5,
               alignment: Alignment.topCenter,
               child: Container(
-                padding: EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(15.0),
                 width: size.width,
                 color: kBackgroundColor,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ListTile(
-                      leading: Text(
+                      leading: const Text(
                         'Total Price:',
                         style: TextStyle(
                           color: kBlueColor,
@@ -92,7 +93,7 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       ),
                       trailing: Text(
                         '${widget.order['price'].toString()}৳',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: kNewTextColor,
                           fontFamily: 'Montserrat',
                           fontSize: 20,
@@ -102,13 +103,13 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       ),
                     ),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.schedule,
                         size: 20.0,
                         color: kBlackColor,
                       ),
                       trailing: isCancelOrConfirm
-                          ? SizedBox()
+                          ? const SizedBox()
                           : Text(
                               '${widget.order['quantity'].toString()} QTY ${widget.order['items'].length} Items',
                               style: kTotalSalesStyle,
@@ -125,7 +126,7 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       ),
                     ),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.local_shipping_outlined,
                         size: 20.0,
                         color: kBlackColor,
@@ -142,7 +143,7 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       ),
                     ),
                     ListTile(
-                      leading: Icon(
+                      leading: const Icon(
                         Icons.payments,
                         size: 20.0,
                         color: kBlackColor,
@@ -169,12 +170,12 @@ class _OrderInfoViewState extends State<OrderInfoView>
                 // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(10.0),
                     color: kStrokeColor,
                     child: Center(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: const [
                           Icon(
                             Icons.info,
                             size: 25.0,
@@ -205,13 +206,13 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       labelColor: kMainColor,
                       indicatorWeight: 3.0,
                       unselectedLabelColor: Colors.black45,
-                      unselectedLabelStyle: TextStyle(
+                      unselectedLabelStyle: const TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 15,
                         letterSpacing: 1.3,
                         fontWeight: FontWeight.bold,
                       ),
-                      labelStyle: TextStyle(
+                      labelStyle: const TextStyle(
                         color: kMainColor,
                         fontFamily: 'Montserrat',
                         fontSize: 15,
@@ -222,7 +223,7 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       // indicatorPadding:
                       //     EdgeInsets.symmetric(horizontal: 21),
                       // labelPadding: EdgeInsets.all(6),
-                      tabs: [
+                      tabs: const [
                         Tab(text: 'Items'),
                         Tab(text: 'Details'),
                         Tab(text: 'Customer Info'),
@@ -237,13 +238,13 @@ class _OrderInfoViewState extends State<OrderInfoView>
                       controller: tabController,
                       children: [
                         Container(
-                          padding: EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(10.0),
                           child: SingleChildScrollView(
                             child: Column(
                               children: List.generate(
                                 widget.order['items'].length,
                                 (index) {
-                                  return orderProduct(
+                                  return OrderProduct(
                                     product: widget.order['items'][index],
                                     isWithButton: false,
                                   );

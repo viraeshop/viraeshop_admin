@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AdsProvider extends ChangeNotifier {
@@ -11,7 +12,7 @@ class AdsProvider extends ChangeNotifier {
   String drawerWidget = 'Tab Widget';
   bool isSearch = false;
   bool isAnimationStarted = false;
-  void updateAddedToCart (List<bool> values){
+  void updateAddedToCart(List<bool> values){
     addedToCart = values;
     notifyListeners();
   }
@@ -74,7 +75,9 @@ class AdsProvider extends ChangeNotifier {
 
   void saveImages({required String adId, image, Uint8List? imagesBytes, String? imagePath}) {
     int index = adIndex(adId);
-    print('Item index $index');
+    if (kDebugMode) {
+      print('Item index $index');
+    }
     adCards[index]['image'] = image;
     adCards[index]['imageBytes'] = imagesBytes;
     adCards[index]['imagePath'] = imagePath;

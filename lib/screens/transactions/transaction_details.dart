@@ -59,7 +59,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   @override
   void initState() {
     // TODO: implement initState
-    generalCrud.getTransacion().then((snapshot) async {
+    generalCrud.getTransaction().then((snapshot) async {
       setState(() {
         isLoading = true;
       });

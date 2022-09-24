@@ -39,7 +39,7 @@ class _CustomersState extends State<Customers> {
       final nameLower = element['name'].toLowerCase();
       final mobile = element['mobile'];
       final businessName =
-      widget.role != 'general' && element['business_name'] != null
+      element['role'] != 'general' && element['business_name'] != null
           ? element['business_name'].toLowerCase()
           : '';
       if(element['role'] == 'agents'){
@@ -55,10 +55,12 @@ class _CustomersState extends State<Customers> {
         final nameLower = element['name'].toLowerCase();
         final mobile = element['mobile'];
         final businessName =
-            widget.role != 'general' && element['business_name'] != null
+            element['role'] != 'general' && element['business_name'] != null
                 ? element['business_name'].toLowerCase()
                 : '';
-        print(businessName);
+        if (kDebugMode) {
+          print(businessName);
+        }
         final valueLower = value.toLowerCase();
         return nameLower.contains(valueLower) ||
             mobile.contains(valueLower) ||

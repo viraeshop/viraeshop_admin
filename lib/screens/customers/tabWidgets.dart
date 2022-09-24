@@ -51,9 +51,6 @@ class _SalesTabState extends State<SalesTab> {
         transactions.add(element.data());
         transactionBackup.add(element.data());
         invoiceNo.add(element.id);
-        if (kDebugMode) {
-          print('running');
-        }
         totalPaid += element.get('paid');
         if(element.get('paid') == 0 && element.get('advance') != 0){
           totalPaid += element.get('advance');

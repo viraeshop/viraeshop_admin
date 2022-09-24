@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -30,127 +31,131 @@ class _AdvertScreenState extends State<AdvertScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ValueListenableBuilder(
-            valueListenable: Hive.box(productsBox).listenable(),
-            builder: (context, Box box, widgets) {
-              List catgs = box.get(catKey);
-              return Categories(
-                catLength: catgs.length + 1,
-                categories: catgs,
-              );
-            }),
-        LimitedBox(
-          maxHeight: size.height * 0.68,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              FractionallySizedBox(
-                alignment: Alignment.topCenter,
-                heightFactor: 0.9,
-                child: LimitedBox(
-                  //maxHeight: size.height * 0.58,
-                  child: Consumer<AdsProvider>(builder: (context, ads, childs) {
-                    return Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: ads.currentCatg == 'All'
-                          ? const AdvertListWidget()
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                AdsCarousel(adsId: ads.currentCatg),
-                              ],
-                            ),
-                    );
-                  }),
-                ),
-              ),
-              FractionallySizedBox(
-                heightFactor: 0.1,
-                alignment: Alignment.bottomCenter,
-                child:
-                    Consumer<AdsProvider>(builder: (context, advert, widgets) {
-                  List currentAds = advert.adCards.where((element) {
-                    if (advert.currentCatg == 'All') {
-                      return element['adsCategory'] == 'Top Discount' ||
-                          element['adsCategory'] == 'Top Sales' ||
-                          element['adsCategory'] == 'New Arrivals' ||
-                          element['adsCategory'] == 'Vira Shop';
-                    }
-                    return element['adsCategory'] == advert.currentCatg;
-                  }).toList();
-                  List refinedAds = [];
-                  currentAds.forEach((element) {
-                    refinedAds.add({
-                      'title1': element['title1'],
-                      'title2': element['title2'],
-                      'title3': element['title3'],
-                      'image': element['image'],
-                      'adId': element['adId'],
-                      'adsCategory': element['adsCategory'],
-                    });
-                  });
-                  return InkWell(
-                    onTap: () {
-                      snackBar(
-                        text: 'Updaing please wait....',
-                        context: context,
-                        duration: 30,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ValueListenableBuilder(
+              valueListenable: Hive.box(productsBox).listenable(),
+              builder: (context, Box box, widgets) {
+                List catgs = box.get(catKey);
+                return Categories(
+                  catLength: catgs.length + 1,
+                  categories: catgs,
+                );
+              }),
+          LimitedBox(
+            maxHeight: size.height * 0.68,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                FractionallySizedBox(
+                  alignment: Alignment.topCenter,
+                  heightFactor: 0.9,
+                  child: LimitedBox(
+                    //maxHeight: size.height * 0.58,
+                    child: Consumer<AdsProvider>(builder: (context, ads, childs) {
+                      return Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: ads.currentCatg == 'All'
+                            ? const AdvertListWidget()
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AdsCarousel(adsId: ads.currentCatg),
+                                ],
+                              ),
                       );
-                      print('Refined Ads: $refinedAds');
-                      FirebaseFirestore.instance
-                          .collection('adverts')
-                          .doc('adverts')
-                          .set({
-                        'adverts': refinedAds,
-                      }).then((value) {
-                        // setState(() {
-                        //   isLoading = false;
-                        // });
+                    }),
+                  ),
+                ),
+                FractionallySizedBox(
+                  heightFactor: 0.1,
+                  alignment: Alignment.bottomCenter,
+                  child:
+                      Consumer<AdsProvider>(builder: (context, advert, widgets) {
+                    List currentAds = advert.adCards.where((element) {
+                      if (advert.currentCatg == 'All') {
+                        return element['adsCategory'] == 'Top Discount' ||
+                            element['adsCategory'] == 'Top Sales' ||
+                            element['adsCategory'] == 'New Arrivals' ||
+                            element['adsCategory'] == 'Vira Shop';
+                      }
+                      return element['adsCategory'] == advert.currentCatg;
+                    }).toList();
+                    List refinedAds = [];
+                    for (var element in currentAds) {
+                      refinedAds.add({
+                        'title1': element['title1'],
+                        'title2': element['title2'],
+                        'title3': element['title3'],
+                        'image': element['image'],
+                        'adId': element['adId'],
+                        'adsCategory': element['adsCategory'],
+                      });
+                    }
+                    return InkWell(
+                      onTap: () {
                         snackBar(
-                          text: 'Updated Successfully',
+                          text: 'Updating please wait....',
                           context: context,
                           duration: 30,
                         );
-                      }).catchError((error) {
-                        // setState(() {
-                        //   isLoading = false;
-                        // });
-                        snackBar(
-                            text: 'Oops an error occured! please try again',
+                        if (kDebugMode) {
+                          print('Refined Ads: $refinedAds');
+                        }
+                        FirebaseFirestore.instance
+                            .collection('adverts')
+                            .doc('adverts')
+                            .set({
+                          'adverts': refinedAds,
+                        }).then((value) {
+                          // setState(() {
+                          //   isLoading = false;
+                          // });
+                          snackBar(
+                            text: 'Updated Successfully',
                             context: context,
                             duration: 30,
-                            color: kNewMainColor);
-                      });
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.all(3.0),
-                        decoration: BoxDecoration(
-                          color: kBackgroundColor,
-                          borderRadius: BorderRadius.circular(10.0),
-                          border: Border.all(
-                            color: kNewMainColor,
-                            width: 3.0,
+                          );
+                        }).catchError((error) {
+                          // setState(() {
+                          //   isLoading = false;
+                          // });
+                          snackBar(
+                              text: 'Oops an error occurred! please try again',
+                              context: context,
+                              duration: 30,
+                              color: kNewMainColor);
+                        });
+                      },
+                      child: Container(
+                          margin: const EdgeInsets.all(3.0),
+                          decoration: BoxDecoration(
+                            color: kBackgroundColor,
+                            borderRadius: BorderRadius.circular(10.0),
+                            border: Border.all(
+                              color: kNewMainColor,
+                              width: 3.0,
+                            ),
                           ),
-                        ),
-                        child: const Center(
-                          child: Text('Update',
-                              style: TextStyle(
-                                color: kNewMainColor,
-                                fontSize: 15.0,
-                                fontFamily: 'Montserrat',
-                                letterSpacing: 1.3,
-                              )),
-                        )),
-                  );
-                }),
-              ),
-            ],
+                          child: const Center(
+                            child: Text('Update',
+                                style: TextStyle(
+                                  color: kNewMainColor,
+                                  fontSize: 15.0,
+                                  fontFamily: 'Montserrat',
+                                  letterSpacing: 1.3,
+                                )),
+                          )),
+                    );
+                  }),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -217,7 +222,7 @@ class AdvertListWidget extends StatelessWidget {
             data = snapshot.data!.get('adverts');
             print('Adverts from Database: $data');
             SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-              data.forEach((element) {
+              for (var element in data) {
                 print('yeah');
                 Map advert = {
                   'title1': element['title1'],
@@ -237,7 +242,7 @@ class AdvertListWidget extends StatelessWidget {
                   'title2': TextEditingController(text: element['title2']),
                   'title3': TextEditingController(text: element['title3']),
                 });
-              });
+              }
             });
           }
           return ListView(

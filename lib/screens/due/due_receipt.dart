@@ -457,7 +457,7 @@ class _DueReceiptState extends State<DueReceipt> {
                   flex: 1,
                   child: IconButton(
                     onPressed: () {
-                      try{
+                      try {
                         shareInvoice(
                           isSave: true,
                           totalItems: items.length.toString(),
@@ -466,7 +466,9 @@ class _DueReceiptState extends State<DueReceipt> {
                           items: items,
                           mobile: widget.data['user_info']['mobile'],
                           address: widget.data['user_info']['address'],
-                          name: widget.data['user_info']['name'],
+                          name: role == 'general'
+                              ? widget.data['user_info']['name']
+                              : '${widget.data['user_info']['business_name']}(${widget.data['user_info']['name']})',
                           advance: widget.data['advance'].toString(),
                           due: due.toString(),
                           paid: paid.toString(),
@@ -476,7 +478,7 @@ class _DueReceiptState extends State<DueReceipt> {
                           payList: payList,
                         );
                         toast(context: context, title: 'Saved');
-                      }catch(e){
+                      } catch (e) {
                         if (kDebugMode) {
                           print(e);
                         }
@@ -498,7 +500,9 @@ class _DueReceiptState extends State<DueReceipt> {
                         items: items,
                         mobile: widget.data['user_info']['mobile'],
                         address: widget.data['user_info']['address'],
-                        name: widget.data['user_info']['name'],
+                        name: role == 'general'
+                            ? widget.data['user_info']['name']
+                            : '${widget.data['user_info']['business_name']} (${widget.data['user_info']['name']})',
                         advance: widget.data['advance'].toString(),
                         due: due.toString(),
                         paid: paid.toString(),

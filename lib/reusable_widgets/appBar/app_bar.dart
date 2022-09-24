@@ -4,7 +4,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/appBar/notification_bell.dart';
 import 'package:viraeshop_admin/reusable_widgets/appBar/search_bar.dart';
-import 'package:viraeshop_admin/screens/allcustomers.dart';
+import 'package:viraeshop_admin/screens/customers/customers_screen.dart';
 
 myAppBar({messageOnPress, notifyOnPress}) {
   return AppBar(

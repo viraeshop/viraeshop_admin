@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -50,44 +51,56 @@ class BluetoothPrinter extends StatefulWidget {
 }
 
 class _BluetoothPrinterState extends State<BluetoothPrinter> {
+  bool connected = false;
+  List availableBluetoothDevices = [];
   @override
   void initState() {
     super.initState();
+
   }
-
-  bool connected = false;
-  List availableBluetoothDevices = [];
-
   Future<void> getBluetooth() async {
     final List? bluetooths = await BluetoothThermalPrinter.getBluetooths;
-    print("Print $bluetooths");
+    if (kDebugMode) {
+      print("Print $bluetooths");
+    }
     setState(() {
       availableBluetoothDevices = bluetooths ?? [];
     });
   }
 
   Future<void> setConnect(String mac) async {
-    final String? result = await BluetoothThermalPrinter.connect(mac);
-    print("state conneected $result");
-    if (result == "true") {
-      setState(() {
-        connected = true;
-      });
+    try{
+      final String? result = await BluetoothThermalPrinter.connect(mac);
+      if(kDebugMode){
+        print("state connected $result");
+      }
+      if (result == "true") {
+        setState(() {
+          connected = true;
+        });
+      }
+    }catch (e){
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
   Future<void> printTicket() async {
     String? isConnected = await BluetoothThermalPrinter.connectionStatus;
-    print(isConnected);
+    if (kDebugMode) {
+      print(isConnected);
+    }
     if (isConnected == "true") {
       List<int> bytes = await printDemoReceipt();
       final result = await BluetoothThermalPrinter.writeBytes(bytes);
-      print("Print $result");
+      if (kDebugMode) {
+        print("Print $result");
+      }
     } else {
-      //Hadnle Not Connected Senario
+      //Handle Not Connected Scenario
     }
   }
-
   // Future<void> printGraphics() async {
   //   String? isConnected = await BluetoothThermalPrinter.connectionStatus;
   //   if (isConnected == "true") {
@@ -224,7 +237,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     bytes += receipt.hr();
    for (var element in widget.items) {
       bytes += receipt.row([
-        PosColumn(text: element['quantity'].toString()+'x', width: 1, styles: const PosStyles(align: PosAlign.left),),
+        PosColumn(text: '${element['quantity']}x', width: 1, styles: const PosStyles(align: PosAlign.left),),
         PosColumn(text: element['product_name']+(element['product_id']), width: 7),
         PosColumn(
           text: element['unit_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),
@@ -294,158 +307,6 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
 
     return bytes;
   }
-  // Future<List<int>> getTicket() async {
-  //   List<int> bytes = [];
-  //   CapabilityProfile profile = await CapabilityProfile.load();
-  //   final generator = Generator(PaperSize.mm80, profile);
-  //
-  //   bytes += generator.text("Demo Shop",
-  //       styles: const PosStyles(
-  //         align: PosAlign.center,
-  //         height: PosTextSize.size2,
-  //         width: PosTextSize.size2,
-  //       ),
-  //       linesAfter: 1);
-  //
-  //   bytes += generator.text(
-  //       "18th Main Road, 2nd Phase, J. P. Nagar, Bengaluru, Karnataka 560078",
-  //       styles: const PosStyles(align: PosAlign.center));
-  //   bytes += generator.text('Tel: +919591708470',
-  //       styles: const PosStyles(align: PosAlign.center));
-  //
-  //   bytes += generator.hr();
-  //   bytes += generator.row([
-  //     PosColumn(
-  //         text: 'No',
-  //         width: 1,
-  //         styles: const PosStyles(align: PosAlign.left, bold: true)),
-  //     PosColumn(
-  //         text: 'Item',
-  //         width: 5,
-  //         styles: const PosStyles(align: PosAlign.left, bold: true)),
-  //     PosColumn(
-  //         text: 'Price',
-  //         width: 2,
-  //         styles: const PosStyles(align: PosAlign.center, bold: true)),
-  //     PosColumn(
-  //         text: 'Qty',
-  //         width: 2,
-  //         styles: const PosStyles(align: PosAlign.center, bold: true)),
-  //     PosColumn(
-  //         text: 'Total',
-  //         width: 2,
-  //         styles: const PosStyles(align: PosAlign.right, bold: true)),
-  //   ]);
-  //
-  //   bytes += generator.row([
-  //     PosColumn(text: "1", width: 1),
-  //     PosColumn(
-  //         text: "Tea",
-  //         width: 5,
-  //         styles: const PosStyles(
-  //           align: PosAlign.left,
-  //         )),
-  //     PosColumn(
-  //         text: "10",
-  //         width: 2,
-  //         styles: const PosStyles(
-  //           align: PosAlign.center,
-  //         )),
-  //     PosColumn(text: "1", width: 2, styles: const PosStyles(align: PosAlign.center)),
-  //     PosColumn(text: "10", width: 2, styles: const PosStyles(align: PosAlign.right)),
-  //   ]);
-  //
-  //   bytes += generator.row([
-  //     PosColumn(text: "2", width: 1),
-  //     PosColumn(
-  //         text: "Sada Dosa",
-  //         width: 5,
-  //         styles: const PosStyles(
-  //           align: PosAlign.left,
-  //         )),
-  //     PosColumn(
-  //         text: "30",
-  //         width: 2,
-  //         styles: const PosStyles(
-  //           align: PosAlign.center,
-  //         )),
-  //     PosColumn(text: "1", width: 2, styles: const PosStyles(align: PosAlign.center)),
-  //     PosColumn(text: "30", width: 2, styles: const PosStyles(align: PosAlign.right)),
-  //   ]);
-  //
-  //   bytes += generator.row([
-  //     PosColumn(text: "3", width: 1),
-  //     PosColumn(
-  //         text: "Masala Dosa",
-  //         width: 5,
-  //         styles: const PosStyles(
-  //           align: PosAlign.left,
-  //         )),
-  //     PosColumn(
-  //         text: "50",
-  //         width: 2,
-  //         styles: const PosStyles(
-  //           align: PosAlign.center,
-  //         )),
-  //     PosColumn(text: "1", width: 2, styles: const PosStyles(align: PosAlign.center)),
-  //     PosColumn(text: "50", width: 2, styles: const PosStyles(align: PosAlign.right)),
-  //   ]);
-  //
-  //   bytes += generator.row([
-  //     PosColumn(text: "4", width: 1),
-  //     PosColumn(
-  //         text: "Rova Dosa",
-  //         width: 5,
-  //         styles: const PosStyles(
-  //           align: PosAlign.left,
-  //         )),
-  //     PosColumn(
-  //         text: "70",
-  //         width: 2,
-  //         styles: const PosStyles(
-  //           align: PosAlign.center,
-  //         )),
-  //     PosColumn(text: "1", width: 2, styles: const PosStyles(align: PosAlign.center)),
-  //     PosColumn(text: "70", width: 2, styles: const PosStyles(align: PosAlign.right)),
-  //   ]);
-  //
-  //   bytes += generator.hr();
-  //
-  //   bytes += generator.row([
-  //     PosColumn(
-  //         text: 'TOTAL',
-  //         width: 6,
-  //         styles: const PosStyles(
-  //           align: PosAlign.left,
-  //           height: PosTextSize.size4,
-  //           width: PosTextSize.size4,
-  //         )),
-  //     PosColumn(
-  //         text: "160",
-  //         width: 6,
-  //         styles: const PosStyles(
-  //           align: PosAlign.right,
-  //           height: PosTextSize.size4,
-  //           width: PosTextSize.size4,
-  //         )),
-  //   ]);
-  //
-  //   bytes += generator.hr(ch: '=', linesAfter: 1);
-  //
-  //   // ticket.feed(2);
-  //   bytes += generator.text('Thank you!',
-  //       styles: const PosStyles(align: PosAlign.center, bold: true));
-  //
-  //   bytes += generator.text("26-11-2020 15:22:45",
-  //       styles: const PosStyles(align: PosAlign.center), linesAfter: 1);
-  //
-  //   bytes += generator.text(
-  //       'Note: Goods once sold will not be taken back or exchanged.',
-  //       styles: const PosStyles(align: PosAlign.center, bold: false));
-  //   bytes += generator.cut();
-  //   return bytes;
-  // }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

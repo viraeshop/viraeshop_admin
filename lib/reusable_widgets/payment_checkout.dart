@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/allcustomers.dart';
+import 'package:viraeshop_admin/screens/customers/customers_screen.dart';
 import 'package:viraeshop_admin/screens/payment_screen.dart';
 
 class PaymentCheckout extends StatefulWidget {

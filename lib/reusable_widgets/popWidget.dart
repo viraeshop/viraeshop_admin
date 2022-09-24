@@ -11,7 +11,7 @@ import 'iconWidget.dart';
 class PopWidget extends StatefulWidget {
   const PopWidget({Key? key, required this.image, required this.info, required this.price, required this.description,
   required this.isDiscount, required this.category, required this.discountPrice, required this.productName, required this.quantity, required this.routeName,
-    required this.sellBy
+    required this.sellBy, required this.productCode,
   }) : super(key: key);
   final List image;
   final String productName,
@@ -20,7 +20,8 @@ class PopWidget extends StatefulWidget {
   price,
   description,
   routeName,
-  sellBy;
+  sellBy,
+  productCode;
   final Map info;
   final bool isDiscount;
   final num discountPrice;
@@ -106,7 +107,7 @@ class _PopWidgetState extends State<PopWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.productName,
+                        '${widget.productName}(${widget.productCode})',
                         style: kProductNameStyle,
                       ),
                       Text(

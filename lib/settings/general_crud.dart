@@ -233,10 +233,14 @@ class GeneralCrud {
   }
 
   Future<QuerySnapshot> getCustomerList(String role) {
-    return FirebaseFirestore.instance.collection('customers').where('role', isEqualTo: role).get();
+    if(role == 'All'){
+      return FirebaseFirestore.instance.collection('customers').get();
+    }else{
+      return FirebaseFirestore.instance.collection('customers').where('role', isEqualTo: role).get();
+    }
   }
 
-  Future<QuerySnapshot> getTransacion() {
+  Future<QuerySnapshot> getTransaction() {
     return FirebaseFirestore.instance.collection('transaction').get();
   }
 

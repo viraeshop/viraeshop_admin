@@ -10,6 +10,8 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/desktop_orders.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
+import 'package:viraeshop_admin/screens/customers/all_customers.dart';
+import 'package:viraeshop_admin/screens/customers/general_customers.dart';
 import 'package:viraeshop_admin/screens/edit_employee.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
@@ -23,31 +25,17 @@ import 'package:viraeshop_admin/screens/architects_list.dart';
 import 'package:viraeshop_admin/screens/catalog.dart';
 import 'package:viraeshop_admin/screens/category_screen.dart';
 import 'package:viraeshop_admin/screens/customers/customer_request.dart';
-import 'package:viraeshop_admin/screens/customers_list.dart';
 import 'package:viraeshop_admin/screens/due/due_screen.dart';
 import 'package:viraeshop_admin/screens/expense_history.dart';
-import 'package:viraeshop_admin/screens/general_products.dart';
-import 'package:viraeshop_admin/screens/home_screen.dart';
-import 'package:viraeshop_admin/screens/layout_screen/modal_view.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
-import 'package:viraeshop_admin/screens/messages_screen/customers_group.dart';
-import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
 import 'package:viraeshop_admin/screens/messages_screen/users_screen.dart';
-import 'package:viraeshop_admin/screens/new_admin_user.dart';
 import 'package:viraeshop_admin/screens/new_expense.dart';
-import 'package:viraeshop_admin/screens/non_inventory/search_product_expense.dart';
 import 'package:viraeshop_admin/screens/orders/order_screen.dart';
-import 'package:viraeshop_admin/screens/new_product_screen.dart';
-import 'package:viraeshop_admin/screens/product_expense.dart';
 import 'package:viraeshop_admin/screens/products_screen.dart';
 import 'package:viraeshop_admin/screens/return_history.dart';
 import 'package:viraeshop_admin/screens/return_product.dart';
 import 'package:viraeshop_admin/screens/settings_screen.dart';
-import 'package:viraeshop_admin/screens/signup_request.dart';
 import 'package:viraeshop_admin/screens/supplier_pay.dart';
-import 'package:viraeshop_admin/screens/transaction_screen.dart';
-import 'package:viraeshop_admin/screens/user_list.dart';
-import 'package:viraeshop_admin/screens/user_profile.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 
 import '../screens/about_us_page.dart';
@@ -283,23 +271,30 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   ReusableTile(
                     padding: true,
+                    title: 'All Customers',
+                    onTap: isMakeCustomer == false
+                        ? null
+                        : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AllCustomers(),
+                        ),
+                      );
+                    },
+                  ),
+                  ReusableTile(
+                    padding: true,
                     title: 'General',
                     onTap: isMakeCustomer == false
                         ? null
                         : () {
-                            // if (widget.isBigScreen == true) {
-                            //   Provider.of<Configs>(context, listen: false)
-                            //       .updateWidget(
-                            //     CustomersPage(),
-                            //   );
-                            // } else {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const CustomersPage(),
+                                builder: (context) => const GeneralCustomers(),
                               ),
                             );
-                            // }
                           },
                   ),
                   ReusableTile(

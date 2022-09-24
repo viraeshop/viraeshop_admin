@@ -19,7 +19,7 @@ import 'package:viraeshop_admin/screens/discount.dart';
 import 'package:viraeshop_admin/screens/payment_screen.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
-import '../screens/allcustomers.dart';
+import '../screens/customers/customers_screen.dart';
 import 'hive/cart_model.dart';
 
 class ShoppingCart extends StatefulWidget {

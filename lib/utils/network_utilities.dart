@@ -63,7 +63,7 @@ class NetworkUtility {
     await _firestore.collection('customers').doc(userId).set(data);
   }
 
-  static Future<void> deleteEmployee (String userId) async{
+  static Future<void> deleteEmployee(String userId) async {
     await _firestore.collection('users').doc(userId).delete();
   }
 
@@ -75,14 +75,23 @@ class NetworkUtility {
     return _firestore.collection('transaction').doc(invoiceId).get();
   }
 
+  static Future deleteCustomerRequest(String docId) async {
+    await _firestore.collection('new_customers').doc(docId).delete();
+  }
+
   static Future<void> updateUser(String userId, data) async {
     await _firestore.collection('customers').doc(userId).update(data);
   }
-  static Future<bool> isUserExist (String mobile) async{
-   final user = await _firestore.collection('customers').where('mobile', isEqualTo: mobile).get();
-   // if uer is not empty then user already registered else he's not
-   return user.docs.isNotEmpty;
+
+  static Future<bool> isUserExist(String mobile) async {
+    final user = await _firestore
+        .collection('customers')
+        .where('mobile', isEqualTo: mobile)
+        .get();
+    // if uer is not empty then user already registered else he's not
+    return user.docs.isNotEmpty;
   }
+
   static Future<String> uploadImageFromNative(
       File file, String fileName, folder) async {
     await _storage.ref().child('$folder/$fileName').putFile(file, metadata);
@@ -130,23 +139,29 @@ class NetworkUtility {
         .doc(productId)
         .delete();
   }
+
   static Future<void> makeTransaction(String docId, transInfo) async {
     await _firestore.collection('transaction').doc(docId).set(transInfo);
   }
-  static Future<void> updateProducts(List cartItems, [bool isReturn = false]) async {
+
+  static Future<void> updateProducts(List cartItems,
+      [bool isReturn = false]) async {
     for (var element in cartItems) {
-      if(element is Cart){
-        if(element.isInventory!){
-          await updateProductInventory(element.productId, element.quantity, isReturn);
+      if (element is Cart) {
+        if (element.isInventory!) {
+          await updateProductInventory(
+              element.productId, element.quantity, isReturn);
         }
-      }else{
-        if(element['isInventory']){
-          await updateProductInventory(element['product_id'], element['quantity'], isReturn);
+      } else {
+        if (element['isInventory']) {
+          await updateProductInventory(
+              element['product_id'], element['quantity'], isReturn);
         }
       }
     }
   }
-  static Future<void> updateWallet (String userId, data) async{
+
+  static Future<void> updateWallet(String userId, data) async {
     await _firestore.collection('customers').doc(userId).update(data);
   }
 }

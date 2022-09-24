@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'customers/customer_list.dart';
+import 'customer_list.dart';
 
-class AgentsPage extends StatefulWidget {
-  const AgentsPage({Key? key}) : super(key: key);
-
+class GeneralCustomers extends StatefulWidget {
+  const GeneralCustomers({Key? key}) : super(key: key);
   @override
-  _AgentsPageState createState() => _AgentsPageState();
+  _GeneralCustomersState createState() => _GeneralCustomersState();
 }
 
-class _AgentsPageState extends State<AgentsPage> {
+class _GeneralCustomersState extends State<GeneralCustomers> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +18,7 @@ class _AgentsPageState extends State<AgentsPage> {
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
         title: const Text(
-          'Agents',
+          'General Customers',
           style: kAppBarTitleTextStyle,
         ),
         centerTitle: true,
@@ -29,7 +28,7 @@ class _AgentsPageState extends State<AgentsPage> {
         // ),
       ),
       body: const Customers(
-        role: 'agents',
+        role: 'general',
       ),
     );
   }

@@ -244,7 +244,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                           onSort: (i, value) {
                             setState(() {
                               showDue = !showDue;
-                              showDue = !showDue;
+                              showPaid = !showPaid;
                               if(showPaid){
                                 showPaid = false;
                               }

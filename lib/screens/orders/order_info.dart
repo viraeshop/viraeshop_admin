@@ -23,6 +23,7 @@ import 'package:viraeshop_admin/utils/network_utilities.dart';
 import '../../components/home_screen_components/decision_components.dart';
 import '../../configs/configs.dart';
 import '../../settings/admin_CRUD.dart';
+import 'order_product.dart';
 
 class OrderInfo extends StatefulWidget {
   static const String path = '/order_info';
@@ -72,6 +73,7 @@ class _OrderInfoState extends State<OrderInfo>
     });
     super.initState();
   }
+
   bool invoiceNumberTaken = true;
   @override
   Widget build(BuildContext context) {
@@ -88,7 +90,7 @@ class _OrderInfoState extends State<OrderInfo>
           color: kMainColor,
         ),
         child: GestureDetector(
-          onTap: () =>  FocusScope.of(context).unfocus(),
+          onTap: () => FocusScope.of(context).unfocus(),
           child: Scaffold(
               resizeToAvoidBottomInset: false,
               backgroundColor: kBackgroundColor,
@@ -97,7 +99,7 @@ class _OrderInfoState extends State<OrderInfo>
                 leading: IconButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    if(Hive.box('orderItems').isNotEmpty){
+                    if (Hive.box('orderItems').isNotEmpty) {
                       Hive.box('orderItems').clear();
                     }
                   },
@@ -112,144 +114,80 @@ class _OrderInfoState extends State<OrderInfo>
               ),
               body: order.isNotEmpty
                   ? Container(
-                    child: ListView(
-                      children: [
-                        LimitedBox(
-                          maxHeight: size.height * 0.92,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              FractionallySizedBox(
-                                //heightFactor: 0.5,
-                                alignment: Alignment.topCenter,
-                                child: ValueListenableBuilder(
-                                  valueListenable: box.listenable(),
-                                  builder: (context, Box box, childs) {
-                                    String totalPrice =
-                                        box.get('totalPrice').toString();
-                                    String totalItems =
-                                        box.get('totalItems').toString();
-                                    return Container(
-                                      padding: const EdgeInsets.all(15.0),
-                                      width: size.width,
-                                      color: kBackgroundColor,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ListTile(
-                                            leading: const Text(
-                                              'Total Price:',
-                                              style: TextStyle(
-                                                color: kBlueColor,
-                                                fontFamily: 'Montserrat',
-                                                fontSize: 20,
-                                                letterSpacing: 1.3,
-                                                fontWeight: FontWeight.bold,
+                      child: ListView(
+                        children: [
+                          LimitedBox(
+                            maxHeight: size.height * 0.92,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                FractionallySizedBox(
+                                  //heightFactor: 0.5,
+                                  alignment: Alignment.topCenter,
+                                  child: ValueListenableBuilder(
+                                    valueListenable: box.listenable(),
+                                    builder: (context, Box box, childs) {
+                                      String totalPrice =
+                                          box.get('totalPrice').toString();
+                                      String totalItems =
+                                          box.get('totalItems').toString();
+                                      return Container(
+                                        padding: const EdgeInsets.all(15.0),
+                                        width: size.width,
+                                        color: kBackgroundColor,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            ListTile(
+                                              leading: const Text(
+                                                'Total Price:',
+                                                style: TextStyle(
+                                                  color: kBlueColor,
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 20,
+                                                  letterSpacing: 1.3,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              trailing: Text(
+                                                '$totalPrice৳',
+                                                style: const TextStyle(
+                                                  color: kNewTextColor,
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 20,
+                                                  letterSpacing: 1.3,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
-                                            trailing: Text(
-                                              '$totalPrice৳',
-                                              style: const TextStyle(
-                                                color: kNewTextColor,
-                                                fontFamily: 'Montserrat',
-                                                fontSize: 20,
-                                                letterSpacing: 1.3,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                          ListTile(
-                                            leading: const Icon(
-                                              Icons.schedule,
-                                              size: 20.0,
-                                              color: kBlackColor,
-                                            ),
-                                            trailing: isCancelOrConfirm
-                                                ? const SizedBox()
-                                                : Text(
-                                                    '$totalItems QYT ${box.get('items').length} Items',
-                                                    style: kTotalSalesStyle,
-                                                  ),
-                                            title: Consumer<OrderConfigs>(
-                                              builder: (context, order, childs) =>
-                                                  DropdownButton(
-                                                underline: const SizedBox(),
-                                                value: order.orderStats,
-                                                items: const [
-                                                  DropdownMenuItem(
-                                                    value: 'pending',
-                                                    child: Text(
-                                                      'Pending',
-                                                      style: TextStyle(
-                                                        color: kYellowColor,
-                                                        fontFamily: 'Montserrat',
-                                                        fontSize: 18,
-                                                        letterSpacing: 1.3,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'confirm',
-                                                    child: Text(
-                                                      'Confirm',
-                                                      style: TextStyle(
-                                                        color: kNewTextColor,
-                                                        fontFamily: 'Montserrat',
-                                                        fontSize: 18,
-                                                        letterSpacing: 1.3,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DropdownMenuItem(
-                                                    value: 'cancel',
-                                                    child: Text(
-                                                      'Cancel',
-                                                      style: TextStyle(
-                                                        color: kRedColor,
-                                                        fontFamily: 'Montserrat',
-                                                        fontSize: 18,
-                                                        letterSpacing: 1.3,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                                onChanged: (value) {
-                                                  Provider.of<OrderConfigs>(
-                                                          context,
-                                                          listen: false)
-                                                      .updateOrderStats(
-                                                          value.toString());
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            child: ListTile(
+                                            ListTile(
                                               leading: const Icon(
-                                                Icons.local_shipping_outlined,
+                                                Icons.schedule,
                                                 size: 20.0,
                                                 color: kBlackColor,
                                               ),
+                                              trailing: isCancelOrConfirm
+                                                  ? const SizedBox()
+                                                  : Text(
+                                                      '$totalItems QYT ${box.get('items').length} Items',
+                                                      style: kTotalSalesStyle,
+                                                    ),
                                               title: Consumer<OrderConfigs>(
-                                                builder: (context, order, childs) =>
-                                                    DropdownButton(
+                                                builder:
+                                                    (context, order, childs) =>
+                                                        DropdownButton(
                                                   underline: const SizedBox(),
-                                                  value: order.deliverStats,
+                                                  value: order.orderStats,
                                                   items: const [
                                                     DropdownMenuItem(
-                                                      value: 'Pending',
+                                                      value: 'pending',
                                                       child: Text(
                                                         'Pending',
                                                         style: TextStyle(
-                                                          color: kRedColor,
-                                                          fontFamily: 'Montserrat',
+                                                          color: kYellowColor,
+                                                          fontFamily:
+                                                              'Montserrat',
                                                           fontSize: 18,
                                                           letterSpacing: 1.3,
                                                           fontWeight:
@@ -258,12 +196,13 @@ class _OrderInfoState extends State<OrderInfo>
                                                       ),
                                                     ),
                                                     DropdownMenuItem(
-                                                      value: 'Delivered',
+                                                      value: 'confirm',
                                                       child: Text(
-                                                        'Delivered',
+                                                        'Confirm',
                                                         style: TextStyle(
                                                           color: kNewTextColor,
-                                                          fontFamily: 'Montserrat',
+                                                          fontFamily:
+                                                              'Montserrat',
                                                           fontSize: 18,
                                                           letterSpacing: 1.3,
                                                           fontWeight:
@@ -272,12 +211,13 @@ class _OrderInfoState extends State<OrderInfo>
                                                       ),
                                                     ),
                                                     DropdownMenuItem(
-                                                      value: 'Cancel',
+                                                      value: 'cancel',
                                                       child: Text(
                                                         'Cancel',
                                                         style: TextStyle(
                                                           color: kRedColor,
-                                                          fontFamily: 'Montserrat',
+                                                          fontFamily:
+                                                              'Montserrat',
                                                           fontSize: 18,
                                                           letterSpacing: 1.3,
                                                           fontWeight:
@@ -286,331 +226,501 @@ class _OrderInfoState extends State<OrderInfo>
                                                       ),
                                                     ),
                                                   ],
-                                                  onChanged: order.orderStats == 'pending' || order.orderStats == 'cancel' ? null : (value) {
+                                                  onChanged: (value) {
                                                     Provider.of<OrderConfigs>(
                                                             context,
                                                             listen: false)
-                                                        .updateDeliveryStats(
+                                                        .updateOrderStats(
                                                             value.toString());
                                                   },
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          Container(
-                                            child: Consumer<OrderConfigs>(
-                                              builder: (context, order, childs) =>
-                                                  ListTile(
+                                            Container(
+                                              child: ListTile(
                                                 leading: const Icon(
-                                                  Icons.payments,
+                                                  Icons.local_shipping_outlined,
                                                   size: 20.0,
                                                   color: kBlackColor,
                                                 ),
-                                                isThreeLine:
-                                                    order.payStats == 'Advance'
-                                                        ? true
-                                                        : false,
-                                                subtitle: order.payStats ==
-                                                        'Advance'
-                                                    ? SizedBox(
-                                                        width: 100.0,
-                                                        child: TextField(
-                                                          controller: controller,
-                                                          cursorColor: kBlackColor,
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style:
-                                                              kProductNameStylePro,
-                                                          decoration:
-                                                              const InputDecoration(
-                                                            border:
-                                                                UnderlineInputBorder(
-                                                              borderSide:
-                                                                  BorderSide(
-                                                                color: kYellowColor,
-                                                              ),
-                                                            ),
+                                                title: Consumer<OrderConfigs>(
+                                                  builder: (context, order,
+                                                          childs) =>
+                                                      DropdownButton(
+                                                    underline: const SizedBox(),
+                                                    value: order.deliverStats,
+                                                    items: const [
+                                                      DropdownMenuItem(
+                                                        value: 'Pending',
+                                                        child: Text(
+                                                          'Pending',
+                                                          style: TextStyle(
+                                                            color: kRedColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 18,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
                                                           ),
                                                         ),
-                                                      )
-                                                    : null,
-                                                title: DropdownButton(
-                                                  underline: const SizedBox(),
-                                                  value: order.payStats,
-                                                  items: const [
-                                                    DropdownMenuItem(
-                                                      value: 'Due',
-                                                      child: Text(
-                                                        'Due',
-                                                        style: TextStyle(
-                                                          color: kRedColor,
-                                                          fontFamily: 'Montserrat',
-                                                          fontSize: 18.0,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                      ),
+                                                      DropdownMenuItem(
+                                                        value: 'Delivered',
+                                                        child: Text(
+                                                          'Delivered',
+                                                          style: TextStyle(
+                                                            color:
+                                                                kNewTextColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 18,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    DropdownMenuItem(
-                                                      value: 'Advance',
-                                                      child: Text(
-                                                        'Advance',
-                                                        style: TextStyle(
-                                                          color: kYellowColor,
-                                                          fontFamily: 'Montserrat',
-                                                          fontSize: 18,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                      DropdownMenuItem(
+                                                        value: 'Cancel',
+                                                        child: Text(
+                                                          'Cancel',
+                                                          style: TextStyle(
+                                                            color: kRedColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 18,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    DropdownMenuItem(
-                                                      value: 'Paid',
-                                                      child: Text(
-                                                        'Paid',
-                                                        style: TextStyle(
-                                                          color: kNewTextColor,
-                                                          fontFamily: 'Montserrat',
-                                                          fontSize: 18,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                  onChanged: order.orderStats == 'pending' || order.orderStats == 'cancel' ? null : (value) {
-                                                    Provider.of<OrderConfigs>(
-                                                            context,
-                                                            listen: false)
-                                                        .updatePayStats(
-                                                            value.toString());
-                                                  },
+                                                    ],
+                                                    onChanged: order.orderStats ==
+                                                                'pending' ||
+                                                            order.orderStats ==
+                                                                'cancel'
+                                                        ? null
+                                                        : (value) {
+                                                            Provider.of<OrderConfigs>(
+                                                                    context,
+                                                                    listen:
+                                                                        false)
+                                                                .updateDeliveryStats(
+                                                                    value
+                                                                        .toString());
+                                                          },
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              FractionallySizedBox(
-                                heightFactor: 0.6,
-                                alignment: Alignment.bottomCenter,
-                                child: ListView(
-                                  // crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10.0),
-                                      color: kStrokeColor,
-                                      child: Center(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: const [
-                                            Icon(
-                                              Icons.info,
-                                              size: 25.0,
-                                              color: kBlueColor,
-                                            ),
-                                            SizedBox(
-                                              width: 6.0,
-                                            ),
-                                            Text(
-                                              'Order Information',
-                                              style: TextStyle(
-                                                color: kSubMainColor,
-                                                fontFamily: 'Montserrat',
-                                                fontSize: 15,
-                                                letterSpacing: 1.3,
-                                                fontWeight: FontWeight.bold,
+                                            Container(
+                                              child: Consumer<OrderConfigs>(
+                                                builder:
+                                                    (context, order, childs) =>
+                                                        ListTile(
+                                                  leading: const Icon(
+                                                    Icons.payments,
+                                                    size: 20.0,
+                                                    color: kBlackColor,
+                                                  ),
+                                                  isThreeLine: order.payStats ==
+                                                          'Advance'
+                                                      ? true
+                                                      : false,
+                                                  subtitle: order.payStats ==
+                                                          'Advance'
+                                                      ? SizedBox(
+                                                          width: 100.0,
+                                                          child: TextField(
+                                                            controller:
+                                                                controller,
+                                                            cursorColor:
+                                                                kBlackColor,
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style:
+                                                                kProductNameStylePro,
+                                                            decoration:
+                                                                const InputDecoration(
+                                                              border:
+                                                                  UnderlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide(
+                                                                  color:
+                                                                      kYellowColor,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        )
+                                                      : null,
+                                                  title: DropdownButton(
+                                                    underline: const SizedBox(),
+                                                    value: order.payStats,
+                                                    items: const [
+                                                      DropdownMenuItem(
+                                                        value: 'Due',
+                                                        child: Text(
+                                                          'Due',
+                                                          style: TextStyle(
+                                                            color: kRedColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 18.0,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      DropdownMenuItem(
+                                                        value: 'Advance',
+                                                        child: Text(
+                                                          'Advance',
+                                                          style: TextStyle(
+                                                            color: kYellowColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 18,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      DropdownMenuItem(
+                                                        value: 'Paid',
+                                                        child: Text(
+                                                          'Paid',
+                                                          style: TextStyle(
+                                                            color:
+                                                                kNewTextColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 18,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    onChanged: order.orderStats ==
+                                                                'pending' ||
+                                                            order.orderStats ==
+                                                                'cancel'
+                                                        ? null
+                                                        : (value) {
+                                                            Provider.of<OrderConfigs>(
+                                                                    context,
+                                                                    listen:
+                                                                        false)
+                                                                .updatePayStats(
+                                                                    value
+                                                                        .toString());
+                                                          },
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                FractionallySizedBox(
+                                  heightFactor: 0.6,
+                                  alignment: Alignment.bottomCenter,
+                                  child: ListView(
+                                    // crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        color: kStrokeColor,
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              Icon(
+                                                Icons.info,
+                                                size: 25.0,
+                                                color: kBlueColor,
+                                              ),
+                                              SizedBox(
+                                                width: 6.0,
+                                              ),
+                                              Text(
+                                                'Order Information',
+                                                style: TextStyle(
+                                                  color: kSubMainColor,
+                                                  fontFamily: 'Montserrat',
+                                                  fontSize: 15,
+                                                  letterSpacing: 1.3,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    TabBar(
-                                     // isScrollable: true,
-                                      controller: tabController,
-                                      indicatorColor: kMainColor,
-                                      labelColor: kMainColor,
-                                      indicatorWeight: 3.0,
-                                      unselectedLabelColor: Colors.black45,
-                                      unselectedLabelStyle: const TextStyle(
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 15,
-                                        letterSpacing: 1.3,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      labelStyle: const TextStyle(
-                                        color: kMainColor,
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 15,
-                                        letterSpacing: 1.3,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      isScrollable: true,
-                                      // indicatorPadding:
-                                      //     EdgeInsets.symmetric(horizontal: 21),
-                                      // labelPadding: EdgeInsets.all(6),
-                                      tabs: const [
-                                        Tab(text: 'Items'),
-                                        Tab(text: 'Details'),
-                                        Tab(text: 'Customer Info'),
-                                        Tab(text: 'History'),
-                                      ],
-                                    ),
-                                    // Text('data'),
-                                    LimitedBox(
-                                      maxHeight: size.height * 0.4,
-                                      maxWidth: size.width,
-                                      child: TabBarView(
+                                      TabBar(
+                                        // isScrollable: true,
                                         controller: tabController,
-                                        children: [
-                                          OrderProducts(
-                                            isCancelOrConfirm: isCancelOrConfirm,
-                                          ),
-                                          ValueListenableBuilder(
-                                              valueListenable: box.listenable(),
-                                              builder: (context, Box box, chllds) {
-                                                String price = box
-                                                    .get('totalPrice')
-                                                    .toString();
-                                                return OrderInformation(
-                                                  paymentStatus:
-                                                      order['payment_status'],
-                                                  deliveryStatus:
-                                                      order['delivery_status'],
-                                                  totalPrice: price,
-                                                  date: dateFormat,
-                                                );
-                                              }),
-                                          customerInfo(
-                                            info: order['customer_info'],
-                                          ),
-                                          CustomerOrderHistory(
-                                              customerId: order['customer_info']
-                                                  ['customer_id']),
+                                        indicatorColor: kMainColor,
+                                        labelColor: kMainColor,
+                                        indicatorWeight: 3.0,
+                                        unselectedLabelColor: Colors.black45,
+                                        unselectedLabelStyle: const TextStyle(
+                                          fontFamily: 'Montserrat',
+                                          fontSize: 15,
+                                          letterSpacing: 1.3,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        labelStyle: const TextStyle(
+                                          color: kMainColor,
+                                          fontFamily: 'Montserrat',
+                                          fontSize: 15,
+                                          letterSpacing: 1.3,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        isScrollable: true,
+                                        // indicatorPadding:
+                                        //     EdgeInsets.symmetric(horizontal: 21),
+                                        // labelPadding: EdgeInsets.all(6),
+                                        tabs: const [
+                                          Tab(text: 'Items'),
+                                          Tab(text: 'Details'),
+                                          Tab(text: 'Customer Info'),
+                                          Tab(text: 'History'),
                                         ],
                                       ),
-                                    ),
-                                  ],
+                                      // Text('data'),
+                                      LimitedBox(
+                                        maxHeight: size.height * 0.4,
+                                        maxWidth: size.width,
+                                        child: TabBarView(
+                                          controller: tabController,
+                                          children: [
+                                            OrderProducts(
+                                              isCancelOrConfirm:
+                                                  isCancelOrConfirm,
+                                            ),
+                                            ValueListenableBuilder(
+                                                valueListenable:
+                                                    box.listenable(),
+                                                builder:
+                                                    (context, Box box, chllds) {
+                                                  String price = box
+                                                      .get('totalPrice')
+                                                      .toString();
+                                                  return OrderInformation(
+                                                    paymentStatus:
+                                                        order['payment_status'],
+                                                    deliveryStatus: order[
+                                                        'delivery_status'],
+                                                    totalPrice: price,
+                                                    date: dateFormat,
+                                                  );
+                                                }),
+                                            customerInfo(
+                                              info: order['customer_info'],
+                                            ),
+                                            CustomerOrderHistory(
+                                                customerId:
+                                                    order['customer_info']
+                                                        ['customer_id']),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Consumer<OrderConfigs>(
-                                  builder: (context, orders, childs) => Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: sendButton(
-                                      title: 'Confirm',
-                                      onTap: () async {
-                                        setState(() {
-                                          isLoading = true;
-                                        });
-                                        print('start');
-                                        final String adminId = Hive.box('adminInfo')
-                                            .get('adminId', defaultValue: 'adminId');
-                                        String adminName = Hive.box('adminInfo').get('name', defaultValue: '');
-                                        String invoiceNo = randomNumeric(4);
-                                        while (invoiceNumberTaken){
-                                          final invoice = await NetworkUtility.getCustomerTransactionInvoicesByID(invoiceNo);
-                                          if (kDebugMode) {
-                                            print('Invoice Taken: ${invoice.exists}');
-                                          }
+                                Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Consumer<OrderConfigs>(
+                                    builder: (context, orders, childs) =>
+                                        Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: sendButton(
+                                        title: 'Confirm',
+                                        onTap: () async {
                                           setState(() {
-                                            if(!invoice.exists){
-                                              invoiceNumberTaken = false;
-                                            }else{
-                                              invoiceNo = randomNumeric(4);
-                                            }
+                                            isLoading = true;
                                           });
-                                        }
-                                        Map<String, dynamic> transInfo = {
-                                          'price': box.get('totalPrice'),
-                                          'quantity': box.get('totalItems'),
-                                          'date': Timestamp.now(),
-                                          'employee_id': adminId,
-                                          'employee_name': adminName,
-                                          'items': box.get('items'),
-                                          'invoice_id': invoiceNo,
-                                          'is_inventory': true,
-                                          'docId': invoiceNo,
-                                          'customer_id': order['customer_info']
-                                              ['customer_id'],
-                                          'customer_role': order['role'],
-                                          'paid': orders.payStats == 'Paid'
-                                              ? box.get('totalPrice')
-                                              : orders.payStats == 'Advance' ? num.parse(controller.text) : 0,
-                                          'due': orders.payStats == 'Due'
-                                              ? box.get('totalPrice')
-                                              : orders.payStats == 'Advance'
-                                                  ? box.get('totalPrice') -
-                                                      num.parse(controller.text)
-                                                  : 0,
-                                          'advance': orders.payStats == 'Advance'
-                                              ? num.parse(controller.text)
-                                              : 0,
-                                          'discount': 0,
-                                          'user_info': {
-                                            'name': order['customer_info']['customer_name'],
-                                            'email': order['customer_info']['email'],
-                                            'address': order['customer_info']
-                                                ['address'],
-                                            'mobile': order['customer_info']
-                                                ['mobile'],
-                                          },
-                                        };
-                                        if (kDebugMode) {
-                                          print('Map finished');
-                                        }
-                                        await FirebaseFirestore.instance
-                                            .collection('order')
-                                            .doc(widget.orderId)
-                                            .update({
-                                          'delivery_status': orders.deliverStats,
-                                          'payment_status': orders.payStats,
-                                          'order_status': orders.orderStats,
-                                          'items': box.get('items'),
-                                          'price': box.get('totalPrice'),
-                                          'quantity': box.get('totalItems'),
-                                          'seen': true,
-                                          'employee_id': adminId,
-                                          'isFromCustomer': false,
-                                          'customerToken' : order['customerToken'],
-                                        }).then((value) async {
-                                          if (kDebugMode) {
-                                            print('order updated');
-                                          }
-                                          if (order['seen'] == false) {
-                                            OrderConfigs().updateNewOrders();
-                                          }
-                                          if (orders.orderStats == 'confirm') {
-                                            if (order['role'] == 'agents') {
-                                              if (kDebugMode) {
-                                                print('isAgent');
+                                          print('start');
+                                          final String adminId =
+                                              Hive.box('adminInfo').get(
+                                                  'adminId',
+                                                  defaultValue: 'adminId');
+                                          String adminName =
+                                              Hive.box('adminInfo').get('name',
+                                                  defaultValue: '');
+                                          String invoiceNo = randomNumeric(4);
+                                          while (invoiceNumberTaken) {
+                                            final invoice = await NetworkUtility
+                                                .getCustomerTransactionInvoicesByID(
+                                                    invoiceNo);
+                                            if (kDebugMode) {
+                                              print(
+                                                  'Invoice Taken: ${invoice.exists}');
+                                            }
+                                            setState(() {
+                                              if (!invoice.exists) {
+                                                invoiceNumberTaken = false;
+                                              } else {
+                                                invoiceNo = randomNumeric(4);
                                               }
-                                              if (orders.payStats == 'Paid' ||
-                                                  orders.payStats == 'Advance') {
-                                                adminCrud
-                                                    .updateWallet(
-                                                  documentId: order['customer_info']['name'],
-                                                  balance: box.get('totalPrice'),
-                                                )
-                                                    .then((value) async {
-                                                  snackBar(
-                                                      text:
-                                                          'Amount deducted from wallet..',
-                                                      context: context);
-                                                  snackBar(
-                                                      text:
-                                                          'Saving transaction data...',
-                                                      context: context);
+                                            });
+                                          }
+                                          Map<String, dynamic> transInfo = {
+                                            'price': box.get('totalPrice'),
+                                            'quantity': box
+                                                .get('totalItems')
+                                                .toString(),
+                                            'date': Timestamp.now(),
+                                            'employee_id': adminId,
+                                            'employee_name': adminName,
+                                            'items': box.get('items'),
+                                            'invoice_id': invoiceNo,
+                                            'isWithNonInventory': false,
+                                            'docId': invoiceNo,
+                                            'customer_id':
+                                                order['customer_info']
+                                                    ['customer_id'],
+                                            'customer_role': order['role'],
+                                            'paid': orders.payStats == 'Paid'
+                                                ? box.get('totalPrice')
+                                                : orders.payStats == 'Advance'
+                                                    ? num.parse(controller.text)
+                                                    : 0,
+                                            'due': orders.payStats == 'Due'
+                                                ? box.get('totalPrice')
+                                                : orders.payStats == 'Advance'
+                                                    ? box.get('totalPrice') -
+                                                        num.parse(
+                                                            controller.text)
+                                                    : 0,
+                                            'advance':
+                                                orders.payStats == 'Advance'
+                                                    ? num.parse(controller.text)
+                                                    : 0,
+                                            'profit': order['profit'],
+                                            'discount': 0,
+                                            'user_info': {
+                                              'name': order['customer_info']
+                                                  ['customer_name'],
+                                              'email': order['customer_info']
+                                                  ['email'],
+                                              'address': order['customer_info']
+                                                  ['address'],
+                                              'mobile': order['customer_info']
+                                                  ['mobile'],
+                                            },
+                                          };
+                                          if (kDebugMode) {
+                                            print('Map finished');
+                                          }
+                                          await FirebaseFirestore.instance
+                                              .collection('order')
+                                              .doc(widget.orderId)
+                                              .update({
+                                            'delivery_status':
+                                                orders.deliverStats,
+                                            'payment_status': orders.payStats,
+                                            'order_status': orders.orderStats,
+                                            'items': box.get('items'),
+                                            'price': box.get('totalPrice'),
+                                            'quantity': box.get('totalItems'),
+                                            'seen': true,
+                                            'employee_id': adminId,
+                                            'isFromCustomer': false,
+                                            'customerToken':
+                                                order['customerToken'],
+                                          }).then((value) async {
+                                            if (kDebugMode) {
+                                              print('order updated');
+                                            }
+                                            if (order['seen'] == false) {
+                                              OrderConfigs().updateNewOrders();
+                                            }
+                                            if (orders.orderStats ==
+                                                'confirm') {
+                                              if (order['role'] == 'agents') {
+                                                if (kDebugMode) {
+                                                  print('isAgent');
+                                                }
+                                                if (orders.payStats == 'Paid' ||
+                                                    orders.payStats ==
+                                                        'Advance') {
+                                                  adminCrud
+                                                      .updateWallet(
+                                                    documentId:
+                                                        order['customer_info']
+                                                            ['name'],
+                                                    balance:
+                                                        box.get('totalPrice'),
+                                                  )
+                                                      .then((value) async {
+                                                    snackBar(
+                                                        text:
+                                                            'Amount deducted from wallet..',
+                                                        context: context);
+                                                    snackBar(
+                                                        text:
+                                                            'Saving transaction data...',
+                                                        context: context);
+                                                    await adminCrud
+                                                        .createTransaction(
+                                                            invoiceNo,
+                                                            transInfo)
+                                                        .then(
+                                                      (value) {
+                                                        setState(() {
+                                                          isLoading = false;
+                                                        });
+                                                        showDialogBox(
+                                                          buildContext: context,
+                                                          msg:
+                                                              'Updated successfully',
+                                                        );
+                                                      },
+                                                    ).catchError((error) {
+                                                      setState(() {
+                                                        isLoading = false;
+                                                      });
+                                                      showDialogBox(
+                                                          buildContext: context,
+                                                          msg:
+                                                              'error occured. Try again...');
+                                                    });
+                                                  }).catchError((error) {
+                                                    FirebaseFirestore.instance
+                                                        .collection('order')
+                                                        .doc(widget.orderId)
+                                                        .update({
+                                                      'delivery_status':
+                                                          'Pending',
+                                                      'payment_status':
+                                                          'pending',
+                                                      'order_status': 'pending',
+                                                    }).then((value) {
+                                                      setState(() {
+                                                        isLoading = false;
+                                                      });
+                                                      showDialogBox(
+                                                          buildContext: context,
+                                                          msg:
+                                                              'Insufficient funds');
+                                                    });
+                                                  });
+                                                } else {
+                                                  if (kDebugMode) {
+                                                    print('making transaction');
+                                                  }
                                                   await adminCrud
                                                       .createTransaction(
                                                           invoiceNo, transInfo)
@@ -621,10 +731,14 @@ class _OrderInfoState extends State<OrderInfo>
                                                       });
                                                       showDialogBox(
                                                         buildContext: context,
-                                                        msg: 'Updated successfully',
+                                                        msg:
+                                                            'Updated successfully',
                                                       );
                                                     },
                                                   ).catchError((error) {
+                                                    if (kDebugMode) {
+                                                      print(error);
+                                                    }
                                                     setState(() {
                                                       isLoading = false;
                                                     });
@@ -633,23 +747,7 @@ class _OrderInfoState extends State<OrderInfo>
                                                         msg:
                                                             'error occured. Try again...');
                                                   });
-                                                }).catchError((error) {
-                                                  FirebaseFirestore.instance
-                                                      .collection('order')
-                                                      .doc(widget.orderId)
-                                                      .update({
-                                                    'delivery_status': 'Pending',
-                                                    'payment_status': 'pending',
-                                                    'order_status': 'pending',
-                                                  }).then((value) {
-                                                    setState(() {
-                                                      isLoading = false;
-                                                    });
-                                                    showDialogBox(
-                                                        buildContext: context,
-                                                        msg: 'Insufficient funds');
-                                                  });                                            
-                                                });
+                                                }
                                               } else {
                                                 if (kDebugMode) {
                                                   print('making transaction');
@@ -664,7 +762,8 @@ class _OrderInfoState extends State<OrderInfo>
                                                     });
                                                     showDialogBox(
                                                       buildContext: context,
-                                                      msg: 'Updated successfully',
+                                                      msg:
+                                                          'Updated successfully',
                                                     );
                                                   },
                                                 ).catchError((error) {
@@ -681,68 +780,39 @@ class _OrderInfoState extends State<OrderInfo>
                                                 });
                                               }
                                             } else {
-                                              if (kDebugMode) {
-                                                print('making transaction');
-                                              }
-                                              await adminCrud
-                                                  .createTransaction(
-                                                      invoiceNo, transInfo)
-                                                  .then(
-                                                (value) {
-                                                  setState(() {
-                                                    isLoading = false;
-                                                  });
-                                                  showDialogBox(
-                                                    buildContext: context,
-                                                    msg: 'Updated successfully',
-                                                  );
-                                                },
-                                              ).catchError((error) {
-                                                if (kDebugMode) {
-                                                  print(error);
-                                                }
-                                                setState(() {
-                                                  isLoading = false;
-                                                });
-                                                showDialogBox(
-                                                    buildContext: context,
-                                                    msg:
-                                                        'error occured. Try again...');
-                                              });
-                                            }
-                                          } else {
-                                            setState(() {
-                                              isLoading = false;
-                                            });
-                                            showDialogBox(
-                                              buildContext: context,
-                                              msg: 'Updated successfully',
-                                            );
-                                          }
-                                        }).catchError(
-                                          (value) {
-                                            print(value);
-                                            setState(
-                                              () {
+                                              setState(() {
                                                 isLoading = false;
-                                              },
-                                            );
-                                            showDialogBox(
+                                              });
+                                              showDialogBox(
                                                 buildContext: context,
-                                                msg: 'failed to update. Try again');
-                                          },
-                                        );
-                                      },
+                                                msg: 'Updated successfully',
+                                              );
+                                            }
+                                          }).catchError(
+                                            (value) {
+                                              print(value);
+                                              setState(
+                                                () {
+                                                  isLoading = false;
+                                                },
+                                              );
+                                              showDialogBox(
+                                                  buildContext: context,
+                                                  msg:
+                                                      'failed to update. Try again');
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  )                 
+                        ],
+                      ),
+                    )
                   : const Center(
                       child: Text(
                         '',
@@ -809,87 +879,8 @@ Widget customerInfo({required Map info}) {
               ),
             ],
           ),
-        ),                        
-      ],
-    ),
-  );
-}
-
-Widget orderProduct({required Map product, onPress,bool isWithButton = true, void  Function()? onLongPress}) {
-  return Container(
-    padding: const EdgeInsets.all(10.0),
-    height: 60.0,
-    decoration: const BoxDecoration(
-      border: Border(
-        bottom: BorderSide(
-          color: kStrokeColor,
         ),
-      ),
-    ),
-    child: GestureDetector(
-      onLongPress: onLongPress,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.inventory_2_outlined,
-                color: kBlueColor,
-                size: 25.0,
-              ),
-              const SizedBox(
-                width: 4.0,
-              ),
-              Text(
-                '${product['quantity'].toString()} X',
-                style: kProductNameStylePro,
-              ),
-              const SizedBox(
-                width: 7.0,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${product['product_name']} (${product['product_id']})',
-                    style: const TextStyle(
-                      color: kSubMainColor,
-                      fontFamily: 'Montserrat',
-                      fontSize: 15,
-                      letterSpacing: 1.3,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '${product['unit_price'].toString()}৳',
-                    style: kTotalTextStyle,
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Text(
-                '${product['product_price'].toString()}৳',
-                style: kTotalTextStyle,
-              ),
-              const SizedBox(
-                width: 5.0,
-              ),
-              isWithButton ?
-              IconButton(
-                onPressed: onPress,
-                icon: const Icon(Icons.delete),
-                color: kRedColor,
-                iconSize: 25.0,
-              ) : const SizedBox(),
-            ],
-          ),
-        ],
-      ),
+      ],
     ),
   );
 }
@@ -911,34 +902,35 @@ class OrderProducts extends StatelessWidget {
               children: List.generate(
                 items.length,
                 (index) {
-                  return orderProduct(
-                    onLongPress: (){
+                  return OrderProduct(
+                    onLongPress: () {
                       final List items = Hive.box(productsBox).get(productsKey);
-                      final Map item = items.firstWhere((element) => element['product_id'] == items[index]['product_id']);
-                      num currentPrice = getCurrentPrice(
-                          item, box.get('role'));
-                      Tuple3<num, num, bool> discountData =
-                      computeDiscountData(item,
-                          box.get('role'), currentPrice);
-                      showDialog<void>(context: context, builder: (context){
-                        return PopWidget(
-                          image: item['image'],
-                          productName: item['name'],
-                          price: currentPrice.toString(),
-                          description: item
-                          ['description'],
-                          category: item['category'],
-                          quantity: item['quantity']
-                              .toString(),
-                          info: item,
-                          routeName: HomeScreen.path,
-                          isDiscount: discountData.item3,
-                          discountPrice: discountData.item1,
-                          sellBy: item['sell_by'],
-                        );
-                      });
+                      final Map item = items.firstWhere((element) =>
+                          element['product_id'] == items[index]['product_id']);
+                      num currentPrice = getCurrentPrice(item, box.get('role'));
+                      Tuple3<num, num, bool> discountData = computeDiscountData(
+                          item, box.get('role'), currentPrice);
+                      showDialog<void>(
+                          context: context,
+                          builder: (context) {
+                            return PopWidget(
+                              image: item['image'],
+                              productCode: item['productId'],
+                              productName: item['name'],
+                              price: currentPrice.toString(),
+                              description: item['description'],
+                              category: item['category'],
+                              quantity: item['quantity'].toString(),
+                              info: item,
+                              routeName: HomeScreen.path,
+                              isDiscount: discountData.item3,
+                              discountPrice: discountData.item1,
+                              sellBy: item['sell_by'],
+                            );
+                          });
                     },
                     product: items[index],
+                    index: index,
                     onPress: () {
                       num price = box.get('totalPrice'),
                           quantity = box.get('totalItems');

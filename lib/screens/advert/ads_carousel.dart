@@ -9,6 +9,7 @@ import 'package:viraeshop_admin/components/styles/gradients.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import 'ads_card.dart';
@@ -52,6 +53,7 @@ class AdsCarousel extends StatelessWidget {
                       'title2': 'Title 2',
                       'title3': 'Title 3',
                       'image': '',
+                      'imagePath': '',
                       'adId': adId,
                       'adsCategory': adsId,
                       'isEdit': false,
@@ -61,12 +63,12 @@ class AdsCarousel extends StatelessWidget {
                   child: Container(
                     height: 150.0,
                     width: 100.0,
-                    margin: EdgeInsets.all(10.0),
+                    margin: const EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
                       gradient: kLinearGradient,
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'New',
                         style: kTableHeadingStyle,
@@ -75,8 +77,8 @@ class AdsCarousel extends StatelessWidget {
                   ),
                 );
               }
-              String currentId = ads[itemIndex]['adId'];
               String imageLink = ads[itemIndex]['image'];
+              String currentId = ads[itemIndex]['adId'];
               return AdsCard(
                 isEdit: ads[itemIndex]['isEdit'],
                 title1: ads[itemIndex]['title1'],
@@ -92,7 +94,16 @@ class AdsCarousel extends StatelessWidget {
                   Provider.of<AdsProvider>(context, listen: false)
                       .onEdit(ads[itemIndex]['adId'], true);
                 },
-                getImage: () {
+                getImage: () async{
+                  if(imageLink.isNotEmpty){
+                    try{
+                      await NetworkUtility.deleteImage(imageLink);
+                    }on FirebaseException catch (e){
+                      if(kDebugMode){
+                        print(e);
+                      }
+                    }
+                  }
                   if(kIsWeb){
                     getImageWeb('ads_banners').then((value) {
                       Provider.of<AdsProvider>(context, listen: false).saveImages(
@@ -118,31 +129,18 @@ class AdsCarousel extends StatelessWidget {
                       .updateAdCard(currentId, title1, title2, title3);
                   Provider.of<AdsProvider>(context, listen: false)
                       .onEdit(currentId, false);
-                  if(ads[itemIndex]['imagePath'] != null || ads[itemIndex]['imageBytes'] != null){
-                    try{
-                      await NetworkUtility.deleteImage(imageLink);
-                      snackBar(text: 'Editing Done', context: context, color: kNewMainColor, duration: 100);
-                    }on FirebaseException catch (e){
-                      if(kDebugMode){
-                        print(e);
-                      }
-                      snackBar(text: e.message!, context: context, color: kRedColor, duration: 100);
-                    }
-                  }
                 },
                 onDelete: () async{
                   Provider.of<AdsProvider>(context, listen: false)
                       .deleteAdCard(ads[itemIndex]['adId']);
                   try{
                     await NetworkUtility.deleteImage(imageLink);
-                    snackBar(text: 'Deleted successfully', context: context, color: kNewMainColor, duration: 100);
+                    toast(context: context, title: 'Deleted..');
                   }on FirebaseException catch (e){
                     if(kDebugMode){
                       print(e);
                     }
-                   // snackBar(text: e.message!, context: context, color: kRedColor, duration: 100);
                   }
-                  //print('Original Advert List: ${childs.adCards}');
                 },
               );
             },

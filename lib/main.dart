@@ -8,6 +8,7 @@ import 'package:viraeshop_admin/animation_testing.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
+import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/about_us_page.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
@@ -127,6 +128,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => GeneralProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => OrderProvider(),
         ),
       ],
       child: BlocProvider(

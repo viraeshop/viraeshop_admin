@@ -16,7 +16,7 @@ Future<void> shareInvoice({
   required subTotal,
   required List items,
   required String mobile,
-  required  String date,
+  required String date,
   List payList = const [],
   bool isSave = false,
   address,
@@ -202,7 +202,7 @@ Future<void> shareInvoice({
       bounds: Rect.fromLTWH(graphics.clientSize.width - textSize1.width,
           gridResult.bounds.bottom + 50, 0, 0));
   // sub total
-  String subTotals = 'Sub Total $subTotal BDT';
+  String subTotals = 'Sub Total $subTotal  BDT';
   Size subTotalSize = timesRoman.measureString(subTotals);
   gridResult.page.graphics.drawString(subTotals, timesRoman,
       brush: PdfSolidBrush(color),
@@ -216,9 +216,10 @@ Future<void> shareInvoice({
       brush: PdfSolidBrush(color),
       bounds: Rect.fromLTWH(graphics.clientSize.width - textSize2.width,
           gridResult.bounds.bottom + 90, 0, 0));
+
   ///pay list
   int spacing = 110;
-  for (var element in payList){
+  for (var element in payList) {
     Timestamp timestamp = element['date'];
     final formatter = DateFormat('MM/dd/yyyy');
     String dateTime = formatter.format(
@@ -232,6 +233,7 @@ Future<void> shareInvoice({
             gridResult.bounds.bottom + spacing, 0, 0));
     spacing += 20;
   }
+
   /// Due
   String dueText = 'Due $due BDT';
   Size dueSize = timesRoman.measureString(dueText);
@@ -246,18 +248,31 @@ Future<void> shareInvoice({
   gridResult.page.graphics.drawString(paidText, timesRoman,
       brush: PdfSolidBrush(color),
       bounds: Rect.fromLTWH(graphics.clientSize.width - paidSize.width,
-          gridResult.bounds.bottom + spacing+20, 0, 0));
+          gridResult.bounds.bottom + spacing + 20, 0, 0));
+
+  /// total amount
+  String amountText = 'Amount $subTotal BDT';
+  Size amountSize = timesRoman.measureString(amountText);
+  gridResult.page.graphics.drawString(amountText, timesRoman,
+      brush: PdfSolidBrush(color),
+      bounds: Rect.fromLTWH(graphics.clientSize.width - amountSize.width,
+          gridResult.bounds.bottom + spacing + 40, 0, 0));
   //Save the document
   List<int> bytes = document.save();
-  if(isSave){
-    try{
-      await FileSaver.instance.saveFile('viraeshop_invoice$invoiceId.pdf', Uint8List.fromList(bytes), 'PDF');
-    }catch (e){
+  if (isSave) {
+    try {
+      await FileSaver.instance.saveAs(
+        'viraeshop_invoice$invoiceId.pdf',
+        Uint8List.fromList(bytes),
+        'PDF',
+        MimeType.PDF,
+      );
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
     }
-  }else{
+  } else {
     await Printing.sharePdf(
         bytes: Uint8List.fromList(bytes),
         filename: 'viraeshop_invoice$invoiceId.pdf');

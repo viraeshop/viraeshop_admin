@@ -14,6 +14,7 @@ import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
+import 'package:viraeshop_admin/screens/photoslide_show.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
@@ -22,8 +23,8 @@ import '../general_provider.dart';
 class CustomerInfoScreen extends StatefulWidget {
   final Map info;
   final bool isNew;
-  const CustomerInfoScreen({required this.info, this.isNew = false});
-
+  const CustomerInfoScreen({required this.info, this.isNew = false, Key? key})
+      : super(key: key);
   @override
   _CustomerInfoScreenState createState() => _CustomerInfoScreenState();
 }
@@ -39,7 +40,9 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
   void initState() {
 // TODO: implement initState
     userInfo = widget.info;
-    print('userId: ${userInfo['userId']}');
+    if (kDebugMode) {
+      print('userId: ${userInfo['userId']}');
+    }
     strings['currentEmail'] = userInfo['email'];
     strings['currentName'] = userInfo['name'];
     strings['currentAddress'] = userInfo['address'];
@@ -62,7 +65,8 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
         _preferences.addControllers =
             TextEditingController(text: userInfo['idNumber']);
         _preferences.addIconData = Icons.badge_outlined;
-        strings['idImage'] = userInfo['idImage'];
+        strings['idFrontImage'] = userInfo['idFrontImage'];
+        strings['idBackImage'] = userInfo['idBackImage'];
       }
     } else if (userInfo['role'] == 'agents') {
       _preferences.addHint = 'Business name';
@@ -100,95 +104,55 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
         color: kBackgroundColor,
         padding: const EdgeInsets.all(15.0),
         child: SingleChildScrollView(
-          child: Consumer<GeneralProvider>(
-            builder: (context, user, childs) {
-              return Column(
-                children: [
-                  const SizedBox(
-                    height: 20.0,
-                  ),
-                  Column(
-                    children: List.generate(_preferences.getHint.length, (i) {
-                      return Column(
+          child: Consumer<GeneralProvider>(builder: (context, user, childs) {
+            return Column(
+              children: [
+                const SizedBox(
+                  height: 20.0,
+                ),
+                Column(
+                  children: List.generate(_preferences.getHint.length, (i) {
+                    return Column(
+                      children: [
+                        NewTextField(
+                          onTap: i == 1 && !user.isEditUser
+                              ? () async {
+                                  String number =
+                                      _preferences.getControllers[i].text;
+                                  final url = Uri.parse('tel:$number');
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url);
+                                  }
+                                }
+                              : null,
+                          readOnly: !user.isEditUser,
+                          controller: _preferences.getControllers[i],
+                          prefixIcon: Icon(
+                            _preferences.getIconData[i],
+                            color: kNewMainColor,
+                            size: 20,
+                          ),
+                          labelText: _preferences.getHint[i],
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+                const SizedBox(
+                  height: 20.0,
+                ),
+                userInfo['role'] == 'agents' && userInfo['binNumber'] != null
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          NewTextField(
-                            onTap: i == 1 && !user.isEditUser ? () async{
-                             String number = _preferences.getControllers[i].text;
-                             final url = Uri.parse('tel:$number');
-                             if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                              }
-                            } : null,
-                            readOnly: !user.isEditUser,
-                            controller: _preferences.getControllers[i],
-                            prefixIcon: Icon(
-                              _preferences.getIconData[i],
-                              color: kNewMainColor,
-                              size: 20,
-                            ),
-                            labelText: _preferences.getHint[i],
-                          ),
-                          const SizedBox(
-                            height: 10.0,
-                          ),
-                        ],
-                      );
-                    }),
-                  ),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
-                  userInfo['role'] == 'agents' && userInfo['binNumber'] != null
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(10.0),
-                                height: screenSize.height * 0.23,
-                                // width: screenSize.width,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: kSubMainColor,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(100.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: strings['binImage']!,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(10.0),
-                                height: screenSize.height * 0.23,
-                                // width: screenSize.width,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: kSubMainColor,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(100.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: strings['tinImage']!,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : userInfo['role'] == 'architect' &&
-                              userInfo['idType'] != null
-                          ? Container(
+                          Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.all(10.0),
                               height: screenSize.height * 0.23,
-                              width: screenSize.width,
+                              // width: screenSize.width,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12.0),
                                 border: Border.all(
@@ -198,232 +162,308 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100.0),
                                 child: CachedNetworkImage(
-                                  imageUrl: strings['idImage']!,
+                                  imageUrl: strings['binImage']!,
                                   fit: BoxFit.fill,
                                 ),
                               ),
-                            )
-                          : const SizedBox(),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
-                  widget.isNew
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            DialogButton(
-                              onTap: () async {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                AdminCrud adminCrud = AdminCrud();
-                                Map<String, dynamic> fields = {
-                                  'name': widget.info['name'],
-                                  'mobile': widget.info['mobile'],
-                                  'email': widget.info['email'],
-                                  'address': widget.info['address'],
-                                  'role': widget.info['role'],
-                                  'userId': widget.info['userId'],
-                                };
-                                if (widget.info['role'] == 'architect') {
-                                  fields['idType'] = widget.info['idType'];
-                                  fields['idNumber'] = widget.info['idNumber'];
-                                  fields['idImage'] = widget.info['idImage'];
-                                } else {
-                                  fields['binNumber'] = widget.info['binNumber'];
-                                  fields['tinNumber'] = widget.info['tinNumber'];
-                                  fields['binImage'] = widget.info['binImage'];
-                                  fields['tinImage'] = widget.info['tinImage'];
-                                  fields['wallet'] = widget.info['wallet'];
-                                }
-                                adminCrud
-                                    .addCustomer(widget.info['userId'], fields)
-                                    .then((value) {
-                                  adminCrud
-                                      .deleteCustomerRequest(widget.info['userId'])
-                                      .then((value) {
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    showMyDialog(
-                                      'Customer account created successfully',
-                                      context,
-                                    );
-                                  }).catchError((error) {
-                                    if (kDebugMode) {
-                                      print(error);
-                                    }
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                    snackBar(
-                                      text: 'Failed please try again.',
-                                      context: context,
-                                      duration: 10,
-                                    );
-                                  });
-                                }).catchError((error) {
-                                  print('Adding customer $error');
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  showMyDialog(
-                                      'An error occured failed to add customer',
-                                      context);
-                                });
-                              },
-                              title: 'Accept',
-                              width: double.infinity,
-                              radius: 10.0,
-                              color: kNewTextColor,
                             ),
-                            const SizedBox(
-                              height: 15.0,
+                          ),
+                          Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.all(10.0),
+                              height: screenSize.height * 0.23,
+                              // width: screenSize.width,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.0),
+                                border: Border.all(
+                                  color: kSubMainColor,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: strings['tinImage']!,
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
                             ),
-                            DialogButton(
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        content: const Text(
-                                          'Are you sure you want to decline this request?',
-                                          style: kProductNameStylePro,
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () async {
-                                              setState(() {
-                                                isLoading = true;
-                                              });
-                                              Navigator.pop(context);
-                                              AdminCrud adminCrud = AdminCrud();
-                                              Map<String, dynamic> fields = {
-                                                'name': widget.info['name'],
-                                                'mobile': widget.info['mobile'],
-                                                'email': widget.info['email'],
-                                                'address': widget.info['address'],
-                                                'role': 'general',
-                                                'userId': widget.info['userId'],
-                                              };
-                                              adminCrud
-                                                  .addCustomer(
-                                                      widget.info['userId'], fields)
-                                                  .then((value) async {
-                                                await adminCrud
-                                                    .deleteCustomerRequest(
-                                                        widget.info['userId']);
-                                                if (widget.info['role'] ==
-                                                    'architect') {
-                                                  await NetworkUtility.deleteImage(
-                                                      widget.info['idImage']);
-                                                } else {
-                                                  await NetworkUtility.deleteImage(
-                                                      widget.info['binImage']);
-                                                  await NetworkUtility.deleteImage(
-                                                      widget.info['tinImage']);
-                                                }
-                                                setState(() {
-                                                  isLoading = false;
-                                                });
-                                                showMyDialog(
-                                                    'Customer account created successfully',
-                                                    context);
-                                              }).catchError((error) {
-                                                if (kDebugMode) {
-                                                  print(
-                                                      'Customer Request deleting error: $error');
-                                                }
-                                                setState(() {
-                                                  isLoading = false;
-                                                });
-                                                showMyDialog(
-                                                    'An error occured. failed to change customer to general category. please try again',
-                                                    context);
-                                              });
-                                            },
-                                            child: const Text(
-                                              'Yes',
-                                              style: kProductNameStylePro,
-                                            ),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'No',
-                                              style: kProductNameStylePro,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    });
-                              },
-                              title: 'Decline',
-                              width: double.infinity,
-                              radius: 10.0,
-                              color: kBackgroundColor,
-                              isBorder: true,
-                              borderColor: kNewTextColor,
-                            ),
-                          ],
-                        )
-                      : const SizedBox(),
-                  !widget.isNew && user.isEditUser
-                      ? DialogButton(
-                          onTap: () async {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            Map<String, dynamic> fields = {
-                              'name': _preferences.getControllers[0].text,
-                              'mobile': _preferences.getControllers[1].text,
-                              'email': _preferences.getControllers[2].text,
-                              'address': _preferences.getControllers[3].text,
-                            };
-                            if (widget.info['role'] != 'general') {
-                              fields['business_name'] =
-                                  _preferences.getControllers[4].text;
-                              fields['business_name'] =
-                                  _preferences.getControllers[4].text;
-                              List searchKeywords = _preferences
-                                  .getControllers[0].text
-                                  .toUpperCase()
-                                  .characters
-                                  .toList();
-                              searchKeywords.addAll(_preferences
-                                  .getControllers[4].text
-                                  .toUpperCase()
-                                  .characters
-                                  .toList());
-                              searchKeywords
-                                  .removeWhere((element) => element == ' ');
-                              searchKeywords = Set.from(searchKeywords).toList();
-                              fields['search_keywords'] = searchKeywords;
-                            }
-                            try {
-                              await NetworkUtility.updateUser(
-                                  widget.info['userId'], fields);
-                            } catch (e) {
-                              if (kDebugMode) {
-                                print(e);
-                              }
-                            } finally {
+                          ),
+                        ],
+                      )
+                    : userInfo['role'] == 'architect' &&
+                            userInfo['idType'] != null
+                        ? Column(
+                            children: [
+                              IdWidget(
+                                screenSize: screenSize,
+                                url: strings['idFrontImage']!,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return PhotoSlideShow(images: [
+                                          strings['idFrontImage'],
+                                          strings['idBackImage']
+                                        ]);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(
+                                height: 10.0,
+                              ),
+                              IdWidget(
+                                screenSize: screenSize,
+                                url: strings['idBackImage']!,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) {
+                                        return PhotoSlideShow(
+                                            initialPage: 1,
+                                            images: [
+                                              strings['idFrontImage'],
+                                              strings['idBackImage']
+                                            ]);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          )
+                        : const SizedBox(),
+                const SizedBox(
+                  height: 20.0,
+                ),
+                widget.isNew
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          DialogButton(
+                            onTap: () async {
                               setState(() {
-                                isLoading = false;
+                                isLoading = true;
                               });
+                              AdminCrud adminCrud = AdminCrud();
+                              Map<String, dynamic> fields = {
+                                'role': widget.info['role'],
+                                'business_name': widget.info['business_name']
+                              };
+                              try {
+                                await NetworkUtility.updateUser(
+                                    widget.info['userId'], fields);
+                                await NetworkUtility.deleteCustomerRequest(
+                                    widget.info['userId']);
+                                if (widget.info['role'] == 'architect') {
+                                  await NetworkUtility.deleteImage(
+                                      widget.info['idFrontImage']);
+                                  await NetworkUtility.deleteImage(
+                                      widget.info['idBackImage']);
+                                } else if (widget.info['role'] == 'agents') {
+                                  await NetworkUtility.deleteImage(
+                                      widget.info['tinImage']);
+                                  await NetworkUtility.deleteImage(
+                                      widget.info['binImage']);
+                                }
+                              } on FirebaseException catch (e) {
+                                if (kDebugMode) {
+                                  print(e.message);
+                                }
+                                snackBar(
+                                    text: e.message!,
+                                    context: context,
+                                    color: kRedColor);
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
+                            title: 'Accept',
+                            width: double.infinity,
+                            radius: 10.0,
+                            color: kNewTextColor,
+                          ),
+                          const SizedBox(
+                            height: 15.0,
+                          ),
+                          DialogButton(
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: const Text(
+                                        'Are you sure you want to decline this request?',
+                                        style: kProductNameStylePro,
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () async {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                            Navigator.pop(context);
+                                            try {
+                                              await NetworkUtility
+                                                  .deleteCustomerRequest(
+                                                      widget.info['userId']);
+                                              if (widget.info['role'] ==
+                                                  'architect') {
+                                                await NetworkUtility
+                                                    .deleteImage(widget
+                                                        .info['idFrontImage']);
+                                                await NetworkUtility
+                                                    .deleteImage(widget
+                                                        .info['idBackImage']);
+                                              } else if (widget.info['role'] ==
+                                                  'agents') {
+                                                await NetworkUtility
+                                                    .deleteImage(widget
+                                                        .info['tinImage']);
+                                                await NetworkUtility
+                                                    .deleteImage(widget
+                                                        .info['binImage']);
+                                              }
+                                            } on FirebaseException catch (e) {
+                                              if (kDebugMode) {
+                                                print(e.message);
+                                              }
+                                              snackBar(
+                                                  text: e.message!,
+                                                  context: context,
+                                                  color: kRedColor);
+                                            } finally {
+                                              setState(() {
+                                                isLoading = false;
+                                              });
+                                            }
+                                          },
+                                          child: const Text(
+                                            'Yes',
+                                            style: kProductNameStylePro,
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            'No',
+                                            style: kProductNameStylePro,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  });
+                            },
+                            title: 'Decline',
+                            width: double.infinity,
+                            radius: 10.0,
+                            color: kBackgroundColor,
+                            isBorder: true,
+                            borderColor: kNewTextColor,
+                          ),
+                        ],
+                      )
+                    : const SizedBox(),
+                !widget.isNew && user.isEditUser
+                    ? DialogButton(
+                        onTap: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          Map<String, dynamic> fields = {
+                            'name': _preferences.getControllers[0].text,
+                            'mobile': _preferences.getControllers[1].text,
+                            'email': _preferences.getControllers[2].text,
+                            'address': _preferences.getControllers[3].text,
+                          };
+                          if (widget.info['role'] != 'general') {
+                            fields['business_name'] =
+                                _preferences.getControllers[4].text;
+                            fields['business_name'] =
+                                _preferences.getControllers[4].text;
+                            List searchKeywords = _preferences
+                                .getControllers[0].text
+                                .toUpperCase()
+                                .characters
+                                .toList();
+                            searchKeywords.addAll(_preferences
+                                .getControllers[4].text
+                                .toUpperCase()
+                                .characters
+                                .toList());
+                            searchKeywords
+                                .removeWhere((element) => element == ' ');
+                            searchKeywords = Set.from(searchKeywords).toList();
+                            fields['search_keywords'] = searchKeywords;
+                          }
+                          try {
+                            await NetworkUtility.updateUser(
+                                widget.info['userId'], fields);
+                          } catch (e) {
+                            if (kDebugMode) {
+                              print(e);
                             }
-                          },
-                          title: 'Update',
-                          width: double.infinity,
-                          radius: 10.0,
-                          color: kNewTextColor,
-                        )
-                      : const SizedBox()
-                ],
-              );
-            }
+                          } finally {
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
+                        },
+                        title: 'Update',
+                        width: double.infinity,
+                        radius: 10.0,
+                        color: kNewTextColor,
+                      )
+                    : const SizedBox()
+              ],
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}
+
+class IdWidget extends StatelessWidget {
+  const IdWidget({
+    Key? key,
+    required this.screenSize,
+    required this.url,
+    this.onTap,
+  }) : super(key: key);
+
+  final Size screenSize;
+  final String url;
+  final void Function()? onTap;
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: screenSize.height * 0.23,
+        width: screenSize.width,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(url),
+            fit: BoxFit.fill,
+          ),
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(
+            color: kSubMainColor,
+          ),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.crop_free,
+            color: kBackgroundColor,
+            size: 50.0,
           ),
         ),
       ),

@@ -165,7 +165,8 @@ class _CustomersState extends State<Customers> {
                           leading: CircleAvatar(
                             radius: 60.0,
                             backgroundColor: kNewTextColor,
-                            child: Text('${i + 1}'),
+                            backgroundImage: NetworkImage(customersList[i - 1]['profileImage'] ?? ''),
+                            child: Text('${i}'),
                           ),
                           trailing: const Icon(Icons.arrow_right),
                           title: Text('${customersList[i - 1]['name']}',
@@ -173,7 +174,7 @@ class _CustomersState extends State<Customers> {
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if(widget.role != 'general') Text(
+                              if(customersList[i - 1]['role'] != 'general') Text(
                                 '${customersList[i - 1]['business_name']}',
                                 style: kProductNameStylePro,
                               ),

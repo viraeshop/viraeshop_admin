@@ -9,6 +9,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/invoice.dart';
 import 'package:viraeshop_admin/configs/share_invoice.dart';
 import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
+import 'package:viraeshop_admin/reusable_widgets/buttons/round_button.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
@@ -31,6 +32,7 @@ class DueReceipt extends StatefulWidget {
 class _DueReceiptState extends State<DueReceipt> {
   DateTime date = DateTime.now();
   List items = [];
+  List<bool> isEditItem = [];
   String quantity = '0';
   final TextEditingController controller = TextEditingController();
   final TextEditingController discountController = TextEditingController();
@@ -56,6 +58,7 @@ class _DueReceiptState extends State<DueReceipt> {
     }
     date = timestamp.toDate();
     items = item;
+    isEditItem = List.generate(items.length, (index) => false);
     quantity = totalQuantity.toString();
     due = widget.data['due'];
     print('due: $due');
@@ -240,7 +243,8 @@ class _DueReceiptState extends State<DueReceipt> {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding:
+                    const EdgeInsets.only(left: 0.0, top: 10.0, bottom: 10.0),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: ListView.builder(
@@ -248,30 +252,125 @@ class _DueReceiptState extends State<DueReceipt> {
                     shrinkWrap: true,
                     itemCount: items.length,
                     itemBuilder: (BuildContext context, int i) {
-                      num unitPrice = widget.data['items'][i]['product_price'] /
-                          widget.data['items'][i]['quantity'];
-                      return ListTile(
-                        leading: Text(
-                          '${widget.data['items'][i]['quantity'].toString()} X',
-                          style: kProductNameStylePro,
+                      num unitPrice = items[i]['unit_price'];
+                      return Row(children: [
+                        Column(
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  isEditItem[i] = !isEditItem[i];
+                                });
+                              },
+                              child: Text(
+                                '${items[i]['quantity'].toString()} X',
+                                style: kProductNameStylePro,
+                              ),
+                            ),
+                            if (isEditItem[i])
+                              Row(
+                                children: [
+                                  RoundButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        items[i]['quantity'] += 1;
+                                        subTotal -= items[i]['product_price'];
+                                        items[i]['product_price'] =
+                                            unitPrice * items[i]['quantity'];
+                                        subTotal += items[i]['product_price'];
+                                      });
+                                    },
+                                    icon: Icons.add,
+                                    color: kNewMainColor,
+                                    size: 20.0,
+                                  ),
+                                  RoundButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        if (items[i][quantity] != 0) {
+                                          items[i]['quantity'] -= 1;
+                                          subTotal -= items[i]['product_price'];
+                                          items[i]['product_price'] =
+                                              unitPrice * items[i]['quantity'];
+                                          subTotal += items[i]['product_price'];
+                                        }
+                                      });
+                                    },
+                                    icon: Icons.remove,
+                                    color: kNewMainColor,
+                                    size: 20.0,
+                                  ),
+                                ],
+                              ),
+                          ],
                         ),
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.45,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${items[i]['product_name']} (${items[i]['product_id']})',
+                                style: kProductNameStylePro,
+                                softWrap: true,
+                              ),
+                              Text(
+                                '${unitPrice.toString()}$bdtSign',
+                                style: kProductNameStylePro,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10.0,
+                        ),
+                        Row(
                           children: [
                             Text(
-                              '${widget.data['items'][i]['product_name']} (${widget.data['items'][i]['product_id']})',
-                              style: kProductNameStylePro,
+                                '${items[i]['product_price']}$bdtSign'
+                                    .toString(),
+                                style: kProductNameStylePro),
+                            const SizedBox(
+                              width: 5.0,
                             ),
-                            Text(
-                              unitPrice.toString(),
-                              style: kProductNameStylePro,
+                            IconButton(
+                              onPressed: () async {
+                                try {
+                                  await NetworkUtility.updateProducts(
+                                      items, true);
+                                  List products =
+                                      Hive.box(productsBox).get(productsKey);
+                                  for (var item in items) {
+                                    if (item['isInventory']) {
+                                      final itemId = item['product_id'];
+                                      for (var product in products) {
+                                        if (product['productId'] == itemId) {
+                                          int quantity = product['quantity'] +
+                                              item['quantity'];
+                                          product['quantity'] = quantity;
+                                        }
+                                      }
+                                    }
+                                  }
+                                  Hive.box(productsBox)
+                                      .put(productsKey, products);
+                                  setState(() {
+                                    subTotal -= items[i]['product_price'];
+                                    items.removeAt(i);
+                                  });
+                                } on FirebaseException catch (e) {
+                                  if (kDebugMode) {
+                                    print(e.message);
+                                  }
+                                }
+                              },
+                              icon: const Icon(Icons.delete),
+                              iconSize: 20.0,
+                              color: kRedColor,
                             ),
                           ],
                         ),
-                        trailing: Text(
-                            widget.data['items'][i]['product_price'].toString(),
-                            style: kProductNameStylePro),
-                      );
+                      ]);
                     },
                   ),
                 ),
@@ -462,7 +561,7 @@ class _DueReceiptState extends State<DueReceipt> {
                           isSave: true,
                           totalItems: items.length.toString(),
                           totalQuantity: quantity,
-                          subTotal: widget.data['price'].toString(),
+                          subTotal: subTotal.toString(),
                           items: items,
                           mobile: widget.data['user_info']['mobile'],
                           address: widget.data['user_info']['address'],
@@ -496,7 +595,7 @@ class _DueReceiptState extends State<DueReceipt> {
                       shareInvoice(
                         totalItems: items.length.toString(),
                         totalQuantity: quantity,
-                        subTotal: widget.data['price'].toString(),
+                        subTotal: subTotal.toString(),
                         items: items,
                         mobile: widget.data['user_info']['mobile'],
                         address: widget.data['user_info']['address'],
@@ -532,6 +631,7 @@ class _DueReceiptState extends State<DueReceipt> {
                           'due': due,
                           'pay_list': payList,
                           'paid': paid,
+                          'items': items,
                         });
                       } catch (e) {
                         if (kDebugMode) {

@@ -55,8 +55,17 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
   List availableBluetoothDevices = [];
   @override
   void initState() {
+    updateConnected();
     super.initState();
 
+  }
+  void updateConnected () async{
+    final status = await BluetoothThermalPrinter.connectionStatus;
+    if(status == 'true'){
+      setState(() {
+        connected = true;
+      });
+    }
   }
   Future<void> getBluetooth() async {
     final List? bluetooths = await BluetoothThermalPrinter.getBluetooths;
@@ -238,7 +247,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
    for (var element in widget.items) {
       bytes += receipt.row([
         PosColumn(text: '${element['quantity']}x', width: 1, styles: const PosStyles(align: PosAlign.left),),
-        PosColumn(text: element['product_name']+(element['product_id']), width: 7),
+        PosColumn(text: element['product_name']+' (${element['product_id']})', width: 7),
         PosColumn(
           text: element['unit_price'].toString(), width: 2, styles: const PosStyles(align: PosAlign.right),),
         PosColumn(

@@ -4,6 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:viraeshop/admin/admin_bloc.dart';
+import 'package:viraeshop/adverts/adverts_bloc.dart';
+import 'package:viraeshop/customers/barrel.dart';
+import 'package:viraeshop/items/barrel.dart';
+import 'package:viraeshop/orders/barrel.dart';
+import 'package:viraeshop/products/barrel.dart';
+import 'package:viraeshop/shops/barrel.dart';
+import 'package:viraeshop/suppliers/barrel.dart';
+import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/animation_testing.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
@@ -28,6 +37,15 @@ import 'package:viraeshop_admin/screens/products_screen.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 import 'package:viraeshop_admin/screens/splash_screen.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:viraeshop_api/apiCalls/admins.dart';
+import 'package:viraeshop_api/apiCalls/adverts.dart';
+import 'package:viraeshop_api/apiCalls/customers.dart';
+import 'package:viraeshop_api/apiCalls/items.dart';
+import 'package:viraeshop_api/apiCalls/orders.dart';
+import 'package:viraeshop_api/apiCalls/products.dart';
+import 'package:viraeshop_api/apiCalls/shops.dart';
+import 'package:viraeshop_api/apiCalls/suppliers.dart';
+import 'package:viraeshop_api/apiCalls/transactions.dart';
 import 'components/styles/colors.dart';
 import 'components/styles/text_styles.dart';
 import 'reusable_widgets/hive/cart_model.dart';
@@ -42,6 +60,8 @@ import 'screens/orders/order_configs.dart';
 import 'screens/transaction_screen.dart';
 import 'screens/transactions/user_transaction_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import 'tests/test_api.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -133,15 +153,59 @@ void main() async {
           create: (context) => OrderProvider(),
         ),
       ],
-      child: BlocProvider(
-          create: (BuildContext context) => ProductBloc(GeneralCrud()),
-          child: MyApp()),
+      child: MultiBlocProvider(providers: [
+        BlocProvider(
+          create: (BuildContext context) => AdminBloc(
+            adminCalls: AdminCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => AdvertsBloc(
+            advertCalls: AdvertCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => CustomersBloc(
+            customerCalls: CustomerCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => ItemsBloc(
+            itemCalls: ItemCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => OrdersBloc(
+            orderCalls: OrderCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => ProductsBloc(
+            productCalls: ProductCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => ShopsBloc(
+            shopCalls: ShopCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => SuppliersBloc(
+            supplierCalls: SupplierCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => TransactionsBloc(
+            transactionCalls: TransactionCalls(),
+          ),
+        ),
+      ], child: const MyApp()),
     ),
   );
 }
 
 class MyApp extends StatefulWidget {
-  MyApp({Key? key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -174,14 +238,15 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
-      //home: BluetoothPrinter(),
+      //home: const TestApi(),
       initialRoute: SplashScreen.path,
       routes: {
         SplashScreen.path: (context) => const SplashScreen(),
         HomeScreen.path: (context) => const HomeScreen(),
         GeneralProducts.path: (context) => const GeneralProducts(),
         AgentProducts.agentProducts: (context) => const AgentProducts(),
-        ArchitectProducts.architectProducts: (context) => const ArchitectProducts(),
+        ArchitectProducts.architectProducts: (context) =>
+            const ArchitectProducts(),
         Products.productsPath: (context) => const Products(),
         LoginPage.path: (context) => const LoginPage(),
         TransactionDetails.path: (context) => const TransactionDetails(),

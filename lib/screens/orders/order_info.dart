@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/orders/customer_order_history.dart';
@@ -559,7 +560,7 @@ class _OrderInfoState extends State<OrderInfo>
                                           String adminName =
                                               Hive.box('adminInfo').get('name',
                                                   defaultValue: '');
-                                          String invoiceNo = randomNumeric(4);
+                                          String invoiceNo = generateInvoiceNumber().toString();
                                           while (invoiceNumberTaken) {
                                             final invoice = await NetworkUtility
                                                 .getCustomerTransactionInvoicesByID(
@@ -572,7 +573,7 @@ class _OrderInfoState extends State<OrderInfo>
                                               if (!invoice.exists) {
                                                 invoiceNumberTaken = false;
                                               } else {
-                                                invoiceNo = randomNumeric(4);
+                                                invoiceNo = generateInvoiceNumber().toString();
                                               }
                                             });
                                           }

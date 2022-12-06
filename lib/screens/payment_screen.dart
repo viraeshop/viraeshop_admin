@@ -44,7 +44,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List<Map> transDesc = [];
   String customerId = customerBox.isEmpty ? '' : customerBox.get('id') ?? '';
   String customerRole = customerBox.isEmpty ? '' : customerBox.get('role');
-  String invoiceNo = randomNumeric(3);
+  String invoiceNo = generateInvoiceNumber().toString();
   @override
   void initState() {
     // TODO: implement initState
@@ -209,7 +209,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           if(!invoice.exists){
                             invoiceNumberTaken = false;
                           }else{
-                            invoiceNo = randomNumeric(3);
+                            invoiceNo = generateInvoiceNumber().toString();
                             transInfo['invoice_id'] = invoiceNo;
                             transInfo['docId'] = invoiceNo;
                           }

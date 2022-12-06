@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.1.6+17
+version: 1.1.7+20
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -50,8 +50,6 @@ dependencies:
   flutter_progress_hud: ^2.0.0
   file_picker: ^4.1.4
   loading_indicator: ^3.0.2
-  bloc: ^7.2.1
-  flutter_bloc: ^7.3.1
   equatable: ^2.0.3
   modal_progress_hud_nsn: ^0.1.0-nullsafety-0
   hive: ^2.0.4
@@ -74,12 +72,15 @@ dependencies:
   firebase_messaging: ^11.2.8
   flutter_local_notifications: ^9.4.0
   shimmer: ^2.0.0
-  esc_pos_bluetooth: ^0.4.1
-#  flutter_bluetooth_basic: ^0.1.7
+  #esc_pos_bluetooth: ^0.4.1
   flutter_linkify: ^5.0.2
   bluetooth_thermal_printer: ^0.0.6
   flutter_styled_toast: ^2.0.0
   file_saver: ^0.1.1
+  viraeshop_api:
+    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop_api
+  viraeshop:
+    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop_bloc
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -76,3 +78,9 @@ List dateFilter (List data, DateTime begin, DateTime end){
   }).toList();
 }
 
+int generateInvoiceNumber (){
+  const int max = 2500;
+  const int min = 2000;
+  Random rnd = Random();
+  return (min + rnd.nextInt(max - min));
+}

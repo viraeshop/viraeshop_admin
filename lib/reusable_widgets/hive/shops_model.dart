@@ -7,6 +7,8 @@ const List ima = [];
 class Shop {  
   @HiveField(0)
   String name;
+  @HiveField(12)
+  String supplierId;
   @HiveField(1)
   String email;
   @HiveField(2)
@@ -38,6 +40,7 @@ class Shop {
     required this.mobile,
     required this.description,
     required this.buyPrice,
+    required this.supplierId,
     this.due = 0,
     this.images = ima,
     this.payList = ima,

@@ -1,18 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:tuple/tuple.dart';
+import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/transactions/employees_transactions.dart';
 import 'package:viraeshop_admin/screens/transactions/group_transactions.dart';
-import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
 import 'package:viraeshop_admin/screens/transactions/noninventory_tranzacs.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/models/transactions/all_transactions.dart';
+import 'package:viraeshop_api/models/transactions/transactions.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class TransactionDetails extends StatefulWidget {
   static String path = '/transactions';
@@ -24,7 +30,7 @@ class TransactionDetails extends StatefulWidget {
 
 class _TransactionDetailsState extends State<TransactionDetails> {
   List employCus = [];
-  List transactionData = [];
+  late AllTransactions transactionData;
   List nonInventory = [];
   List supplierInvoices = [];
   GeneralCrud generalCrud = GeneralCrud();
@@ -45,7 +51,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   Tuple6<String, String, String, String, String, String> groupTuple =
       const Tuple6('0', '0', '0', '0', '0', '0');
   Tuple6<String, String, String, String, String, String> groupTupleTemp =
-  const Tuple6('0', '0', '0', '0', '0', '0');
+      const Tuple6('0', '0', '0', '0', '0', '0');
   Tuple5<num, num, num, num, num> totals =
       const Tuple5<num, num, num, num, num>(0, 0, 0, 0, 0);
   Tuple5<num, num, num, num, num> totalsTemp =
@@ -59,119 +65,11 @@ class _TransactionDetailsState extends State<TransactionDetails> {
   @override
   void initState() {
     // TODO: implement initState
-    generalCrud.getTransaction().then((snapshot) async {
-      setState(() {
-        isLoading = true;
-      });
-      final data = snapshot.docs;
-      Map<String, num> totalTemp = {
-        'totalSales': 0,
-        'totalDue': 0,
-        'totalPaid': 0,
-        'totalExpense': 0,
-        'totalProfit': 0,
-      };
-      num empCusSales = 0,
-          empCusDue = 0,
-          nonInventorySales = 0,
-          nonInventoryDue = 0,
-          supplierPaid = 0,
-          supplierDue = 0;
-      for (var element in data) {
-        transactionData.add(element.data());
-        final invoice = element.data() as Map<String, dynamic>;
-        if(!invoice.containsKey('isSupplierInvoice')){
-          if (element.get('isWithNonInventory') == true) {
-            nonInventory.add(element.data());
-            element.get('shop').forEach((shop) {
-              nonInventorySales += shop['price'];
-              nonInventoryDue += shop['due'];
-              totalTemp.update('totalProfit', (value) {
-                return value + shop['profit'];
-              });
-              totalTemp.update('totalPaid', (value) {
-                return value + shop['paid'];
-              });
-              totalTemp.update('totalDue', (value) {
-                return value + shop['due'];
-              });
-            });
-          }
-          employCus.add(element.data());
-          empCusSales += element.get('price');
-          empCusDue += element.get('due');
-          totalTemp.update('totalSales', (value) {
-            return value + element.get('price');
-          });
-          totalTemp.update('totalProfit', (value){
-            return value + element.get('profit');
-          });
-          if(element.get('paid') == 0 && element.get('advance') != 0){
-            totalTemp.update('totalPaid', (value) {
-              return value + element.get('advance');
-            });
-          }
-        }else{
-          supplierInvoices.add(invoice);
-          supplierPaid += invoice['paid'];
-          supplierDue += invoice['due'];
-        }
-        totalTemp.update('totalDue', (value) {
-          return value + element.get('due');
-        });
-        totalTemp.update('totalPaid', (value) {
-          return value + element.get('paid');
-        });
-      }
-      await generalCrud.getExpenses().then((snapshot) {
-        isLoading = false;
-        final data = snapshot.docs;
-        for (var element in data) {
-          //setState(() {
-          transactionData.add(element.data());
-          //});
-          totalTemp.update('totalExpense', (value) {
-            return value + element.get('cost');
-          });
-        }
-      }).catchError((error) {
-        isLoading = false;
-        print(error);
-      });
-      groupTuple = Tuple6(
-        empCusSales.toString(),
-        empCusDue.toString(),
-        nonInventorySales.toString(),
-        nonInventoryDue.toString(),
-        supplierPaid.toString(),
-        supplierDue.toString(),
-      );
-      //setState((){
-      groupTupleTemp = groupTuple;
-      //});
-      totals = Tuple5<num, num, num, num, num>(
-          totalTemp['totalSales']!,
-          totalTemp['totalDue']!,
-          totalTemp['totalPaid']!,
-          totalTemp['totalExpense']!,
-          totalTemp['totalProfit']!);
-      setState(() {
-        totalsTemp = totals;
-        num totalValue = sumTotal(totals);
-        salesPercent = percentageCounter(totals.item1, totalValue);
-        duePercent = percentageCounter(totals.item2, totalValue);
-        paidPercent = percentageCounter(totals.item3, totalValue);
-        expensePercent = percentageCounter(totals.item4, totalValue);
-        profitPercent = percentageCounter(totals.item5, totalValue);
-        isLoading = false;
-      });
-      print('Total Invoices: ${transactionData.length}');
-    }).catchError((error) {
-      print(error);
-      setState(() {
-        isLoading = false;
-      });
-    });
+    final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+    final jWTToken = Hive.box('adminInfo').get('token');
+    transactionBloc.add(GetAllTransactionsEvent(
+        token: jWTToken ?? '',
+        queryType: 'all'));
     super.initState();
   }
 
@@ -190,264 +88,408 @@ class _TransactionDetailsState extends State<TransactionDetails> {
           strokeWidth: 2,
         ),
       ),
-      child: Scaffold(
-        backgroundColor: kBackgroundColor,
-        appBar: AppBar(
-          title: const Text(
-            'Transactions',
-            style: kAppBarTitleTextStyle,
-          ),
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(FontAwesomeIcons.chevronLeft),
-            color: kSubMainColor,
-            iconSize: 20.0,
-          ),
-          elevation: 0.0,
-          actions: [
-            IconButton(
-              onPressed: () {
+      child: BlocBuilder<TransactionsBloc, TransactionState>(
+          //listener: (context, state) {},
+          // buildWhen: (prevState, currState) {
+          //   if (currState is OnErrorTransactionState ||
+          //       currState is FetchedTransactionsState) {
+          //     return true;
+          //   } else {
+          //     return false;
+          //   }
+          // },
+          builder: (context, state) {
+            if (state is OnErrorTransactionState) {
+              SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                 setState(() {
-                  groupTupleTemp = groupTuple;
-                  totalsTemp = totals;
-                  num totalValue = sumTotal(totals);
-                  salesPercent = percentageCounter(totals.item1, totalValue);
-                  duePercent = percentageCounter(totals.item2, totalValue);
-                  paidPercent = percentageCounter(totals.item3, totalValue);
-                  expensePercent = percentageCounter(totals.item4, totalValue);
-                  profitPercent = percentageCounter(totals.item5, totalValue);
                   isLoading = false;
                 });
-              },
-              icon: const Icon(Icons.refresh),
-              color: kSubMainColor,
-              iconSize: 30.0,
-            ),
-          ],
-        ),
-        body: isLoading
-            ? Container()
-            : Container(
-                color: kBackgroundColor,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    children: [
-                      InfoWidget(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Employees(data: employCus),
-                            ),
-                          );
-                        },
-                        title: 'Employees',
-                        textWidget: rowWidget(
-                            groupTupleTemp.item1, groupTupleTemp.item2),
-                      ),
-                      InfoWidget(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NonInventoryTransactionShops(
-                                      data: nonInventory),
-                            ),
-                          );
-                        },
-                        title: 'Non-Inventory Items',
-                        textWidget: rowWidget(
-                            groupTupleTemp.item3, groupTupleTemp.item4),
-                      ),
-                      /// Supplier
-                      InfoWidget(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NonInventoryTransactionShops(
-                                      data: supplierInvoices,
-                                  isSupplier: true,
-                                  ),
-                            ),
-                          );
-                        },
-                        title: 'Suppliers Transactions',
-                        textWidget: rowWidget(
-                            groupTupleTemp.item5, groupTupleTemp.item6, 'Payments'),
-                      ),
-                      InfoWidget(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  GroupTransactions(data: employCus),
-                            ),
-                          );
-                        },
-                        title: 'Customers',
-                        textWidget: rowWidget(
-                            groupTupleTemp.item1, groupTupleTemp.item2),
-                      ),
+              });
+              return Center(
+                child: Text(
+                  state.message,
+                  style: kDueCellStyle,
+                ),
+              );
+            } else if (state is FetchedAllTransactionsState) {
+              SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+                setState(() {
+                  isLoading = false;
+                });
+              });
+              final data = state.transactionList;
+              transactionData = data;
+              Map<String, num> totalTemp = {
+                'totalSales': 0,
+                'totalDue': 0,
+                'totalPaid': 0,
+                'totalExpense': 0,
+                'totalProfit': 0,
+              };
+              num empCusSales = 0,
+                  empCusDue = 0,
+                  nonInventorySales = 0,
+                  nonInventoryDue = 0,
+                  supplierPaid = 0,
+                  supplierDue = 0;
+              for (var element in data.invoices) {
+                employCus.add(element.toJson());
+                empCusSales += element.price;
+                empCusDue += element.due;
+                totalTemp.update('totalSales', (value) {
+                  return value + element.price;
+                });
+                totalTemp.update('totalProfit', (value) {
+                  return value + element.profit;
+                });
+                if (element.paid == 0 && element.advance != 0) {
+                  totalTemp.update('totalPaid', (value) {
+                    return value + element.advance;
+                  });
+                }
+              }
+              if (transactionData.nonInventoryInvoices.isNotEmpty) {
+                nonInventory = transactionData.nonInventoryInvoices;
+                for(var shop in nonInventory){
+                  nonInventorySales += shop['price'];
+                  nonInventoryDue += shop['due'];
+                  totalTemp.update('totalProfit', (value) {
+                    return value + shop['profit'];
+                  });
+                  totalTemp.update('totalPaid', (value) {
+                    return value + shop['paid'];
+                  });
+                  totalTemp.update('totalDue', (value) {
+                    return value + shop['due'];
+                  });
+                }
+                // nonInventory.forEach((shop) {
+                //
+                // });
+              }
 
-                      ///Pie chart will be here
-                      SizedBox(
-                        height: 220.0,
-                        width: double.infinity,
-                        child: SfCircularChart(
-                            // title: ChartTitle(
-                            //   text: 'Transactions',
-                            //   textStyle: kTotalSalesStyle,
-                            // ),
-                            legend: Legend(
-                              textStyle: kTotalTextStyle,
-                              isVisible: true,
-                              iconHeight: 20.0,
-                              iconWidth: 20.0,
-                              title: LegendTitle(
-                                text: 'Transactions',
-                                textStyle: kTotalSalesStyle,
-                                alignment: ChartAlignment.center,
+              ///Todo: Add supplier invoices here
+              if (transactionData.supplierPayInvoices.isNotEmpty) {
+                supplierInvoices = transactionData.supplierPayInvoices;
+                for (var invoice in supplierInvoices) {
+                  supplierPaid += invoice['paid'];
+                  supplierDue += invoice['due'];
+
+                  totalTemp.update('totalDue', (value) {
+                    return value + invoice['due'];
+                  });
+                  totalTemp.update('totalPaid', (value) {
+                    return value + invoice['paid'];
+                  });
+                }
+              }
+
+              ///Todo: Add expenses here
+              if (transactionData.expenses.isNotEmpty) {
+                for (var expense in transactionData.expenses) {
+                  totalTemp.update('totalExpense', (value) {
+                    return value + expense['cost'];
+                  });
+                }
+              }
+
+              groupTuple = Tuple6(
+                empCusSales.toString(),
+                empCusDue.toString(),
+                nonInventorySales.toString(),
+                nonInventoryDue.toString(),
+                supplierPaid.toString(),
+                supplierDue.toString(),
+              );
+              //setState((){
+              groupTupleTemp = groupTuple;
+              //});
+              totals = Tuple5<num, num, num, num, num>(
+                  totalTemp['totalSales']!,
+                  totalTemp['totalDue']!,
+                  totalTemp['totalPaid']!,
+                  totalTemp['totalExpense']!,
+                  totalTemp['totalProfit']!);
+              totalsTemp = totals;
+              num totalValue = sumTotal(totals);
+              salesPercent = percentageCounter(totals.item1, totalValue);
+              duePercent = percentageCounter(totals.item2, totalValue);
+              paidPercent = percentageCounter(totals.item3, totalValue);
+              expensePercent = percentageCounter(totals.item4, totalValue);
+              profitPercent = percentageCounter(totals.item5, totalValue);
+
+              return Scaffold(
+                backgroundColor: kBackgroundColor,
+                appBar: AppBar(
+                  title: const Text(
+                    'Transactions',
+                    style: kAppBarTitleTextStyle,
+                  ),
+                  leading: IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(FontAwesomeIcons.chevronLeft),
+                    color: kSubMainColor,
+                    iconSize: 20.0,
+                  ),
+                  elevation: 0.0,
+                  actions: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          groupTupleTemp = groupTuple;
+                          totalsTemp = totals;
+                          num totalValue = sumTotal(totals);
+                          salesPercent =
+                              percentageCounter(totals.item1, totalValue);
+                          duePercent =
+                              percentageCounter(totals.item2, totalValue);
+                          paidPercent =
+                              percentageCounter(totals.item3, totalValue);
+                          expensePercent =
+                              percentageCounter(totals.item4, totalValue);
+                          profitPercent =
+                              percentageCounter(totals.item5, totalValue);
+                        });
+                      },
+                      icon: const Icon(Icons.refresh),
+                      color: kSubMainColor,
+                      iconSize: 30.0,
+                    ),
+                  ],
+                ),
+                body: isLoading
+                    ? Container()
+                    : Container(
+                        color: kBackgroundColor,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            children: [
+                              InfoWidget(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          Employees(data: employCus),
+                                    ),
+                                  );
+                                },
+                                title: 'Employees',
+                                textWidget: rowWidget(
+                                    groupTupleTemp.item1, groupTupleTemp.item2),
                               ),
-                            ),
-                            series: <CircularSeries>[
-                              PieSeries<TransactionData, String>(
-                                  dataSource: [
-                                    TransactionData(
-                                        x: 'Total Sales',
-                                        y: salesPercent,
-                                        color: kYellowColor),
-                                    TransactionData(
-                                        x: 'Total Due',
-                                        y: duePercent,
-                                        color: kRedColor),
-                                    TransactionData(
-                                      x: 'Total Paid',
-                                      y: paidPercent,
+                              InfoWidget(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          NonInventoryTransactionShops(
+                                              data: nonInventory),
+                                    ),
+                                  );
+                                },
+                                title: 'Non-Inventory Items',
+                                textWidget: rowWidget(
+                                    groupTupleTemp.item3, groupTupleTemp.item4),
+                              ),
+
+                              /// Supplier
+                              InfoWidget(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          NonInventoryTransactionShops(
+                                        data: supplierInvoices,
+                                        isSupplier: true,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                title: 'Suppliers Transactions',
+                                textWidget: rowWidget(groupTupleTemp.item5,
+                                    groupTupleTemp.item6, 'Payments'),
+                              ),
+                              InfoWidget(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          GroupTransactions(data: employCus),
+                                    ),
+                                  );
+                                },
+                                title: 'Customers',
+                                textWidget: rowWidget(
+                                    groupTupleTemp.item1, groupTupleTemp.item2),
+                              ),
+
+                              ///Pie chart will be here
+                              SizedBox(
+                                height: 220.0,
+                                width: double.infinity,
+                                child: SfCircularChart(
+                                    // title: ChartTitle(
+                                    //   text: 'Transactions',
+                                    //   textStyle: kTotalSalesStyle,
+                                    // ),
+                                    legend: Legend(
+                                      textStyle: kTotalTextStyle,
+                                      isVisible: true,
+                                      iconHeight: 20.0,
+                                      iconWidth: 20.0,
+                                      title: LegendTitle(
+                                        text: 'Transactions',
+                                        textStyle: kTotalSalesStyle,
+                                        alignment: ChartAlignment.center,
+                                      ),
+                                    ),
+                                    series: <CircularSeries>[
+                                      PieSeries<TransactionData, String>(
+                                          dataSource: [
+                                            TransactionData(
+                                                x: 'Total Sales',
+                                                y: salesPercent,
+                                                color: kYellowColor),
+                                            TransactionData(
+                                                x: 'Total Due',
+                                                y: duePercent,
+                                                color: kRedColor),
+                                            TransactionData(
+                                              x: 'Total Paid',
+                                              y: paidPercent,
+                                              color: kNewTextColor,
+                                            ),
+                                            TransactionData(
+                                              x: 'Total Expense',
+                                              y: expensePercent,
+                                              color: kBlueColor,
+                                            ),
+                                            TransactionData(
+                                              x: 'TotalProfit',
+                                              y: profitPercent,
+                                              color: kNewMainColor,
+                                            ),
+                                          ],
+                                          pointColorMapper:
+                                              (TransactionData data, _) =>
+                                                  data.color,
+                                          xValueMapper:
+                                              (TransactionData data, _) =>
+                                                  data.x,
+                                          yValueMapper:
+                                              (TransactionData data, _) =>
+                                                  data.y),
+                                    ]),
+                              ),
+                              const SizedBox(
+                                height: 20.0,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  dateWidget(
+                                    title: begin.toString().split(' ')[0],
+                                    onTap: () {
+                                      buildMaterialDatePicker(context, true);
+                                    },
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward,
+                                    color: kSubMainColor,
+                                    size: 20.0,
+                                  ),
+                                  dateWidget(
+                                      onTap: () {
+                                        buildMaterialDatePicker(context, false);
+                                      },
+                                      title:
+                                          end.isAtSameMomentAs(DateTime.now())
+                                              ? 'To this date..'
+                                              : end.toString().split(' ')[0]),
+                                  const SizedBox(
+                                    width: 20.0,
+                                  ),
+                                  roundedTextButton(onTap: () {
+                                    num totalValue = 0;
+                                    setState(() {
+                                      groupTupleTemp = dateTuple3(
+                                          transactionData, begin, end);
+                                      totalsTemp = dateTotalTuple(
+                                          transactionData, begin, end);
+                                      totalValue = sumTotal(totalsTemp);
+                                      salesPercent = percentageCounter(
+                                          totalsTemp.item1, totalValue);
+                                      duePercent = percentageCounter(
+                                          totalsTemp.item2, totalValue);
+                                      paidPercent = percentageCounter(
+                                          totalsTemp.item3, totalValue);
+                                      expensePercent = percentageCounter(
+                                          totalsTemp.item4, totalValue);
+                                      profitPercent = percentageCounter(
+                                          totalsTemp.item5, totalValue);
+                                    });
+                                  }),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 10.0,
+                              ),
+                              LimitedBox(
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * 0.7,
+                                child: GridView(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 10.0,
+                                    crossAxisSpacing: 10.0,
+                                    childAspectRatio: 35 / 25.0,
+                                  ),
+                                  children: [
+                                    SpecialContainer(
+                                      value: totalsTemp.item1.toString(),
+                                      title: 'Total Sales',
+                                      color: kYellowColor,
+                                    ),
+                                    SpecialContainer(
+                                      value: totalsTemp.item2.toString(),
+                                      title: 'Total Due',
+                                      color: kRedColor,
+                                    ),
+                                    SpecialContainer(
+                                      value: totalsTemp.item3.toString(),
+                                      title: 'Total Paid',
                                       color: kNewTextColor,
                                     ),
-                                    TransactionData(
-                                      x: 'Total Expense',
-                                      y: expensePercent,
+                                    SpecialContainer(
+                                      value: totalsTemp.item4.toString(),
+                                      title: 'Total Expense',
                                       color: kBlueColor,
                                     ),
-                                    TransactionData(
-                                      x: 'TotalProfit',
-                                      y: profitPercent,
-                                      color: kNewMainColor,
+                                    SpecialContainer(
+                                      value: totalsTemp.item5.toString(),
+                                      title: 'Total Profit',
+                                      color: kMainColor,
                                     ),
                                   ],
-                                  pointColorMapper: (TransactionData data, _) =>
-                                      data.color,
-                                  xValueMapper: (TransactionData data, _) =>
-                                      data.x,
-                                  yValueMapper: (TransactionData data, _) =>
-                                      data.y),
-                            ]),
-                      ),
-                      const SizedBox(
-                        height: 20.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          dateWidget(
-                            title: begin.toString().split(' ')[0],
-                            onTap: () {
-                              buildMaterialDatePicker(context, true);
-                            },
+                                ),
+                              ),
+                            ],
                           ),
-                          const Icon(
-                            Icons.arrow_forward,
-                            color: kSubMainColor,
-                            size: 20.0,
-                          ),
-                          dateWidget(
-                              onTap: () {
-                                buildMaterialDatePicker(context, false);
-                              },
-                              title: end.isAtSameMomentAs(DateTime.now())
-                                  ? 'To this date..'
-                                  : end.toString().split(' ')[0]),
-                          const SizedBox(
-                            width: 20.0,
-                          ),
-                          roundedTextButton(onTap: () {
-                            num totalValue = 0;
-                            setState(() {
-                              groupTupleTemp =
-                                  dateTuple3(transactionData, begin, end);
-                              totalsTemp =
-                                  dateTotalTuple(transactionData, begin, end);
-                              totalValue = sumTotal(totalsTemp);
-                              salesPercent = percentageCounter(
-                                  totalsTemp.item1, totalValue);
-                              duePercent = percentageCounter(
-                                  totalsTemp.item2, totalValue);
-                              paidPercent = percentageCounter(
-                                  totalsTemp.item3, totalValue);
-                              expensePercent = percentageCounter(
-                                  totalsTemp.item4, totalValue);
-                              profitPercent = percentageCounter(
-                                  totalsTemp.item5, totalValue);
-                            });
-                          }),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      LimitedBox(
-                        maxHeight: MediaQuery.of(context).size.height * 0.7,
-                        child: GridView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 10.0,
-                            crossAxisSpacing: 10.0,
-                            childAspectRatio: 35 / 25.0,
-                          ),
-                          children: [
-                            SpecialContainer(
-                              value: totalsTemp.item1.toString(),
-                              title: 'Total Sales',
-                              color: kYellowColor,
-                            ),
-                            SpecialContainer(
-                              value: totalsTemp.item2.toString(),
-                              title: 'Total Due',
-                              color: kRedColor,
-                            ),
-                            SpecialContainer(
-                              value: totalsTemp.item3.toString(),
-                              title: 'Total Paid',
-                              color: kNewTextColor,
-                            ),
-                            SpecialContainer(
-                              value: totalsTemp.item4.toString(),
-                              title: 'Total Expense',
-                              color: kBlueColor,
-                            ),
-                            SpecialContainer(
-                              value: totalsTemp.item5.toString(),
-                              title: 'Total Profit',
-                              color: kMainColor,
-                            ),
-                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-      ),
+              );
+            }
+            return Container();
+          }),
     );
   }
 
@@ -483,12 +525,12 @@ class _TransactionDetailsState extends State<TransactionDetails> {
 }
 
 Tuple5<num, num, num, num, num> dateTotalTuple(
-    List items, DateTime begin, DateTime end) {
+    AllTransactions items, DateTime begin, DateTime end) {
   num sale = 0, due = 0, expense = 0, paid = 0, profit = 0;
   //print('Date data: $items');
   List filter = [];
-  items.forEach((element) {
-    Timestamp timestamp = element['date'];
+  for (var element in items.invoices) {
+    Timestamp timestamp = dateFromJson(element.createdAt);
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
     end = DateTime(end.year, end.month, end.day);
@@ -496,41 +538,79 @@ Tuple5<num, num, num, num, num> dateTotalTuple(
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-      filter.add(element);
-      // print('Invoice: ${element['invoice_id']}: $element');
-      if (element.containsKey('cost')) {
-        expense += element['cost'];
-      } else {
-        if(!element.containsKey('isSupplierInvoice')){
-          if (element['isWithNonInventory']) {
-            element['shop'].forEach((shop) {
-              due += shop['due'];
-              profit += shop['profit'];
-              paid += shop['paid'];
-            });
-          }
-          sale += element['price'];
-          profit += element['profit'];
-        }
-        due += element['due'];
-        paid += element['paid'];
+      sale += element.price;
+      profit += element.profit;
+      due += element.due;
+      paid += element.paid;
+    }
+  }
+
+  if (items.nonInventoryInvoices.isNotEmpty) {
+    for (var shop in items.nonInventoryInvoices) {
+      Timestamp timestamp = dateFromJson(shop['createdAt']);
+      DateTime date = timestamp.toDate();
+      begin = DateTime(begin.year, begin.month, begin.day);
+      end = DateTime(end.year, end.month, end.day);
+      DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+      if ((begin.isAfter(dateFormatted) ||
+              begin.isAtSameMomentAs(dateFormatted)) &&
+          (end.isBefore(dateFormatted) ||
+              end.isAtSameMomentAs(dateFormatted))) {
+        due += shop['due'];
+        profit += shop['profit'];
+        paid += shop['paid'];
       }
     }
-  });
-  print('Total filtered Invoices: ${filter.length}');
+  }
+
+  if (items.supplierPayInvoices.isNotEmpty) {
+    for (var invoice in items.supplierPayInvoices) {
+      Timestamp timestamp = dateFromJson(invoice['createdAt']);
+      DateTime date = timestamp.toDate();
+      begin = DateTime(begin.year, begin.month, begin.day);
+      end = DateTime(end.year, end.month, end.day);
+      DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+      if ((begin.isAfter(dateFormatted) ||
+              begin.isAtSameMomentAs(dateFormatted)) &&
+          (end.isBefore(dateFormatted) ||
+              end.isAtSameMomentAs(dateFormatted))) {
+        due += invoice['due'];
+        paid += invoice['paid'];
+      }
+    }
+  }
+
+  if (items.expenses.isNotEmpty) {
+    for (var expenses in items.expenses) {
+      Timestamp timestamp = dateFromJson(expenses['createdAt']);
+      DateTime date = timestamp.toDate();
+      begin = DateTime(begin.year, begin.month, begin.day);
+      end = DateTime(end.year, end.month, end.day);
+      DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+      if ((begin.isAfter(dateFormatted) ||
+              begin.isAtSameMomentAs(dateFormatted)) &&
+          (end.isBefore(dateFormatted) ||
+              end.isAtSameMomentAs(dateFormatted))) {
+        expense += expenses['cost'];
+      }
+    }
+  }
+
   Tuple5<num, num, num, num, num> data =
       Tuple5<num, num, num, num, num>(sale, due, paid, expense, profit);
   return data;
 }
 
 Tuple6<String, String, String, String, String, String> dateTuple3(
-    List items, DateTime begin, DateTime end) {
+    AllTransactions items, DateTime begin, DateTime end) {
   num inventorySale = 0,
       inventoryDue = 0,
       nonInventorySales = 0,
-      nonInventoryDue = 0, supplierPaid = 0, supplierDue = 0;
-  items.forEach((element) {
-    Timestamp timestamp = element['date'];
+      nonInventoryDue = 0,
+      supplierPaid = 0,
+      supplierDue = 0;
+  for (var element in items.invoices) {
+    Timestamp timestamp = dateFromJson(element.createdAt);
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
     end = DateTime(end.year, end.month, end.day);
@@ -538,23 +618,42 @@ Tuple6<String, String, String, String, String, String> dateTuple3(
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-      if (element.containsValue('cost') == false) {
-        if(element.containsKey('isSupplierInvoice')){
-          supplierPaid += element['paid'];
-          supplierDue += element['due'];
-        }else{
-          if (element['isWithNonInventory'] == true) {
-            element['shop'].forEach((shop) {
-              nonInventorySales += shop['price'];
-              nonInventoryDue += shop['due'];
-            });
-          }
-          inventorySale += element['price'];
-          inventoryDue += element['due'];
-        }
-        }
+      inventorySale += element.price;
+      inventoryDue += element.due;
     }
-  });
+  }
+  if (items.supplierPayInvoices.isNotEmpty) {
+    for (var invoice in items.supplierPayInvoices) {
+      Timestamp timestamp = dateFromJson(invoice['createdAt']);
+      DateTime date = timestamp.toDate();
+      begin = DateTime(begin.year, begin.month, begin.day);
+      end = DateTime(end.year, end.month, end.day);
+      DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+      if ((begin.isAfter(dateFormatted) ||
+              begin.isAtSameMomentAs(dateFormatted)) &&
+          (end.isBefore(dateFormatted) ||
+              end.isAtSameMomentAs(dateFormatted))) {
+        supplierPaid += invoice['paid'];
+        supplierDue += invoice['due'];
+      }
+    }
+  }
+  if (items.nonInventoryInvoices.isNotEmpty) {
+    for (var shop in items.nonInventoryInvoices) {
+      Timestamp timestamp = dateFromJson(shop['createdAt']);
+      DateTime date = timestamp.toDate();
+      begin = DateTime(begin.year, begin.month, begin.day);
+      end = DateTime(end.year, end.month, end.day);
+      DateTime dateFormatted = DateTime(date.year, date.month, date.day);
+      if ((begin.isAfter(dateFormatted) ||
+              begin.isAtSameMomentAs(dateFormatted)) &&
+          (end.isBefore(dateFormatted) ||
+              end.isAtSameMomentAs(dateFormatted))) {
+        nonInventorySales += shop['price'];
+        nonInventoryDue += shop['due'];
+      }
+    }
+  }
   Tuple6<String, String, String, String, String, String> data =
       Tuple6<String, String, String, String, String, String>(
     inventorySale.toString(),

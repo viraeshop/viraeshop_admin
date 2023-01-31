@@ -8,13 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop/shops/barrel.dart';
+import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/non_inventory_transaction_info.dart';
-import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/screens/shops.dart' hide Shops;
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:viraeshop_api/models/shops/shops.dart';
+import 'package:viraeshop_api/models/suppliers/suppliers.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 import 'transactions/user_transaction_screen.dart';
 
@@ -34,12 +41,13 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
   String? receipt;
   Uint8List? image;
   bool isLoading = false;
-  List shopNames = [], shopList = [];
-  Map currentShop = {};
+  List shopNames = [];
+  List<Shops> shopList = [];
+  late Shops currentShop;
   String? dropdownValue;
   num paid = 0;
   String imagePath = '';
-  int printTimes = 0;
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   void initState() {
     // TODO: implement initState
@@ -48,364 +56,360 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
 
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      inAsyncCall: isLoading,
-      progressIndicator: const CircularProgressIndicator(
-        color: kMainColor,
-      ),
-      child: GestureDetector(
-        onTap: (){
-          FocusScope.of(context).unfocus();
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(FontAwesomeIcons.chevronLeft),
-              iconSize: 20.0,
-              color: kSubMainColor,
+    return BlocListener<ShopsBloc, ShopsState>(
+      listener: (BuildContext context, state) {
+        if (state is OnErrorShopState) {
+          setState(() {
+            isLoading = false;
+          });
+          snackBar(
+            text: state.message,
+            context: context,
+            color: kRedColor,
+            duration: 600,
+          );
+        } else if (state is FetchedShopsState) {
+          final value = state.shops.result;
+          setState(() {
+            shopNames.clear();
+            isLoading = false;
+            date = dateFromJson(value[0].createdAt);
+            for (var element in value) {
+              shopNames.add(element.supplierInfo.businessName);
+              shopList.add(element);
+            }
+            currentShop = shopList[0];
+            dropdownValue = currentShop.supplierInfo.businessName;
+            receipt = currentShop.images.isNotEmpty
+                ? currentShop.images[0]['imageLink']
+                : null;
+            controllers[3].text = currentShop.price.toString();
+            controllers[4].text = currentShop.buyPrice.toString();
+            controllers[5].text = currentShop.profit.toString();
+            controllers[6].text = currentShop.due.toString();
+            controllers[7].text = currentShop.paid.toString();
+            paid = currentShop.paid;
+            controllers[8].text = currentShop.description;
+          });
+        } else if (state is RequestFinishedShopState) {
+          setState(() {
+            isLoading = false;
+          });
+          toast(context: context, title: state.response.message);
+        }
+      },
+      child: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        progressIndicator: const CircularProgressIndicator(
+          color: kMainColor,
+        ),
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(FontAwesomeIcons.chevronLeft),
+                iconSize: 20.0,
+                color: kSubMainColor,
+              ),
+              title: const Text(
+                'Product expense',
+                style: kTextStyle1,
+              ),
+              centerTitle: false,
             ),
-            title: const Text(
-              'Product expense',
-              style: kTextStyle1,
-            ),
-            centerTitle: false,
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              //alignment: AlignmentDirectional.topCenter,
-              //fit: StackFit.expand,
-              children: [
-                const SizedBox(
-                  height: 20.0,
-                ),
-                receipt == null
-                    ? imagePickerWidget(
-                        onTap: () {
-                          try {
-                            if(kIsWeb){
-                              getImageWeb('product_expense_images').then((value) {
-                                setState(() {
-                                  image = value.item1;
-                                  uploadImageString = value.item2;
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                //alignment: AlignmentDirectional.topCenter,
+                //fit: StackFit.expand,
+                children: [
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  receipt == null
+                      ? imagePickerWidget(
+                          onTap: () {
+                            try {
+                              if (kIsWeb) {
+                                getImageWeb('product_expense_images')
+                                    .then((value) {
+                                  setState(() {
+                                    image = value.item1;
+                                    uploadImageString = value.item2;
+                                  });
                                 });
-                              });
-                            }else{
-                              getImageNative('product_expense_images').then((value){
-                                setState(() {
-                                  imagePath = value.item1!;
-                                  uploadImageString = value.item2;
+                              } else {
+                                getImageNative('product_expense_images')
+                                    .then((value) {
+                                  setState(() {
+                                    imagePath = value.item1!;
+                                    uploadImageString = value.item2;
+                                  });
                                 });
-                              });
-                            }
-                          } catch (e) {
-                            print(e);
-                          }
-                        },
-                        images: image,
-                  imagePath: imagePath,
-                      )
-                    : GestureDetector(
-                        onTap: () {
-                          try {
-                            if(kIsWeb){
-                              getImageWeb('product_expense_images').then((value) {
-                                setState(() {
-                                  image = value.item1;
-                                  uploadImageString = value.item2;
-                                  receipt = value.item2!;
-                                });
-                              });
-                            }else{
-                              getImageNative('product_expense_images').then((value){
-                                setState(() {
-                                  imagePath = value.item1!;
-                                  uploadImageString = value.item2;
-                                  receipt = value.item2!;
-                                });
-                              });
-                            }
-                          } catch (e) {
-                            if (kDebugMode) {
+                              }
+                            } catch (e) {
                               print(e);
                             }
-                          }
-                        },
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: CachedNetworkImage(
-                                imageUrl: receipt!,
-                                height: 150.0,
-                                width: 150.0,
-                                errorWidget: (context, url, childs) {
-                                  return Image.asset(
-                                    'assets/default.jpg',
-                                    height: 150.0,
-                                    width: 150.0,
-                                  );
-                                },
+                          },
+                          images: image,
+                          imagePath: imagePath,
+                        )
+                      : GestureDetector(
+                          onTap: () {
+                            try {
+                              if (kIsWeb) {
+                                getImageWeb('product_expense_images')
+                                    .then((value) {
+                                  setState(() {
+                                    image = value.item1;
+                                    uploadImageString = value.item2;
+                                    receipt = value.item2!;
+                                  });
+                                });
+                              } else {
+                                getImageNative('product_expense_images')
+                                    .then((value) {
+                                  setState(() {
+                                    imagePath = value.item1!;
+                                    uploadImageString = value.item2;
+                                    receipt = value.item2!;
+                                  });
+                                });
+                              }
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print(e);
+                              }
+                            }
+                          },
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10.0),
+                                child: CachedNetworkImage(
+                                  imageUrl: receipt!,
+                                  height: 150.0,
+                                  width: 150.0,
+                                  errorWidget: (context, url, childs) {
+                                    return Image.asset(
+                                      'assets/default.jpg',
+                                      height: 150.0,
+                                      width: 150.0,
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                            const Align(
-                              alignment: Alignment.center,
-                              child: Icon(
-                                Icons.add,
-                                size: 25.0,
-                                color: kStrokeColor,
+                              const Align(
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.add,
+                                  size: 25.0,
+                                  color: kStrokeColor,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                const SizedBox(
-                  height: 20.0,
-                ),
-                textField(
-                    controller: controllers[0],
-                    readOnly: false,
-                    hint: 'Reference No  ',
-                    onSubmitted: (invoiceId) {
-                      print(invoiceId);
-                      setState(() {
-                        isLoading = true;
-                        invoiceNo = invoiceId;
-                        print('Getting called times: $printTimes');
-                      });
-                      generalCrud.searchInvoice(invoiceId).then((value) {
-                        setState(() {
-                          shopNames.clear();
-                          isLoading = false;
-                        });
-                        date = value.get('date');
-                        controllers[0].text = value.get('invoice_id');
-                        value.get('shop').forEach((element) {
-                          shopNames.add(element['business_name']);
-                        });
-                        shopList = value.get('shop');
-                        currentShop = shopList[0];
-                        if (kDebugMode) {
-                          print('Current Shop: $currentShop');
-                        }
-                        dropdownValue = currentShop['business_name'];
-                        receipt = currentShop['images'].isNotEmpty
-                            ? currentShop['images'][0]
-                            : null;
-                        controllers[3].text =
-                            currentShop['price'].toString();
-                        controllers[4].text =
-                            currentShop['buy_price'].toString();
-                        controllers[5].text =
-                            currentShop['profit'].toString();
-                        controllers[6].text = currentShop['due'].toString();
-                        controllers[7].text =
-                            currentShop['paid'].toString();
-                        paid = currentShop['paid'];
-                        controllers[8].text = currentShop['description'];
-                      }).catchError((error) {
-                        setState(() {
-                          isLoading = false;
-                          errorMessage = error.toString();
-                        });
-                      });
-                    }),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: textField(
-                        controller: controllers[1],
-                        readOnly: true,
-                        hint: 'Shops'
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 10.0,
-                    ),
-                    Expanded(
-                      child: DropdownButtonFormField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            borderSide: const BorderSide(
-                              color: kBlackColor,
-                              width: 3.0,
-                            ),
+                            ],
                           ),
                         ),
-                        value: dropdownValue,
-                        items: shopNames.map((e) {
-                          return DropdownMenuItem(
-                            value: e,
-                            child: Text(
-                              e,
-                              style: kTableCellStyle,
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          Map shop = {};
-                          for (var element in shopList) {
-                            if (element['business_name'] == value.toString()) {
-                              shop = element;
-                            }
-                          }
-                          setState(() {
-                            dropdownValue = value.toString();
-                            currentShop = shop;
-                            receipt = currentShop['images'].isNotEmpty
-                                ? currentShop['images'][0]
-                                : null;
-                            controllers[3].text =
-                                currentShop['price'].toString();
-                            controllers[4].text =
-                                currentShop['buy_price'].toString();
-                            controllers[5].text =
-                                currentShop['profit'].toString();
-                            controllers[6].text =
-                                currentShop['due'].toString();
-                            controllers[7].text =
-                                currentShop['paid'].toString();
-                            paid = currentShop['paid'];
-                            controllers[8].text =
-                                currentShop['description'];
-                          });
-                        },
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  textField(
+                      controller: controllers[0],
+                      readOnly: false,
+                      hint: 'Reference No  ',
+                      onSubmitted: (invoiceId) {
+                        setState(() {
+                          isLoading = true;
+                          invoiceNo = invoiceId;
+                        });
+                        final shopsBloc = BlocProvider.of<ShopsBloc>(context);
+                        shopsBloc.add(
+                          GetShopsEvent(
+                            token: jWTToken,
+                            invoiceNo: invoiceId,
+                          ),
+                        );
+                      }),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: textField(
+                            controller: controllers[1],
+                            readOnly: true,
+                            hint: 'Shops'),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                textFieldRow(
-                    controller1: controllers[2],
-                    controller2: controllers[3],
-                    readOnly1: true,
-                    prefix1: 'Sales Price',
-                    prefix2: ''),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                textFieldRow(
-                    controller1: controllers[4],
-                    controller2: controllers[5],
-                    keyboardType: TextInputType.number,
-                    readOnly1: false,
-                    readOnly2: true,
-                    prefix1: 'Buy Price ',
-                    prefix2: 'Profit ',
-                    onChange1: (value) {
-                      num profit = 0;
-                      profit =
-                          num.parse(controllers[3].text) - num.parse(value);
-                      setState(() {
-                        controllers[5].text = profit.toString();
-                      });
-                    }),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                textFieldRow(
-                    controller1: controllers[6],
-                    controller2: controllers[7],
-                    keyboardType: TextInputType.number,
-                    readOnly1: true,
-                    prefix1: 'Due ',
-                    prefix2: 'Paid ',
-                    onChange2: (value) {
-                      num due = 0;
-                      due = num.parse(controllers[4].text) -
-                          (num.parse(value) +
-                             paid);
-                      setState(() {
-                        controllers[6].text = due.toString();
-                      });
-                    }),
-                // SizedBox(
-                //   height: 10.0,
-                // ),
-                // textField(controller: controllers[10], prefix: 'Qunatity'),
-                const SizedBox(
-                  height: 20.0,
-                ),
-                textField(controller: controllers[8], lines: 3),
-                const SizedBox(
-                  height: 20.0,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    buttons(
-                        title: 'Update',
-                        width: 150.0,
-                        onTap: () {
-                          List updatedShopList = [];
-                          num totalPaid = 0;
-                          for (var element in shopList) {
-                            if (dropdownValue == element['business_name']) {
-                              List imageList = element['images'],
-                                  payLists = element['pay_list'];
-                              imageList.add(uploadImageString);
-                              payLists.add({
-                                'paid': num.parse(controllers[7].text),
-                                'date': Timestamp.now(),
-                              });
-                              for (var element in payLists) {
-                                totalPaid += element['paid'];
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      Expanded(
+                        child: DropdownButtonFormField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(
+                                color: kBlackColor,
+                                width: 3.0,
+                              ),
+                            ),
+                          ),
+                          value: dropdownValue,
+                          items: shopNames.map((e) {
+                            return DropdownMenuItem(
+                              value: e,
+                              child: Text(
+                                e,
+                                style: kTableCellStyle,
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            Shops? shop;
+                            for (var element in shopList) {
+                              if (element.supplierInfo.businessName ==
+                                  value.toString()) {
+                                shop = element;
                               }
-                              Map updatedShop = {
-                                'business_name': element['business_name'],
-                                'address': element['address'],
-                                'mobile': element['mobile'],
-                                'email': element['email'],
-                                'price': element['price'],
-                                'buy_price': num.parse(controllers[4].text),
-                                'profit': num.parse(controllers[5].text),
-                                'paid': totalPaid,
-                                'due': num.parse(controllers[6].text),
-                                'images': imageList,
-                                'pay_list': payLists,
-                                'description': controllers[8].text,
-                              };
-                              updatedShopList.add(updatedShop);
-                            } else {
-                              updatedShopList.add(element);
                             }
-                          }
-                          print('done making map');
-                          setState(() {
-                            isLoading = true;
-                            controllers[7].text = totalPaid.toString();
-                          });
-                          generalCrud.updateInvoice(invoiceNo, {
-                            'shop': updatedShopList,
-                          }).then((value) {
                             setState(() {
-                              isLoading = false;
+                              dropdownValue = value.toString();
+                              currentShop = shop!;
+                              receipt = currentShop.images.isNotEmpty
+                                  ? currentShop.images[0]
+                                  : null;
+                              controllers[3].text =
+                                  currentShop.price.toString();
+                              controllers[4].text =
+                                  currentShop.buyPrice.toString();
+                              controllers[5].text =
+                                  currentShop.profit.toString();
+                              controllers[6].text = currentShop.due.toString();
+                              controllers[7].text = currentShop.paid.toString();
+                              paid = currentShop.paid;
+                              controllers[8].text = currentShop.description;
                             });
-                            showDialogBox(
-                                buildContext: context, msg: 'Updated successfully');
-                          }).catchError((error) {
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  textFieldRow(
+                      controller1: controllers[2],
+                      controller2: controllers[3],
+                      readOnly1: true,
+                      prefix1: 'Sales Price',
+                      prefix2: ''),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  textFieldRow(
+                      controller1: controllers[4],
+                      controller2: controllers[5],
+                      keyboardType: TextInputType.number,
+                      readOnly1: false,
+                      readOnly2: true,
+                      prefix1: 'Buy Price ',
+                      prefix2: 'Profit ',
+                      onChange1: (value) {
+                        num profit = 0;
+                        profit =
+                            num.parse(controllers[3].text) - num.parse(value);
+                        setState(() {
+                          controllers[5].text = profit.toString();
+                        });
+                      }),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  textFieldRow(
+                      controller1: controllers[6],
+                      controller2: controllers[7],
+                      keyboardType: TextInputType.number,
+                      readOnly1: true,
+                      prefix1: 'Due ',
+                      prefix2: 'Paid ',
+                      onChange2: (value) {
+                        num due = 0;
+                        due = num.parse(controllers[4].text) -
+                            (num.parse(value) + paid);
+                        setState(() {
+                          controllers[6].text = due.toString();
+                        });
+                      }),
+                  // SizedBox(
+                  //   height: 10.0,
+                  // ),
+                  // textField(controller: controllers[10], prefix: 'Qunatity'),
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  textField(controller: controllers[8], lines: 3),
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      buttons(
+                          title: 'Update',
+                          width: 150.0,
+                          onTap: () {
+                            num totalPaid =
+                                num.parse(controllers[7].text) + paid;
+                            String updatingShopId = '';
+                            Map<String, dynamic> updatedShop = {};
+                            for (var element in shopList) {
+                              if (dropdownValue ==
+                                  element.supplierInfo.businessName) {
+                                updatingShopId = element.shopId!;
+                                Map<String, dynamic> imageList = {
+                                      'imageLink': uploadImageString,
+                                      'shopId': element.shopId
+                                    },
+                                    payLists = {
+                                      'invoiceNo': invoiceNo,
+                                      'isSupplier': true,
+                                      'shopId': element.shopId,
+                                      'paid': num.parse(controllers[7].text),
+                                      'createdAt': dateToJson(Timestamp.now()),
+                                      'updatedAt': dateToJson(Timestamp.now()),
+                                    };
+                                updatedShop = {
+                                  'price': element.price,
+                                  'buyPrice': num.parse(controllers[4].text),
+                                  'profit': num.parse(controllers[5].text),
+                                  'paid': num.parse(controllers[7].text),
+                                  'due': num.parse(controllers[6].text),
+                                  'images': imageList,
+                                  'paylist': payLists,
+                                  'description': controllers[8].text,
+                                };
+                              }
+                            }
                             setState(() {
-                              isLoading = false;
+                              isLoading = true;
+                              controllers[7].text = totalPaid.toString();
                             });
-                            showDialogBox(
-                                buildContext: context,
-                                msg: 'Error occurred');
-                          });
-                          if (kDebugMode) {
-                            print('Current Shop(1): $currentShop');
-                          }
-                        }),
-                    const SizedBox(
-                      width: 10.0,
-                    ),
-                    buttons(
+                            final shopsBloc =
+                                BlocProvider.of<ShopsBloc>(context);
+                            shopsBloc.add(UpdateShopEvent(
+                              token: jWTToken,
+                                shopId: updatingShopId,
+                                shopModel: updatedShop));
+                          }),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      buttons(
                         title: 'View',
                         width: 150.0,
                         onTap: () {
@@ -416,17 +420,18 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                             context,
                             MaterialPageRoute(builder: (context) {
                               return NonInventoryInfo(
-                                data: currentShop,
+                                data: currentShop.toJson(),
                                 invoiceId: invoiceNo,
                                 date: date,
                               );
                             }),
                           );
                         },
-                        ),
-                  ],
-                )
-              ],
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -462,9 +467,11 @@ Widget textFieldRow({
       ),
       Expanded(
         child: textField(
-          readOnly: readOnly2!,
+            readOnly: readOnly2!,
             keyboardType: TextInputType.number,
-            controller: controller2, hint: prefix2, onChange: onChange2),
+            controller: controller2,
+            hint: prefix2,
+            onChange: onChange2),
       ),
     ],
   );
@@ -490,7 +497,10 @@ Widget textField({
     decoration: InputDecoration(
       prefixIcon: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Text(hint, style: kCustomerCellStyle,),
+        child: Text(
+          hint,
+          style: kCustomerCellStyle,
+        ),
       ),
       //prefixStyle: kCustomerCellStyle,
       border: OutlineInputBorder(

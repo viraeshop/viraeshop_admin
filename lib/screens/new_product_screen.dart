@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,47 +5,48 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop/adverts/adverts_bloc.dart';
+import 'package:viraeshop/adverts/adverts_event.dart';
+import 'package:viraeshop/products/barrel.dart';
+import 'package:viraeshop/products/products_bloc.dart';
+import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-// import 'package:viraeshop_admin/components/styles/decoration.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/product_price.dart';
-import 'package:viraeshop_admin/reusable_widgets/desktop_product_cards.dart';
 import 'package:viraeshop_admin/reusable_widgets/desktop_product_cards2.dart';
 import 'package:viraeshop_admin/reusable_widgets/form_field.dart';
-import 'package:viraeshop_admin/screens/category_screen.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
-import 'package:viraeshop_admin/utils/utilities.dart';
 import 'package:random_string/random_string.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 
-import '../configs/functions.dart';
 import '../configs/image_picker.dart';
 import 'home_screen.dart';
 import 'image_carousel.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NewProduct extends StatefulWidget {
   static String path = 'newProductPath';
   final bool isUpdateProduct;
-  var info;
-  String routeName;
-  NewProduct({
+  final Map<String, dynamic> info;
+  final String routeName;
+  const NewProduct({
     this.isUpdateProduct = false,
-    this.info,
+    required this.info,
     this.routeName = '',
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   _NewProductState createState() => _NewProductState();
@@ -56,8 +56,9 @@ class _NewProductState extends State<NewProduct>
     with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
-  List images = Hive.box('images').get('imagesBytes', defaultValue: []);
-  List productImage = Hive.box('images').get('productImages', defaultValue: []);
+  List images = Hive.box('images').get('imagesBytes', defaultValue: []) ?? [];
+  List productImage =
+      Hive.box('images').get('productImages', defaultValue: []) ?? [];
   AdminCrud adminCrud = AdminCrud();
   GeneralCrud generalCrud = GeneralCrud();
   final String _uniqueCode = randomAlphaNumeric(10);
@@ -88,7 +89,7 @@ class _NewProductState extends State<NewProduct>
   ];
   TextEditingController descController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _productIdController = TextEditingController();
+  final TextEditingController _productCodeController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _costController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
@@ -110,6 +111,11 @@ class _NewProductState extends State<NewProduct>
     ),
   ];
   List adverts = [];
+  List existingAdverts = [];
+  List deletedAdverts = [];
+  Map<String, dynamic> fields = {};
+  bool onDelete = false;
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   void initState() {
     // TODO: implement initState
@@ -122,9 +128,9 @@ class _NewProductState extends State<NewProduct>
       _architectController.text = widget.info['architectPrice'].toString();
       _generalDiscountCont.text = widget.info['generalDiscount'].toString();
       _agentsDiscountCont.text = widget.info['agentsDiscount'].toString();
-      _productIdController.text = widget.info['productId'];
+      _productCodeController.text = widget.info['productCode'];
       _architectDiscountCont.text = widget.info['architectDiscount'].toString();
-      _costController.text = widget.info['cost_price'];
+      _costController.text = widget.info['costPrice'].toString();
       _quantityController.text = widget.info['quantity'].toString();
       widget.info['minimum'] != null
           ? _minimumController.text = widget.info['minimum'].toString()
@@ -132,12 +138,15 @@ class _NewProductState extends State<NewProduct>
       isGeneralDiscount = widget.info['isGeneralDiscount'];
       isAgentDiscount = widget.info['isAgentDiscount'];
       isArchitectDiscount = widget.info['isArchitectDiscount'];
-      selectedSellby = widget.info['sell_by'];
+      selectedSellby = widget.info['sellBy'];
       isInfinity = widget.info['isInfinity'];
-      Hive.box('images').put('productImages', widget.info['image']);
+      List productPics = widget.info['images'] ?? [];
+      Hive.box('images').put('productImages', productPics.map((e) => e['imageLink']).toList());
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
         Provider.of<GeneralProvider>(context, listen: false)
-            .updateAdList(widget.info['adverts']);
+            .updateAdList(widget.info['adverts'] ?? []);
+        Provider.of<GeneralProvider>(context, listen: false)
+        .updateExistingAdverts(widget.info['adverts'] ?? []);
       });
     }
     super.initState();
@@ -189,121 +198,180 @@ class _NewProductState extends State<NewProduct>
 
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      inAsyncCall: loading,
-      progressIndicator: const CircularProgressIndicator(
-        color: kMainColor,
-      ),
-      child: SafeArea(
-        child: DefaultTabController(
-          length: _tabs.length,
-          child: Scaffold(
-            appBar: AppBar(
-              automaticallyImplyLeading: true,
-              iconTheme: const IconThemeData(color: kSelectedTileColor),
-              elevation: 0.0,
-              backgroundColor: kBackgroundColor,
-              title: Text(
-                widget.isUpdateProduct == true
-                    ? widget.info['name']
-                    : 'New Product',
-                style: kAppBarTitleTextStyle,
-              ),
-              centerTitle: false,
-              titleTextStyle: kAppBarTitleTextStyle,
-              actions: [
-                widget.isUpdateProduct == true
-                    ? IconButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (dialogContext) {
-                              return AlertDialog(
-                                title: const Text('Delete Product'),
-                                content: const Text(
-                                  'Are you sure you want to remove this Product?',
-                                  softWrap: true,
-                                  style: kSourceSansStyle,
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () async {
-                                      setState(() {
-                                        loading = true;
-                                      });
-                                      Navigator.pop(dialogContext);
-                                      List productImageUrls = Hive.box('images').get('productImages', defaultValue: []);
-                                      try{
-                                        String deleteOperationResponse = await NetworkUtility.deleteProductImages(productImageUrls.isNotEmpty ? productImageUrls : widget.info['image'])!;
-                                        if (deleteOperationResponse == 'No image') {
-                                          snackBar(
+    final productBloc = BlocProvider.of<ProductsBloc>(context);
+    return BlocListener<ProductsBloc, ProductState>(
+      listener: (context, state) {
+        if (state is OnErrorProductsState) {
+          setState(() {
+            loading = false;
+            showFields = true;
+          });
+          snackBar(
+            text: state.error,
+            context: context,
+            color: kRedColor,
+            duration: 600,
+          );
+        } else if (state is RequestFinishedProductsState) {
+          setState(() {
+            loading = false;
+            showFields = true;
+          });
+          List products = Hive.box(productsBox).get(productsKey);
+          Map supplier = Hive.box('shops').toMap();
+          if (widget.isUpdateProduct) {
+            for (int i = 0; i < products.length; i++) {
+              if (widget.info['productId'] == products[i]['productId']) {
+                Map supplier = Hive.box('shops').toMap();
+                fields['supplier'] = supplier;
+                fields['adverts'] = adverts;
+                products[i] = fields;
+              }
+            }
+            Provider.of<GeneralProvider>(context, listen: false)
+                .clearLists();
+            ///todo: check here
+          } else if (onDelete) {
+            for (int i = 0; i < products.length; i++) {
+              if (widget.info['productId'] == products[i]['productId']) {
+                products.removeAt(i);
+              }
+            }
+          } else {
+            fields['supplier'] = supplier;
+            fields['productId'] = state.response.result!['productId'];
+            products.add(fields);
+          }
+          Hive.box(productsBox).put(productsKey, products);
+          Hive.box('images').clear();
+          Hive.box('category').clear();
+          Navigator.pushNamedAndRemoveUntil(
+              context, HomeScreen.path, (route) => false);
+          toast(context: context, title: 'Operation completed successfully');
+        }
+      },
+      child: ModalProgressHUD(
+        inAsyncCall: loading,
+        progressIndicator: const CircularProgressIndicator(
+          color: kMainColor,
+        ),
+        child: SafeArea(
+          child: DefaultTabController(
+            length: _tabs.length,
+            child: Scaffold(
+              appBar: AppBar(
+                automaticallyImplyLeading: true,
+                iconTheme: const IconThemeData(color: kSelectedTileColor),
+                elevation: 0.0,
+                backgroundColor: kBackgroundColor,
+                title: Text(
+                  widget.isUpdateProduct == true
+                      ? widget.info['name']
+                      : 'New Product',
+                  style: kAppBarTitleTextStyle,
+                ),
+                centerTitle: false,
+                titleTextStyle: kAppBarTitleTextStyle,
+                actions: [
+                  widget.isUpdateProduct == true
+                      ? IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (dialogContext) {
+                                return AlertDialog(
+                                  title: const Text('Delete Product'),
+                                  content: const Text(
+                                    'Are you sure you want to remove this Product?',
+                                    softWrap: true,
+                                    style: kSourceSansStyle,
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () async {
+                                        setState(() {
+                                          loading = true;
+                                          onDelete = true;
+                                        });
+                                        Navigator.pop(dialogContext);
+                                        List productImageUrls =
+                                            Hive.box('images').get(
+                                                'productImages',
+                                                defaultValue: []);
+                                        try {
+                                          String deleteOperationResponse =
+                                              await NetworkUtility
+                                                  .deleteProductImages(
+                                                      productImageUrls
+                                                              .isNotEmpty
+                                                          ? productImageUrls
+                                                          : widget
+                                                              .info['image'])!;
+                                          if (deleteOperationResponse ==
+                                              'No image') {
+                                            snackBar(
                                               text: 'No image found',
                                               context: context,
-                                            duration: 40,
-                                            color: kRedColor,
-                                          );
-                                        }
-                                        await NetworkUtility.deleteProduct(widget.info['productId']);
-                                        List products = Hive.box(productsBox).get(productsKey);
-                                        for (int i = 0; i < products.length; i++) {
-                                          if (widget.info['productId'] == products[i]['productId']) {
-                                            products.removeAt(i);
+                                              duration: 40,
+                                              color: kRedColor,
+                                            );
                                           }
+
+                                          ///Todo: Delete Product here...
+                                          productBloc.add(DeleteProductEvent(
+                                              token: jWTToken,
+                                              productId:
+                                                  widget.info['productId']));
+                                        } on FirebaseException catch (e) {
+                                          if (kDebugMode) {
+                                            print(e.message);
+                                          }
+                                        } finally {
+                                          setState(() {
+                                            loading = false;
+                                          });
                                         }
-                                        Hive.box(productsBox).put(productsKey, products);
-                                        Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            HomeScreen.path,
-                                                (route) => false);
-                                      }on FirebaseException catch (e){
-                                        if(kDebugMode){
-                                          print(e.message);
-                                        }
-                                      }finally{
-                                        setState(() {
-                                          loading = false;
-                                        });
-                                      }
-                                    },
-                                    child: const Text(
-                                      'Yes',
-                                      softWrap: true,
-                                      style: kSourceSansStyle,
+                                      },
+                                      child: const Text(
+                                        'Yes',
+                                        softWrap: true,
+                                        style: kSourceSansStyle,
+                                      ),
                                     ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text(
-                                      'No',
-                                      softWrap: true,
-                                      style: kSourceSansStyle,
-                                    ),
-                                  )
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        icon: const Icon(
-                          Icons.delete,
-                        ),
-                        color: kSubMainColor,
-                        iconSize: 20.0,
-                      )
-                    : const SizedBox(),
-              ],
-              bottom: TabBar(
-                tabs: _tabs,
-                indicatorColor: kMainColor,
-                labelColor: kTextColor1,
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text(
+                                        'No',
+                                        softWrap: true,
+                                        style: kSourceSansStyle,
+                                      ),
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                          ),
+                          color: kSubMainColor,
+                          iconSize: 20.0,
+                        )
+                      : const SizedBox(),
+                ],
+                bottom: TabBar(
+                  tabs: _tabs,
+                  indicatorColor: kMainColor,
+                  labelColor: kTextColor1,
+                ),
               ),
-            ),
-            body: ChangeNotifierProvider(
-              create: (context) => Configs(),
-              child: TabBarView(
-                children: [addProduct(), stockPage()],
+              body: ChangeNotifierProvider(
+                create: (context) => Configs(),
+                child: TabBarView(
+                  children: [addProduct(), stockPage()],
+                ),
               ),
             ),
           ),
@@ -331,10 +399,12 @@ class _NewProductState extends State<NewProduct>
                         builder: (context, Box box, childs) {
                           List imagesByte =
                               box.get('imagesBytes', defaultValue: []);
-                          List imagesPath = box.get('imagesPath', defaultValue: []);
+                          List imagesPath =
+                              box.get('imagesPath', defaultValue: []);
                           if (widget.isUpdateProduct == true &&
                               imagesByte.isEmpty) {
-                            return imageProduct(widget.info['image']);
+                            List images = box.get('productImages');
+                            return imageProduct(images ?? []);
                           } else {
                             return SizedBox(
                               height: 100,
@@ -357,7 +427,9 @@ class _NewProductState extends State<NewProduct>
                                   decoration: BoxDecoration(
                                     color: kProductCardColor,
                                     image: imageBG(
-                                      imagesByte.isEmpty ? Uint8List(0) : imagesByte[0],
+                                      imagesByte.isEmpty
+                                          ? Uint8List(0)
+                                          : imagesByte[0],
                                       imagesPath.isEmpty ? '' : imagesPath[0],
                                     ),
                                     borderRadius: BorderRadius.circular(10.0),
@@ -365,18 +437,25 @@ class _NewProductState extends State<NewProduct>
                                   child: Align(
                                       alignment: Alignment.bottomCenter,
                                       child: Container(
+                                        width: double.infinity,
+                                        decoration: const BoxDecoration(
+                                          color: kSubMainColor,
+                                          borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(10),
+                                              bottomRight: Radius.circular(10)),
+                                        ),
                                         child: Padding(
                                           padding: const EdgeInsets.all(5.0),
                                           child: ListView(
                                             shrinkWrap: true,
-                                            children: [
-                                              const Text('Upload Image',
+                                            children: const [
+                                              Text('Upload Image',
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                       color: kBackgroundColor,
                                                       fontWeight:
                                                           FontWeight.bold)),
-                                              const Text(
+                                              Text(
                                                 '+',
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
@@ -385,13 +464,6 @@ class _NewProductState extends State<NewProduct>
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        width: double.infinity,
-                                        decoration: const BoxDecoration(
-                                          color: kSubMainColor,
-                                          borderRadius: BorderRadius.only(
-                                              bottomLeft: Radius.circular(10),
-                                              bottomRight: Radius.circular(10)),
                                         ),
                                       )),
                                 ),
@@ -411,7 +483,7 @@ class _NewProductState extends State<NewProduct>
                         labelText: 'Product Name',
                       ),
                       textFieldWidget(
-                        controller: _productIdController,
+                        controller: _productCodeController,
                         labelText: 'Product code',
                       ),
                     ],
@@ -566,13 +638,14 @@ class _NewProductState extends State<NewProduct>
                               builder: (context, provider, childs) {
                             List advert =
                                 Set.from(provider.advertSelected).toList();
+                            print('Already advert: $advert');
                             adverts = advert;
+                            existingAdverts = provider.existingAdverts;
+                            deletedAdverts = provider.deletedAdverts;
                             _adsController.clear();
-                            adverts.forEach((element) {
+                            for (var element in adverts) {
                               _adsController.text += '$element, ';
-                            });
-                            print('Advert List: $adverts');
-                            print('Consumer Advert List: $advert');
+                            }
                             return TextFormField(
                               readOnly: true,
                               controller: _adsController,
@@ -580,7 +653,11 @@ class _NewProductState extends State<NewProduct>
                               onTap: isProducts == false
                                   ? null
                                   : () {
-                                      getAdvertsDialog(buildContext: context);
+                                      final advertBloc =
+                                          BlocProvider.of<AdvertsBloc>(context);
+                                      advertBloc.add(GetAdvertsEvent());
+                                      getAdvertsDialog(buildContext: context, isUpdate: widget.isUpdateProduct,
+                                      );
                                     },
                               decoration: const InputDecoration(
                                 hintText: 'Adverts',
@@ -659,36 +736,38 @@ class _NewProductState extends State<NewProduct>
                           const SizedBox(
                             height: 20,
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              getNonInventoryDialog(buildContext: context);
-                            },
-                            child: Container(
-                              height: 45,
-                              width: double.infinity,
-                              //padding: const EdgeInsets.all(10.0),
-                              decoration: const BoxDecoration(
-                                color: kBackgroundColor,
-                                //borderRadius: BorderRadius.circular(10.0),
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: kSubMainColor,
-                                    )
-                                  )
-                              ),
-                              child: ValueListenableBuilder(
-                                  valueListenable:
-                                      Hive.box('shops').listenable(),
-                                  builder: (context, Box box, childs) {
-                                    String shopName = box.get('business_name',
-                                        defaultValue: 'Suppliers');
-                                    return Text(
+                          ValueListenableBuilder(
+                              valueListenable: Hive.box('shops').listenable(),
+                              builder: (context, Box box, childs) {
+                                String shopName = box.get('businessName',
+                                    defaultValue: 'Suppliers');
+                                return InkWell(
+                                  onTap: () {
+                                    final supplierBloc =
+                                        BlocProvider.of<SuppliersBloc>(context);
+                                    supplierBloc.add(
+                                        GetSuppliersEvent(token: jWTToken ?? ''));
+                                    getNonInventoryDialog(
+                                        buildContext: context);
+                                  },
+                                  child: Container(
+                                    height: 45,
+                                    width: double.infinity,
+                                    //padding: const EdgeInsets.all(10.0),
+                                    decoration: const BoxDecoration(
+                                        color: kBackgroundColor,
+                                        //borderRadius: BorderRadius.circular(10.0),
+                                        border: Border(
+                                            bottom: BorderSide(
+                                          color: kSubMainColor,
+                                        ))),
+                                    child: Text(
                                       shopName,
                                       style: kTotalTextStyle,
-                                    );
-                                  }),
-                            ),
-                          ),
+                                    ),
+                                  ),
+                                );
+                              }),
                           DropdownButtonFormField(
                             value: selectedSellby,
                             decoration: const InputDecoration(
@@ -918,6 +997,8 @@ class _NewProductState extends State<NewProduct>
                           loading = true;
                           showFields = false;
                         });
+                        final productBloc =
+                            BlocProvider.of<ProductsBloc>(context);
                         bool isNotEmpty() {
                           if (_nameController.text != null &&
                               _categoryController.text != null &&
@@ -925,7 +1006,7 @@ class _NewProductState extends State<NewProduct>
                               _agentController.text != null &&
                               _architectController.text != null &&
                               _costController.text != null &&
-                              _productIdController.text != null &&
+                              _productCodeController.text != null &&
                               _quantityController.text != null) {
                             return true;
                           } else {
@@ -934,160 +1015,126 @@ class _NewProductState extends State<NewProduct>
                         }
 
                         if (isNotEmpty()) {
-                          // var full_image = 'images/product_.jpg';
-                          List imagesList = Hive.box('images')
-                              .get('productImages', defaultValue: []);
-                          Map supplier = Hive.box('shops').toMap() ?? {};
-                          if (kDebugMode) {
-                            print(imagesList);
+                          List imagesList =
+                              Hive.box('images').get('productImages') ?? [];
+                          if (imagesList.isNotEmpty) {
+                            List newList = [];
+                            for (var image in imagesList) {
+                              newList.add({
+                               if(widget.isUpdateProduct) 'productId': widget.info['productId'],
+                                'imageLink': image
+                              });
+                            }
+                            imagesList = newList;
                           }
-                          Map<String, dynamic> fields = {
-                            'supplier': supplier,
-                            'category': _categoryController.text,
-                            'sell_by': selectedSellby,
-                            'minimum': isInfinity
-                                ? 0
-                                : num.tryParse(_minimumController.text),
-                            'name': _nameController.text,
-                            'quantity': isInfinity
-                                ? 0
-                                : num.parse(_quantityController.text),
-                            'cost_price': _costController.text,
-                            'generalPrice': isGeneral
-                                ? num.parse(_generalController.text)
-                                : 0,
-                            'agentsPrice':
-                                isAgent ? num.parse(_agentController.text) : 0,
-                            'architectPrice': isArchitect
-                                ? num.parse(_architectController.text)
-                                : 0,
-                            'description': descController.text,
-                            'productId': _productIdController.text,
-                            'image': imagesList,
-                            'generalDiscount': isGeneralDiscount
-                                ? num.tryParse(_generalDiscountCont.text)
-                                : 0,
-                            'agentsDiscount': isAgentDiscount
-                                ? num.tryParse(_agentsDiscountCont.text)
-                                : 0,
-                            'architectDiscount': isArchitectDiscount
-                                ? num.tryParse(_architectDiscountCont.text)
-                                : 0,
-                            'isGeneralDiscount': isGeneralDiscount,
-                            'isAgentDiscount': isAgentDiscount,
-                            'isArchitectDiscount': isArchitectDiscount,
-                            'adverts': adverts,
-                            'isInfinity': isInfinity,
-                          };
-                          print('Done with fields');
-                          if (widget.isUpdateProduct == true) {
-                            adminCrud
-                                .updateProduct(
-                                    fields, _productIdController.text)
-                                .then(
-                              (added) {
-                                if (added) {
-                                  snackBar(
-                                      text: 'Product Updated Successfully',
-                                      context: context);
-                                  snackBar(
-                                      text:
-                                          'Updating products list please wait...',
-                                      context: context);
-                                  generalCrud.getProducts().then(
-                                    (value) {
-                                      final data = value.docs;
-                                      List products = [];
-                                      data.forEach((element) {
-                                        products.add(element.data());
-                                      });
-                                      Hive.box(productsBox)
-                                          .put(productsKey, products)
-                                          .whenComplete(
-                                        () {
-                                          setState(() {
-                                            loading = false;
-                                            showFields = true;
-                                          });
-                                          Hive.box('images').clear();
-                                          Hive.box('category').clear();
-                                          snackBar(
-                                              text:
-                                                  'Products updated successfully',
-                                              context: context);
-                                          Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            HomeScreen.path,
-                                            (route) => false,
-                                          );
-                                        },
-                                      );
-                                    },
-                                  );
-                                } else {
-                                  setState(() {
-                                    loading = false;
-                                    showFields = true;
-                                  });
-                                  showDialogBox(
-                                    buildContext: context,
-                                    msg: 'An error occured please try again',
-                                  );
-                                }
-                              },
+                          List deletedImages =
+                              Hive.box('images').get('deletedImages') ?? [];
+                          if (deletedImages.isNotEmpty) {
+                            List newList = [];
+                            for (var image in deletedImages) {
+                              newList.add({
+                                'productId': num.parse(widget.info['productId']),
+                                'imageLink': image
+                              });
+                            }
+                            deletedImages = newList;
+                          }
+                          List updatedAdverts = adverts.toList();
+                          if (kDebugMode) {
+                            print('AdvertsBeforeFilter: $adverts');
+                          }
+                          if (kDebugMode) {
+                            print('UpdatedAdvertsBeforeFilter: $updatedAdverts');
+                          }
+                          if (widget.isUpdateProduct && existingAdverts.isNotEmpty) {
+                            for (var advert in existingAdverts) {
+                              if (updatedAdverts.contains(advert)) {
+                                updatedAdverts.remove(advert);
+                              }
+                            }
+                          }
+                          if (updatedAdverts.isNotEmpty) {
+                            List newList = [];
+                            for (var advert in updatedAdverts) {
+                              if (kDebugMode) {
+                                print(advert);
+                              }
+                              newList.add({
+                                'advert': advert,
+                                if(widget.isUpdateProduct) 'productId': widget.info['productId'],
+                              });
+                            }
+                            updatedAdverts = newList;
+                          }
+                          if (kDebugMode) {
+                            print('AdvertsAfterFilter: $adverts');
+                          }
+                          if (kDebugMode) {
+                            print('UpdatedAdvertsAfterFilter: $updatedAdverts');
+                          }
+                          Map supplier = Hive.box('shops').toMap();
+                          setState(() {
+                            fields = {
+                              'supplierId': supplier['supplierId'],
+                              'category': _categoryController.text,
+                              'categoryId':
+                                  Hive.box('category').get('categoryId'),
+                              'sellBy': selectedSellby,
+                              'minimum': isInfinity
+                                  ? 0
+                                  : num.tryParse(_minimumController.text),
+                              'name': _nameController.text,
+                              'quantity': isInfinity
+                                  ? 0
+                                  : num.parse(_quantityController.text),
+                              'costPrice': _costController.text,
+                              'generalPrice': isGeneral
+                                  ? num.parse(_generalController.text)
+                                  : 0,
+                              'agentsPrice': isAgent
+                                  ? num.parse(_agentController.text)
+                                  : 0,
+                              'architectPrice': isArchitect
+                                  ? num.parse(_architectController.text)
+                                  : 0,
+                              'description': descController.text,
+                              'productCode': _productCodeController.text,
+                              'images': imagesList,
+                              'generalDiscount': isGeneralDiscount
+                                  ? num.tryParse(_generalDiscountCont.text)
+                                  : 0,
+                              'agentsDiscount': isAgentDiscount
+                                  ? num.tryParse(_agentsDiscountCont.text)
+                                  : 0,
+                              'architectDiscount': isArchitectDiscount
+                                  ? num.tryParse(_architectDiscountCont.text)
+                                  : 0,
+                              'isGeneralDiscount': isGeneralDiscount,
+                              'isAgentDiscount': isAgentDiscount,
+                              'isArchitectDiscount': isArchitectDiscount,
+                              'isInfinity': isInfinity,
+                              'adverts': updatedAdverts,
+                              if (widget.isUpdateProduct)
+                                'deletedAdverts': deletedAdverts,
+                              if (widget.isUpdateProduct)
+                                'deletedImages': deletedImages,
+                            };
+                          });
+                          if (widget.isUpdateProduct) {
+                            productBloc.add(
+                              UpdateProductEvent(
+                                  token: jWTToken ?? '',
+                                  productId: widget.info['productId'],
+                                  productModel: fields,
+                              ),
                             );
                           } else {
-                            adminCrud
-                                .addProduct(fields, _productIdController.text)
-                                .then((added) {
-                              if (added) {
-                                snackBar(
-                                    text: 'Product Created Successfully',
-                                    context: context);
-                                snackBar(
-                                    text:
-                                        'Updating products list please wait...',
-                                    context: context);
-                                generalCrud.getProducts().then(
-                                  (value) {
-                                    final data = value.docs;
-                                    List products = [];
-                                    data.forEach((element) {
-                                      products.add(element.data());
-                                    });
-                                    Hive.box(productsBox)
-                                        .put(productsKey, products)
-                                        .whenComplete(
-                                      () {
-                                        setState(() {
-                                          loading = false;
-                                          showFields = true;
-                                        });
-                                        Hive.box('images').clear();
-                                        Hive.box('category').clear();
-                                        snackBar(
-                                            text:
-                                                'Products updated successfully',
-                                            context: context);
-                                        Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            HomeScreen.path,
-                                            (route) => false);
-                                      },
-                                    );
-                                  },
-                                );
-                              } else {
-                                setState(() {
-                                  loading = false;
-                                  showFields = true;
-                                });
-                                showDialogBox(
-                                  buildContext: context,
-                                  msg: 'An error occured please try again',
-                                );
-                              }
-                            });
+                            productBloc.add(
+                              AddProductEvent(
+                                token: jWTToken ?? '',
+                                productModel: fields,
+                              ),
+                            );
                           }
                         } else {
                           setState(() {
@@ -1348,9 +1395,9 @@ class _NewProductState extends State<NewProduct>
                                 'description': descController.text,
                                 'category': _categoryController,
                                 'selling_price': _priceController.text,
-                                'cost_price': _costController.text,
+                                'costPrice': _costController.text,
                                 'quantity': _quantityController.text,
-                                'sell_by': configs.sellBy,
+                                'sellBy': configs.sellBy,
                                 'minimum': _minimumController.text,
                                 'product_for': configs.productFor,
                                 'image': productImage,

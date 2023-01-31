@@ -30,9 +30,9 @@ class _GroupTransactionsState extends State<GroupTransactions> {
     // TODO: implement initState
     List generalItems = [], agentsItems = [], architectItems = [];
     for (var element in widget.data) {
-      if (element['customer_role'] == 'general') {
+      if (element['role'] == 'general') {
         generalItems.add(element);
-      } else if (element['customer_role'] == 'agents') {
+      } else if (element['role'] == 'agents') {
         agentsItems.add(element);
       } else {
         architectItems.add(element);

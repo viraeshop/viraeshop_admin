@@ -3,11 +3,18 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:viraeshop/return/return_event.dart';
+import 'package:viraeshop/return/return_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop/return/return_bloc.dart';
+import 'package:viraeshop_api/models/return/return.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class ReturnHistory extends StatefulWidget {
   const ReturnHistory({Key? key}) : super(key: key);
@@ -22,23 +29,23 @@ class _ReturnHistoryState extends State<ReturnHistory> {
 
   @override
   void initState() {
+    final returnBloc = BlocProvider.of<ReturnBloc>(context);
+    final jWTToken = Hive.box('adminInfo').get('token');
+    returnBloc.add(GetReturnsEvent(
+      token: jWTToken,
+    ));
     // TODO: implement initState
     super.initState();
-    // getlogin().then((curruser) {
-    //   setState(() {
-    //     user = jsonDecode(curruser);
-    //   });
-    // });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 3.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Return History',
           style: kAppBarTitleTextStyle,
         ),
@@ -48,39 +55,35 @@ class _ReturnHistoryState extends State<ReturnHistory> {
         //   tabs: tabs,
         // ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-          stream: generalCrud.getReturn(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<ReturnBloc, ReturnState>(
+          builder: (context, state) {
+            if (state is OnErrorReturnState) {
               return Center(
-                heightFactor: 100.0,
-                widthFactor: 100.0,
-                child: CircularProgressIndicator(
-                  color: kMainColor,
+                child: Text(
+                  state.message,
+                  style: kProductNameStylePro,
                 ),
               );
-            } else if (snapshot.hasData) {
+            } else if (state is FetchedReturnsState) {
               int index = 0;
-              final data = snapshot.data!.docs;
-              print(data);
+              List<ReturnModel> data = state.returns;
               List returns = [];
-              data.forEach((element) {
-                returns.add(element.data());
+              for (var element in data) {
+                returns.add(element.toJson());
                 returns[index]['docId'] = element.id;
                 index++;
-              });
-              return returns.isNotEmpty
-                  ? ListView.builder(
+              }
+              return ListView.builder(
                       itemCount: returns.length,
                       itemBuilder: (context, i) {
-                        Timestamp timestamp = returns[i]['date'];
+                        Timestamp timestamp = dateFromJson(returns[i]['createdAt']);
                         DateTime dateTime = timestamp.toDate();
                         String date = dateTime.toString().split(' ')[0];
                         return ListTile(
                           shape: RoundedRectangleBorder(
-                            side: Border().bottom.copyWith(color: kStrokeColor,),
+                            side: const Border().bottom.copyWith(color: kStrokeColor,),
                           ),
-                          contentPadding: EdgeInsets.all(10.0),
+                          contentPadding: const EdgeInsets.all(10.0),
                           tileColor: kBackgroundColor,
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
@@ -113,7 +116,7 @@ class _ReturnHistoryState extends State<ReturnHistory> {
                                 style: kProductNameStylePro,
                               ),
                               Text(
-                                '$date',
+                                date,
                                 style: kProductNameStylePro,
                               ),
                               Row(
@@ -129,23 +132,15 @@ class _ReturnHistoryState extends State<ReturnHistory> {
                           ),
                         );
                       },
-                    )
-                  : Container(
-                      child: Center(
-                        child: Text(
-                          'Oop\'s an error occured',
-                          style: kProductNameStylePro,
-                        ),
-                      ),
                     );
-            } else {
-              return Center(
-                child: Text(
-                  'Oop\'s an error occured',
-                  style: kProductNameStylePro,
-                ),
-              );
             }
+            return const Center(
+              heightFactor: 100.0,
+              widthFactor: 100.0,
+              child: CircularProgressIndicator(
+                color: kMainColor,
+              ),
+            );
           }),
     );
   }

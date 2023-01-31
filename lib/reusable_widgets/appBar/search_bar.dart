@@ -61,7 +61,7 @@ class SearchBar extends StatelessWidget {
               }
               final filteredList = products.where((element) {
                 final String nameLower = element['name'].toLowerCase();
-                final idLower = element['productId'].toLowerCase();
+                final idLower = element['productCode'].toLowerCase();
                 final valueLower = value.toLowerCase();
                 return nameLower.contains(valueLower) ||
                     idLower.contains(valueLower);

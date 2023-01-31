@@ -155,7 +155,7 @@ class NetworkUtility {
       } else {
         if (element['isInventory']) {
           await updateProductInventory(
-              element['product_id'], element['quantity'], isReturn);
+              element['productId'], element['quantity'], isReturn);
         }
       }
     }

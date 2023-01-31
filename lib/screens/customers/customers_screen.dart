@@ -16,8 +16,8 @@ class CustomersScreen extends StatefulWidget {
   _CustomersScreenState createState() => _CustomersScreenState();
 }
 
-class _CustomersScreenState extends State<CustomersScreen> {
-  List<Tab> tabs = const [
+class _CustomersScreenState extends State<CustomersScreen> with TickerProviderStateMixin{
+  static List<Tab> tabs = const [
     Tab(
       text: 'All',
     ),
@@ -25,9 +25,17 @@ class _CustomersScreenState extends State<CustomersScreen> {
     Tab(text: 'Agent'),
     Tab(text: 'Architect'),
   ];
+  //late TabController _tabController;
+  @override
+  void initState() {
+    // TODO: implement initState
+    //_tabController = TabController(length: tabs.length, vsync: this, initialIndex: 0);
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
+      initialIndex: 0,
       length: tabs.length,
       child: Scaffold(
         appBar: AppBar(
@@ -79,7 +87,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
         body: const TabBarView(
           children: [
             Customers(
-              role: 'All',
+              role: 'all',
               isSelectCustomer: true,
             ),
             Customers(

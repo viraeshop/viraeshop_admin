@@ -7,15 +7,19 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
+import 'package:viraeshop_api/models/suppliers/suppliers.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class NonInventoryInfo extends StatefulWidget {
   final Map data;
   final String invoiceId;
   final Timestamp date;
+  final bool isSupplierPay;
   const NonInventoryInfo(
       {required this.data,
       required this.invoiceId,
       required this.date,
+      this.isSupplierPay = false,
       Key? key})
       : super(key: key);
 
@@ -27,6 +31,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
   String date = '';
   List images = [];
   List payList = [];
+  Suppliers? supplier;
   int imageIndex = 0;
   final formatter = DateFormat('MM/dd/yyyy');
   @override
@@ -35,7 +40,11 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
     Timestamp timestamp = widget.date;
     date = formatter.format(timestamp.toDate());
     images = widget.data['images'] ?? [];
-    payList = widget.data['pay_list'] ?? [];
+    payList = widget.isSupplierPay ? widget.data['payList'] : widget.data['paylist'] ?? [];
+    supplier = widget.isSupplierPay
+        ? Suppliers.fromJson(widget.data['supplierInfos'])
+        : widget.data['supplierInfo'] is! Suppliers ? Suppliers.fromJson(widget.data['supplierInfo']) : widget.data['supplierInfo'];
+    print(images);
     super.initState();
   }
 
@@ -67,7 +76,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                 children: [
                   /// name
                   Text(
-                    '${widget.data['business_name']}',
+                    '${supplier?.businessName}',
                     style: kTotalSalesStyle,
                   ),
                   Row(
@@ -75,7 +84,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                     children: [
                       /// mobile
                       Text(
-                        '${widget.data['mobile']}',
+                        '${supplier?.mobile}',
                         style: kProductNameStylePro,
                       ),
                       textContainer(date),
@@ -84,13 +93,13 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
 
                   /// email
                   Text(
-                    'Email: ${widget.data['email']}',
+                    'Email: ${supplier?.email}',
                     style: kProductNameStylePro,
                   ),
 
                   /// address
                   Text(
-                    '${widget.data['address']}',
+                    '${supplier?.address}',
                     style: kProductNameStylePro,
                   ),
                   const SizedBox(
@@ -119,14 +128,14 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   images.isEmpty
-                      ? Container(
+                      ? SizedBox(
                           height: MediaQuery.of(context).size.height * 0.45,
                           width: MediaQuery.of(context).size.width * 0.4,
                         )
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(5.0),
                           child: CachedNetworkImage(
-                            imageUrl: images[imageIndex],
+                            imageUrl: images[imageIndex]['imageLink'],
                             errorWidget: (context, url, childs) {
                               return Image.asset('assets/default.jpg');
                             },
@@ -141,9 +150,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           if (imageIndex > 0) {
                             setState(() {
                               imageIndex--;
-                              Timestamp timestamp = widget.data['pay_list']
-                                      [imageIndex]['date'] ??
-                                  Timestamp.now();
+                              Timestamp timestamp = dateFromJson(
+                                  payList[imageIndex]['createdAt']);
                               date = formatter.format(timestamp.toDate());
                             });
                           }
@@ -157,9 +165,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           if (imageIndex < images.length - 1) {
                             setState(() {
                               imageIndex++;
-                              Timestamp timestamp = widget.data['pay_list']
-                                      [imageIndex]['date'] ??
-                                  Timestamp.now();
+                              Timestamp timestamp = dateFromJson(
+                                  payList[imageIndex]['createdAt']);
                               date = formatter.format(timestamp.toDate());
                             });
                           }
@@ -169,7 +176,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                     height: 7.0,
                   ),
                   Text(
-                    'Total Buying Price: ${widget.data['buy_price']}$bdtSign',
+                    'Total Buying Price: ${widget.data['buyPrice']}$bdtSign',
                     style: kTableCellStyle,
                   ),
                   const SizedBox(
@@ -194,7 +201,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                             )
                           ]
                         : List.generate(payList.length, (index) {
-                            Timestamp timestamp = payList[index]['date'];
+                            Timestamp timestamp =
+                                dateFromJson(payList[index]['createdAt']);
                             final formatter = DateFormat('MM/dd/yyyy');
                             String dateTime = formatter.format(
                               timestamp.toDate(),

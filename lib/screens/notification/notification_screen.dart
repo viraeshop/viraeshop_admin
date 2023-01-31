@@ -5,30 +5,45 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:viraeshop/notifications/notifications_bloc.dart';
+import 'package:viraeshop/notifications/notifications_event.dart';
+import 'package:viraeshop/notifications/notifications_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/clipper.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_api/apiCalls/notifications.dart';
 
 import '../../components/styles/text_styles.dart';
 import '../advert/ads_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NotificationScreen extends StatefulWidget {
-  static final String path = '/notifications';
+  static const String path = '/notifications';
   const NotificationScreen({Key? key}) : super(key: key);
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> with AutomaticKeepAliveClientMixin {
+class _NotificationScreenState extends State<NotificationScreen>
+    with AutomaticKeepAliveClientMixin {
+  List items = [];
+  @override
+  void initState() {
+    // TODO: implement initState
+    final notificationBloc = BlocProvider.of<NotificationsBloc>(context);
+    notificationBloc.add(GetNotificationsEvent());
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
@@ -84,31 +99,53 @@ class _NotificationScreenState extends State<NotificationScreen> with AutomaticK
                     borderRadius: BorderRadius.circular(10.0),
                     color: kBackgroundColor,
                   ),
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('push_notifications').snapshots(),
-                    builder: (context, snapshot) {
-                      if(snapshot.connectionState == ConnectionState.waiting){
-                        return const Center(
-                          child: CircularProgressIndicator(color: kNewMainColor,),
-                        );
-                      }else if(snapshot.hasError){
-                        print(snapshot.error);
-                        return Text('${snapshot.error}', style: const TextStyle(
+                  child: BlocConsumer<NotificationsBloc, NotificationsState>(
+                      listenWhen: (context, state) {
+                    if (state is AddedNotificationState ||
+                        state is OnAddedErrorNotificationState) {
+                      return true;
+                    } else {
+                      return false;
+                    }
+                  }, listener: (context, state) {
+                    if (state is AddedNotificationState) {
+                      setState(() {
+                        items.add(state.response.result);
+                      });
+                    } else if (state is OnAddedErrorNotificationState) {
+                      snackBar(
+                        text: state.message,
+                        context: context,
+                        duration: 500,
+                        color: kRedColor,
+                      );
+                    }
+                  }, buildWhen: (context, state) {
+                    if (state is FetchedNotificationsState ||
+                        state is OnErrorNotificationState) {
+                      return true;
+                    } else {
+                      return false;
+                    }
+                  }, builder: (context, state) {
+                    if (state is OnErrorNotificationState) {
+                      return Text(
+                        state.message,
+                        style: const TextStyle(
                           color: kRedColor,
                           fontFamily: 'Montserrat',
                           fontSize: 15.0,
                           letterSpacing: 1.3,
-                        ),);
-                      }
-                      else{
-                        final data = snapshot.data!.docs;
-                        List items = [];
-                        if(data.isNotEmpty){
-                          data.forEach((element) {
-                          items.add(element.data());
-                        });
+                        ),
+                      );
+                    } else if (state is FetchedNotificationsState) {
+                      items.clear();
+                      final data = state.notifications;
+                      if (data.isNotEmpty) {
+                        for (var element in data) {
+                          items.add(element.toJson());
                         }
-
+                      }
                       return ListView.builder(
                         itemCount: items.length,
                         itemBuilder: (context, index) {
@@ -120,12 +157,17 @@ class _NotificationScreenState extends State<NotificationScreen> with AutomaticK
                           );
                         },
                       );
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: kNewMainColor,
+                        ),
+                      );
                     }
-                    }
-                  ),
+                  }),
                 ),
               ),
-              FractionallySizedBox(
+              const FractionallySizedBox(
                 heightFactor: 0.2,
                 alignment: Alignment.bottomCenter,
                 child: NotificationMaker(),
@@ -143,7 +185,7 @@ class _NotificationScreenState extends State<NotificationScreen> with AutomaticK
 }
 
 class NotificationMaker extends StatefulWidget {
-  NotificationMaker({Key? key}) : super(key: key);
+  const NotificationMaker({Key? key}) : super(key: key);
 
   @override
   State<NotificationMaker> createState() => _NotificationMakerState();
@@ -160,152 +202,179 @@ class _NotificationMakerState extends State<NotificationMaker> {
 
   String imagePath = '';
 
-  String imageLink = '';
+  String imageLink = 'https://www.google.com/';
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return BlocProvider(
+      create: (context) =>
+          NotificationsBloc(notificationCalls: NotificationCalls()),
+      child: BlocListener<NotificationsBloc, NotificationsState>(
+        listenWhen: (context, state) {
+          if (state is AddedNotificationState) {
+            return true;
+          } else {
+            return false;
+          }
+        },
+        listener: (context, state) {
+          if (state is AddedNotificationState) {
+            setState(() {
+              titleController.clear();
+              subTitleController.clear();
+              bodyController.clear();
+              imageBytes.clear();
+              imageLink = '';
+            });
+          }
+        },
+        child: SingleChildScrollView(
+          child: Column(
             children: [
-              Container(
-                margin: const EdgeInsets.all(10),
-                //height: 150.0,
-                width: size.width * 0.7,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
-                  color: kTextBoxColor,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10.0),
-                      width: size.width * 0.4,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CustomTextStyle(
-                                  hintText: 'Title',
-                                    title1Controller: titleController,
-                                    textStyle: const TextStyle(
-                                      color: kSubMainColor,
-                                      fontSize: 15.0,
-                                      fontFamily: 'Montserrat',
-                                    ),
-                                  ),
-                                  const SizedBox(),
-                                  CustomTextStyle(
-                                  hintText: 'Sub-title',
-                                    title1Controller: subTitleController,
-                                    textStyle: const TextStyle(
-                                      color: kSubMainColor,
-                                      fontSize: 15.0,
-                                      fontFamily: 'Montserrat',
-                                    ),
-                                  ),
-                                  const SizedBox(),
-                                  CustomTextStyle(
-                                    lines: 3,
-                                    width: size.width * 0.4,
-                                    height: 70.0,
-                                  hintText: 'Description',
-                                    title1Controller: bodyController,
-                                    textStyle: const TextStyle(
-                                      color: kSubMainColor,
-                                      fontSize: 15.0,
-                                      fontFamily: 'Montserrat',
-                                    ),
-                                  ),
-                                  //SizedBox(),
-                        ],
-                      ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(10),
+                    //height: 150.0,
+                    width: size.width * 0.7,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: kTextBoxColor,
                     ),
-                    const SizedBox(
-                      width: 10.0,
-                    ),
-                    InkWell(
-                      onTap: (){
-                        if(kIsWeb){
-                          getImageWeb('notifications').then((value){
-                            setState(() {
-                              imageBytes = value.item1!;
-                              imageLink = value.item2!;
-                            });
-                          });
-                        }else{
-                          getImageNative('notifications').then((value){
-                            setState(() {
-                              imagePath = value.item1!;
-                              imageLink = value.item2!;
-                            });
-                          });
-                        }
-                      },
-                      child: Container(
-                        width: size.width * 0.2,
-                        height: 120.0,
-                        margin: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: kNewYellowColor,
-                          image: imageBG(imageBytes, imagePath),
-                            borderRadius: BorderRadius.circular(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10.0),
+                          width: size.width * 0.4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CustomTextStyle(
+                                hintText: 'Title',
+                                title1Controller: titleController,
+                                textStyle: const TextStyle(
+                                  color: kSubMainColor,
+                                  fontSize: 15.0,
+                                  fontFamily: 'Montserrat',
+                                ),
+                              ),
+                              const SizedBox(),
+                              CustomTextStyle(
+                                hintText: 'Sub-title',
+                                title1Controller: subTitleController,
+                                textStyle: const TextStyle(
+                                  color: kSubMainColor,
+                                  fontSize: 15.0,
+                                  fontFamily: 'Montserrat',
+                                ),
+                              ),
+                              const SizedBox(),
+                              CustomTextStyle(
+                                lines: 3,
+                                width: size.width * 0.4,
+                                height: 70.0,
+                                hintText: 'Description',
+                                title1Controller: bodyController,
+                                textStyle: const TextStyle(
+                                  color: kSubMainColor,
+                                  fontSize: 15.0,
+                                  fontFamily: 'Montserrat',
+                                ),
+                              ),
+                              //SizedBox(),
+                            ],
+                          ),
                         ),
-                        child: Center(
-                          child: imageBytes.isEmpty ? const Icon(Icons.add_a_photo, size: 30.0, color: kBackgroundColor,) : const SizedBox(),
+                        const SizedBox(
+                          width: 10.0,
                         ),
-                      ),
+                        InkWell(
+                          onTap: () {
+                            if (kIsWeb) {
+                              getImageWeb('notifications').then((value) {
+                                setState(() {
+                                  imageBytes = value.item1!;
+                                  imageLink = value.item2!;
+                                });
+                              });
+                            } else {
+                              getImageNative('notifications').then((value) {
+                                setState(() {
+                                  imagePath = value.item1!;
+                                  imageLink = value.item2!;
+                                });
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: size.width * 0.2,
+                            height: 120.0,
+                            margin: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              color: kNewYellowColor,
+                              image: imageBG(imageBytes, imagePath),
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Center(
+                              child: imageBytes.isEmpty
+                                  ? const Icon(
+                                      Icons.add_a_photo,
+                                      size: 30.0,
+                                      color: kBackgroundColor,
+                                    )
+                                  : const SizedBox(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: sendButton(
+                        color: kNewMainColor,
+                        width: 70.0,
+                        title: 'Send',
+                        onTap: () {
+                          if (titleController.text.isNotEmpty &&
+                              subTitleController.text.isNotEmpty &&
+                              bodyController.text.isNotEmpty) {
+                            final notificationBloc =
+                                BlocProvider.of<NotificationsBloc>(context);
+                            final notification = {
+                              'title': titleController.text,
+                              'subTitle': subTitleController.text,
+                              'body': bodyController.text,
+                              'image': imageLink,
+                            };
+                            notificationBloc.add(AddNotificationEvent(
+                              token: jWTToken,
+                                notificationModel: notification),
+                            );
+                          }
+                        }),
+                  )
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: sendButton(
-                  color: kNewMainColor,
-                  width: 70.0,
-                  title: 'Send',
-                  onTap: (){
-                    if(titleController.text != null && subTitleController.text != null && bodyController.text != null && imageLink.isNotEmpty){
-                      FirebaseFirestore.instance.collection('push_notifications').add({
-                    'title': titleController.text,
-                    'subTitle': subTitleController.text,
-                    'body': bodyController.text,
-                    'image': imageLink,
-                  }).then((value) {
-                    titleController.clear();
-                    subTitleController.clear();
-                    bodyController.clear();
-                    setState(() {
-                      imageBytes.clear();
-                      imageLink = '';
-                    });
-                  }).catchError((error){
-                    print('push notifcation error: $error');
-                    snackBar(text: '${error.message}', context: context, duration: 20);
-                  });
-                    }
-                }),
-              )
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class NotificationCard extends StatelessWidget {  
-  NotificationCard({
-    required this.title,
-    required this.body,
-    required this.image,
-    required this.subTitle
-  });
+class NotificationCard extends StatelessWidget {
+  const NotificationCard(
+      {required this.title,
+      required this.body,
+      required this.image,
+      required this.subTitle, Key? key}): super(key: key);
   final String title;
   final String subTitle;
   final String body;
@@ -330,7 +399,7 @@ class NotificationCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$title',
+                  title,
                   style: const TextStyle(
                     color: kSubMainColor,
                     fontFamily: 'Montserrat',
@@ -340,11 +409,11 @@ class NotificationCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '$subTitle',
+                  subTitle,
                   style: kProductNameStylePro,
                 ),
                 Text(
-                  '$body',                  
+                  body,
                   style: const TextStyle(
                     color: kSubMainColor,
                     fontFamily: 'SourceSans',
@@ -360,11 +429,11 @@ class NotificationCard extends StatelessWidget {
           ),
           const SizedBox(
             width: 10.0,
-          ),          
+          ),
           ClipRRect(
             borderRadius: BorderRadius.circular(10.0),
             child: CachedNetworkImage(
-              imageUrl: '$image',
+              imageUrl: image,
               height: 120.0,
               width: size.width * 0.2,
               fit: BoxFit.cover,

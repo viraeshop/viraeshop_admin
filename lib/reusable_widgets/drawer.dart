@@ -12,16 +12,16 @@ import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
 import 'package:viraeshop_admin/screens/customers/all_customers.dart';
 import 'package:viraeshop_admin/screens/customers/general_customers.dart';
-import 'package:viraeshop_admin/screens/edit_employee.dart';
+import 'package:viraeshop_admin/screens/admins/edit_employee.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
 import 'package:viraeshop_admin/screens/agent_products.dart';
-import 'package:viraeshop_admin/screens/agents_list.dart';
-import 'package:viraeshop_admin/screens/allusers.dart';
+import 'package:viraeshop_admin/screens/customers/agents_list.dart';
+import 'package:viraeshop_admin/screens/admins/allusers.dart';
 import 'package:viraeshop_admin/screens/architect_products.dart';
-import 'package:viraeshop_admin/screens/architects_list.dart';
+import 'package:viraeshop_admin/screens/customers/architects_list.dart';
 import 'package:viraeshop_admin/screens/catalog.dart';
 import 'package:viraeshop_admin/screens/category_screen.dart';
 import 'package:viraeshop_admin/screens/customers/customer_request.dart';
@@ -135,7 +135,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       alignment: Alignment.centerRight,
                       child: InkWell(
                         onTap: () {
-                          Map adminInfo = Hive.box('adminInfo').toMap();
+                          Map<String, dynamic> adminInfo = Hive.box('adminInfo').toMap() as Map<String, dynamic>;
                           Navigator.push(
                             context,
                             MaterialPageRoute(

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/decoration.dart';
@@ -7,6 +8,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
+import 'package:viraeshop_api/apiCalls/messages.dart';
 
 class Message extends StatefulWidget {  
   final String name;
@@ -25,18 +27,16 @@ class Message extends StatefulWidget {
 }
 
 class _MessageState extends State<Message> {
-  GeneralCrud _generalCrud = GeneralCrud();
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final GeneralCrud _generalCrud = GeneralCrud();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   late User loggedIn;
   void getCurrentUser() {
     final user = _auth.currentUser!;
     try {
-      if (user != null) {
-        loggedIn = user;
-        print(loggedIn.email);
-      }
+      loggedIn = user;
+      debugPrint(loggedIn.email);
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
@@ -50,6 +50,7 @@ class _MessageState extends State<Message> {
 
   final TextEditingController messageController = TextEditingController();
   String message = '';
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -59,11 +60,11 @@ class _MessageState extends State<Message> {
       child: Scaffold(
         backgroundColor: kBackgroundColor,
         appBar: AppBar(
-          iconTheme: IconThemeData(color: kSelectedTileColor),
+          iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
           title: Text(
-            widget.name != null ? widget.name : '',
+            widget.name ?? '',
             style: kAppBarTitleTextStyle,
           ),
           centerTitle: true,
@@ -71,9 +72,9 @@ class _MessageState extends State<Message> {
           // bottom: TabBar(
           //   tabs: tabs,
           // ),
-          actions: [
+          actions: const [
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+              padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
             )
           ],
         ),
@@ -87,14 +88,14 @@ class _MessageState extends State<Message> {
                   stream: _generalCrud.getChatMessages(widget.userId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
+                      return const Center(
                         child: Text(
                           'Fetching messages',
                           style: kProductNameStylePro,
                         ),
                       );
                     } else if (snapshot.hasError) {
-                      return Center(
+                      return const Center(
                         child: Text(
                           'Failed to Fetch messages',
                           style: kProductNameStylePro,
@@ -103,7 +104,7 @@ class _MessageState extends State<Message> {
                     } else {
                       final messages = snapshot.data!.docs;
                       return messages.isEmpty
-                          ? Center(
+                          ? const Center(
                               child: Text(
                                 'No messages yet!',
                                 style: kProductNameStylePro,
@@ -122,7 +123,7 @@ class _MessageState extends State<Message> {
                                           color: kNewTextColor,
                                           tail: false,
                                           isSender: true,
-                                          textStyle: TextStyle(
+                                          textStyle: const TextStyle(
                                             fontFamily: 'SourceSans',
                                             fontSize: 15.0,
                                             color: kBackgroundColor,
@@ -134,7 +135,7 @@ class _MessageState extends State<Message> {
                                           color: kProductCardColor,
                                           tail: false,
                                           isSender: false,
-                                          textStyle: TextStyle(
+                                          textStyle: const TextStyle(
                                             fontFamily: 'SourceSans',
                                             fontSize: 15.0,
                                             color: kBackgroundColor,
@@ -152,7 +153,7 @@ class _MessageState extends State<Message> {
                 children: <Widget>[
                   Expanded(
                     child: Container(
-                      margin: EdgeInsets.all(5.0),
+                      margin: const EdgeInsets.all(5.0),
                       decoration: BoxDecoration(
                         color: kBackgroundColor,
                         border: Border.all(color: kSubMainColor),
@@ -166,7 +167,7 @@ class _MessageState extends State<Message> {
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.all(5.0),
+                    margin: const EdgeInsets.all(5.0),
                     height: 50.0,
                     width: 50.0,
                     decoration: BoxDecoration(
@@ -177,25 +178,31 @@ class _MessageState extends State<Message> {
                     ),
                     child: Center(
                       child: IconButton(
-                          onPressed: () {
+                          onPressed: () async{
                             String message = messageController.text;
                             messageController.clear();
-                            if(message != null){
-                              FirebaseFirestore.instance
-                                .collection('messages')
-                                .doc(widget.userId)
-                                .collection('messages')
-                                .add({
-                              'message': message,
-                              'sender': loggedIn.email,
-                              'date': Timestamp.now(),
-                              'isFromCustomer': true,
-                              'tokens': widget.customerToken,
-                              'isInitialMessage': false,
-                            });
-                            }                            
+                            FirebaseFirestore.instance
+                              .collection('messages')
+                              .doc(widget.userId)
+                              .collection('messages')
+                              .add({
+                            'message': message,
+                            'sender': loggedIn.email,
+                            'date': Timestamp.now(),
+                            'isFromCustomer': true,
+                            'tokens': widget.customerToken,
+                            'isInitialMessage': false,
+                          });
+                            try{
+                              await MessageCalls().sendNotificationFromAdmin({
+                                'tokenId': widget.customerToken,
+                                'message': message,
+                              }, jWTToken);
+                            } catch(e) {
+                              debugPrint(e.toString());
+                            }
                           },
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.send,
                             color: kBackgroundColor,
                             size: 18.0,

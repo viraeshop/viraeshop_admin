@@ -1,16 +1,21 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:viraeshop_admin/tests/testing.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:viraeshop/admin/admin_bloc.dart';
 import 'package:viraeshop/adverts/adverts_bloc.dart';
+import 'package:viraeshop/category/category_bloc.dart';
 import 'package:viraeshop/customers/barrel.dart';
+import 'package:viraeshop/expense/expense_bloc.dart';
 import 'package:viraeshop/items/barrel.dart';
 import 'package:viraeshop/orders/barrel.dart';
 import 'package:viraeshop/products/barrel.dart';
+import 'package:viraeshop/return/return_bloc.dart';
 import 'package:viraeshop/shops/barrel.dart';
+import 'package:viraeshop/supplier_invoice/supplier_invoice_bloc.dart';
 import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/animation_testing.dart';
@@ -23,7 +28,7 @@ import 'package:viraeshop_admin/screens/about_us_page.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
 import 'package:viraeshop_admin/screens/agent_products.dart';
-import 'package:viraeshop_admin/screens/allusers.dart';
+import 'package:viraeshop_admin/screens/admins/allusers.dart';
 import 'package:viraeshop_admin/screens/architect_products.dart';
 import 'package:viraeshop_admin/screens/bloc/product_bloc.dart';
 import 'package:viraeshop_admin/screens/customers/customer_request.dart';
@@ -39,12 +44,17 @@ import 'package:viraeshop_admin/screens/splash_screen.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_api/apiCalls/admins.dart';
 import 'package:viraeshop_api/apiCalls/adverts.dart';
+import 'package:viraeshop_api/apiCalls/category.dart';
 import 'package:viraeshop_api/apiCalls/customers.dart';
+import 'package:viraeshop_api/apiCalls/expense.dart';
 import 'package:viraeshop_api/apiCalls/items.dart';
 import 'package:viraeshop_api/apiCalls/orders.dart';
 import 'package:viraeshop_api/apiCalls/products.dart';
+import 'package:viraeshop_api/apiCalls/return.dart';
 import 'package:viraeshop_api/apiCalls/shops.dart';
+import 'package:viraeshop_api/apiCalls/supplier_invoice.dart';
 import 'package:viraeshop_api/apiCalls/suppliers.dart';
+import 'package:viraeshop_api/apiCalls/tokens.dart';
 import 'package:viraeshop_api/apiCalls/transactions.dart';
 import 'components/styles/colors.dart';
 import 'components/styles/text_styles.dart';
@@ -60,6 +70,9 @@ import 'screens/orders/order_configs.dart';
 import 'screens/transaction_screen.dart';
 import 'screens/transactions/user_transaction_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:viraeshop/notifications/notifications_bloc.dart';
+import 'package:viraeshop_api/apiCalls/notifications.dart';
+import 'package:viraeshop/tokens/tokens_bloc.dart';
 
 import 'tests/test_api.dart';
 
@@ -170,6 +183,25 @@ void main() async {
           ),
         ),
         BlocProvider(
+          create: (BuildContext context) => CategoryBloc(categoryCalls: CategoryCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => ExpenseBloc(
+            expenseCalls: ExpenseCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => ReturnBloc(
+            returnCalls: ReturnCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => SupplierInvoiceBloc(
+            supplierInvoiceCalls: SupplierInvoiceCalls(),
+          ),
+        ),
+        BlocProvider(
           create: (BuildContext context) => ItemsBloc(
             itemCalls: ItemCalls(),
           ),
@@ -197,6 +229,16 @@ void main() async {
         BlocProvider(
           create: (BuildContext context) => TransactionsBloc(
             transactionCalls: TransactionCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => NotificationsBloc(
+            notificationCalls: NotificationCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => TokensBloc(
+            tokenCalls: TokenCalls(),
           ),
         ),
       ], child: const MyApp()),
@@ -238,7 +280,7 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
-      //home: const TestApi(),
+      //home: const TestingScreen(),
       initialRoute: SplashScreen.path,
       routes: {
         SplashScreen.path: (context) => const SplashScreen(),

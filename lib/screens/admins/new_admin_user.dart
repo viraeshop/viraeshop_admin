@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:viraeshop/admin/admin_bloc.dart';
+import 'package:viraeshop/admin/admin_event.dart';
+import 'package:viraeshop/admin/admin_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/screens/permission_page.dart';
+import 'package:viraeshop_admin/screens/admins/permission_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class NewAdmin extends StatelessWidget {
   NewAdmin({Key? key}) : super(key: key);
@@ -24,6 +28,11 @@ class NewAdmin extends StatelessWidget {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
+            final adminBloc = BlocProvider.of<AdminBloc>(context);
+            if(adminBloc.state is! FetchedAdminsState){
+              final jWTToken = Hive.box('adminInfo').get('token');
+              adminBloc.add(GetAdminsEvent(token: jWTToken));
+            }
             Navigator.pop(context);
           },
           icon: const Icon(

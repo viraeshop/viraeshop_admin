@@ -24,6 +24,7 @@ class ShopAdapter extends TypeAdapter<Shop> {
       mobile: fields[2] as String,
       description: fields[9] as String,
       buyPrice: fields[8] as num,
+      supplierId: fields[12] as String,
       due: fields[7] as dynamic,
       images: fields[10] as dynamic,
       payList: fields[11] as dynamic,
@@ -35,9 +36,11 @@ class ShopAdapter extends TypeAdapter<Shop> {
   @override
   void write(BinaryWriter writer, Shop obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.name)
+      ..writeByte(12)
+      ..write(obj.supplierId)
       ..writeByte(1)
       ..write(obj.email)
       ..writeByte(2)

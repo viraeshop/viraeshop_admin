@@ -2,12 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:viraeshop/customers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/user_profile_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/models/customers/customers.dart';
+
+import '../update_user.dart';
 
 class Customers extends StatefulWidget {
   final String role;
@@ -22,8 +27,8 @@ class _CustomersState extends State<Customers> {
   GeneralCrud generalCrud = GeneralCrud();
   num agentsBalances = 0;
   num agentsBalancesBackup = 0;
-  List customersList = [];
-  List tempStore = [];
+  List<CustomerModel> customersList = [];
+  List<CustomerModel> tempStore = [];
   initSearch(String value) {
     if (value.isEmpty) {
       setState(
@@ -33,30 +38,30 @@ class _CustomersState extends State<Customers> {
         },
       );
     }
-    List items = [];
+    List<CustomerModel> items = [];
     num balances = 0;
     items = customersList.where((element) {
-      final nameLower = element['name'].toLowerCase();
-      final mobile = element['mobile'];
+      final nameLower = element.name.toLowerCase();
+      final mobile = element.mobile;
       final businessName =
-      element['role'] != 'general' && element['business_name'] != null
-          ? element['business_name'].toLowerCase()
-          : '';
-      if(element['role'] == 'agents'){
-        balances += element['wallet'];
+          element.role != 'general' && element.businessName != null
+              ? element.businessName?.toLowerCase()
+              : '';
+      if (element.role == 'agents') {
+        balances += element.wallet ?? 0;
       }
       final valueLower = value.toLowerCase();
       return nameLower.contains(valueLower) ||
           mobile.contains(valueLower) ||
-          businessName.contains(valueLower);
+          businessName!.contains(valueLower);
     }).toList();
     if (customersList.isEmpty && value.isNotEmpty) {
       items = tempStore.where((element) {
-        final nameLower = element['name'].toLowerCase();
-        final mobile = element['mobile'];
+        final nameLower = element.name.toLowerCase();
+        final mobile = element.mobile;
         final businessName =
-            element['role'] != 'general' && element['business_name'] != null
-                ? element['business_name'].toLowerCase()
+            element.role != 'general' && element.businessName != null
+                ? element.businessName?.toLowerCase()
                 : '';
         if (kDebugMode) {
           print(businessName);
@@ -64,10 +69,10 @@ class _CustomersState extends State<Customers> {
         final valueLower = value.toLowerCase();
         return nameLower.contains(valueLower) ||
             mobile.contains(valueLower) ||
-            businessName.contains(valueLower);
+            businessName!.contains(valueLower);
       }).toList();
     }
-    final List filtered = items;
+    final List<CustomerModel> filtered = items;
     setState(() {
       customersList = filtered;
       agentsBalances = balances;
@@ -79,44 +84,37 @@ class _CustomersState extends State<Customers> {
 
   bool isLoaded = false;
   String statusMessage = 'Fetching customers please wait...';
+
   @override
   void initState() {
-    generalCrud.getCustomerList(widget.role).then((snapshot) {
-      final data = snapshot.docs;
-      for (var element in data) {
-        setState(() {
-          customersList.add(element.data());
-          if(widget.role == 'agents'){
-            agentsBalances += element.get('wallet');
-            agentsBalancesBackup += element.get('wallet');
-          }
-        });
-      }
-      setState(() {
-        isLoaded = true;
-        tempStore = customersList;
-      });
-    }).catchError((error) {
-      if (kDebugMode) {
-        print(error);
-      }
-      setState(() {
-        statusMessage = 'Failed to fetch customers';
-      });
-    });
+    // TODO: implement initState
+    final customerBloc = BlocProvider.of<CustomersBloc>(context);
+    final jWTToken = Hive.box('adminInfo').get('token');
+    customerBloc.add(GetCustomersEvent(
+        token: jWTToken,
+        query: widget.role));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoaded
-        ? Stack(
-      fit: StackFit.expand,
-          children: [
-            FractionallySizedBox(
-              alignment: Alignment.topCenter,
-              heightFactor: widget.role == 'agents'?  0.88 : 1,
-              child: ListView.builder(
+    return BlocBuilder<CustomersBloc, CustomerState>(
+      builder: (context, state) {
+        if (state is FetchedCustomersState) {
+          customersList = state.customerList;
+          for (var customer in customersList) {
+            if (widget.role == 'agents') {
+              agentsBalances += customer.wallet ?? 0;
+              agentsBalancesBackup += customer.wallet ?? 0;
+            }
+          }
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              FractionallySizedBox(
+                alignment: Alignment.topCenter,
+                heightFactor: widget.role == 'agents' ? 0.88 : 1,
+                child: ListView.builder(
                   itemCount: customersList.length + 1,
                   itemBuilder: (context, i) {
                     if (i == 0) {
@@ -157,45 +155,52 @@ class _CustomersState extends State<Customers> {
                         child: ListTile(
                           onTap: () {
                             if (widget.isSelectCustomer) {
-                              onSelectCustomer(context, customersList[i - 1]);
+                              onSelectCustomer(
+                                  context, customersList[i - 1].toJson());
                             } else {
-                              onCustomerTap(context, customersList[i - 1]);
+                              onCustomerTap(
+                                context,
+                                customersList[i - 1].toJson(),
+                                widget.role,
+                              );
                             }
                           },
                           leading: CircleAvatar(
                             radius: 60.0,
                             backgroundColor: kNewTextColor,
-                            backgroundImage: NetworkImage(customersList[i - 1]['profileImage'] ?? ''),
-                            child: Text('${i}'),
+                            backgroundImage: NetworkImage(
+                                customersList[i - 1].profileImage ?? ''),
+                            child: Text('$i'),
                           ),
                           trailing: const Icon(Icons.arrow_right),
-                          title: Text('${customersList[i - 1]['name']}',
+                          title: Text(customersList[i - 1].name,
                               style: const TextStyle(color: kMainColor)),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if(customersList[i - 1]['role'] != 'general') Text(
-                                '${customersList[i - 1]['business_name']}',
-                                style: kProductNameStylePro,
-                              ),
+                              if (customersList[i - 1].role != 'general')
+                                Text(
+                                  '${customersList[i - 1].businessName}',
+                                  style: kProductNameStylePro,
+                                ),
                               const SizedBox(
                                 height: 10.0,
                               ),
                               Text(
-                                '${customersList[i - 1]['mobile']}',
+                                customersList[i - 1].mobile,
                                 style: kTableCellStyle,
                               ),
-                              if (customersList[i - 1]['email'] != null)
+                              if (customersList[i - 1].email.isNotEmpty)
                                 Text(
-                                  '${customersList[i - 1]['email']}',
+                                  customersList[i - 1].email,
                                   style: kProductNameStylePro,
                                 ),
-                              if(widget.role == 'agents')
+                              if (widget.role == 'agents')
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Text(
-                                      '${customersList[i - 1]['wallet']}$bdtSign',
+                                      '${customersList[i - 1].wallet}$bdtSign',
                                       style: const TextStyle(
                                         color: kNewMainColor,
                                         fontFamily: 'Montserrat',
@@ -213,68 +218,78 @@ class _CustomersState extends State<Customers> {
                     );
                   },
                 ),
-            ),
-            if(widget.role == 'agents') FractionallySizedBox(
-              alignment: Alignment.bottomCenter,
-              heightFactor: 0.12,
-              child: Container(
-                width: double.infinity,
-                color: kSubMainColor,
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment:
-                  MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Total Balance:',
-                      style: TextStyle(
-                        color: kBackgroundColor,
-                        fontSize: 20.0,
-                        letterSpacing: 1.3,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      ' ${agentsBalances.toString()}$bdtSign',
-                      style: const TextStyle(
-                        color: kMainColor,
-                        fontSize: 15.0,
-                        letterSpacing: 1.3,
-                        fontFamily: 'Montserrat',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
               ),
-            )
-          ],
-        )
-        : Center(
+              if (widget.role == 'agents')
+                FractionallySizedBox(
+                  alignment: Alignment.bottomCenter,
+                  heightFactor: 0.12,
+                  child: Container(
+                    width: double.infinity,
+                    color: kSubMainColor,
+                    padding: const EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Total Balance:',
+                          style: TextStyle(
+                            color: kBackgroundColor,
+                            fontSize: 20.0,
+                            letterSpacing: 1.3,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          ' ${agentsBalances.toString()}$bdtSign',
+                          style: const TextStyle(
+                            color: kMainColor,
+                            fontSize: 15.0,
+                            letterSpacing: 1.3,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+            ],
+          );
+        } else if (state is OnErrorCustomerState) {
+          return Center(
             child: Text(
-              statusMessage,
+              state.message,
               style: kProductNameStylePro,
             ),
           );
+        }
+        return const Center(
+          child: Text(
+            'please wait fetching customers....',
+            style: kProductNameStylePro,
+          ),
+        );
+      },
+    );
   }
 }
 
-void onCustomerTap(BuildContext context, Map customersList) {
+void onCustomerTap(BuildContext context, Map customersList, String role) {
   Map<String, dynamic> userInfo = {
     'name': customersList['name'],
     'mobile': customersList['mobile'],
     'address': customersList['address'],
-    'userId': customersList['userId'],
+    'customerId': customersList['customerId'],
     'email': customersList['email'],
     'role': customersList['role'],
     'idType': customersList['idType'],
     'idImage': customersList['idImage'],
     'idNumber': customersList['idNumber'],
   };
-  if(customersList['role'] != 'general'){
-    userInfo['business_name'] = customersList['business_name'];
+  if (customersList['role'] != 'general') {
+    userInfo['businessName'] = customersList['businessName'];
   }
   if (customersList['role'] == 'agents') {
     userInfo['wallet'] = customersList['wallet'];
@@ -282,24 +297,22 @@ void onCustomerTap(BuildContext context, Map customersList) {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => UserProfileInfo(
-        userInfo: userInfo,
-        docId: userInfo['userId'],
-      ),
+      builder: (context) => UpdateUser(
+          userInfo: userInfo, userId: userInfo['customerId'], role: role),
     ),
   );
 }
 
 void onSelectCustomer(BuildContext context, Map customersList) {
   Map info = {
-    'id': customersList['userId'],
+    'id': customersList['customerId'],
     'role': customersList['role'],
     'name': customersList['name'],
     'address': customersList['address'],
     'mobile': customersList['mobile'],
     'email': customersList['email'],
     'search_keywords': customersList['search_keywords'],
-    'business_name': customersList['business_name'],
+    'businessName': customersList['businessName'],
   };
   if (customersList['role'] == 'agents') {
     info['wallet'] = customersList['wallet'];

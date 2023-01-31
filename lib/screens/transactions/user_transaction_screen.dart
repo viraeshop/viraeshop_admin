@@ -14,6 +14,7 @@ import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 import 'customer_transactions.dart';
 
@@ -45,13 +46,13 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
     }
     List customerId = [];
     for (var element in widget.data) {
-      customerId.add(element['customer_id']);
+      customerId.add(element['customerId']);
     }
     customerSet = Set.from(customerId);
     for (var customer in customerSet) {
       List items = [];
       for (var element in widget.data) {
-        if (element['customer_id'] == customer) {
+        if (element['customerId'] == customer) {
           items.add(element);
         }
       }
@@ -82,13 +83,13 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
     }
     Set customers = Set.from(TransacFunctions.nameSearch(
         value: value,
-        key: 'user_info',
+        key: 'customerInfo',
         temps: widget.data,
         key2: 'name',
-        key3: 'business_name'));
+        key3: 'businessName'));
     for (var customer in customers) {
       List items = widget.data.where((element) {
-        final nameLower = element['user_info']['name'].toLowerCase();
+        final nameLower = element['customerInfo']['name'].toLowerCase();
         final valueLower = customer.toLowerCase();
         return nameLower.contains(valueLower);
       }).toList();
@@ -274,7 +275,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                 Set customers = {};
                                 for (var element in widget.data){
                                   if(element['paid'] != 0){
-                                    customers.add(element['customer_id']);
+                                    customers.add(element['customerId']);
                                   }
                                 }
                                 tempTransactionData = {
@@ -282,7 +283,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                     element: widget.data
                                         .where((invoice) =>
                                             invoice['paid'] != 0 &&
-                                            invoice['customer_id']
+                                            invoice['customerId']
                                                 .contains(element))
                                         .toList()
                                 };
@@ -312,7 +313,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                 Set customers = {};
                                 for (var element in widget.data){
                                   if(element['due'] != 0){
-                                    customers.add(element['customer_id']);
+                                    customers.add(element['customerId']);
                                   }
                                 }
                                 tempTransactionData = {
@@ -320,7 +321,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                     element: widget.data
                                         .where((invoice) =>
                                     invoice['due'] != 0 &&
-                                        invoice['customer_id']
+                                        invoice['customerId']
                                             .contains(element))
                                         .toList()
                                 };
@@ -575,7 +576,7 @@ Tuple3<num, num, num> tuple(List items) {
 Tuple3<num, num, num> dateTuple(List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0, paid = 0;
   for (var element in items) {
-    Timestamp timestamp = element['date'];
+    Timestamp timestamp = dateFromJson(element['createdAt']);
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
     end = DateTime(end.year, end.month, end.day);

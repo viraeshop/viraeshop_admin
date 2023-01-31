@@ -22,7 +22,7 @@ class PopWidget extends StatefulWidget {
   routeName,
   sellBy,
   productCode;
-  final Map info;
+  final Map<String, dynamic> info;
   final bool isDiscount;
   final num discountPrice;
   @override
@@ -156,9 +156,9 @@ class _PopWidgetState extends State<PopWidget> {
                         },
                         isAnimate: isAnimate,
                         address: widget.info['supplier']['address'] ?? '',
-                        optionalMobile: widget.info['supplier']['optional_phone'] ?? '',
-                        businessName: widget.info['supplier']['business_name'] ?? '',
-                        supplierName: widget.info['supplier']['supplier_name'] ?? '',
+                        optionalMobile: widget.info['supplier']['optionalPhone'] ?? '',
+                        businessName: widget.info['supplier']['businessName'] ?? '',
+                        supplierName: widget.info['supplier']['supplierName'] ?? '',
                         mobile: widget.info['supplier']['mobile'] ?? '',
                       ),
                     ],
@@ -174,6 +174,7 @@ class _PopWidgetState extends State<PopWidget> {
       actions: [
         InkWell(
           onTap: () {
+            print(widget.info);
             Navigator.push(
               context,
               MaterialPageRoute(

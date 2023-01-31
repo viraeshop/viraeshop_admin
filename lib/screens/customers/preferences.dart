@@ -42,9 +42,9 @@ dynamic toast({required BuildContext context,required String title,Color color =
     context: context,
     animation: StyledToastAnimation.scale,
     reverseAnimation: StyledToastAnimation.fade,
-    position: StyledToastPosition.center,
-    animDuration: Duration(seconds: 1),
-    duration: Duration(seconds: 4),
+    position: StyledToastPosition.top,
+    animDuration: const Duration(seconds: 1),
+    duration: const Duration(seconds: 4),
     curve: Curves.elasticOut,
     reverseCurve: Curves.linear,
   );

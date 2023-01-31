@@ -1,10 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:viraeshop/category/category_bloc.dart';
+import 'package:viraeshop/category/category_event.dart';
+import 'package:viraeshop/category/category_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
+import 'package:viraeshop_api/models/products/product_category.dart';
 import 'add_category.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({Key? key}) : super(key: key);
@@ -16,14 +22,22 @@ class CategoryScreen extends StatefulWidget {
 class _CategoryScreenState extends State<CategoryScreen> {
   TextEditingController searchController = TextEditingController();
   @override
+  void initState() {
+    // TODO: implement initState
+    final categoryBloc = BlocProvider.of<CategoryBloc>(context);
+    categoryBloc.add(GetCategoriesEvent());
+    super.initState();
+  }
+  final jWTToken = Hive.box('adminInfo').get('token');
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Category',
           style: kAppBarTitleTextStyle,
         ),
@@ -37,146 +51,142 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => AddCategory()));
                 },
-                child: Icon(Icons.add)),
+                child: const Icon(Icons.add)),
           )
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-          stream: AdminCrud().getCategories(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final myCategories = snapshot.data!.docs;
-              // List<String> agentId = [];
-              int counter = 0;
-              List categoryList = [];
-              myCategories.forEach((element) {
-                categoryList.add(element.data());
-                categoryList[counter]['docId'] = element.id;
-                counter += 1;
-              });
-              return Container(
-                child: categoryList.isNotEmpty
-                    ? ListView.builder(
-                        itemCount: myCategories.length,
-                        itemBuilder: (BuildContext context, int i) {
-                          return Container(
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: kBackgroundColor,
-                              border: Border(
-                                bottom: BorderSide(color: kStrokeColor),
-                              ),
+      body: BlocBuilder<CategoryBloc, CategoryState>(builder: (context, state) {
+        if (state is FetchedCategoryState) {
+          List<ProductCategory> myCategories = state.categories;
+          // List<String> agentId = [];
+          int counter = 0;
+          List categoryList = [];
+          for (var element in myCategories) {
+            categoryList.add(element.toJson());
+          }
+          return ListView.builder(
+                  itemCount: myCategories.length,
+                  itemBuilder: (BuildContext context, int i) {
+                    return Container(
+                      height: 70,
+                      decoration: const BoxDecoration(
+                        color: kBackgroundColor,
+                        border: Border(
+                          bottom: BorderSide(color: kStrokeColor),
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(15.0),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: kCategoryBackgroundColor,
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      '${categoryList[i]['image']}'),
+                                  radius: 50.0,
+                                ),
+                                const SizedBox(
+                                  width: 5.0,
+                                ),
+                                Text(
+                                  '${categoryList[i]['category']}',
+                                  style: kProductNameStyle,
+                                ),
+                              ],
                             ),
-                            padding: const EdgeInsets.all(15.0),
-                            child: Center(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor:
-                                            kCategoryBackgroundColor,
-                                        backgroundImage:
-                                            CachedNetworkImageProvider(
-                                                '${categoryList[i]['image']}'),
-                                        radius: 50.0,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AddCategory(
+                                          isEdit: true,
+                                          category: categoryList[i]
+                                              ['category'],
+                                        ),
                                       ),
-                                      SizedBox(
-                                        width: 5.0,
-                                      ),
-                                      Text(
-                                        '${categoryList[i]['category_name']}',
-                                        style: kProductNameStyle,
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AddCategory(
-                                                isEdit: true,
-                                                category: categoryList[i]
-                                                    ['category_name'],
-                                                docId: categoryList[i]['docId'],
+                                    );
+                                  },
+                                  icon: const Icon(Icons.edit),
+                                  color: kSubMainColor,
+                                  iconSize: 20.0,
+                                ),
+                                // SizedBox(
+                                //   width: 5.0,
+                                // ),
+                                IconButton(
+                                  onPressed: () {
+                                    showDialog<void>(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title:
+                                              const Text('Delete Category'),
+                                          content: const Text(
+                                            'Are you sure you want to remove this Category?',
+                                            softWrap: true,
+                                            style: kSourceSansStyle,
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                final categoryBloc =
+                                                    BlocProvider.of<CategoryBloc>(context);
+                                                categoryBloc.add(
+                                                  DeleteCategoryEvent(
+                                                    token: jWTToken,
+                                                      categoryId: categoryList[i]['category'],
+                                                  ),
+                                                );
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text(
+                                                'Yes',
+                                                softWrap: true,
+                                                style: kSourceSansStyle,
                                               ),
                                             ),
-                                          );
-                                        },
-                                        icon: Icon(Icons.edit),
-                                        color: kSubMainColor,
-                                        iconSize: 20.0,
-                                      ),
-                                      // SizedBox(
-                                      //   width: 5.0,
-                                      // ),
-                                      IconButton(
-                                        onPressed: () {
-                                          showDialog<void>(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog(
-                                                title: Text('Delete Category'),
-                                                content: Text(
-                                                  'Are you sure you want to remove this Category?',
-                                                  softWrap: true,
-                                                  style: kSourceSansStyle,
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      AdminCrud()
-                                                          .deleteCategory(
-                                                              myCategories[i]
-                                                                  .id)
-                                                          .then((value) {
-                                                        Navigator.pop(context);
-                                                      });
-                                                    },
-                                                    child: Text(
-                                                      'Yes',
-                                                      softWrap: true,
-                                                      style: kSourceSansStyle,
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: Text(
-                                                      'No',
-                                                      softWrap: true,
-                                                      style: kSourceSansStyle,
-                                                    ),
-                                                  )
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                        icon: Icon(Icons.delete),
-                                        color: kSubMainColor,
-                                        iconSize: 20.0,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text(
+                                                'No',
+                                                softWrap: true,
+                                                style: kSourceSansStyle,
+                                              ),
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(Icons.delete),
+                                  color: kSubMainColor,
+                                  iconSize: 20.0,
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      )
-                    : Text('Loading'),
-              );
-            }
-            return Center(child: CircularProgressIndicator());
-          }),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+        }
+        else if(state is OnErrorCategoryState){
+          return Center(
+            child: Text(state.message, style: kProductNameStylePro,),
+          );
+        }
+        return const Center(child: CircularProgressIndicator());
+      }),
     );
   }
 }

@@ -57,7 +57,9 @@ class _AgentProductsState extends State<AgentProducts> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => NewProduct()));
+                                builder: (context) => const NewProduct(
+                                  info: {},
+                                )));
                       },
                 child: Icon(Icons.add)),
           ),

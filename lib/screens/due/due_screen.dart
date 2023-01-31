@@ -2,15 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/due/due_receipt.dart';
 import 'package:viraeshop_admin/screens/orders/order_tranz_card.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/models/transactions/transactions.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class DueScreen extends StatefulWidget {
   const DueScreen({Key? key}) : super(key: key);
@@ -27,6 +34,7 @@ class _DueScreenState extends State<DueScreen> {
   num totalDue = 0;
   bool isLoading = false;
   bool dueCalculated = false;
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -50,171 +58,219 @@ class _DueScreenState extends State<DueScreen> {
             color: kSubMainColor,
           ),
         ),
-        body: Container(
-          padding: const EdgeInsets.all(10.0),
-          color: kBackgroundColor,
-          height: screenSize.height,
-          width: screenSize.width,
-          child: Stack(
-            //fit: StackFit.expand,
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(top: 120),
-                  child: Column(
-                    children: List.generate(customerInvoices.length, (i) {
-                      List items = customerInvoices[i]['items'] ?? [];
-                      String description = '';
-                      for (var element in items) {
-                        description +=
-                            '${element['quantity']} X ${element['product_name']}, ';
-                      }
-                      Timestamp timestamp = customerInvoices[i]['date'];
-                      String date =
-                          DateFormat.yMMMd().format(timestamp.toDate());
-                      return OrderTranzCard(
-                        price: customerInvoices[i]['price'].toString(),
-                        employeeName: customerInvoices[i]['employee_name'],
-                        desc: description,
-                        date: date,
-                        customerName: customerInvoices[i]['user_info']['name'],
-                        invoiceId: customerInvoices[i]['invoice_id'],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DueReceipt(data: customerInvoices[i]),
-                            ),
-                          );
-                        },
-                      );
-                    }),
+        body: BlocListener<TransactionsBloc, TransactionState>(
+          listener: (context, state) {
+            if (state is FetchedTransactionState) {
+              final invoice = state.transactionModel;
+              setState(() {
+                isLoading = false;
+                customerInvoices.add(invoice.toJson());
+              });
+            } else if (state is OnErrorTransactionState) {
+              setState(() {
+                isLoading = false;
+              });
+              snackBar(
+                text: state.message,
+                context: context,
+                color: kRedColor,
+                duration: 500,
+              );
+            } else if (state is FetchedTransactionsState) {
+              List<Transactions>? invoices = state.transactionList;
+              List fetchInvoices = [];
+              for (var invoice in invoices) {
+                fetchInvoices.add(invoice.toJson());
+              }
+              setState(() {
+                isLoading = false;
+                customerInvoices = fetchInvoices;
+                invoiceBackup = customerInvoices;
+              });
+              if (state.message == 'No available Invoice') {
+                toast(context: context, title: 'No available Invoice');
+              }
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(10.0),
+            color: kBackgroundColor,
+            height: screenSize.height,
+            width: screenSize.width,
+            child: Stack(
+              //fit: StackFit.expand,
+              children: [
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 120),
+                    child: Column(
+                      children: List.generate(customerInvoices.length, (i) {
+                        List items = customerInvoices[i]['items'] ?? [];
+                        String description = '';
+                        for (var element in items) {
+                          description +=
+                              '${element['quantity']} X ${element['productName']}, ';
+                        }
+                        Timestamp timestamp =
+                            dateFromJson(customerInvoices[i]['createdAt']);
+                        String date =
+                            DateFormat.yMMMd().format(timestamp.toDate());
+                        return OrderTranzCard(
+                          price: customerInvoices[i]['price'].toString(),
+                          employeeName: customerInvoices[i]['adminInfo']
+                              ['name'],
+                          desc: description,
+                          date: date,
+                          customerName: customerInvoices[i]['customerInfo']
+                              ['name'],
+                          invoiceId:
+                              customerInvoices[i]['invoiceNo'].toString(),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DueReceipt(data: customerInvoices[i]),
+                              ),
+                            );
+                          },
+                        );
+                      }),
+                    ),
                   ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  height: 120,
-                  color: kBackgroundColor,
-                  child: Column(
-                    children: [
-                      SearchWidget(
-                        controller: nameController,
-                        onChanged: (value) async{
-                          if(value.isEmpty){
-                            setState(() {
-                              customerInvoices.clear();
-                              invoiceBackup.clear();
-                            });
-                          }
-                          if (customerInvoices.isEmpty && invoiceBackup.isNotEmpty) {
-                            setState(() {
-                              customerInvoices = searchEngine(value: value, key: 'user_info', temps: invoiceBackup, isNested: true, key2: 'name', key3: 'business_name');
-                              for (var invoice in customerInvoices){
-                                totalDue += invoice['due'];
-                              }
-                            });
-                          }
-                          if(value.length == 1 && customerInvoices.isEmpty){
-                            setState(() {
-                              isLoading = true;
-                            });
-                            try {
-                              final invoices = await NetworkUtility
-                                  .getCustomerTransactionInvoices(value.toUpperCase().characters.toList());
-                              List fetchInvoices = [];
-                              for (var invoice in invoices.docs) {
-                                fetchInvoices.add(invoice.data());
-                              }
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    height: 120,
+                    color: kBackgroundColor,
+                    child: Column(
+                      children: [
+                        SearchWidget(
+                          controller: nameController,
+                          onChanged: (value) async {
+                            /**
+                             * The first condition(1st): will check if the user wants to erase the previous
+                             * search term, and enter a new search term or makes a mistake it will wipe out
+                             * all the available data to give room for new incoming data(invoices)
+                             *
+                             * The second condition(2nd): will check to see if customerInvoice
+                             * list(which is the main repo) is empty as a result of a spelling mistakes etc
+                             * it will try to recover the list from the backup list
+                             *
+                             * The third condition(3rd): will check and see if the characters entered by the user
+                             * are up to 3 and customerInvoice is empty then it will invoke the SearchTransactionEvent()
+                             * to fetch the invoices from database
+                             *
+                             * The last condition(4th):  will check to see if the characters entered by the user is
+                             * more than 3, and surely customerInvoices is not empty then it will search through the
+                             * customerInvoices list.
+                             *
+                             */
+                            if (value.isEmpty) {
                               setState(() {
-                                customerInvoices = fetchInvoices;
-                                invoiceBackup = customerInvoices;
-                              });
-                            } catch (e) {
-                              if (kDebugMode) {
-                                print(e);
-                              }
-                            }finally{
-                              setState(() {
-                                isLoading = false;
+                                customerInvoices.clear();
+                                invoiceBackup.clear();
                               });
                             }
-                          }else if(value.length > 1){
-                            setState((){
-                              customerInvoices = searchEngine(value: value, key: 'user_info', temps: invoiceBackup, isNested: true, key2: 'name', key3: 'business_name');
-                              for (var invoice in customerInvoices){
-                                totalDue += invoice['due'];
-                              }
-                            });
-                          }
-                        },
-                        onSubmitted: (value) async {
-                        },
-                        hintText: 'Search by name',
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      SearchWidget(
-                        controller: invoiceController,
-                        onSubmitted: (value) async{
-                          if(customerInvoices.isEmpty && invoiceBackup.isEmpty){
-                            setState(() {
-                              isLoading = true;
-                            });
-                            try{
-                              final transactionData = await NetworkUtility.getCustomerTransactionInvoicesByID(value);
+                            if (customerInvoices.isEmpty &&
+                                invoiceBackup.isNotEmpty) {
                               setState(() {
-                                if(transactionData.exists){
-                                  customerInvoices.add(transactionData.data());
+                                customerInvoices = searchEngine(
+                                    value: value,
+                                    key: 'customerInfo',
+                                    temps: invoiceBackup,
+                                    isNested: true,
+                                    key2: 'name',
+                                    key3: 'businessName');
+                                for (var invoice in customerInvoices) {
+                                  totalDue += invoice['due'];
                                 }
                               });
-                            } on FirebaseException catch (e){
-                              if(kDebugMode){
-                                print(e);
-                              }
-                            }finally{
+                            }
+                            if (value.length == 2 && customerInvoices.isEmpty) {
                               setState(() {
-                                isLoading = false;
+                                isLoading = true;
+                              });
+                              final transactionBloc =
+                                  BlocProvider.of<TransactionsBloc>(context);
+                              transactionBloc.add(SearchTransactionEvent(
+                                  token: jWTToken, terms: value));
+                            } else if (value.length > 2) {
+                              setState(() {
+                                customerInvoices = searchEngine(
+                                    value: value,
+                                    key: 'customerInfo',
+                                    temps: invoiceBackup,
+                                    isNested: true,
+                                    key2: 'name',
+                                    key3: 'businessName');
+                                for (var invoice in customerInvoices) {
+                                  totalDue += invoice['due'];
+                                }
                               });
                             }
-                          }else{
-                            setState(() {
-                              customerInvoices = searchEngine(
-                                  value: value,
-                                  key: 'invoice_id',
-                                  temps: customerInvoices);
-                            });
-                          }
-                        },
-                        hintText: 'Search by invoice number',
+                          },
+                          onSubmitted: (value) async {},
+                          hintText: 'Search by name',
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        SearchWidget(
+                          controller: invoiceController,
+                          onSubmitted: (value) async {
+                            if (nameController.text.isEmpty) {
+                              setState(() {
+                                customerInvoices.clear();
+                                invoiceBackup.clear();
+                              });
+                            }
+                            if (customerInvoices.isEmpty &&
+                                invoiceBackup.isEmpty) {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              final transactionBloc =
+                                  BlocProvider.of<TransactionsBloc>(context);
+                              transactionBloc.add(GetTransactionEvent(
+                                  token: jWTToken, invoiceNo: value));
+                            } else {
+                              setState(() {
+                                customerInvoices = searchEngine(
+                                    value: value,
+                                    key: 'invoiceNo',
+                                    temps: invoiceBackup);
+                              });
+                            }
+                          },
+                          hintText: 'Search by invoice number',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 45,
+                    decoration: const BoxDecoration(
+                      color: kBackgroundColor,
+                      border: Border(
+                        top: BorderSide(color: kSubMainColor),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  height: 45,
-                  decoration: const BoxDecoration(
-                    color: kBackgroundColor,
-                    border: Border(
-                      top: BorderSide(color: kSubMainColor),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Total Due: -${totalDue.toString() + bdtSign}',
+                        style: kDueCellStyle,
+                      ),
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      'Total Due: -${totalDue.toString() + bdtSign}',
-                      style: kDueCellStyle,
-                    ),
-                  ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),

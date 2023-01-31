@@ -14,7 +14,7 @@ import 'package:viraeshop_admin/screens/reciept_screen.dart';
 
 class DoneScreen extends StatefulWidget {
   final Map info;
-  DoneScreen({required this.info});
+  const DoneScreen({required this.info, Key? key}) : super(key: key);
 
   @override
   State<DoneScreen> createState() => _DoneScreenState();
@@ -24,25 +24,8 @@ class _DoneScreenState extends State<DoneScreen> {
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
-    num prices = Hive.box('cartDetails')?.get('totalPrice');
-    int quants = Hive.box('cartDetails').get('totalItems');
-    num discounts =
-        Hive.box('cartDetails').get('discountAmount', defaultValue: 0.0);
+    num prices = Hive.box('cartDetails').get('totalPrice');
     String totalPrice = prices.toString();
-    String totalItems = quants.toString();
-    String subTotal = (prices + discounts).toString();
-    String discountAmount = Hive.box('cartDetails')
-        .get('discountAmount', defaultValue: 0.0)
-        .toString();
-    List<Cart> cartItems = Hive.box<Cart>('cart').values.toList();
-    List items = [];
-    cartItems.forEach((element) {
-      items.add({
-        'quantity': element.quantity.toString(),
-        'product_name': element.productName.toString(),
-        'price': element.price.toString(),
-      });
-    });
     return ModalProgressHUD(
       inAsyncCall: isLoading,
       progressIndicator: const CircularProgressIndicator(color: kMainColor),

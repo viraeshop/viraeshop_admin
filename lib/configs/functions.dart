@@ -56,7 +56,11 @@ List searchEngine({required String value,required String key,required List temps
       field = element[key][key2]?.toLowerCase() ?? '';
       field2 = element[key][key3]?.toLowerCase() ?? '';
     }else{
-      field = element[key]?.toLowerCase() ?? '';
+      if(key == 'invoiceNo'){
+        field = element[key].toString();
+      }else{
+        field = element[key]?.toLowerCase() ?? '';
+      }
       field2 = element[key2]?.toLowerCase() ?? '';
     }
     final valueLower = value.toLowerCase();
@@ -83,4 +87,13 @@ int generateInvoiceNumber (){
   const int min = 2000;
   Random rnd = Random();
   return (min + rnd.nextInt(max - min));
+}
+
+int getItemIndex (List items, Map item){
+  for(int i = 0; i<items.length; i++){
+    if(items[i]['productId'] == item['productId']){
+      return i;
+    }
+  }
+  return -1;
 }

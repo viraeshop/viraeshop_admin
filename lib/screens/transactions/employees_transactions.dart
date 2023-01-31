@@ -32,13 +32,13 @@ class _EmployeesState extends State<Employees> {
     // TODO: implement initState
     List employeeId = [];
     for (var element in widget.data) {
-      employeeId.add(element['employee_id']);
+      employeeId.add(element['adminId']);
     }
     Set employeeSet = Set.from(employeeId);
     for (var employee in employeeSet) {
       List items = [];
       for (var element in widget.data) {
-        if (element['employee_id'] == employee) {
+        if (element['adminId'] == employee) {
           items.add(element);
         }
         setState(() {
@@ -99,119 +99,117 @@ class _EmployeesState extends State<Employees> {
         ),
         body: balancesTemp.isEmpty
             ? Container()
-            : Container(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    FractionallySizedBox(
-                      heightFactor: 0.7,
-                      alignment: Alignment.topCenter,
-                      child: ListView.builder(
-                          padding: const EdgeInsets.all(10.0),
-                          itemCount: balancesTemp.keys.toList().length,
-                          itemBuilder: (context, i) {
-                            return InfoWidget(
-                                textWidget: rowWidget(
-                                    balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString(),
-                                    balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()),
-                                title: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) {
-                                      return UserTransactionScreen(
-                                        data: transactionData[transactionData.keys.toList()[i]]!,
-                                        name: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
-                                      );
-                                    }),
+            : Stack(
+              fit: StackFit.expand,
+              children: [
+                FractionallySizedBox(
+                  heightFactor: 0.7,
+                  alignment: Alignment.topCenter,
+                  child: ListView.builder(
+                      padding: const EdgeInsets.all(10.0),
+                      itemCount: balancesTemp.keys.toList().length,
+                      itemBuilder: (context, i) {
+                        return InfoWidget(
+                            textWidget: rowWidget(
+                                balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString(),
+                                balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()),
+                            title: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) {
+                                  return UserTransactionScreen(
+                                    data: transactionData[transactionData.keys.toList()[i]]!,
+                                    name: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
                                   );
-                                });
-                          }),
-                    ),
-                    FractionallySizedBox(
-                      heightFactor: 0.3,
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: kBackgroundColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              offset: Offset(0, 0),
-                              spreadRadius: 2.0,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                dateWidget(
-                                  title: begin.toString().split(' ')[0],
-                                  onTap: () {
-                                    buildMaterialDatePicker(context, true);
-                                  },
-                                ),
-                                const Icon(
-                                  Icons.arrow_forward,
-                                  color: kSubMainColor,
-                                  size: 20.0,
-                                ),
-                                dateWidget(
-                                    onTap: () {
-                                      buildMaterialDatePicker(context, false);
-                                    },
-                                    title: end.isAtSameMomentAs(DateTime.now())
-                                        ? 'To this date..'
-                                        : end.toString().split(' ')[0]),
-                                const SizedBox(
-                                  width: 20.0,
-                                ),
-                                roundedTextButton(onTap: () {
-                                  setState(() {
-                                    balancesTemp = { for (var element in employees) element : dateTuple(
-                                            transactionData[element]!,
-                                            begin,
-                                            end) };
-                                    totalBalanceTemp =
-                                        dateTuple(widget.data, begin, end);
-                                  });
                                 }),
-                              ],
+                              );
+                            });
+                      }),
+                ),
+                FractionallySizedBox(
+                  heightFactor: 0.3,
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      color: kBackgroundColor,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          offset: Offset(0, 0),
+                          spreadRadius: 2.0,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            dateWidget(
+                              title: begin.toString().split(' ')[0],
+                              onTap: () {
+                                buildMaterialDatePicker(context, true);
+                              },
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SpecialContainer(
-                                  height: 110.0,
-                                  width: 150.0,
-                                  value: totalBalanceTemp.item1.toString(),
-                                  title: 'Total Sales',
-                                  color: kYellowColor,
-                                ),
-                                const SizedBox(
-                                  width: 20.0,
-                                ),
-                                SpecialContainer(
-                                  height: 110.0,
-                                  width: 150.0,
-                                  value: totalBalanceTemp.item2.toString(),
-                                  title: 'Total Due',
-                                  color: kRedColor,
-                                ),
-                              ],
+                            const Icon(
+                              Icons.arrow_forward,
+                              color: kSubMainColor,
+                              size: 20.0,
+                            ),
+                            dateWidget(
+                                onTap: () {
+                                  buildMaterialDatePicker(context, false);
+                                },
+                                title: end.isAtSameMomentAs(DateTime.now())
+                                    ? 'To this date..'
+                                    : end.toString().split(' ')[0]),
+                            const SizedBox(
+                              width: 20.0,
+                            ),
+                            roundedTextButton(onTap: () {
+                              setState(() {
+                                balancesTemp = { for (var element in employees) element : dateTuple(
+                                        transactionData[element]!,
+                                        begin,
+                                        end) };
+                                totalBalanceTemp =
+                                    dateTuple(widget.data, begin, end);
+                              });
+                            }),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SpecialContainer(
+                              height: 110.0,
+                              width: 150.0,
+                              value: totalBalanceTemp.item1.toString(),
+                              title: 'Total Sales',
+                              color: kYellowColor,
+                            ),
+                            const SizedBox(
+                              width: 20.0,
+                            ),
+                            SpecialContainer(
+                              height: 110.0,
+                              width: 150.0,
+                              value: totalBalanceTemp.item2.toString(),
+                              title: 'Total Due',
+                              color: kRedColor,
                             ),
                           ],
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
+            ),
       ),
     );
   }

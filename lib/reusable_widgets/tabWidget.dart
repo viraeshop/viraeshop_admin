@@ -316,7 +316,9 @@ class _TabWidgetState extends State<TabWidget> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => NewProduct(),
+                                        builder: (context) => const NewProduct(
+                                          info: {},
+                                        ),
                                       ),
                                     );
                                   },
@@ -336,7 +338,8 @@ class _TabWidgetState extends State<TabWidget> {
                             ),
                           );
                         }
-                        List images = productsList[index - 1]['image'];
+                        List productPics = productsList[index - 1]['images'] ?? [];
+                        List images = productPics.map((e) => e['imageLink']).toList();
                         num currentPrice = getCurrentPrice(
                             productsList[index - 1], dropdownValue);
                         Tuple3<num, num, bool> discountData =
@@ -348,13 +351,14 @@ class _TabWidgetState extends State<TabWidget> {
                             if (kDebugMode) {
                               print('longggg hawwa\'u i love you');
                             }
+                            List productPics = productsList[index - 1]['images'] ?? [];
                             showDialog<void>(
                               context: context,
                               // barrierColor: Colors.transparent,
                               builder: (context) => PopWidget(
-                                image: productsList[index - 1]['image'],
+                                image: productPics.map((e) => e['imageLink']).toList(),
                                 productName: productsList[index - 1]['name'],
-                                productCode: productsList[index - 1]['productId'],
+                                productCode: productsList[index - 1]['productCode'],
                                 price: currentPrice.toString(),
                                 description: productsList[index - 1]
                                     ['description'],
@@ -365,7 +369,7 @@ class _TabWidgetState extends State<TabWidget> {
                                 routeName: HomeScreen.path,
                                 isDiscount: discountData.item3,
                                 discountPrice: discountData.item1,
-                                sellBy: productsList[index - 1]['sell_by'],
+                                sellBy: productsList[index - 1]['sellBy'],
                               ),
                             );
                           },
@@ -401,30 +405,30 @@ class _TabWidgetState extends State<TabWidget> {
                             List<Cart> cart =
                                 Hive.box<Cart>('cart').values.toList();
                             List<String> keys = [];
-                            cart.forEach((element) {
+                            for (var element in cart) {
                               keys.add(element.productId);
-                            });
+                            }
 
                             if (keys.contains(
-                                productsList[index - 1]['productId'])) {
+                                productsList[index - 1]['productId'].toString())) {
                               print('move');
                               Cart? item = Hive.box<Cart>('cart')
-                                  .get(productsList[index - 1]['productId']);
+                                  .get(productsList[index - 1]['productId'].toString());
                               item!.quantity += 1;
                               item.price += price;
                               Hive.box<Cart>('cart').put(
-                                  productsList[index - 1]['productId'], item);
+                                  productsList[index - 1]['productId'].toString(), item);
                             } else {
                               print('we move');
                               Box<Cart> cart = Hive.box<Cart>('cart');
                               cart
                                   .put(
-                                    productsList[index - 1]['productId'],
+                                    productsList[index - 1]['productId'].toString(),
                                     Cart(
                                       productName: productsList[index - 1]
                                           ['name'],
                                       productId: productsList[index - 1]
-                                          ['productId'],
+                                          ['productId'].toString(),
                                       price: price,
                                       quantity: 1,
                                       unitPrice: price,
@@ -539,7 +543,7 @@ class _TabWidgetState extends State<TabWidget> {
                                                     Text(
                                                       discountData.item3
                                                           ? '${currentPrice.toString()}৳'
-                                                          : '${currentPrice.toString()}৳/${productsList[index - 1]['sell_by']}',
+                                                          : '${currentPrice.toString()}৳/${productsList[index - 1]['sellBy']}',
                                                       style: TextStyle(
                                                         decoration:
                                                             discountData.item3
@@ -558,7 +562,7 @@ class _TabWidgetState extends State<TabWidget> {
                                                     ),
                                                     discountData.item3
                                                         ? Text(
-                                                            '${discountData.item1.toString()}৳/${productsList[index - 1]['sell_by']}',
+                                                            '${discountData.item1.toString()}৳/${productsList[index - 1]['sellBy']}',
                                                             style: TextStyle(
                                                               color: Colors
                                                                   .teal[100],

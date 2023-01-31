@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:numeric_keyboard/numeric_keyboard.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'hive/shops_model.dart';
 
@@ -150,6 +152,9 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
               ),
               TextButton(
                 onPressed: () {
+                  final jWTToken = Hive.box('adminInfo').get('token');
+                  final supplierBloc = BlocProvider.of<SuppliersBloc>(context);
+                  supplierBloc.add(GetSuppliersEvent(token: jWTToken));
                   getNonInventoryDialog(buildContext: context);
                 },
                 child: Row(
@@ -159,7 +164,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                         valueListenable: Hive.box('shops').listenable(),
                         builder: (context, Box box, childs) {
                           String shopName =
-                              box.get('business_name', defaultValue: 'Suppliers');
+                              box.get('businessName', defaultValue: 'Suppliers');
                           return Text(
                             shopName,
                             style: kTotalTextStyle,
@@ -232,7 +237,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                         quantity: 1,
                         unitPrice: num.parse(_controller.text),
                         isInventory: false,
-                        shopName: shopBox.get('business_name'),
+                        shopName: shopBox.get('businessName'),
                       ),
                     );
 
@@ -240,7 +245,8 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                         .put(
                       id,
                       Shop(
-                        name: shopBox.get('business_name'),
+                        supplierId: shopBox.get('supplierId').toString(),
+                        name: shopBox.get('businessName'),
                         price: price,
                         address: shopBox.get('address'),
                         email: shopBox.get('email'),

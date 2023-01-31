@@ -2,18 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 import '../../configs/baxes.dart';
 import '../transactions/customer_transactions.dart';
 import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';
 import '../transactions/transaction_details.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SalesTab extends StatefulWidget {
   final String userId;
@@ -36,324 +40,358 @@ class _SalesTabState extends State<SalesTab> {
   DateTime end = DateTime.now();
   bool isPaid = false;
   bool isDue = false;
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   void initState() {
     // TODO: implement initState
-    String filterField = widget.isAdmin == true ? 'employee_id' : 'customer_id';
-    FirebaseFirestore.instance
-        .collection('transaction')
-        .where(filterField, isEqualTo: widget.userId)
-        .orderBy('date', descending: true)
-        .get()
-        .then((snapshot) {
-      final data = snapshot.docs;
-      for (var element in data) {
-        transactions.add(element.data());
-        transactionBackup.add(element.data());
-        invoiceNo.add(element.id);
-        totalPaid += element.get('paid');
-        if(element.get('paid') == 0 && element.get('advance') != 0){
-          totalPaid += element.get('advance');
-        }
-        totalDue += element.get('due');
-        totalAmount += element.get('price');
-      }
-      setState(() {
-        isLoading = false;
-      });
-    }).catchError((error) {
-      setState(() {
-        isLoading = false;
-        isError = true;
-      });
-    });
+    String filterField = widget.isAdmin == true ? 'employee' : 'customer';
+    final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+    transactionBloc
+        .add(GetTransactionsEvent(
+        token: jWTToken,
+        queryType: filterField, id: widget.userId));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: transactionBackup.isNotEmpty && isError == false
-          ? Stack(
-              fit: StackFit.expand,
-              children: [
-                FractionallySizedBox(
-                  alignment: Alignment.topCenter,
-                  heightFactor: 0.88,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 70.0),
-                    child: Column(
-                      children: List.generate(
-                        transactions.length,
-                        (int i) {
-                          List items = transactions[i]['items'];
-                          String description = '';
-                          for (var element in items) {
-                            description +=
-                                '${element['quantity']} X ${element['product_name']}, ';
-                          }
-                          Timestamp timestamp = transactions[i]['date'];
-                          String date =
-                              DateFormat.yMMMd().format(timestamp.toDate());
-                          String customerName = transactions[i]['customer_role'] == 'general' ? transactions[i]['user_info']
-                          ['name'] : transactions[i]['user_info']['business_name'] + '(${transactions[i]['user_info']['name']})';
-                          return OrderTranzCard(
-                            onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return DueReceipt(
-                                  title: 'Receipt',
-                                  data: transactions[i],
-                                  isOnlyShow: true,
-                                );
-                              }));
-                            },
-                            date: date,
-                            price: transactions[i]['price'].toString(),
-                            employeeName: transactions[i]['employee_name'],
-                            customerName: customerName,
-                            desc: description,
-                            invoiceId: invoiceNo[i],
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    height: 70.0,
-                    padding: const EdgeInsets.all(10.0),
-                    decoration: const BoxDecoration(
-                      color: kBackgroundColor,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.black26,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        dateWidget(
-                          borderColor: kSubMainColor,
-                          color: kSubMainColor,
-                          title: begin.toString().split(' ')[0],
-                          onTap: () {
-                            buildMaterialDatePicker(context, true);
-                          },
-                        ),
-                        const Icon(
-                          Icons.arrow_forward,
-                          color: kSubMainColor,
-                          size: 20.0,
-                        ),
-                        dateWidget(
-                            borderColor: kSubMainColor,
-                            color: kSubMainColor,
-                            onTap: () {
-                              buildMaterialDatePicker(context, false);
-                            },
-                            title: end.isAtSameMomentAs(DateTime.now())
-                                ? 'To this date..'
-                                : end.toString().split(' ')[0]),
-                        const SizedBox(
-                          width: 20.0,
-                        ),
-                        roundedTextButton(
-                            borderColor: kSubMainColor,
-                            textColor: kSubMainColor,
-                            onTap: () {
-                              setState(() {
-                                transactions = dateFilter(
-                                    transactionBackup, begin, end);
-                                totalPaid = 0;
-                                totalDue = 0;
-                                totalAmount = 0;
-                                for (var element in transactions) {
-                                  totalPaid += element['paid'];
-                                  if(element['paid'] == 0 && element['advance'] != 0){
-                                    totalPaid += element['advance'];
-                                  }
-                                  totalDue += element['due'];
-                                  totalAmount += element['price'];
-                                }
-                              });
-                            }),
-                        const SizedBox(
-                          width: 20.0,
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              transactions = transactionBackup;
-                              totalPaid = 0;
-                              totalDue = 0;
-                              totalAmount = 0;
-                              for (var element in transactions) {
-                                totalPaid += element['paid'];
-                                if(element['paid'] == 0 && element['advance'] != 0){
-                                  totalPaid += element['advance'];
-                                }
-                                totalDue += element['due'];
-                                totalAmount += element['price'];
+    return BlocBuilder<TransactionsBloc, TransactionState>(
+        builder: (context, state) {
+      if (state is OnErrorTransactionState) {
+        return Center(
+          child: Text(
+            state.message,
+            textAlign: TextAlign.center,
+            style: kProductNameStyle,
+          ),
+        );
+      } else if (state is FetchedTransactionsState) {
+        invoiceNo.clear();
+        transactions.clear();
+        transactionBackup.clear();
+        final data = state.transactionList;
+        debugPrint(data.toString());
+        for (var element in data) {
+          transactions.add(element.toJson());
+          transactionBackup.add(element.toJson());
+          invoiceNo.add(element.invoiceNo);
+          totalPaid += element.paid;
+          if (element.paid == 0 && element.advance != 0) {
+            totalPaid += element.advance;
+          }
+          totalDue += element.due;
+          totalAmount += element.price;
+        }
+        debugPrint(transactions.toString());
+        return Container(
+          child: transactionBackup.isNotEmpty
+              ? Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    FractionallySizedBox(
+                      alignment: Alignment.topCenter,
+                      heightFactor: 0.88,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(top: 70.0),
+                        child: Column(
+                          children: List.generate(
+                            transactions.length,
+                            (int i) {
+                              List items = transactions[i]['items'];
+                              String description = '';
+                              for (var element in items) {
+                                description +=
+                                    '${element['quantity']} X ${element['productName']}, ';
                               }
-                            });
-                          },
-                          icon: const Icon(Icons.refresh),
-                          color: kSubMainColor,
-                          iconSize: 30.0,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                FractionallySizedBox(
-                  heightFactor: 0.12,
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: double.infinity,
-                    color: kSubMainColor,
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                       isDue ? const SizedBox() : GestureDetector(
-                          onTap: (){
-                            setState(() {
-                              isPaid = !isPaid;
-                              if(isPaid){
-                                transactions = transactionBackup.where((element) => element['paid'] != 0).toList();
-                              }else{
-                                transactions = transactionBackup;
-                              }
-                            });
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Total Paid:',
-                                style: TextStyle(
-                                  color: kBackgroundColor,
-                                  fontSize: 15.0,
-                                  letterSpacing: 1.3,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Text(
-                                ' ${totalPaid.toString()}$bdtSign',
-                                style: const TextStyle(
-                                  color: kMainColor,
-                                  fontSize: 15.0,
-                                  letterSpacing: 1.3,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                              Timestamp timestamp = dateFromJson(transactions[i]['createdAt']);
+                              String date =
+                                  DateFormat.yMMMd().format(timestamp.toDate());
+                              String customerName = transactions[i]
+                                          ['role'] ==
+                                      'general'
+                                  ? transactions[i]['customerInfo']['name']
+                                  : transactions[i]['customerInfo']
+                                          ['businessName'] +
+                                      '(${transactions[i]['customerInfo']['name']})';
+                              return OrderTranzCard(
+                                onTap: () {
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return DueReceipt(
+                                      title: 'Receipt',
+                                      data: transactions[i],
+                                      isOnlyShow: true,
+                                      isNeedRefresh: true,
+                                      userId: widget.userId,
+                                    );
+                                  }));
+                                },
+                                date: date,
+                                price: transactions[i]['price'].toString(),
+                                employeeName: transactions[i]['adminInfo']['name'],
+                                customerName: customerName,
+                                desc: description,
+                                invoiceId: invoiceNo[i],
+                              );
+                            },
                           ),
                         ),
-                        isPaid ? const SizedBox() : GestureDetector(
-                          onTap: (){
-                            setState(() {
-                              isDue = !isDue;
-                              if(isDue){
-                                transactions = transactionBackup.where((element) => element['due'] != 0).toList();
-                              }else{
-                                transactions = transactionBackup;
-                              }
-                            });
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Total Due:',
-                                style: TextStyle(
-                                  color: kBackgroundColor,
-                                  fontSize: 15.0,
-                                  letterSpacing: 1.3,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 5,
-                              ),
-                              Text(
-                                ' ${totalDue.toString()}$bdtSign',
-                                style: const TextStyle(
-                                  color: kRedColor,
-                                  fontSize: 15.0,
-                                  letterSpacing: 1.3,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        height: 70.0,
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: const BoxDecoration(
+                          color: kBackgroundColor,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.black26,
+                            ),
                           ),
                         ),
-                        Column(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Total Amount:',
-                              style: TextStyle(
-                                color: kBackgroundColor,
-                                fontSize: 15.0,
-                                letterSpacing: 1.3,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.bold,
-                              ),
+                            dateWidget(
+                              borderColor: kSubMainColor,
+                              color: kSubMainColor,
+                              title: begin.toString().split(' ')[0],
+                              onTap: () {
+                                buildMaterialDatePicker(context, true);
+                              },
                             ),
+                            const Icon(
+                              Icons.arrow_forward,
+                              color: kSubMainColor,
+                              size: 20.0,
+                            ),
+                            dateWidget(
+                                borderColor: kSubMainColor,
+                                color: kSubMainColor,
+                                onTap: () {
+                                  buildMaterialDatePicker(context, false);
+                                },
+                                title: end.isAtSameMomentAs(DateTime.now())
+                                    ? 'To this date..'
+                                    : end.toString().split(' ')[0]),
                             const SizedBox(
-                              height: 5,
+                              width: 20.0,
                             ),
-                            Text(
-                              ' ${totalAmount.toString()}$bdtSign',
-                              style: const TextStyle(
-                                color: kNewMainColor,
-                                fontSize: 15.0,
-                                letterSpacing: 1.3,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.bold,
-                              ),
+                            roundedTextButton(
+                                borderColor: kSubMainColor,
+                                textColor: kSubMainColor,
+                                onTap: () {
+                                  setState(() {
+                                    transactions = dateFilter(
+                                        transactionBackup, begin, end);
+                                    totalPaid = 0;
+                                    totalDue = 0;
+                                    totalAmount = 0;
+                                    for (var element in transactions) {
+                                      totalPaid += element['paid'];
+                                      if (element['paid'] == 0 &&
+                                          element['advance'] != 0) {
+                                        totalPaid += element['advance'];
+                                      }
+                                      totalDue += element['due'];
+                                      totalAmount += element['price'];
+                                    }
+                                  });
+                                }),
+                            const SizedBox(
+                              width: 20.0,
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  transactions = transactionBackup;
+                                  totalPaid = 0;
+                                  totalDue = 0;
+                                  totalAmount = 0;
+                                  for (var element in transactions) {
+                                    totalPaid += element['paid'];
+                                    if (element['paid'] == 0 &&
+                                        element['advance'] != 0) {
+                                      totalPaid += element['advance'];
+                                    }
+                                    totalDue += element['due'];
+                                    totalAmount += element['price'];
+                                  }
+                                });
+                              },
+                              icon: const Icon(Icons.refresh),
+                              color: kSubMainColor,
+                              iconSize: 30.0,
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            )
-          : isLoading
-              ? const Center(
-                  child: SizedBox(
-                      height: 40.0,
-                      width: 40.0,
-                      child: CircularProgressIndicator(
-                        color: kMainColor,
-                      )),
+                    FractionallySizedBox(
+                      heightFactor: 0.12,
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: double.infinity,
+                        color: kSubMainColor,
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            isDue
+                                ? const SizedBox()
+                                : GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isPaid = !isPaid;
+                                        if (isPaid) {
+                                          transactions = transactionBackup
+                                              .where((element) =>
+                                                  element['paid'] != 0)
+                                              .toList();
+                                        } else {
+                                          transactions = transactionBackup;
+                                        }
+                                      });
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Total Paid:',
+                                          style: TextStyle(
+                                            color: kBackgroundColor,
+                                            fontSize: 15.0,
+                                            letterSpacing: 1.3,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          ' ${totalPaid.toString()}$bdtSign',
+                                          style: const TextStyle(
+                                            color: kMainColor,
+                                            fontSize: 15.0,
+                                            letterSpacing: 1.3,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                            isPaid
+                                ? const SizedBox()
+                                : GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isDue = !isDue;
+                                        if (isDue) {
+                                          transactions = transactionBackup
+                                              .where((element) =>
+                                                  element['due'] != 0)
+                                              .toList();
+                                        } else {
+                                          transactions = transactionBackup;
+                                        }
+                                      });
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        const Text(
+                                          'Total Due:',
+                                          style: TextStyle(
+                                            color: kBackgroundColor,
+                                            fontSize: 15.0,
+                                            letterSpacing: 1.3,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          ' ${totalDue.toString()}$bdtSign',
+                                          style: const TextStyle(
+                                            color: kRedColor,
+                                            fontSize: 15.0,
+                                            letterSpacing: 1.3,
+                                            fontFamily: 'Montserrat',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Total Amount:',
+                                  style: TextStyle(
+                                    color: kBackgroundColor,
+                                    fontSize: 15.0,
+                                    letterSpacing: 1.3,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Text(
+                                  ' ${totalAmount.toString()}$bdtSign',
+                                  style: const TextStyle(
+                                    color: kNewMainColor,
+                                    fontSize: 15.0,
+                                    letterSpacing: 1.3,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 )
-              : const Center(
+              : Center(
                   child: Text(
-                    'May be You have\'nt made sale yet. or an error occured. Make sure you already made a sale or try again.',
+                    state.message,
                     textAlign: TextAlign.center,
                     style: kProductNameStyle,
                   ),
                 ),
-    );
+        );
+      }
+      transactions.clear();
+      transactionBackup.clear();
+      return const Center(
+        child: SizedBox(
+          height: 40.0,
+          width: 40.0,
+          child: CircularProgressIndicator(
+            color: kMainColor,
+          ),
+        ),
+      );
+    });
   }
 
   buildMaterialDatePicker(BuildContext context, bool isBegin) async {
@@ -441,7 +479,7 @@ class _OrdersTabState extends State<OrdersTab> {
                 String description = '';
                 for (var element in items) {
                   description +=
-                      '${element['quantity']}x ${element['product_name']} ';
+                      '${element['quantity']}x ${element['productName']} ';
                 }
                 Timestamp timestamp = orders[i]['date'];
                 String date = DateFormat.yMMMd().format(timestamp.toDate());

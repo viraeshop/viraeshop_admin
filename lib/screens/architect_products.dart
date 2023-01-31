@@ -35,10 +35,10 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
     bool isProducts = Hive.box('adminInfo').get('isProducts');
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Architect Products',
           style: kAppBarTitleTextStyle,
         ),
@@ -57,9 +57,11 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => NewProduct()));
+                                builder: (context) => const NewProduct(
+                                  info: {},
+                                )));
                       },
-                child: Icon(Icons.add),),
+                child: const Icon(Icons.add),),
           ),          
         ],
       ),
@@ -96,8 +98,8 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
               print(productsList);
               return Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(20.0),
-                margin: EdgeInsets.all(40.0),
+                padding: const EdgeInsets.all(20.0),
+                margin: const EdgeInsets.all(40.0),
                 // decoration: BoxDecoration(
                 //   borderRadius: BorderRadius.circular(10.0),
                 //   boxShadow: [
@@ -117,12 +119,12 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'All Products',
                             style: kTextStyle1,
                             textAlign: TextAlign.left,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10.0,
                           ),
                           Expanded(
@@ -130,10 +132,10 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                               builder: (context, constraints) {
                                 if (constraints.maxWidth > 600) {
                                   return GridView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
+                                    physics: const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 4,
                                       childAspectRatio: 1 / 1.5,
                                       mainAxisSpacing: 10.0,
@@ -143,7 +145,7 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                                     itemBuilder: (context, i) {
                                       num currentPrice = productsList[i]['architectPrice'];
                                       Tuple3<num, num, bool> discountData =
-                                          Tuple3<num, num, bool>(0, 0, false);
+                                          const Tuple3<num, num, bool>(0, 0, false);
                                       bool isDiscount =
                                           productsList[i]['isArchitectDiscount'];
                                       if (isDiscount) {
@@ -189,7 +191,7 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                                     itemBuilder: (BuildContext context, int i) {
                                       num currentPrice = productsList[i]['architectPrice'];
                                       Tuple3<num, num, bool> discountData =
-                                          Tuple3<num, num, bool>(0, 0, false);
+                                          const Tuple3<num, num, bool>(0, 0, false);
                                       bool isDiscount =
                                           productsList[i]['isArchitectDiscount'];
                                       if (isDiscount) {
@@ -237,10 +239,10 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                           ),
                         ],
                       )
-                    : Text('Loading'),
+                    : const Text('Loading'),
               );
             }
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }),
     );
   }

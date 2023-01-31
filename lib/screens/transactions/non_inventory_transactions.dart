@@ -5,10 +5,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/configs/invoices/customer_goods_invoice.dart';
-import 'package:viraeshop_admin/configs/invoices/print_customer_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 import '../customers/preferences.dart';
 import 'customer_transactions.dart';
@@ -45,21 +44,22 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
     // TODO: implement initState
     initialData = widget.data;
     for (var element in widget.data) {
-      if (element.containsKey('isSupplierInvoice')) {
-        data.add(element);
-        dataTemp.add(element);
-      } else {
-        element['shop'].forEach((shop) {
-          if (shop['business_name'] == widget.name) {
-            shop['invoice_id'] = element['invoice_id'];
-            shop['date'] = element['date'];
-            data.add(shop);
-            dataTemp.add(shop);
-          }
-        });
-      }
+      data.add(element);
+      dataTemp.add(element);
+      // if (element.containsKey('isSupplierInvoice')) {
+      //
+      // } else {
+      //   element['shop'].forEach((shop) {
+      //     if (shop['businessName'] == widget.name) {
+      //       shop['invoiceNo'] = element['invoiceNo'];
+      //       shop['date'] = element['date'];
+      //       data.add(shop);
+      //       dataTemp.add(shop);
+      //     }
+      //   });
+      // }
     }
-    totalsTemp = tupleTotal(data, begin, end, false);
+    totalsTemp = tupleTotal(data, begin, end, false, widget.isSupplier);
     totals = totalsTemp;
     super.initState();
   }
@@ -73,7 +73,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
       );
     }
     final items = data.where((element) {
-      final invoiceIdLower = element['invoice_id'].toLowerCase();
+      final invoiceIdLower = element['invoiceNo'].toLowerCase();
       final valueLower = value.toLowerCase();
       return invoiceIdLower.contains(valueLower);
     }).toList();
@@ -196,7 +196,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                                 setState(() {
                                   dataTemp = dateTupleList(data, begin, end);
                                   totalsTemp =
-                                      tupleTotal(data, begin, end, true);
+                                      tupleTotal(data, begin, end, true, widget.isSupplier);
                                 });
                               },
                             ),
@@ -280,7 +280,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                             ),
                             DataCell(
                               Text(
-                                '${dataTemp[index]['invoice_id']}',
+                                '${dataTemp[index]['invoiceNo']}',
                                 style: kCustomerCellStyle,
                               ),
                               onTap: () {
@@ -290,9 +290,10 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                                     builder: (context) {
                                       return NonInventoryInfo(
                                         data: dataTemp[index],
-                                        date: dataTemp[index]['date'],
-                                        invoiceId: dataTemp[index]
-                                            ['invoice_id'],
+                                        date: dateFromJson(
+                                            dataTemp[index]['createdAt']),
+                                        invoiceId: dataTemp[index]['invoiceNo'].toString(),
+                                        isSupplierPay: widget.isSupplier,
                                       );
                                     },
                                   ),
@@ -313,7 +314,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                             ),
                             DataCell(
                               Text(
-                                dataTemp[index]['buy_price'].toString(),
+                                dataTemp[index]['buyPrice'].toString(),
                                 style: kTotalTextStyle,
                               ),
                             ),
@@ -387,12 +388,12 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                       buttons(
                         title: 'Save PDF',
                         onTap: () {
-                          try{
+                          try {
                             shareCustomerStatement(
                               name: widget.name,
-                              email: dataTemp[0]['email'] ?? '',
-                              mobile: dataTemp[0]['mobile'],
-                              address: dataTemp[0]['address'],
+                              email: dataTemp[0]['supplierInfo']['email'] ?? '',
+                              mobile: dataTemp[0]['supplierInfo']['mobile'],
+                              address: dataTemp[0]['supplierInfo']['address'],
                               isInventory: false,
                               items: data,
                               begin: begin,
@@ -404,9 +405,12 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                               totalPay: totalsTemp.item1.toString(),
                               isSave: true,
                             );
-                            toast(context: context, title: 'Saved', color: kNewMainColor);
-                          }catch (e){
-                            if(kDebugMode){
+                            toast(
+                                context: context,
+                                title: 'Saved',
+                                color: kNewMainColor);
+                          } catch (e) {
+                            if (kDebugMode) {
                               print(e);
                             }
                           }
@@ -416,9 +420,9 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                         onTap: () {
                           shareCustomerStatement(
                             name: widget.name,
-                            email: dataTemp[0]['email'] ?? '',
-                            mobile: dataTemp[0]['mobile'],
-                            address: dataTemp[0]['address'],
+                            email: dataTemp[0]['supplierInfo']['email'] ?? '',
+                            mobile: dataTemp[0]['supplierInfo']['mobile'],
+                            address: dataTemp[0]['supplierInfo']['address'],
                             isInventory: false,
                             isSupplier: widget.isSupplier,
                             items: data,
@@ -436,9 +440,10 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                           onTap: () {
                             shareCustomerStatement(
                                 name: widget.name,
-                                email: dataTemp[0]['email'] ?? '',
-                                mobile: dataTemp[0]['mobile'],
-                                address: dataTemp[0]['address'],
+                                email:
+                                    dataTemp[0]['supplierInfo']['email'] ?? '',
+                                mobile: dataTemp[0]['supplierInfo']['mobile'],
+                                address: dataTemp[0]['supplierInfo']['address'],
                                 isInventory: false,
                                 items: data,
                                 begin: begin,
@@ -448,8 +453,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                                 totalAmount: totalsTemp.item3.toString(),
                                 totalDue: totalsTemp.item2.toString(),
                                 totalPay: totalsTemp.item1.toString(),
-                                isPrint: true
-                            );
+                                isPrint: true);
                           },
                           title: 'Print'),
                     ],
@@ -495,11 +499,11 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
 }
 
 Tuple4<num, num, num, num> tupleTotal(
-    List items, DateTime begin, DateTime end, bool isDate) {
+    List items, DateTime begin, DateTime end, bool isDate, bool isSupplierPay) {
   num sale = 0, due = 0, paid = 0, buy = 0;
   if (isDate == true) {
     for (var element in items) {
-      Timestamp timestamp = element['date'];
+      Timestamp timestamp = dateFromJson(element['createdAt']);
       DateTime date = timestamp.toDate();
       begin = DateTime(begin.year, begin.month, begin.day);
       end = DateTime(end.year, end.month, end.day);
@@ -509,17 +513,21 @@ Tuple4<num, num, num, num> tupleTotal(
           (end.isBefore(dateFormatted) ||
               end.isAtSameMomentAs(dateFormatted))) {
         paid += element['paid'];
-        sale += element['price'];
         due += element['due'];
-        buy += element['buy_price'];
+        buy += element['buyPrice'];
+        if(!isSupplierPay){
+          sale += element['price'];
+        }
       }
     }
   } else {
     for (var element in items) {
       paid += element['paid'];
-      sale += element['price'] ?? 0;
       due += element['due'];
-      buy += element['buy_price'];
+      buy += element['buyPrice'];
+      if(!isSupplierPay){
+        sale += element['price'];
+      }
     }
   }
   Tuple4<num, num, num, num> data =

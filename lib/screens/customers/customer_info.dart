@@ -3,9 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:viraeshop/customers/barrel.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -19,6 +21,7 @@ import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../general_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CustomerInfoScreen extends StatefulWidget {
   final Map info;
@@ -54,7 +57,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
     if (userInfo['role'] == 'architect') {
       _preferences.addHint = 'Business name';
       _preferences.addControllers =
-          TextEditingController(text: userInfo['business_name']);
+          TextEditingController(text: userInfo['businessName']);
       _preferences.addIconData = Icons.add_business;
       if (userInfo['idType'] != null) {
         if (userInfo['idType'] == 'IAB') {
@@ -71,9 +74,9 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
     } else if (userInfo['role'] == 'agents') {
       _preferences.addHint = 'Business name';
       _preferences.addControllers =
-          TextEditingController(text: userInfo['business_name']);
+          TextEditingController(text: userInfo['businessName']);
       _preferences.addIconData = Icons.add_business;
-      strings['business_name'] = userInfo['business_name'];
+      strings['businessName'] = userInfo['businessName'];
       if (userInfo['binNumber'] != null) {
         _preferences.addAll(hints: [
           'BIN Number',
@@ -100,331 +103,334 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
       progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
-      child: Container(
-        color: kBackgroundColor,
-        padding: const EdgeInsets.all(15.0),
-        child: SingleChildScrollView(
-          child: Consumer<GeneralProvider>(builder: (context, user, childs) {
-            return Column(
-              children: [
-                const SizedBox(
-                  height: 20.0,
-                ),
-                Column(
-                  children: List.generate(_preferences.getHint.length, (i) {
-                    return Column(
-                      children: [
-                        NewTextField(
-                          onTap: i == 1 && !user.isEditUser
-                              ? () async {
-                                  String number =
-                                      _preferences.getControllers[i].text;
-                                  final url = Uri.parse('tel:$number');
-                                  if (await canLaunchUrl(url)) {
-                                    await launchUrl(url);
+      child: BlocListener<CustomersBloc, CustomerState>(
+        listener: (context, state) {
+          if (state is RequestFinishedCustomerState && isLoading) {
+            setState(() {
+              isLoading = false;
+            });
+            toast(context: context, title: 'Updated');
+          } else if (state is OnErrorCustomerState && isLoading) {
+            setState(() {
+              isLoading = false;
+            });
+            snackBar(text: state.message, context: context, color: kRedColor);
+          }
+        },
+        child: Container(
+          color: kBackgroundColor,
+          padding: const EdgeInsets.all(15.0),
+          child: SingleChildScrollView(
+            child: Consumer<GeneralProvider>(builder: (context, user, childs) {
+              return Column(
+                children: [
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  Column(
+                    children: List.generate(_preferences.getHint.length, (i) {
+                      return Column(
+                        children: [
+                          NewTextField(
+                            onTap: i == 1 && !user.isEditUser
+                                ? () async {
+                                    String number =
+                                        _preferences.getControllers[i].text;
+                                    final url = Uri.parse('tel:$number');
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url);
+                                    }
                                   }
-                                }
-                              : null,
-                          readOnly: !user.isEditUser,
-                          controller: _preferences.getControllers[i],
-                          prefixIcon: Icon(
-                            _preferences.getIconData[i],
-                            color: kNewMainColor,
-                            size: 20,
-                          ),
-                          labelText: _preferences.getHint[i],
-                        ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                      ],
-                    );
-                  }),
-                ),
-                const SizedBox(
-                  height: 20.0,
-                ),
-                userInfo['role'] == 'agents' && userInfo['binNumber'] != null
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Container(
-                              margin: const EdgeInsets.all(10.0),
-                              height: screenSize.height * 0.23,
-                              // width: screenSize.width,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12.0),
-                                border: Border.all(
-                                  color: kSubMainColor,
-                                ),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(100.0),
-                                child: CachedNetworkImage(
-                                  imageUrl: strings['binImage']!,
-                                  fit: BoxFit.fill,
-                                ),
-                              ),
+                                : null,
+                            readOnly: !user.isEditUser,
+                            controller: _preferences.getControllers[i],
+                            prefixIcon: Icon(
+                              _preferences.getIconData[i],
+                              color: kNewMainColor,
+                              size: 20,
                             ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              margin: const EdgeInsets.all(10.0),
-                              height: screenSize.height * 0.23,
-                              // width: screenSize.width,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12.0),
-                                border: Border.all(
-                                  color: kSubMainColor,
-                                ),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(100.0),
-                                child: CachedNetworkImage(
-                                  imageUrl: strings['tinImage']!,
-                                  fit: BoxFit.fill,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : userInfo['role'] == 'architect' &&
-                            userInfo['idType'] != null
-                        ? Column(
-                            children: [
-                              IdWidget(
-                                screenSize: screenSize,
-                                url: strings['idFrontImage']!,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return PhotoSlideShow(images: [
-                                          strings['idFrontImage'],
-                                          strings['idBackImage']
-                                        ]);
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(
-                                height: 10.0,
-                              ),
-                              IdWidget(
-                                screenSize: screenSize,
-                                url: strings['idBackImage']!,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return PhotoSlideShow(
-                                            initialPage: 1,
-                                            images: [
-                                              strings['idFrontImage'],
-                                              strings['idBackImage']
-                                            ]);
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          )
-                        : const SizedBox(),
-                const SizedBox(
-                  height: 20.0,
-                ),
-                widget.isNew
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          DialogButton(
-                            onTap: () async {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              AdminCrud adminCrud = AdminCrud();
-                              Map<String, dynamic> fields = {
-                                'role': widget.info['role'],
-                                'business_name': widget.info['business_name']
-                              };
-                              try {
-                                await NetworkUtility.updateUser(
-                                    widget.info['userId'], fields);
-                                await NetworkUtility.deleteCustomerRequest(
-                                    widget.info['userId']);
-                                if (widget.info['role'] == 'architect') {
-                                  await NetworkUtility.deleteImage(
-                                      widget.info['idFrontImage']);
-                                  await NetworkUtility.deleteImage(
-                                      widget.info['idBackImage']);
-                                } else if (widget.info['role'] == 'agents') {
-                                  await NetworkUtility.deleteImage(
-                                      widget.info['tinImage']);
-                                  await NetworkUtility.deleteImage(
-                                      widget.info['binImage']);
-                                }
-                              } on FirebaseException catch (e) {
-                                if (kDebugMode) {
-                                  print(e.message);
-                                }
-                                snackBar(
-                                    text: e.message!,
-                                    context: context,
-                                    color: kRedColor);
-                              } finally {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                            },
-                            title: 'Accept',
-                            width: double.infinity,
-                            radius: 10.0,
-                            color: kNewTextColor,
+                            labelText: _preferences.getHint[i],
                           ),
                           const SizedBox(
-                            height: 15.0,
-                          ),
-                          DialogButton(
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      content: const Text(
-                                        'Are you sure you want to decline this request?',
-                                        style: kProductNameStylePro,
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () async {
-                                            setState(() {
-                                              isLoading = true;
-                                            });
-                                            Navigator.pop(context);
-                                            try {
-                                              await NetworkUtility
-                                                  .deleteCustomerRequest(
-                                                      widget.info['userId']);
-                                              if (widget.info['role'] ==
-                                                  'architect') {
-                                                await NetworkUtility
-                                                    .deleteImage(widget
-                                                        .info['idFrontImage']);
-                                                await NetworkUtility
-                                                    .deleteImage(widget
-                                                        .info['idBackImage']);
-                                              } else if (widget.info['role'] ==
-                                                  'agents') {
-                                                await NetworkUtility
-                                                    .deleteImage(widget
-                                                        .info['tinImage']);
-                                                await NetworkUtility
-                                                    .deleteImage(widget
-                                                        .info['binImage']);
-                                              }
-                                            } on FirebaseException catch (e) {
-                                              if (kDebugMode) {
-                                                print(e.message);
-                                              }
-                                              snackBar(
-                                                  text: e.message!,
-                                                  context: context,
-                                                  color: kRedColor);
-                                            } finally {
-                                              setState(() {
-                                                isLoading = false;
-                                              });
-                                            }
-                                          },
-                                          child: const Text(
-                                            'Yes',
-                                            style: kProductNameStylePro,
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            'No',
-                                            style: kProductNameStylePro,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  });
-                            },
-                            title: 'Decline',
-                            width: double.infinity,
-                            radius: 10.0,
-                            color: kBackgroundColor,
-                            isBorder: true,
-                            borderColor: kNewTextColor,
+                            height: 10.0,
                           ),
                         ],
-                      )
-                    : const SizedBox(),
-                !widget.isNew && user.isEditUser
-                    ? DialogButton(
-                        onTap: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          Map<String, dynamic> fields = {
-                            'name': _preferences.getControllers[0].text,
-                            'mobile': _preferences.getControllers[1].text,
-                            'email': _preferences.getControllers[2].text,
-                            'address': _preferences.getControllers[3].text,
-                          };
-                          if (widget.info['role'] != 'general') {
-                            fields['business_name'] =
-                                _preferences.getControllers[4].text;
-                            fields['business_name'] =
-                                _preferences.getControllers[4].text;
-                            List searchKeywords = _preferences
-                                .getControllers[0].text
-                                .toUpperCase()
-                                .characters
-                                .toList();
-                            searchKeywords.addAll(_preferences
-                                .getControllers[4].text
-                                .toUpperCase()
-                                .characters
-                                .toList());
-                            searchKeywords
-                                .removeWhere((element) => element == ' ');
-                            searchKeywords = Set.from(searchKeywords).toList();
-                            fields['search_keywords'] = searchKeywords;
-                          }
-                          try {
-                            await NetworkUtility.updateUser(
-                                widget.info['userId'], fields);
-                          } catch (e) {
-                            if (kDebugMode) {
-                              print(e);
-                            }
-                          } finally {
+                      );
+                    }),
+                  ),
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  userInfo['role'] == 'agents' && userInfo['binNumber'] != null
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.all(10.0),
+                                height: screenSize.height * 0.23,
+                                // width: screenSize.width,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: kSubMainColor,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(100.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: strings['binImage']!,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.all(10.0),
+                                height: screenSize.height * 0.23,
+                                // width: screenSize.width,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: kSubMainColor,
+                                  ),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(100.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: strings['tinImage']!,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : userInfo['role'] == 'architect' &&
+                              userInfo['idType'] != null
+                          ? Column(
+                              children: [
+                                IdWidget(
+                                  screenSize: screenSize,
+                                  url: strings['idFrontImage']!,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return PhotoSlideShow(images: [
+                                            strings['idFrontImage'],
+                                            strings['idBackImage']
+                                          ]);
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(
+                                  height: 10.0,
+                                ),
+                                IdWidget(
+                                  screenSize: screenSize,
+                                  url: strings['idBackImage']!,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return PhotoSlideShow(
+                                              initialPage: 1,
+                                              images: [
+                                                strings['idFrontImage'],
+                                                strings['idBackImage']
+                                              ]);
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            )
+                          : const SizedBox(),
+                  const SizedBox(
+                    height: 20.0,
+                  ),
+                  widget.isNew
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            DialogButton(
+                              onTap: () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                Map<String, dynamic> fields = {
+                                  'role': widget.info['role'],
+                                  'businessName': widget.info['businessName'],
+                                  'isNewRequest': false,
+                                };
+                                final customerBloc =
+                                    BlocProvider.of<CustomersBloc>(context);
+                                try {
+                                  if (widget.info['role'] == 'architect') {
+                                    await NetworkUtility.deleteImage(
+                                        widget.info['idFrontImage']);
+                                    await NetworkUtility.deleteImage(
+                                        widget.info['idBackImage']);
+                                  } else if (widget.info['role'] == 'agents') {
+                                    await NetworkUtility.deleteImage(
+                                        widget.info['tinImage']);
+                                    await NetworkUtility.deleteImage(
+                                        widget.info['binImage']);
+                                  }
+                                  final jWTToken = Hive.box('adminInfo').get('token');
+                                  customerBloc.add(
+                                    UpdateCustomerEvent(
+                                      token: jWTToken,
+                                      customerId: widget.info['customerId'],
+                                      customerModel: fields,
+                                    ),
+                                  );
+                                } on FirebaseException catch (e) {
+                                  if (kDebugMode) {
+                                    print(e.message);
+                                  }
+                                  snackBar(
+                                      text: e.message!,
+                                      context: context,
+                                      color: kRedColor);
+                                } finally {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              },
+                              title: 'Accept',
+                              width: double.infinity,
+                              radius: 10.0,
+                              color: kNewTextColor,
+                            ),
+                            const SizedBox(
+                              height: 15.0,
+                            ),
+                            DialogButton(
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: const Text(
+                                          'Are you sure you want to decline this request?',
+                                          style: kProductNameStylePro,
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () async {
+                                              setState(() {
+                                                isLoading = true;
+                                              });
+                                              Navigator.pop(context);
+                                              try {
+                                                await NetworkUtility
+                                                    .deleteCustomerRequest(
+                                                        widget.info['userId']);
+                                                if (widget.info['role'] ==
+                                                    'architect') {
+                                                  await NetworkUtility
+                                                      .deleteImage(widget.info[
+                                                          'idFrontImage']);
+                                                  await NetworkUtility
+                                                      .deleteImage(widget
+                                                          .info['idBackImage']);
+                                                } else if (widget
+                                                        .info['role'] ==
+                                                    'agents') {
+                                                  await NetworkUtility
+                                                      .deleteImage(widget
+                                                          .info['tinImage']);
+                                                  await NetworkUtility
+                                                      .deleteImage(widget
+                                                          .info['binImage']);
+                                                }
+                                              } on FirebaseException catch (e) {
+                                                if (kDebugMode) {
+                                                  print(e.message);
+                                                }
+                                                snackBar(
+                                                    text: e.message!,
+                                                    context: context,
+                                                    color: kRedColor);
+                                              } finally {
+                                                setState(() {
+                                                  isLoading = false;
+                                                });
+                                              }
+                                            },
+                                            child: const Text(
+                                              'Yes',
+                                              style: kProductNameStylePro,
+                                            ),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text(
+                                              'No',
+                                              style: kProductNameStylePro,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    });
+                              },
+                              title: 'Decline',
+                              width: double.infinity,
+                              radius: 10.0,
+                              color: kBackgroundColor,
+                              isBorder: true,
+                              borderColor: kNewTextColor,
+                            ),
+                          ],
+                        )
+                      : const SizedBox(),
+                  !widget.isNew && user.isEditUser
+                      ? DialogButton(
+                          onTap: () {
+                            final customerBloc =
+                                BlocProvider.of<CustomersBloc>(context);
                             setState(() {
-                              isLoading = false;
+                              isLoading = true;
                             });
-                          }
-                        },
-                        title: 'Update',
-                        width: double.infinity,
-                        radius: 10.0,
-                        color: kNewTextColor,
-                      )
-                    : const SizedBox()
-              ],
-            );
-          }),
+                            Map<String, dynamic> fields = {
+                              'name': _preferences.getControllers[0].text,
+                              'mobile': _preferences.getControllers[1].text,
+                              'email': _preferences.getControllers[2].text,
+                              'address': _preferences.getControllers[3].text,
+                            };
+                            if (widget.info['role'] != 'general') {
+                              fields['businessName'] =
+                                  _preferences.getControllers[4].text;
+                            }
+                            final jWTToken = Hive.box('adminInfo').get('token');
+                            customerBloc.add(
+                              UpdateCustomerEvent(
+                                token: jWTToken,
+                                  customerId: widget.info['customerId'],
+                                  customerModel: fields),
+                            );
+                          },
+                          title: 'Update',
+                          width: double.infinity,
+                          radius: 10.0,
+                          color: kNewTextColor,
+                        )
+                      : const SizedBox()
+                ],
+              );
+            }),
+          ),
         ),
       ),
     );

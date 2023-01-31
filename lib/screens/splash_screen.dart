@@ -1,11 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:viraeshop/category/category_bloc.dart';
+import 'package:viraeshop/category/category_event.dart';
+import 'package:viraeshop/category/category_state.dart';
+import 'package:viraeshop/products/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
+import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:viraeshop_admin/settings/login_preferences.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/models/products/product_category.dart';
+import 'package:viraeshop_api/models/products/products.dart' as product;
 
 class SplashScreen extends StatefulWidget {
   static String path = '/';
@@ -17,69 +24,110 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   bool isIndicator = false;
+  bool onError = false;
+  String errorMessage = '';
   @override
-  GeneralCrud generalCrud = GeneralCrud();
   void initState() {
     // TODO: implement initState
+    final categoryBloc = BlocProvider.of<CategoryBloc>(context);
+    print('calling Get Categories()');
+    categoryBloc.add(GetCategoriesEvent());
     super.initState();
-    generalCrud.getCategories().then(
-      (value) {
-        final data = value.docs;
-        List categories = [];
-        data.forEach((element) {
-          categories.add(element.data());
-        });
-        print(categories);
-        Hive.box(productsBox).put(catKey, categories).whenComplete(() {
-          setState(
-            () {
-              isIndicator = true;
-            },
-          );
-        });
-      },
-    ).catchError((error) {
-      print(error);
-    });
-    generalCrud.getProducts().then(
-      (value) {
-        final data = value.docs;
-        List products = [];
-        data.forEach((element) {
-          products.add(element.data());
-        });
-        print('Splash screen: $products');
-        Hive.box(productsBox).put(productsKey, products).whenComplete(
-          () {
-            if (Hive.box('adminInfo').isEmpty) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return LoginPage();
-                  },
-                ),
-              );
-            } else {
-              Navigator.popAndPushNamed(context, HomeScreen.path);
-            }
-          },
-        );
-      },
-    ).catchError((error) {
-      print(error);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kMainColor,
-      body: Center(
-        child: Image.asset(
-          'assets/images/DONE.png',
-          width: 200.0,
-          height: 200.0,
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<CategoryBloc, CategoryState>(
+            listener: (context, state) {
+              final productBloc = BlocProvider.of<ProductsBloc>(context);
+              if (state is FetchedCategoryState) {
+                debugPrint('Fetched and getting ready');
+                List<ProductCategory> data = state.categories;
+                List categories = [];
+                for (var element in data) {
+                  categories.add(element.toJson());
+                }
+                if (kDebugMode) {
+                  print(categories);
+                }
+                Hive.box(productsBox).put(catKey, categories);
+                setState(() {
+                  isIndicator = true;
+                });
+                productBloc.add(GetProductsEvent());
+              } else if (state is OnErrorCategoryState) {
+                debugPrint('Error on Category: ${state.message}');
+                setState(() {
+                  onError = true;
+                  isIndicator = false;
+                  errorMessage = state.message;
+                });
+              }
+            },
+          ),
+          BlocListener<ProductsBloc, ProductState>(
+            listener: (context, state) {
+              if (state is FetchedProductsState) {
+                debugPrint('Fetched the products');
+                List<product.Products> data = state.productList;
+                debugPrint(data.toString());
+                List products = [];
+                for (var element in data) {
+                  products.add(element.toJson());
+                }
+                Hive.box(productsBox).put(productsKey, products);
+                setState(() {
+                  isIndicator = false;
+                });
+                if (Hive.box('adminInfo').isEmpty) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return const LoginPage();
+                      },
+                    ),
+                  );
+                } else {
+                  Navigator.popAndPushNamed(context, HomeScreen.path);
+                }
+              } else if (state is OnErrorProductsState) {
+                setState(() {
+                  onError = true;
+                  isIndicator = false;
+                  errorMessage = state.error;
+                });
+              }
+            },
+          ),
+        ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Center(
+              child: Image.asset(
+                'assets/images/DONE.png',
+                width: 200.0,
+                height: 200.0,
+              ),
+            ),
+            const SizedBox(
+              height: 10.0,
+            ),
+           if(isIndicator) const SizedBox(
+              height: 30.0,
+              width: 30.0,
+              child: CircularProgressIndicator(
+                      color: kBackgroundColor,
+                    )
+            ),
+            if(onError) Text(errorMessage, style: kBigErrorTextStyle,),
+          ],
         ),
       ),
     );

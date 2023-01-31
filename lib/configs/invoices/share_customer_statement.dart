@@ -159,10 +159,10 @@ Future<void> shareCustomerStatement({
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
         index >= 10 ? index.toString() : '0${index.toString()}';
-    row.cells[1].value = '${items[i]!['invoice_id']}';
+    row.cells[1].value = '${items[i]!['invoiceNo']}';
     row.cells[2].value = '${items[i]!['paid']}';
     row.cells[3].value = '${items[i]!['due']}';
-    row.cells[4].value = '${items[i]![isSupplier ? 'buy_price' : 'price']}';
+    row.cells[4].value = '${items[i]![isSupplier ? 'buyPrice' : 'price']}';
   }
   //Set padding for grid cells
   grid.style.cellPadding = PdfPaddings(left: 2, right: 2, top: 2, bottom: 2);

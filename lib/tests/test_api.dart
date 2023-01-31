@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop/admin/admin_bloc.dart';
 import 'package:viraeshop/admin/admin_event.dart';
 import 'package:viraeshop/admin/admin_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_api/apiCalls/admins.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 
@@ -18,18 +17,18 @@ class TestApi extends StatefulWidget {
 
 class _TestApiState extends State<TestApi> {
   // bool start = false;
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   void initState() {
     // TODO: implement initState
     final adminBloc = BlocProvider.of<AdminBloc>(context);
-    adminBloc.add(GetAdminsEvent());
+    adminBloc.add(GetAdminsEvent(token: jWTToken));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: BlocBuilder<AdminBloc, AdminState>(
+    return Scaffold(body: BlocBuilder<AdminBloc, AdminState>(
       builder: (context, state) {
         if (state is FetchedAdminsState) {
           final adminBloc = BlocProvider.of<AdminBloc>(context);
@@ -47,7 +46,8 @@ class _TestApiState extends State<TestApi> {
                     style: kProductNameStyle,
                   ),
                   onPressed: () {
-                    adminBloc.add(DeleteAdminEvent(adminId: '654321'));
+                    adminBloc.add(
+                        DeleteAdminEvent(adminId: '654321', token: jWTToken));
                   },
                 ),
                 ElevatedButton(
@@ -82,7 +82,8 @@ class _TestApiState extends State<TestApi> {
                       adminId: '362789',
                       active: true,
                     );
-                    adminBloc.add(AddAdminEvent(adminModel: admin));
+                    adminBloc
+                        .add(AddAdminEvent(adminModel: admin, token: jWTToken));
                   },
                 ),
                 const SizedBox(

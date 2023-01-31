@@ -2,28 +2,39 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop/customers/barrel.dart';
+import 'package:viraeshop/customers/customers_bloc.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/ui_components/delete_popup.dart';
 import 'package:viraeshop_admin/screens/customers/customer_info.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/customers/tabWidgets.dart';
 import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 
+import '../configs/configs.dart';
 import 'general_provider.dart';
 import 'home_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class UpdateUser extends StatefulWidget {
   final Map userInfo;
   final String userId;
-  const UpdateUser({Key? key, required this.userInfo, required this.userId})
+  final String role;
+  const UpdateUser(
+      {Key? key,
+      required this.userInfo,
+      required this.userId,
+      required this.role})
       : super(key: key);
 
   @override
@@ -56,24 +67,19 @@ class _UpdateUserState extends State<UpdateUser> {
   bool isDeleteCustomer = Hive.box('adminInfo').get('isDeleteCustomer');
   bool isEditCustomer =
       Hive.box('adminInfo').get('isEditCustomer', defaultValue: false);
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     setState(() {
-      print(jsonEncode(widget.userInfo));
       nameController.text = widget.userInfo['name'];
       _emailController.text = widget.userInfo['email'];
       phoneController.text = widget.userInfo['mobile'];
-      //passwordController.text = widget.userInfo['password'];
       walletController.text = widget.userInfo['wallet'].toString();
       default_role = widget.userInfo['role'];
       selected_role = widget.userInfo['role'];
-      // default_verification = current_user['verification_status'];
       selected_verification = 'verified';
-      //current_user['verification_status'];
-      // default_activity = current_user['activity_status'];
-      // selected_activity = current_user['activity_status'];
     });
   }
 
@@ -113,6 +119,19 @@ class _UpdateUserState extends State<UpdateUser> {
           length: _tabs.length,
           child: Scaffold(
             appBar: AppBar(
+              leading: IconButton(
+                onPressed: () {
+                  final customerBloc = BlocProvider.of<CustomersBloc>(context);
+                  if (customerBloc.state is! FetchedCustomersState) {
+                    customerBloc.add(
+                      GetCustomersEvent(query: widget.role, token: jWTToken),
+                    );
+                  }
+                  Navigator.pop(context);
+                },
+                icon: const Icon(FontAwesomeIcons.chevronLeft),
+                color: kSubMainColor,
+              ),
               bottom: TabBar(
                 tabs: _tabs,
                 indicatorColor: kMainColor,
@@ -161,30 +180,23 @@ class _UpdateUserState extends State<UpdateUser> {
                         builder: (context) {
                           return DeletePopup(
                             onDelete: () async {
+                              final customerBloc =
+                                  BlocProvider.of<CustomersBloc>(context);
                               setState(() {
                                 showFields = true;
                               });
                               Navigator.pop(context);
-                              try {
-                                Box customerBox = Hive.box('customer');
-                                await NetworkUtility.deleteCustomer(
-                                    widget.userId);
-                                if (customerBox.isNotEmpty &&
-                                    customerBox.get('id') == widget.userId) {
-                                  customerBox.clear();
-                                }
-                                // Future.delayed(const Duration(milliseconds: 0), (){
-                                //   Navigator.pop(context);
-                                // });
-                              } on FirebaseException catch (e) {
-                                if (kDebugMode) {
-                                  print(e.message);
-                                }
-                              } finally {
-                                setState(() {
-                                  showFields = false;
-                                });
+                              Box customerBox = Hive.box('customer');
+                              if (customerBox.isNotEmpty &&
+                                  customerBox.get('id') == widget.userId) {
+                                customerBox.clear();
                               }
+                              customerBloc.add(
+                                DeleteCustomerEvent(
+                                  token: jWTToken,
+                                  customerId: widget.userId,
+                                ),
+                              );
                             },
                           );
                         },
@@ -198,8 +210,24 @@ class _UpdateUserState extends State<UpdateUser> {
                   ),
               ],
             ),
-            body: TabBarView(
-              children: tabWidgets,
+            body: BlocListener<CustomersBloc, CustomerState>(
+              listener: (context, state) {
+                if (state is RequestFinishedCustomerState && showFields) {
+                  setState(() {
+                    showFields = false;
+                  });
+                  toast(context: context, title: 'Deleted');
+                } else if (state is OnErrorCustomerState && showFields) {
+                  setState(() {
+                    showFields = false;
+                  });
+                  snackBar(
+                      text: state.message, context: context, color: kRedColor);
+                }
+              },
+              child: TabBarView(
+                children: tabWidgets,
+              ),
             ),
           ),
         ),

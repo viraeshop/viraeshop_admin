@@ -8,16 +8,16 @@ import 'package:viraeshop_admin/reusable_widgets/form_field.dart';
 import 'package:viraeshop_admin/screens/update_user.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
-
-class UserProfileInfo extends StatelessWidget {
-  final dynamic userInfo;
-  final String docId;
-  const UserProfileInfo({required this.userInfo, required this.docId, Key? key}): super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return UpdateUser(userInfo: userInfo, userId: docId);
-  }
-}
+//
+// class UserProfileInfo extends StatelessWidget {
+//   final dynamic userInfo;
+//   final String docId;
+//   const UserProfileInfo({required this.userInfo, required this.docId, Key? key}): super(key: key);
+//   @override
+//   Widget build(BuildContext context) {
+//     return UpdateUser(userInfo: userInfo, userId: docId);
+//   }
+// }
 
 class DesktopProfilePage extends StatefulWidget {
   final dynamic userInfo;

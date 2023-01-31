@@ -35,7 +35,7 @@ myAppBar({messageOnPress, notifyOnPress}) {
                 valueListenable: Hive.box('customer').listenable(),
                 builder: (context, Box box, childs) {
                   String name = box.get('role') != 'general' && box.isNotEmpty
-                      ? box.get('business_name', defaultValue: '') +
+                      ? box.get('businessName', defaultValue: '') +
                           '(${box.get('name')})'
                       : box.get('name', defaultValue: '');
                   return Text(

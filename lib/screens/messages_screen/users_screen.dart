@@ -29,11 +29,11 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(FontAwesomeIcons.chevronLeft),
+          icon: const Icon(FontAwesomeIcons.chevronLeft),
           iconSize: 20.0,
           color: kSubMainColor,
         ),
-        title: Text(
+        title: const Text(
           'Chat Screen',
           style: kTextStyle1,
         ),
@@ -46,14 +46,14 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                 FirebaseFirestore.instance.collection('messages').snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(
                     color: kMainColor,
                   ),
                 );
               } else if (snapshot.hasError) {
                 print('error: ${snapshot.error}');
-                return Center(
+                return const Center(
                   child: Text(
                     'No messages',
                     style: kProductNameStyle,
@@ -62,17 +62,16 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
               } else {
                 final data = snapshot.data!.docs;
                 List chatsList = [];
-                data.forEach((element) {
+                for (var element in data) {
                   chatsList.add(element.data());
-                });
-                print('Messages: $chatsList');
+                }
                 return ListView.builder(
                   itemCount: chatsList.length,
                   itemBuilder: (context, i) {
                     num totalMessage = chatsList[i]['totalUnread'];
                     String name = chatsList[i]['name'];
                     return ListTile(
-                      contentPadding: EdgeInsets.all(10.0),
+                      contentPadding: const EdgeInsets.all(10.0),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -89,7 +88,7 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                       leading: CircleAvatar(
                         backgroundColor: kSubMainColor,
                         child: Text(
-                          '${name.characters.first}',
+                          name.characters.first,
                           style: kDrawerTextStyle2,
                         ),
                       ),
@@ -97,9 +96,9 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                         children: [
                           totalMessage != 0
                               ? NotificationTicker(
-                                  value: '${totalMessage.toString()}')
-                              : SizedBox(),
-                          Icon(Icons.arrow_right),
+                                  value: totalMessage.toString())
+                              : const SizedBox(),
+                          const Icon(Icons.arrow_right),
                         ],
                       ),
                       title: Text(
@@ -113,7 +112,7 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                             '${chatsList[i]['userId']}',
                             style: kProductNameStylePro,
                           ),
-                          Text(
+                          const Text(
                             'Tap to send message',
                             style: kProductNameStylePro,
                           ),

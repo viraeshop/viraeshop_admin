@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/password_screen.dart';
+import 'package:viraeshop_admin/screens/admins/password_screen.dart';
 
 class PermissionPage extends StatefulWidget {
   const PermissionPage({Key? key}): super(key: key);

@@ -12,6 +12,7 @@ import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 import '../due/due_receipt.dart';
 import '../reciept_screen.dart';
@@ -63,7 +64,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
       );
     }
     final items = data.where((element) {
-      final invoiceIdLower = element['invoice_id'].toLowerCase();
+      final invoiceIdLower = element['invoiceNo'].toString();
       final valueLower = value.toLowerCase();
       return invoiceIdLower.contains(valueLower);
     }).toList();
@@ -280,7 +281,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                             ),
                             DataCell(
                               Text(
-                                '${dataTemp[index]['invoice_id']}',
+                                '${dataTemp[index]['invoiceNo']}',
                                 style: kCustomerCellStyle,
                               ),
                                 onTap: () {
@@ -372,9 +373,9 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                             try{
                               shareCustomerStatement(
                                 name: widget.name,
-                                email: dataTemp[0]['user_info']['email'] ?? '',
-                                mobile: dataTemp[0]['user_info']['mobile'],
-                                address: dataTemp[0]['user_info']['address'],
+                                email: dataTemp[0]['customerInfo']['email'] ?? '',
+                                mobile: dataTemp[0]['customerInfo']['mobile'],
+                                address: dataTemp[0]['customerInfo']['address'],
                                 isInventory: true,
                                 items: data,
                                 begin: begin,
@@ -396,9 +397,9 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                           onTap: () {
                             shareCustomerStatement(
                               name: widget.name,
-                              email: dataTemp[0]['user_info']['email'] ?? '',
-                              mobile: dataTemp[0]['user_info']['mobile'],
-                              address: dataTemp[0]['user_info']['address'],
+                              email: dataTemp[0]['customerInfo']['email'] ?? '',
+                              mobile: dataTemp[0]['customerInfo']['mobile'],
+                              address: dataTemp[0]['customerInfo']['address'],
                               isInventory: true,
                               items: data,
                               begin: begin,
@@ -414,9 +415,9 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                             onTap: () {
                               shareCustomerStatement(
                                 name: widget.name,
-                                email: dataTemp[0]['user_info']['email'] ?? '',
-                                mobile: dataTemp[0]['user_info']['mobile'],
-                                address: dataTemp[0]['user_info']['address'],
+                                email: dataTemp[0]['customerInfo']['email'] ?? '',
+                                mobile: dataTemp[0]['customerInfo']['mobile'],
+                                address: dataTemp[0]['customerInfo']['address'],
                                 isInventory: true,
                                 items: data,
                                 begin: begin,
@@ -474,7 +475,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
 Tuple3<num, num, num> tuple(List items, DateTime begin, DateTime end) {
   num sale = 0, due = 0, paid = 0;
   for (var element in items) {
-    Timestamp timestamp = element['date'];
+    Timestamp timestamp = dateFromJson(element['createdAt']);
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
     end = DateTime(end.year, end.month, end.day);
@@ -482,13 +483,13 @@ Tuple3<num, num, num> tuple(List items, DateTime begin, DateTime end) {
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-      paid += element['paid'];
-      if(element['paid'] == 0 && element['advance'] != 0){
-        paid += element['advance'];
+        paid += element['paid'];
+        if(element['paid'] == 0 && element['advance'] != 0){
+          paid += element['advance'];
+        }
+        sale += element['price'];
+        due += element['due'];
       }
-      sale += element['price'];
-      due += element['due'];
-    }
   }
   Tuple3<num, num, num> data = Tuple3<num, num, num>(paid, due, sale);
   return data;
@@ -497,7 +498,7 @@ Tuple3<num, num, num> tuple(List items, DateTime begin, DateTime end) {
 List dateTupleList(List items, DateTime begin, DateTime end) {
   List filteredData = [];
   for (var element in items) {
-    Timestamp timestamp = element['date'];
+    Timestamp timestamp = dateFromJson(element['createdAt']);
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
     end = DateTime(end.year, end.month, end.day);

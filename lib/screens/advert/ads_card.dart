@@ -53,7 +53,7 @@ class AdsCard extends StatelessWidget {
         Container(
           height: 150.0,
           width: 250.0,
-          margin: EdgeInsets.all(10.0),
+          margin: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
             gradient: kLinearGradient,
@@ -62,7 +62,7 @@ class AdsCard extends StatelessWidget {
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Container(
               // width: 100.0,
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -74,14 +74,14 @@ class AdsCard extends StatelessWidget {
                           textStyle: kShadowStyle,
                         )
                       : Text(
-                          '$title1',
+                          title1,
                           style: kShadowStyle,
                         ),
                   isEdit!
                       ? CustomTextStyle(
                         hintText: 'Text here',
                           title1Controller: title2Controller!,
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             shadows: [
                               Shadow(
                                 color: kNewYellowColor,
@@ -96,8 +96,8 @@ class AdsCard extends StatelessWidget {
                           ),
                         )
                       : Text(
-                          '$title2',
-                          style: TextStyle(
+                          title2,
+                          style: const TextStyle(
                             shadows: [
                               Shadow(
                                 color: kNewYellowColor,
@@ -115,15 +115,15 @@ class AdsCard extends StatelessWidget {
                       ? CustomTextStyle(
                         hintText: 'Description',
                           title1Controller: title3Controller!,
-                          textStyle: TextStyle(
+                          textStyle: const TextStyle(
                             color: kBackgroundColor,
                             fontSize: 12.0,
                             fontFamily: 'Montserrat',
                           ),
                         )
                       : Text(
-                          '$title3',
-                          style: TextStyle(
+                          title3,
+                          style: const TextStyle(
                             color: kBackgroundColor,
                             fontSize: 12.0,
                             fontFamily: 'Montserrat',
@@ -133,9 +133,9 @@ class AdsCard extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: 10.0),
+            const SizedBox(width: 10.0),
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: kNewYellowColor,
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(10.0),
@@ -163,7 +163,7 @@ class AdsCard extends StatelessWidget {
             ),
           ]),
         ),
-        SizedBox(
+        const SizedBox(
           width: 10.0,
         ),
         Column(
@@ -176,7 +176,7 @@ class AdsCard extends StatelessWidget {
             ),
             IconButton(
               onPressed: onDelete,
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               iconSize: 30.0,
               color: kRedColor,
             ),
@@ -188,14 +188,14 @@ class AdsCard extends StatelessWidget {
 
   Widget _curvedCard() {
     return Container(
-      padding: EdgeInsets.all(5.0),
+      padding: const EdgeInsets.all(5.0),
       // height: 20.0,
       // width: 30.0,
       decoration: BoxDecoration(
         color: kNewYellowColor,
         borderRadius: BorderRadius.circular(20.0),
       ),
-      child: Center(
+      child: const Center(
         child: Text(
           'See Details',
           style: kDrawerTextStyle2,

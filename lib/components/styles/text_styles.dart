@@ -160,6 +160,14 @@ const TextStyle kDueCellStyle = TextStyle(
   letterSpacing: 1.3,
   fontWeight: FontWeight.bold,
 );
+
+const kBigErrorTextStyle = TextStyle(
+  color: kRedColor,
+  fontFamily: 'Montserrat',
+  fontSize: 15,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);
 const TextStyle kShadowStyle = TextStyle(
   shadows: [
     Shadow(
@@ -183,7 +191,7 @@ const TextStyle kSansTextStyle = TextStyle(
 const TextStyle kSansTextStyle1 = TextStyle(
   color: kSubMainColor,
   fontFamily: 'Montserrat',
-  fontSize: 14,
+  fontSize: 15,
   letterSpacing: 1.3,
   fontWeight: FontWeight.bold,
 );

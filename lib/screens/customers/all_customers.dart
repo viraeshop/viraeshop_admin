@@ -25,7 +25,7 @@ class AllCustomers extends StatelessWidget {
         ),
       ),
       body: const Customers(
-        role: 'All',
+        role: 'all',
       ),
     );
   }

@@ -1,12 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:viraeshop/expense/expense_event.dart';
+import 'package:viraeshop/expense/expense_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/screens/product_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop/expense/expense_bloc.dart';
+import 'package:viraeshop_api/models/expense/expense.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class ExpenseHistory extends StatefulWidget {
   const ExpenseHistory({Key? key}) : super(key: key);
@@ -20,19 +28,22 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
   @override
   void initState() {
     // TODO: implement initState
+    final expenseBloc = BlocProvider.of<ExpenseBloc>(context);
+    final jWTToken = Hive.box('adminInfo').get('token');
+    expenseBloc.add(GetExpensesEvent(
+      token: jWTToken
+    ));
     super.initState();
-
-    generalCrud.getExpense().then((v) {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Expense History',
           style: kAppBarTitleTextStyle,
         ),
@@ -42,31 +53,27 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
         //   tabs: tabs,
         // ),
       ),
-      body: FutureBuilder<QuerySnapshot>(
-        future: FirebaseFirestore.instance.collection('expenses').get(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final expenses = snapshot.data!.docs;
+      body: BlocBuilder<ExpenseBloc, ExpenseState>(
+        builder: (context, state) {
+          if (state is FetchedExpensesState) {
+            List<ExpenseModel> expenses = state.expenses;
             List<Map> expenseList = [];
             num totalExpense = 0.0;
-            expenses.forEach(
-              (element) {
-                expenseList.add({
-                  'id': element.id,
-                  'cost': element.get('cost'),
-                  'description': element.get('description'),
-                  'title': element.get('title'),
-                  'image': element.get('image'),
-                  'date': element.get('date'),
-                  'added_by': element.get('added_by'),
-                });
-                totalExpense += element.get('cost');
-              },
-            );
+            for (var element in expenses) {
+              expenseList.add({
+                'id': element.id,
+                'cost': element.cost,
+                'description': element.description,
+                'title': element.title,
+                'image': element.image,
+                'createdAt': element.createdAt,
+                'addedBy': element.addedBy['name'],
+              });
+              totalExpense += element.cost;
+            }
             return Container(
               color: kScaffoldBackgroundColor,
-              child: expenseList.isNotEmpty
-                  ? Stack(
+              child: Stack(
                       fit: StackFit.expand,
                       children: [
                         FractionallySizedBox(
@@ -75,15 +82,17 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                             child: ListView.builder(
                               itemCount: expenses.length,
                               itemBuilder: (BuildContext context, int i) {
-                                Timestamp dateTime = expenseList[i]['date'];
+                                Timestamp dateTime =
+                                    dateFromJson(expenseList[i]['createdAt']);
                                 DateTime dateFormat = dateTime.toDate();
-                                String date = DateFormat.yMMMd().format(dateFormat);
+                                String date =
+                                    DateFormat.yMMMd().format(dateFormat);
                                 return GestureDetector(
                                   onTap: () {},
                                   child: Container(
                                     color: kBackgroundColor,
-                                    padding: EdgeInsets.all(8.0),
-                                    margin: EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.all(8.0),
+                                    margin: const EdgeInsets.all(8.0),
                                     child: ListTile(
                                       leading: ClipRRect(
                                         child: CachedNetworkImage(
@@ -110,8 +119,8 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  'BDT ${expenseList[i]['cost']}',
-                                                  style: TextStyle(
+                                                  '${expenseList[i]['cost']}$bdtSign',
+                                                  style: const TextStyle(
                                                     color: kMainColor,
                                                     fontSize: 15.0,
                                                     letterSpacing: 1.3,
@@ -121,8 +130,8 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                                               ),
                                               Expanded(
                                                 child: Text(
-                                                  '$date',
-                                                  style: TextStyle(
+                                                  date,
+                                                  style: const TextStyle(
                                                       color: kMainColor),
                                                 ),
                                               ),
@@ -132,7 +141,7 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                                             '${expenseList[i]['description']}',
                                             style: kProductNameStylePro,
                                           ),
-                                          SizedBox(height: 20)
+                                          const SizedBox(height: 20)
                                         ],
                                       ),
                                     ),
@@ -146,11 +155,11 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                           child: Container(
                             color: kSubMainColor,
                             width: double.infinity,
-                            padding: EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(10.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Total Expenses',
                                   style: TextStyle(
                                     color: kBackgroundColor,
@@ -160,8 +169,8 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                                   ),
                                 ),
                                 Text(
-                                  'BDT ${totalExpense.toString()}',
-                                  style: TextStyle(
+                                  '${totalExpense.toString()}$bdtSign',
+                                  style: const TextStyle(
                                     color: kMainColor,
                                     fontSize: 15.0,
                                     letterSpacing: 1.3,
@@ -173,11 +182,16 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                           ),
                         ),
                       ],
-                    )
-                  : Text('Loading'),
+                    ),
             );
+          } else if (state is OnErrorExpenseState) {
+            return Center(
+                child: Text(
+              state.message,
+              style: kProductNameStylePro,
+            ));
           }
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(
               color: kMainColor,
             ),
@@ -209,7 +223,7 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                   child: myField(hint: 'Quantity'),
                 ),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 InkWell(
                   child: Container(
                     width: double.infinity, //MediaQuery.of(context).size.width,
@@ -222,7 +236,7 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
+                        const Text(
                           "Return",
                           style: TextStyle(fontSize: 20, color: Colors.white),
                         )
@@ -238,7 +252,7 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },

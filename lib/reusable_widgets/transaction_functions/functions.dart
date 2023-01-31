@@ -1,15 +1,16 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class TransacFunctions {
   static String nameProvider (String userId, List transactionList, [bool isEmployee = false]){
     String name = '';
     if(transactionList.isNotEmpty){
       if(isEmployee){
-        name = transactionList[0]['employee_name'];
+        name = transactionList[0]['adminInfo']['name'];
       }else{
-        String businessName = transactionList[0]['user_info']['business_name'] ?? '';
-        String username = transactionList[0]['user_info']['name'] ?? '';
+        String businessName = transactionList[0]['adminInfo']['businessName'] ?? '';
+        String username = transactionList[0]['adminInfo']['name'] ?? '';
         if( businessName.isNotEmpty){
           name = businessName;
         }else{
@@ -25,7 +26,7 @@ class TransacFunctions {
   static List customerFilter(List items, DateTime begin, DateTime end) {
     List filteredCustomers = [];
     for (var element in items) {
-      Timestamp timestamp = element['date'];
+      Timestamp timestamp = dateFromJson(element['createdAt']);
       DateTime date = timestamp.toDate();
       begin = DateTime(begin.year, begin.month, begin.day);
       end = DateTime(end.year, end.month, end.day);
@@ -33,7 +34,7 @@ class TransacFunctions {
       if ((begin.isAfter(dateFormatted) ||
           begin.isAtSameMomentAs(dateFormatted)) &&
           (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-        filteredCustomers.add(element['customer_id']);
+        filteredCustomers.add(element['customerId']);
       }
     }
     return filteredCustomers;

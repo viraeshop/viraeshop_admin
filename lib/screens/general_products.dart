@@ -35,10 +35,10 @@ class _GeneralProductsState extends State<GeneralProducts> {
     bool isProducts = Hive.box('adminInfo').get('isProducts');
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'General Products',
           style: kAppBarTitleTextStyle,
         ),
@@ -57,9 +57,11 @@ class _GeneralProductsState extends State<GeneralProducts> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => NewProduct()));
+                                builder: (context) => const NewProduct(
+                                  info: {},
+                                )));
                       },
-                child: Icon(Icons.add)),
+                child: const Icon(Icons.add)),
           ),
         ],
       ),
@@ -70,7 +72,7 @@ class _GeneralProductsState extends State<GeneralProducts> {
               final products = snapshot.data!.docs;
               List<String> productName = [];
               List productsList = [];
-              products.forEach((element) {
+              for (var element in products) {
                 productsList.add({
                   'docId': element.id,
                   'name': element.get('name'),
@@ -92,12 +94,12 @@ class _GeneralProductsState extends State<GeneralProducts> {
                   'isArchitectDiscount': element.get('isArchitectDiscount'),
                 });
                 productName.add(element.get('name'));
-              });
+              }
               print(productsList);
               return Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(20.0),
-                margin: EdgeInsets.all(10.0),
+                padding: const EdgeInsets.all(20.0),
+                margin: const EdgeInsets.all(10.0),
                 // decoration: BoxDecoration(
                 //   borderRadius: BorderRadius.circular(10.0),
                 //   boxShadow: [
@@ -117,12 +119,12 @@ class _GeneralProductsState extends State<GeneralProducts> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'General\'s Products',
                             style: kTextStyle1,
                             textAlign: TextAlign.left,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10.0,
                           ),
                           Expanded(
@@ -130,10 +132,10 @@ class _GeneralProductsState extends State<GeneralProducts> {
                               builder: (context, constraints) {
                                 if (constraints.maxWidth > 600) {
                                   return GridView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
+                                    physics: const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 4,
                                       childAspectRatio: 1 / 1.5,
                                       mainAxisSpacing: 10.0,
@@ -146,7 +148,7 @@ class _GeneralProductsState extends State<GeneralProducts> {
                                       bool isDiscount =
                                           productsList[i]['isGeneralDiscount'];
                                       Tuple3<num, num, bool> discountData =
-                                          Tuple3<num, num, bool>(0, 0, false);
+                                          const Tuple3<num, num, bool>(0, 0, false);
                                       if (isDiscount) {
                                         num discountPercent = percent(
                                             productsList[i]['generalDiscount'],
@@ -194,7 +196,7 @@ class _GeneralProductsState extends State<GeneralProducts> {
                                       bool isDiscount =
                                           productsList[i]['isGeneralDiscount'];
                                       Tuple3<num, num, bool> discountData =
-                                          Tuple3<num, num, bool>(0, 0, false);
+                                          const Tuple3<num, num, bool>(0, 0, false);
                                       if (isDiscount) {
                                         num discountPercent = percent(
                                             productsList[i]['generalDiscount'],
@@ -240,10 +242,10 @@ class _GeneralProductsState extends State<GeneralProducts> {
                           ),
                         ],
                       )
-                    : Text('Loading'),
+                    : const Text('Loading'),
               );
             }
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: const CircularProgressIndicator());
           }),
     );
   }

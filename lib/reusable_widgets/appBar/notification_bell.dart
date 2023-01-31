@@ -10,7 +10,7 @@ class NotificationBell extends StatelessWidget {
     return IconButton(
       onPressed: onPressed,
       icon: Column(
-        children: [
+        children: const [
           CircleAvatar(
             backgroundColor: kRedColor,
             radius: 3.0,

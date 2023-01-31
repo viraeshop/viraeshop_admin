@@ -32,12 +32,13 @@ class _ImageCarouselState extends State<ImageCarousel> {
   Map<String, Uint8List> imagesBytes = {};
   Map filesPath = {};
   List allImages = [];
+  List deletedImages = [];
   bool loading = false;
   @override
   void initState() {
     // TODO: implement initState
     if (widget.isUpdate) {
-        allImages = widget.images!;
+      allImages = widget.images!;
       //   this.productImage = widget.images!;
       //   print('Init State');
       // print('All Images: $allImages');
@@ -48,8 +49,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    print('Build state');
-    print('All Images: $allImages');
     return ModalProgressHUD(
       inAsyncCall: loading,
       progressIndicator: const CircularProgressIndicator(
@@ -91,9 +90,13 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           children: [
                             allImages.isNotEmpty
                                 ? ImageFromUpdate(
-                                    image: allImages[0] is String ? allImages[0] : '',
+                                    image: allImages[0] is String
+                                        ? allImages[0]
+                                        : '',
                                     isUpdate: widget.isUpdate,
-                                    imageBytes: allImages[0] is Uint8List ? allImages[0] : Uint8List(0),
+                                    imageBytes: allImages[0] is Uint8List
+                                        ? allImages[0]
+                                        : Uint8List(0),
                                   )
                                 : const Center(
                                     child: Icon(
@@ -120,6 +123,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                     (key, value) => value == allImages[0]);
                               }
                               setState(() {
+                                deletedImages.add(allImages[0]);
                                 allImages.removeAt(0);
                               });
                             }),
@@ -178,6 +182,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                     (key, value) => value == allImages[i]);
                               }
                               setState(() {
+                                deletedImages.add(allImages[i]);
                                 allImages.removeAt(i);
                               });
                               if (kDebugMode) {
@@ -200,13 +205,13 @@ class _ImageCarouselState extends State<ImageCarousel> {
                       List filesNames = filesPath.keys.toList();
                       List filesPaths = filesPath.values.toList();
                       List productImage = [];
-                      for (var image in allImages){
-                        if(image is String){
-                          if(image.contains('https')){
-                            productImage.add(image);
-                          }
-                        }
-                      }
+                      // for (var image in allImages) {
+                      //   if (image is String) {
+                      //     if (image.contains('https')) {
+                      //       productImage.add(image);
+                      //     }
+                      //   }
+                      // }
                       // print('Thumbnail: $filesPaths');
                       // print('First Image: ${filesPath[filesNames[0]]}');
                       try {
@@ -223,21 +228,21 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           }
                         } else {
                           for (int i = 0; i < filesNames.length; i++) {
-                            String imageUrl = await NetworkUtility.uploadImageFromNative(File(filesPath[filesNames[i]]), filesNames[i], 'product_images');
+                            String imageUrl =
+                                await NetworkUtility.uploadImageFromNative(
+                                    File(filesPath[filesNames[i]]),
+                                    filesNames[i],
+                                    'product_images');
                             print('imageUrl: $imageUrl');
                             productImage.add(imageUrl);
                           }
                         }
-                        print('Final State');
-                        print('All Images: $allImages');
-                        print('Product Images: $productImage');
-                        Hive.box('images').put('imagesBytes', imagesBytes.values.toList());
-                        Hive.box('images').put('imagesPath', filesPaths);
                         Hive.box('images')
-                            .put('productImages', productImage)
-                            .whenComplete(
-                              () => snackBar(text: 'Saved', context: context),
-                            );
+                            .put('imagesBytes', imagesBytes.values.toList());
+                        Hive.box('images').put('imagesPath', filesPaths);
+
+                        Hive.box('images').put('productImages', productImage);
+                        Hive.box('images').put('deletedImages', deletedImages);
                         // if (kDebugMode) {
                         //   print(productImages);
                         // }
@@ -258,6 +263,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
       ),
     );
   }
+
   void getImageWeb([bool isFirst = false]) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (kDebugMode) {

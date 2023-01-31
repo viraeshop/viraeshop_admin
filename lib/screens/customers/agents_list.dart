@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'customers/customer_list.dart';
+import 'customer_list.dart';
 
 class AgentsPage extends StatefulWidget {
   const AgentsPage({Key? key}) : super(key: key);

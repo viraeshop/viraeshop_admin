@@ -6,6 +6,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop/adverts/adverts_bloc.dart';
+import 'package:viraeshop/adverts/adverts_state.dart';
+import 'package:viraeshop/category/category_bloc.dart';
+import 'package:viraeshop/category/category_state.dart';
+import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
@@ -18,8 +23,11 @@ import 'package:viraeshop_admin/screens/login_page.dart';
 import 'package:viraeshop_admin/screens/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
+import 'package:viraeshop_api/apiCalls/suppliers.dart';
 
 import '../reusable_widgets/text_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 
 class Configs extends ChangeNotifier {
   Widget currentScreen = const ModalWidget();
@@ -86,11 +94,17 @@ void snackBar(
     int duration = 6,
     color = kNewTextColor}) {
   final snacks = SnackBar(
+    elevation: 3.0,
     duration: Duration(milliseconds: duration),
     backgroundColor: color,
-    content: Text(
-      text,
-      style: kDrawerTextStyle2,
+    content: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18.0),
+      ),
+      child: Text(
+        text,
+        style: kDrawerTextStyle2,
+      ),
     ),
   );
   ScaffoldMessenger.of(context).showSnackBar(snacks);
@@ -387,14 +401,63 @@ Future<void> getCategoryDialog({
         title: const Text('Categories'),
         titleTextStyle: kProductNameStyle,
         // ignore: dead_code
-        content: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('products')
-              .doc('category')
-              .collection('categories')
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        content: BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, state) {
+            if (state is OnErrorCategoryState) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    state.message,
+                    style: kSansTextStyle1,
+                  ),
+                ),
+              );
+            } else if (state is FetchedCategoryState) {
+              final data = state.categories;
+              List categories = [];
+              for (var element in data) {
+                categories.add(element.toJson());
+              }
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  children: List.generate(
+                    categories.length,
+                    (index) {
+                      return InkWell(
+                        onTap: () {
+                          Hive.box('category').putAll({
+                            'name': categories[index]['category'],
+                            'categoryId': categories[index]['categoryId'],
+                          }).whenComplete(() => Navigator.pop(context));
+                        },
+                        child: SizedBox(
+                          height: 40.0,
+                          child: Row(
+                            // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              const Icon(
+                                Icons.category,
+                                color: kIconColor1,
+                                size: 15.0,
+                              ),
+                              const SizedBox(
+                                width: 5.0,
+                              ),
+                              Text(
+                                categories[index]['category'],
+                                style: kProductNameStylePro,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            } else {
               return const Center(
                 child: SizedBox(
                   height: 50.0,
@@ -404,47 +467,6 @@ Future<void> getCategoryDialog({
                   ),
                 ),
               );
-            } else if (snapshot.hasData) {
-              final data = snapshot.data!.docs;
-              List categories = [];
-              for (var element in data) {
-                categories.add(element.data());
-              }
-              print(categories);
-              return SingleChildScrollView(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                      children: List.generate(categories.length, (index) {
-                    return InkWell(
-                      onTap: () {
-                        Hive.box('category')
-                            .put('name', categories[index]['category_name'])
-                            .whenComplete(() => Navigator.pop(context));
-                      },
-                      child: SizedBox(
-                        height: 40.0,
-                        child: Row(
-                          // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            const Icon(
-                              Icons.category,
-                              color: kIconColor1,
-                              size: 15.0,
-                            ),
-                            const SizedBox(
-                              width: 5.0,
-                            ),
-                            Text(
-                              categories[index]['category_name'],
-                              style: kProductNameStylePro,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  })));
-            } else {
-              return const Text('Oops an error occured');
             }
           },
         ),
@@ -455,6 +477,7 @@ Future<void> getCategoryDialog({
 
 Future<void> getAdvertsDialog({
   required BuildContext buildContext,
+  bool isUpdate = false,
 }) async {
   return showDialog<void>(
     context: buildContext,
@@ -462,57 +485,31 @@ Future<void> getAdvertsDialog({
     builder: (BuildContext context) {
       return AlertDialog(
         actionsPadding: const EdgeInsets.all(10.0),
-        // actions: [
-        //   TextButton(
-        //     child: Text(
-        //       'Select adverts',
-        //       style: TextStyle(
-        //         color: kIconColor1,
-        //         fontSize: 15.0,
-        //         fontFamily: 'Montserrat',
-        //         letterSpacing: 1.3,
-        //       ),
-        //     ),
-        //     onPressed: () {
-        //       Navigator.push(
-        //         context,
-        //         MaterialPageRoute(
-        //           builder: (context) => AddCategory(),
-        //         ),
-        //       );
-        //     },
-        //   ),
-        // ],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
         title: const Text('Advertisements'),
         titleTextStyle: kProductNameStyle,
         // ignore: dead_code
-        content: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('adverts')
-              .doc('adverts')
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: SizedBox(
-                  height: 50.0,
-                  width: 50.0,
-                  child: CircularProgressIndicator(
-                    color: kMainColor,
+        content: BlocBuilder<AdvertsBloc, AdvertState>(
+          builder: (context, state) {
+            if (state is OnGetAdvertsErrorState) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: Text(
+                    state.message,
+                    style: kSansTextStyle1,
                   ),
                 ),
               );
-            } else if (snapshot.hasData && snapshot.data!.data() != null) {
-              final data = snapshot.data!.get('adverts');
+            } else if (state is FetchedAdvertsState) {
+              final data = state.advertList;
               List advertList = [];
-              data.forEach((element) {
-                advertList.add(element['adsCategory']);
-              });
+              for (var element in data) {
+                advertList.add(element.advertsCategory);
+              }
               List adverts = Set.from(advertList).toList();
-              print(adverts);
               return SingleChildScrollView(
                   padding: const EdgeInsets.all(10.0),
                   child: Column(
@@ -520,6 +517,7 @@ Future<void> getAdvertsDialog({
                     return Consumer<GeneralProvider>(
                         builder: (context, provider, childs) {
                       List advert = provider.advertSelected;
+                      List existingAdvert = provider.existingAdverts;
                       String adName = adverts[index];
                       return InkWell(
                         onTap: () {
@@ -529,6 +527,13 @@ Future<void> getAdvertsDialog({
                           } else {
                             Provider.of<GeneralProvider>(context, listen: false)
                                 .addAdvert(adName);
+                          }
+                          if(isUpdate){
+                            if (existingAdvert.contains(adName)) {
+                              Provider.of<GeneralProvider>(context, listen: false)
+                                  .deleteAdvert(adName);
+                              print('DeletedAdvertsFromProductPopUp: ${provider.deletedAdverts}');
+                            }
                           }
                         },
                         child: SizedBox(
@@ -579,7 +584,6 @@ Future<void> getNonInventoryDialog({
   required BuildContext buildContext,
 }) async {
   TextEditingController controller = TextEditingController();
-  AdminCrud adminCrud = AdminCrud();
   return showDialog<void>(
     context: buildContext,
     barrierDismissible: true, // user must tap button!
@@ -607,51 +611,56 @@ Future<void> getNonInventoryDialog({
           ),
         ],
         // ignore: dead_code
-        content: FutureBuilder<QuerySnapshot>(
-          future: adminCrud.getShop(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: SizedBox(
-                  height: 50.0,
-                  width: 50.0,
-                  child: CircularProgressIndicator(
-                    color: kMainColor,
-                  ),
+        content: BlocBuilder<SuppliersBloc, SupplierState>(
+          builder: (context, state) {
+            print(state);
+            if (state is OnErrorSupplierState) {
+              return Center(
+                child: Text(
+                  state.message,
+                  style: kProductNameStylePro,
                 ),
               );
-            } else if (snapshot.hasData) {
-              final data = snapshot.data!.docs;
+            } else if (state is FetchedSuppliersState) {
+              List<Suppliers> data = state.supplierList ?? [];
               List suppliers = [];
-              for (var element in data) {
-                suppliers.add(element.data());
+              for (var supplier in data) {
+                suppliers.add(supplier.toJson());
               }
               SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-                Provider.of<GeneralProvider>(context, listen: false).getSuppliers(suppliers);
+                Provider.of<GeneralProvider>(context, listen: false)
+                    .getSuppliers(suppliers);
               });
-              if (kDebugMode) {
-                print(suppliers);
-              }
               return SizedBox(
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(5.0),
                   child: Consumer<GeneralProvider>(
-                    builder: (context, supplier, childWidget){
+                    builder: (context, supplier, childWidget) {
                       List shops = supplier.suppliers;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: List.generate(shops.length + 1, (index) {
-                          if(index == 0){
+                          if (index == 0) {
                             return NewTextField(
                               controller: controller,
                               hintText: 'Search',
-                              onChanged: (value){
-                                if(value.isEmpty && supplier.suppliersBackup.isNotEmpty){
-                                  Provider.of<GeneralProvider>(context, listen: false).updateSuppliersList(supplier.suppliersBackup);
-                                }else{
-                                  shops = searchEngine(value: value, key: 'supplier_name', temps: shops, key2: 'business_name');
-                                  Provider.of<GeneralProvider>(context, listen: false).updateSuppliersList(shops);
+                              onChanged: (value) {
+                                if (value.isEmpty &&
+                                    supplier.suppliersBackup.isNotEmpty) {
+                                  Provider.of<GeneralProvider>(context,
+                                          listen: false)
+                                      .updateSuppliersList(
+                                          supplier.suppliersBackup);
+                                } else {
+                                  shops = searchEngine(
+                                      value: value,
+                                      key: 'supplierName',
+                                      temps: shops,
+                                      key2: 'businessName');
+                                  Provider.of<GeneralProvider>(context,
+                                          listen: false)
+                                      .updateSuppliersList(shops);
                                 }
                               },
                             );
@@ -659,7 +668,7 @@ Future<void> getNonInventoryDialog({
                           return InkWell(
                               onTap: () {
                                 Hive.box('shops')
-                                    .putAll(shops[index-1])
+                                    .putAll(shops[index - 1])
                                     .whenComplete(() => Navigator.pop(context));
                               },
                               child: Padding(
@@ -669,7 +678,7 @@ Future<void> getNonInventoryDialog({
                                   children: [
                                     CircleAvatar(
                                       backgroundImage: NetworkImage(
-                                        shops[index-1]['profileImage'],
+                                        shops[index - 1]['profileImage'],
                                       ),
                                       radius: 35.0,
                                     ),
@@ -677,10 +686,11 @@ Future<void> getNonInventoryDialog({
                                       width: 10.0,
                                     ),
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          shops[index-1]['business_name'],
+                                          shops[index - 1]['businessName'],
                                           softWrap: true,
                                           overflow: TextOverflow.ellipsis,
                                           style: kTableCellStyle,
@@ -689,7 +699,7 @@ Future<void> getNonInventoryDialog({
                                           height: 10.0,
                                         ),
                                         Text(
-                                          shops[index-1]['supplier_name'],
+                                          shops[index - 1]['supplierName'],
                                           softWrap: true,
                                           overflow: TextOverflow.fade,
                                           style: kTableCellStyle,
@@ -705,9 +715,16 @@ Future<void> getNonInventoryDialog({
                   ),
                 ),
               );
-            } else {
-              return const Text('Oops an error occurred');
             }
+            return const Center(
+              child: SizedBox(
+                height: 50.0,
+                width: 50.0,
+                child: CircularProgressIndicator(
+                  color: kMainColor,
+                ),
+              ),
+            );
           },
         ),
       );

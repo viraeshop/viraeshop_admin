@@ -32,6 +32,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 
 import '../configs/image_picker.dart';
+import 'advert/ads_provider.dart';
 import 'home_screen.dart';
 import 'image_carousel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -142,6 +143,7 @@ class _NewProductState extends State<NewProduct>
       isInfinity = widget.info['isInfinity'];
       List productPics = widget.info['images'] ?? [];
       Hive.box('images').put('productImages', productPics.map((e) => e['imageLink']).toList());
+      Hive.box('suppliers').putAll(widget.info['supplier']);
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
         Provider.of<GeneralProvider>(context, listen: false)
             .updateAdList(widget.info['adverts'] ?? []);
@@ -218,13 +220,23 @@ class _NewProductState extends State<NewProduct>
             showFields = true;
           });
           List products = Hive.box(productsBox).get(productsKey);
-          Map supplier = Hive.box('shops').toMap();
+          Map supplier = Hive.box('suppliers').toMap();
           if (widget.isUpdateProduct) {
+            List deletedImages =
+                Hive.box('images').get('deletedImages') ?? [];
+            List img = widget.info['images'] ?? [];
+            if(deletedImages.isNotEmpty && img.isNotEmpty){
+              for(var image in deletedImages){
+                img.removeWhere((element) => element['imageLink'] == image);
+              }
+            }
             for (int i = 0; i < products.length; i++) {
               if (widget.info['productId'] == products[i]['productId']) {
-                Map supplier = Hive.box('shops').toMap();
+                Map supplier = Hive.box('suppliers').toMap();
+                fields['productId'] = widget.info['productId'];
                 fields['supplier'] = supplier;
                 fields['adverts'] = adverts;
+                fields['images'] += img;
                 products[i] = fields;
               }
             }
@@ -242,6 +254,7 @@ class _NewProductState extends State<NewProduct>
             fields['productId'] = state.response.result!['productId'];
             products.add(fields);
           }
+          Provider.of<AdsProvider>(context, listen: false).updateProductList(products);
           Hive.box(productsBox).put(productsKey, products);
           Hive.box('images').clear();
           Hive.box('category').clear();
@@ -737,7 +750,7 @@ class _NewProductState extends State<NewProduct>
                             height: 20,
                           ),
                           ValueListenableBuilder(
-                              valueListenable: Hive.box('shops').listenable(),
+                              valueListenable: Hive.box('suppliers').listenable(),
                               builder: (context, Box box, childs) {
                                 String shopName = box.get('businessName',
                                     defaultValue: 'Suppliers');
@@ -748,7 +761,9 @@ class _NewProductState extends State<NewProduct>
                                     supplierBloc.add(
                                         GetSuppliersEvent(token: jWTToken ?? ''));
                                     getNonInventoryDialog(
-                                        buildContext: context);
+                                        buildContext: context,
+                                        box: 'suppliers',
+                                    );
                                   },
                                   child: Container(
                                     height: 45,
@@ -1072,7 +1087,7 @@ class _NewProductState extends State<NewProduct>
                           if (kDebugMode) {
                             print('UpdatedAdvertsAfterFilter: $updatedAdverts');
                           }
-                          Map supplier = Hive.box('shops').toMap();
+                          Map supplier = Hive.box('suppliers').toMap();
                           setState(() {
                             fields = {
                               'supplierId': supplier['supplierId'],

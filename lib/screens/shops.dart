@@ -141,7 +141,8 @@ class _ShopsState extends State<Shops> {
                                 color: kNewTextColor,
                                 size: 20,
                               ),
-                              hintText: 'Name of supplier',
+                              hintText: 'Enter name of supplier',
+                              labelText: 'Supplier name',
                             ),
                             const SizedBox(
                               height: 10.0,
@@ -153,7 +154,8 @@ class _ShopsState extends State<Shops> {
                                 color: kNewTextColor,
                                 size: 20,
                               ),
-                              hintText: 'Business name',
+                              hintText: 'Enter business name here',
+                              labelText: 'Business name',
                             ),
                           ],
                         ),
@@ -180,13 +182,14 @@ class _ShopsState extends State<Shops> {
                             width: 10.0,
                           ),
                           Text(
-                            '+88',
+                            '+880',
                             style: kTableCellStyle,
                           ),
                         ],
                       ),
                     ),
-                    hintText: 'Phone',
+                    hintText: 'Enter mobile number',
+                    labelText: 'Phone',
                   ),
 
                   /// Optional number
@@ -213,7 +216,8 @@ class _ShopsState extends State<Shops> {
                         ],
                       ),
                     ),
-                    hintText: 'Optional Phone',
+                    hintText: 'Enter optional Phone',
+                    labelText: 'Optional Phone',
                   ),
                   const SizedBox(
                     height: 10.0,
@@ -225,7 +229,8 @@ class _ShopsState extends State<Shops> {
                       color: kNewTextColor,
                       size: 20,
                     ),
-                    hintText: 'Email',
+                    hintText: 'Enter email address',
+                    labelText: 'Email',
                   ),
                   const SizedBox(
                     height: 10.0,
@@ -237,7 +242,8 @@ class _ShopsState extends State<Shops> {
                       color: kNewTextColor,
                       size: 20,
                     ),
-                    hintText: 'Address',
+                    hintText: 'Enter your address',
+                    labelText: 'Address',
                   ),
                   const SizedBox(
                     height: 20.0,

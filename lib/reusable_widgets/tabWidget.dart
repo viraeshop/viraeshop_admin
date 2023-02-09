@@ -65,19 +65,23 @@ class _TabWidgetState extends State<TabWidget> {
   OverlayEntry? entry;
   @override
   void initState() {
-    super.initState();
     Hive.box(productsBox).watch(key: productsKey).listen((event){
-      print('event: $event');
-      setState((){
-        products = event.value;
-      });
+      if (kDebugMode) {
+        print('event: $event');
+      }
+      products = event.value;
+      productsList = event.value;
+    }).onError((_){
+      if (kDebugMode) {
+        print(_);
+      }
     });
+    super.initState();
   }
 
   void showOverlay(Offset offset, int index, String url) {
     entry = OverlayEntry(builder: (context) {
       return Consumer<AdsProvider>(builder: (context, animation, childs) {
-        print('show overlay $index');
         final size = MediaQuery.of(context).size.height;
         return AnimatedPositioned(
             height:
@@ -148,9 +152,6 @@ class _TabWidgetState extends State<TabWidget> {
             .animationTracker(false);
       },
     );
-    // Future.delayed(Duration(milliseconds: 200), (){
-    //   unShowOverlay();
-    // });
   }
 
   @override
@@ -180,13 +181,8 @@ class _TabWidgetState extends State<TabWidget> {
     return Container(
       color: kBackgroundColor,
       child: Stack(
-        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //crossAxisAlignment: CrossAxisAlignment.start,
         fit: StackFit.expand,
         children: [
-          // SizedBox(
-          //   height: 10.0,
-          // ),
           FractionallySizedBox(
             heightFactor: 0.9,
             alignment: Alignment.topCenter,
@@ -404,40 +400,30 @@ class _TabWidgetState extends State<TabWidget> {
                             cartDetailsBox.put('isAdded', true);
                             List<Cart> cart =
                                 Hive.box<Cart>('cart').values.toList();
-                            List<String> keys = [];
-                            for (var element in cart) {
-                              keys.add(element.productId);
-                            }
-
+                            List keys = Hive.box<Cart>('cart').keys.toList();
                             if (keys.contains(
-                                productsList[index - 1]['productId'].toString())) {
-                              print('move');
+                                productsList[index - 1]['productId'])) {
                               Cart? item = Hive.box<Cart>('cart')
-                                  .get(productsList[index - 1]['productId'].toString());
+                                  .get(productsList[index - 1]['productId']);
                               item!.quantity += 1;
                               item.price += price;
                               Hive.box<Cart>('cart').put(
-                                  productsList[index - 1]['productId'].toString(), item);
+                                  productsList[index - 1]['productId'], item);
                             } else {
-                              print('we move');
                               Box<Cart> cart = Hive.box<Cart>('cart');
                               cart
                                   .put(
-                                    productsList[index - 1]['productId'].toString(),
+                                    productsList[index - 1]['productId'],
                                     Cart(
                                       productName: productsList[index - 1]
                                           ['name'],
                                       productId: productsList[index - 1]
-                                          ['productId'].toString(),
+                                          ['productCode'].toString(),
                                       price: price,
                                       quantity: 1,
                                       unitPrice: price,
-                                      buyPrice: num.parse(productsList[index - 1]['cost_price'] ?? '0'),
+                                      buyPrice: productsList[index - 1]['costPrice'] ?? '0',
                                     ),
-                                  )
-                                  .whenComplete(() => print('completed'))
-                                  .onError(
-                                    (error, stackTrace) => print(error),
                                   );
                             }
                           },
@@ -484,20 +470,6 @@ class _TabWidgetState extends State<TabWidget> {
                                               topRight: Radius.circular(10.0),
                                             ),
                                           ),
-                                          // child: CachedNetworkImage(
-                                          //   imageUrl:
-                                          //       '${images.isNotEmpty ? images[0] : ''}',
-                                          //   placeholder: (context, url) {
-                                          //     return Image.asset("assets/default.jpg");
-                                          //   },
-                                          //   errorWidget: (context, url, childs) {
-                                          //     return Image.asset(
-                                          //       'assets/default.jpg',
-                                          //       fit: BoxFit.cover,
-                                          //     );
-                                          //   },
-                                          //   fit: BoxFit.cover,
-                                          // ),
                                         ),
                                       ),
                                       Container(
@@ -523,7 +495,7 @@ class _TabWidgetState extends State<TabWidget> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                '${productsList[index - 1]['name']} (${productsList[index - 1]['productId']})',
+                                                '${productsList[index - 1]['name']} (${productsList[index - 1]['productCode']})',
                                                 style: const TextStyle(
                                                   color: kBackgroundColor,
                                                   fontSize: 12.0,

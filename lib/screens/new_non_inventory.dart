@@ -72,24 +72,27 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
           final value = state.shops.result;
           setState(() {
             shopNames.clear();
+            dropdownValue = '';
             isLoading = false;
-            date = dateFromJson(value[0].createdAt);
-            for (var element in value) {
-              shopNames.add(element.supplierInfo.businessName);
-              shopList.add(element);
+            if(value.isNotEmpty){
+              date = dateFromJson(value[0].createdAt);
+              for (var element in value) {
+                  shopNames.add(element.supplierInfo.businessName);
+                  shopList.add(element);
+              }
+              currentShop = shopList[0];
+              dropdownValue = currentShop.supplierInfo.businessName;
+              receipt = currentShop.images.isNotEmpty
+                  ? currentShop.images[0]['imageLink']
+                  : null;
+              controllers[3].text = currentShop.price.toString();
+              controllers[4].text = currentShop.buyPrice.toString();
+              controllers[5].text = currentShop.profit.toString();
+              controllers[6].text = currentShop.due.toString();
+              controllers[7].text = currentShop.paid.toString();
+              paid = currentShop.paid;
+              controllers[8].text = currentShop.description;
             }
-            currentShop = shopList[0];
-            dropdownValue = currentShop.supplierInfo.businessName;
-            receipt = currentShop.images.isNotEmpty
-                ? currentShop.images[0]['imageLink']
-                : null;
-            controllers[3].text = currentShop.price.toString();
-            controllers[4].text = currentShop.buyPrice.toString();
-            controllers[5].text = currentShop.profit.toString();
-            controllers[6].text = currentShop.due.toString();
-            controllers[7].text = currentShop.paid.toString();
-            paid = currentShop.paid;
-            controllers[8].text = currentShop.description;
           });
         } else if (state is RequestFinishedShopState) {
           setState(() {
@@ -270,16 +273,14 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                             );
                           }).toList(),
                           onChanged: (value) {
-                            Shops? shop;
-                            for (var element in shopList) {
-                              if (element.supplierInfo.businessName ==
-                                  value.toString()) {
-                                shop = element;
-                              }
+                            String changingShop = value.toString();
+                            if (kDebugMode) {
+                              print(changingShop);
                             }
+                            Shops shop = shopList.firstWhere((element) => changingShop == element.supplierInfo.businessName);
                             setState(() {
                               dropdownValue = value.toString();
-                              currentShop = shop!;
+                              currentShop = shop;
                               receipt = currentShop.images.isNotEmpty
                                   ? currentShop.images[0]
                                   : null;

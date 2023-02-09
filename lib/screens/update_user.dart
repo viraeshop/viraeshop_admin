@@ -14,6 +14,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/ui_components/delete_popup.dart';
 import 'package:viraeshop_admin/screens/customers/customer_info.dart';
+import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/customers/tabWidgets.dart';
 import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
@@ -25,6 +26,12 @@ import '../configs/configs.dart';
 import 'general_provider.dart';
 import 'home_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+enum Operation {
+  delete,
+  update,
+  none,
+}
 
 class UpdateUser extends StatefulWidget {
   final Map userInfo;
@@ -59,7 +66,7 @@ class _UpdateUserState extends State<UpdateUser> {
   var selected_activity = '';
   final List _activityList = ['not-active', 'active'];
 
-  bool showFields = false;
+  bool isLoading = false;
 
   var currdate = DateTime.now();
   AdminCrud adminCrud = AdminCrud();
@@ -68,35 +75,24 @@ class _UpdateUserState extends State<UpdateUser> {
   bool isEditCustomer =
       Hive.box('adminInfo').get('isEditCustomer', defaultValue: false);
   final jWTToken = Hive.box('adminInfo').get('token');
+  final _tabs = <Tab>[
+    const Tab(
+      text: 'Info',
+    ),
+    const Tab(
+      text: 'Sales',
+    ),
+    const Tab(
+      text: 'Orders',
+    ),
+  ];
+  List<Widget> tabWidgets = [];
+  Operation currentOperation = Operation.none;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    setState(() {
-      nameController.text = widget.userInfo['name'];
-      _emailController.text = widget.userInfo['email'];
-      phoneController.text = widget.userInfo['mobile'];
-      walletController.text = widget.userInfo['wallet'].toString();
-      default_role = widget.userInfo['role'];
-      selected_role = widget.userInfo['role'];
-      selected_verification = 'verified';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final _tabs = <Tab>[
-      const Tab(
-        text: 'Info',
-      ),
-      const Tab(
-        text: 'Sales',
-      ),
-      const Tab(
-        text: 'Orders',
-      ),
-    ];
-    List<Widget> tabWidgets = [
+    tabWidgets = [
       CustomerInfoScreen(
         info: widget.userInfo,
       ),
@@ -111,8 +107,20 @@ class _UpdateUserState extends State<UpdateUser> {
       );
       tabWidgets.add(walletTab());
     }
+    nameController.text = widget.userInfo['name'];
+    _emailController.text = widget.userInfo['email'];
+    phoneController.text = widget.userInfo['mobile'];
+    walletController.text = widget.userInfo['wallet'].toString() ?? '';
+    Provider.of<CustomerProvider>(context, listen: false)
+        .updateWallet(widget.userInfo['wallet'] ?? 0);
+    default_role = widget.userInfo['role'];
+    selected_role = widget.userInfo['role'];
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return ModalProgressHUD(
-      inAsyncCall: showFields,
+      inAsyncCall: isLoading,
       progressIndicator: const CircularProgressIndicator(color: kMainColor),
       child: SafeArea(
         child: DefaultTabController(
@@ -183,7 +191,8 @@ class _UpdateUserState extends State<UpdateUser> {
                               final customerBloc =
                                   BlocProvider.of<CustomersBloc>(context);
                               setState(() {
-                                showFields = true;
+                                isLoading = true;
+                                currentOperation = Operation.delete;
                               });
                               Navigator.pop(context);
                               Box customerBox = Hive.box('customer');
@@ -212,17 +221,35 @@ class _UpdateUserState extends State<UpdateUser> {
             ),
             body: BlocListener<CustomersBloc, CustomerState>(
               listener: (context, state) {
-                if (state is RequestFinishedCustomerState && showFields) {
+                if (state is RequestFinishedCustomerState) {
+                  if (currentOperation == Operation.delete) {
+                    setState(() {
+                      currentOperation = Operation.none;
+                      isLoading = false;
+                    });
+                    toast(context: context, title: 'Deleted successfully');
+                  } else if (currentOperation == Operation.update) {
+                    setState(() {
+                      currentOperation = Operation.none;
+                      isLoading = false;
+                      Provider.of<CustomerProvider>(context, listen: false)
+                          .updateWallet(
+                        num.parse(walletController.text),
+                        true,
+                      );
+                    });
+                    toast(context: context, title: 'Updated successfully');
+                  }
+                } else if (state is OnErrorCustomerState) {
                   setState(() {
-                    showFields = false;
-                  });
-                  toast(context: context, title: 'Deleted');
-                } else if (state is OnErrorCustomerState && showFields) {
-                  setState(() {
-                    showFields = false;
+                    isLoading = false;
                   });
                   snackBar(
-                      text: state.message, context: context, color: kRedColor);
+                    text: state.message,
+                    context: context,
+                    color: kRedColor,
+                    duration: 600,
+                  );
                 }
               },
               child: TabBarView(
@@ -236,14 +263,12 @@ class _UpdateUserState extends State<UpdateUser> {
   }
 
   walletTab() {
+    final onEdit =
+        Hive.box('adminInfo').get('isEditCustomer', defaultValue: false);
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Stack(
         children: [
-          // Align(
-          //   alignment: Alignment.bottomCenter,
-          //   child: ProdBtn(context: context, text: 'Click Me'),
-          // ),
           Align(
             alignment: Alignment.center,
             child: Padding(
@@ -260,133 +285,96 @@ class _UpdateUserState extends State<UpdateUser> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Text(
-                      //   '\$',
-                      //   textAlign: TextAlign.center,
-                      //   style: TextStyle(
-                      //       fontSize: 40, color: kSelectedTileColor),
-                      // ),
-                      StreamBuilder<DocumentSnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('customers')
-                              .doc(widget.userId)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              final data = snapshot.data;
-                              return Text(
-                                '${data!.get('wallet').toString()}৳',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    fontSize: 70, color: kSelectedTileColor),
-                              );
-                            }
-                            return const Text(
-                              '৳',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 70, color: kSelectedTileColor),
-                            );
-                          }),
+                      Consumer<CustomerProvider>(
+                        builder: (context, customer, any) {
+                          return Text(
+                            '${customer.wallet.toString()}৳',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 70,
+                              color: kSelectedTileColor,
+                            ),
+                          );
+                        }
+                      ),
                     ],
                   ),
                   InkWell(
-                    onTap: () {
-                      // Update Wallet
-                      popDialog(
-                          title: 'Add Funds',
-                          context: context,
-                          widget: SingleChildScrollView(
-                            child: Column(
-                              // shrinkWrap: true,
-                              children: [
-                                TextField(
-                                  controller: walletController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    labelText: "Amount",
-                                    hintText: "",
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
+                    onTap: onEdit == false
+                        ? null
+                        : () {
+                            // Update Wallet
+                            popDialog(
+                              title: 'Add Funds',
+                              context: context,
+                              widget: SingleChildScrollView(
+                                child: Column(
+                                  // shrinkWrap: true,
+                                  children: [
+                                    TextField(
+                                      controller: walletController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        labelText: "Amount",
+                                        hintText: "",
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                InkWell(
-                                  child: Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 58,
-                                    decoration: BoxDecoration(
-                                        color:
-                                            kSelectedTileColor, //Theme.of(context).accentColor,
-                                        borderRadius:
-                                            BorderRadius.circular(15)),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          "Add",
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              color: Colors.white),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  onTap: () async {
-                                    print(widget.userId);
-                                    Navigator.pop(context);
-                                    setState(() {
-                                      showFields = !showFields;
-                                    });
-                                    adminCrud
-                                        .wallet(
-                                      widget.userId,
-                                      num.parse(walletController.text),
-                                    )
-                                        .then((successfull) {
-                                      // Navigator.pop(context);
-                                      Box box = Hive.box('customer');
-                                      if (box.isNotEmpty) {
-                                        String role = box.get('role');
-                                        if (role == 'agents') {
-                                          num wallet = box.get('wallet',
-                                              defaultValue: 0.0);
-                                          box.put(
-                                              'wallet',
-                                              wallet +
-                                                  num.parse(
-                                                      walletController.text));
-                                        }
+                                    const SizedBox(height: 20),
+                                    Consumer<CustomerProvider>(
+                                      builder: (context, customer, any) {
+                                        return InkWell(
+                                          child: Container(
+                                            width:
+                                                MediaQuery.of(context).size.width,
+                                            height: 58,
+                                            decoration: BoxDecoration(
+                                                color:
+                                                    kSelectedTileColor, //Theme.of(context).accentColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(15)),
+                                            child: const Center(
+                                              child: Text(
+                                                "Add",
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            num newBalance = customer.wallet +
+                                                num.parse(walletController.text);
+                                            Navigator.pop(context);
+                                            setState(() {
+                                              currentOperation = Operation.update;
+                                              isLoading = true;
+                                            });
+                                            final customerBloc =
+                                                BlocProvider.of<CustomersBloc>(
+                                              context,
+                                            );
+                                            customerBloc.add(
+                                              UpdateCustomerEvent(
+                                                customerId: widget.userId,
+                                                customerModel: {
+                                                  'wallet': newBalance,
+                                                },
+                                                token: jWTToken,
+                                              ),
+                                            );
+                                          },
+                                        );
                                       }
-                                      setState(() {
-                                        showFields = !showFields;
-                                        widget.userInfo['wallet'] =
-                                            double.parse(walletController.text);
-                                      });
-                                      showMyDialog(
-                                          'Funds Update Successfull', context);
-                                      // if (successfull) {
-                                      //   popDialog(
-                                      //       title: 'Success',
-                                      //       widget: Text(
-                                      //           'Funds Added Successfull, reload page'));
-                                      // } else {
-                                      //   popDialog(
-                                      //       title: 'Success',
-                                      //       widget: Text(
-                                      //           'Could Not Add Funds'));
-                                      // }
-                                    });
-                                  },
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ));
-                    },
+                              ),
+                            );
+                          },
                     child: Container(
                       width: 200,
                       height: 53,
@@ -397,11 +385,10 @@ class _UpdateUserState extends State<UpdateUser> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text(
+                        children: const [
+                          Text(
                             'Update Balance',
-                            style: const TextStyle(
-                                fontSize: 20, color: Colors.white),
+                            style: TextStyle(fontSize: 20, color: Colors.white),
                           )
                         ],
                       ),
@@ -420,7 +407,7 @@ class _UpdateUserState extends State<UpdateUser> {
   pageOne() {
     return Center(
       child: LayoutBuilder(
-        builder: (context, constraints) => Container(
+        builder: (context, constraints) => SizedBox(
           width: constraints.maxWidth > 600
               ? MediaQuery.of(context).size.width * 0.4
               : null,
@@ -692,9 +679,9 @@ class _UpdateUserState extends State<UpdateUser> {
                               //
                               var updUser = {};
                               setState(() {
-                                showFields = false;
+                                isLoading = false;
                               });
-                              myLoader(visibility: !showFields);
+                              myLoader(visibility: !isLoading);
                               // print(jsonEncode(upd_user) + widget.user_id);
                               if (widget.userInfo['role'] == 'agents') {
                                 setState(() {
@@ -717,7 +704,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                   .then((val) {
                                 if (val) {
                                   setState(() {
-                                    showFields = true;
+                                    isLoading = true;
                                   });
                                   popDialog(
                                       widget: Text(
@@ -728,7 +715,7 @@ class _UpdateUserState extends State<UpdateUser> {
                                       context: context);
                                 } else {
                                   setState(() {
-                                    showFields = true;
+                                    isLoading = true;
                                   });
                                   showMyDialog(
                                       '$selected_role Not Updated', context);
@@ -736,7 +723,7 @@ class _UpdateUserState extends State<UpdateUser> {
                               });
                             } else {
                               setState(() {
-                                showFields = true;
+                                isLoading = true;
                               });
                               showMyDialog('Fields Cannot Be Empty', context);
                             }

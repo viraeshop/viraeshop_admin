@@ -46,7 +46,10 @@ class _SupplierPayState extends State<SupplierPay> {
   final TextEditingController dueAmountCont = TextEditingController();
   final TextEditingController noteCont = TextEditingController();
   Timestamp timestamp = Timestamp.now();
-  Map<String, dynamic> supplierInvoice = {};
+  Map<String, dynamic> supplierInvoice = {
+    'images': [],
+    'supplierInfos': {},
+  };
   bool isLoading = false;
   bool invoiceExist = false;
   List payList = [];
@@ -190,7 +193,7 @@ class _SupplierPayState extends State<SupplierPay> {
                       supplierBloc.add(GetSuppliersEvent(
                         token: jWTToken,
                       ));
-                      getNonInventoryDialog(buildContext: context);
+                      getNonInventoryDialog(buildContext: context, box: 'shops');
                     },
                     child: Container(
                       height: 45,
@@ -275,19 +278,6 @@ class _SupplierPayState extends State<SupplierPay> {
                               ),
                               NewTextField(
                                 controller: invoiceCont,
-                                onSubmitted: (value) {
-                                  final supplierInvoiceBloc =
-                                      BlocProvider.of<SupplierInvoiceBloc>(
-                                          context);
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-                                  supplierInvoiceBloc.add(
-                                      GetSupplierInvoiceEvent(
-                                        token: jWTToken,
-                                        invoiceNo: value,
-                                      ));
-                                },
                               ),
                             ],
                           ),
@@ -305,6 +295,19 @@ class _SupplierPayState extends State<SupplierPay> {
                               ),
                               NewTextField(
                                 controller: refCont,
+                                onSubmitted: (value) {
+                                  final supplierInvoiceBloc =
+                                  BlocProvider.of<SupplierInvoiceBloc>(
+                                      context);
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  supplierInvoiceBloc.add(
+                                      GetSupplierInvoiceEvent(
+                                        token: jWTToken,
+                                        invoiceNo: value,
+                                      ));
+                                },
                               ),
                             ],
                           ),
@@ -415,12 +418,12 @@ class _SupplierPayState extends State<SupplierPay> {
                             payList.add({
                               'paid': num.parse(payAmountCont.text ?? '0'),
                               'createdAt': dateToJson(Timestamp.now()),
-                              'invoiceNo': invoiceCont.text,
+                              'refNo': invoiceCont.text,
                             });
                           }
                           supplierInvoice['payList'] = payList;
                           supplierInvoice['images'].add({
-                            'invoiceNo': invoiceCont.text,
+                            'refNo': invoiceCont.text,
                             'imageLink': updatingImage,
                             'createdAt': dateToJson(Timestamp.now()),
                           });
@@ -436,15 +439,14 @@ class _SupplierPayState extends State<SupplierPay> {
                             'payList': {
                               'paid': num.parse(payAmountCont.text ?? '0'),
                               'createdAt': dateToJson(Timestamp.now()),
-                              'invoiceNo': invoiceCont.text,
+                              'refNo': invoiceCont.text,
                             },
                             'images': {
-                              'invoiceNo': invoiceCont.text,
+                              'refNo': invoiceCont.text,
                               'imageLink': updatingImage,
                               'createdAt': dateToJson(Timestamp.now()),
                             },
                           };
-                          print(invoiceExist);
                           if (invoiceExist) {
                             supplierInvoiceBloc.add(
                               UpdateSupplierInvoiceEvent(

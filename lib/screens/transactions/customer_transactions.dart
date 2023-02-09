@@ -2,13 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:tuple/tuple.dart';
+import 'package:viraeshop/transactions/barrel.dart';
+import 'package:viraeshop/transactions/transactions_bloc.dart';
+import 'package:viraeshop/transactions/transactions_event.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/generate_statement.dart';
 import 'package:viraeshop_admin/configs/invoices/customer_goods_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/print_customer_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
+import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
@@ -16,11 +22,16 @@ import 'package:viraeshop_api/utils/utils.dart';
 
 import '../due/due_receipt.dart';
 import '../reciept_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CustomerTransactionScreen extends StatefulWidget {
   final String name;
-  final List data;
- const CustomerTransactionScreen({required this.data, required this.name, Key? key}) : super(key: key);
+  final String userID;
+  final String queryType;
+  final String adminId;
+  const CustomerTransactionScreen(
+      {required this.userID, required this.name,required this.adminId, Key? key, required this.queryType})
+      : super(key: key);
 
   @override
   _CustomerTransactionScreenState createState() =>
@@ -34,24 +45,20 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
   Tuple3<num, num, num> totalsTemp = const Tuple3<num, num, num>(0, 0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
+  final jWTToken = Hive.box('adminInfo').get('token');
+  bool isLoading = true;
   @override
   void initState() {
     // TODO: implement initState
-    num totalPaid = 0, totalDue = 0, totalAmount = 0;
-    for (var element in widget.data) {
-      totalPaid += element['paid'];
-      if(element['paid'] == 0 && element['advance'] != 0){
-        totalPaid += element['advance'];
-      }
-      totalDue += element['due'];
-      totalAmount += element['price'];
-    }
-    setState(() {
-      data = widget.data;
-      dataTemp = data;
-      totals = Tuple3<num, num, num>(totalPaid, totalDue, totalAmount);
-      totalsTemp = totals;
-    });
+    final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+    transactionBloc.add(
+      GetTransactionDetailsEvent(
+        queryType: 'customerInvoice',
+        userID: widget.userID,
+        isFilter: false,
+        token: jWTToken,
+      ),
+    );
     super.initState();
   }
 
@@ -76,215 +83,263 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
       dataTemp = filtered;
     });
   }
+
   bool showPaid = false;
   bool showDue = false;
   @override
   Widget build(BuildContext context) {
-    
     var screenSize = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 40.0,
-        backgroundColor: kSubMainColor,
-        elevation: 0.0,
-        shape: const Border(
-          bottom: BorderSide(
-            color: kSubMainColor,
+    return BlocListener<TransactionsBloc, TransactionState>(
+      listener: (context, state) {
+        if (state is OnErrorTransactionState) {
+          setState(() {
+            isLoading = false;
+          });
+        } else if (state is RequestFinishedTransactionState) {
+          final result = state.response.result;
+          setState(() {
+            isLoading = false;
+            totals = Tuple3(result!['totalPaid'] ?? 0, result['totalDue'] ?? 0,
+                result['totalAmount'] ?? 0);
+            totalsTemp = totals;
+            data = result['invoices'].toList();
+            dataTemp = result['invoices'].toList();
+          });
+        }
+      },
+      child: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        child: Scaffold(
+          appBar: AppBar(
+            toolbarHeight: 40.0,
+            backgroundColor: kSubMainColor,
+            elevation: 0.0,
+            shape: const Border(
+              bottom: BorderSide(
+                color: kSubMainColor,
+              ),
+            ),
+            title: Text(
+              widget.name,
+              style: kDrawerTextStyle2,
+            ),
+            leading: IconButton(
+              onPressed: () {
+                final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                transactionBloc.add(
+                  GetTransactionDetailsEvent(
+                    queryType: widget.queryType,
+                    userID: widget.adminId,
+                    isFilter: false,
+                    token: jWTToken,
+                  ),
+                );
+                Navigator.pop(context);
+              },
+              icon: const Icon(
+                FontAwesomeIcons.chevronLeft,
+              ),
+              color: kBackgroundColor,
+              iconSize: 20.0,
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    dataTemp = data;
+                    totalsTemp = totals;
+                  });
+                },
+                icon: const Icon(Icons.refresh),
+                color: kBackgroundColor,
+                iconSize: 20.0,
+              ),
+            ],
           ),
-        ),
-        title: Text(
-          widget.name,
-          style: kDrawerTextStyle2,
-        ),
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            FontAwesomeIcons.chevronLeft,
-          ),
-          color: kBackgroundColor,
-          iconSize: 20.0,
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              setState(() {
-                dataTemp = data;
-                totalsTemp = totals;
-              });
-            },
-            icon: const Icon(Icons.refresh),
-            color: kBackgroundColor,
-            iconSize: 20.0,
-          ),
-        ],
-      ),
-      backgroundColor: kBackgroundColor,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          FractionallySizedBox(
-            alignment: Alignment.topCenter,
-            heightFactor: 0.76,
-            child: SingleChildScrollView(
-              // padding: EdgeInsets.all(15.0),
-              child: Column(
-                children: [
-                  Container(
-                    height: 160.0,
-                    width: screenSize.width,
-                    padding: const EdgeInsets.all(10.0),
-                    decoration: const BoxDecoration(
-                      color: kSubMainColor,
-                      border: Border(
-                          // bottom: BorderSide(color: kBackgroundColor,),
-                          ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Sales',
-                          style: kDrawerTextStyle1,
+          backgroundColor: kBackgroundColor,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              FractionallySizedBox(
+                alignment: Alignment.topCenter,
+                heightFactor: 0.76,
+                child: SingleChildScrollView(
+                  // padding: EdgeInsets.all(15.0),
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 160.0,
+                        width: screenSize.width,
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: const BoxDecoration(
+                          color: kSubMainColor,
+                          border: Border(
+                              // bottom: BorderSide(color: kBackgroundColor,),
+                              ),
                         ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            dateWidget(
-                              borderColor: kBackgroundColor,
-                              color: kBackgroundColor,
-                              title: begin.toString().split(' ')[0],
-                              onTap: () {
-                                buildMaterialDatePicker(context, true);
-                              },
+                            const Text(
+                              'Total Sales',
+                              style: kDrawerTextStyle1,
                             ),
-                            const Icon(
-                              Icons.arrow_forward,
-                              color: kSubMainColor,
-                              size: 20.0,
-                            ),
-                            dateWidget(
-                              borderColor: kBackgroundColor,
-                              color: kBackgroundColor,
-                                onTap: () {
-                                  buildMaterialDatePicker(context, false);
-                                },
-                                title: end.isAtSameMomentAs(DateTime.now())
-                                    ? 'To this date..'
-                                    : end.toString().split(' ')[0]),
                             const SizedBox(
-                              width: 20.0,
+                              height: 10.0,
                             ),
-                            roundedTextButton(
-                              borderColor: kBackgroundColor,
-                              textColor: kBackgroundColor,
-                              onTap: () {
-                                setState(() {
-                                  dataTemp = dateTupleList(data, begin, end);
-                                  totalsTemp = tuple(data, begin, end);
-                                });
-                              },
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                dateWidget(
+                                  borderColor: kBackgroundColor,
+                                  color: kBackgroundColor,
+                                  title: begin.toString().split(' ')[0],
+                                  onTap: () {
+                                    buildMaterialDatePicker(context, true);
+                                  },
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward,
+                                  color: kSubMainColor,
+                                  size: 20.0,
+                                ),
+                                dateWidget(
+                                    borderColor: kBackgroundColor,
+                                    color: kBackgroundColor,
+                                    onTap: () {
+                                      buildMaterialDatePicker(context, false);
+                                    },
+                                    title: end.isAtSameMomentAs(DateTime.now())
+                                        ? 'To this date..'
+                                        : end.toString().split(' ')[0]),
+                                const SizedBox(
+                                  width: 20.0,
+                                ),
+                                roundedTextButton(
+                                  borderColor: kBackgroundColor,
+                                  textColor: kBackgroundColor,
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    final transactionBloc =
+                                    BlocProvider.of<TransactionsBloc>(
+                                        context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: 'customerInvoice',
+                                        userID: widget.userID,
+                                        isFilter: true,
+                                        token: jWTToken,
+                                        begin: dateToJson(
+                                          Timestamp.fromDate(begin),
+                                        ),
+                                        end: dateToJson(
+                                          Timestamp.fromDate(end),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
+                            const SizedBox(
+                              height: 10.0,
+                            ),
+                            searchBar((value) {
+                              initSearch(value);
+                            }),
                           ],
                         ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                        searchBar((value) {
-                          initSearch(value);
-                        }),
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      headingRowColor: MaterialStateColor.resolveWith(
-                        (states) {
-                          return kStrokeColor;
-                        },
                       ),
-                      columns: [
-                        const DataColumn(
-                          label: Text(
-                            'SL',
-                            style: kTotalSalesStyle,
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          headingRowColor: MaterialStateColor.resolveWith(
+                            (states) {
+                              return kStrokeColor;
+                            },
                           ),
-                        ),
-                        const DataColumn(
-                          label: Text(
-                            'Invoice No.',
-                            style: kTotalSalesStyle,
-                          ),
-                        ),
-                        DataColumn(
-                          onSort: (i, value) {
-                            setState(() {
-                              showPaid = !showPaid;
-                              showDue = !showDue;
-                              if(showDue){
-                                showDue = false;
-                              }
-                              if(showPaid){
-                                dataTemp = data.where((element) => element['paid'] != 0).toList();
-                              }else{
-                                dataTemp = data;
-                              }
-                            });
-                          },
-                          label: const Text(
-                            'Paid',
-                            style: kTotalSalesStyle,
-                          ),
-                        ),
-                        DataColumn(
-                          onSort: (i, value) {
-                            setState(() {
-                              showDue = !showDue;
-                              showPaid = !showPaid;
-                              if(showPaid){
-                                showPaid = false;
-                              }
-                              if(showDue){
-                                dataTemp = data.where((element) => element['due'] != 0).toList();
-                              }else{
-                                dataTemp = data;
-                              }
-                            });
-                          },
-                          label: const Text(
-                            'Due',
-                            style: kTotalSalesStyle,
-                          ),
-                        ),
-                        const DataColumn(
-                          label: Text(
-                            'Amount',
-                            style: kTotalSalesStyle,
-                          ),
-                        ),
-                      ],
-                      rows: List.generate(
-                          dataTemp.length, (index) {
-                        int counter = index + 1;
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              Text(
-                                counter.toString(),
-                                style: kTableCellStyle,
+                          columns: [
+                            const DataColumn(
+                              label: Text(
+                                'SL',
+                                style: kTotalSalesStyle,
                               ),
                             ),
-                            DataCell(
-                              Text(
-                                '${dataTemp[index]['invoiceNo']}',
-                                style: kCustomerCellStyle,
+                            const DataColumn(
+                              label: Text(
+                                'Invoice No.',
+                                style: kTotalSalesStyle,
                               ),
-                                onTap: () {
+                            ),
+                            DataColumn(
+                              onSort: (i, value) {
+                                setState(() {
+                                  showPaid = !showPaid;
+                                  showDue = !showDue;
+                                  if (showDue) {
+                                    showDue = false;
+                                  }
+                                  if (showPaid) {
+                                    dataTemp = data
+                                        .where(
+                                            (element) => element['paid'] != 0)
+                                        .toList();
+                                  } else {
+                                    dataTemp = data;
+                                  }
+                                });
+                              },
+                              label: const Text(
+                                'Paid',
+                                style: kTotalSalesStyle,
+                              ),
+                            ),
+                            DataColumn(
+                              onSort: (i, value) {
+                                setState(() {
+                                  showDue = !showDue;
+                                  showPaid = !showPaid;
+                                  if (showPaid) {
+                                    showPaid = false;
+                                  }
+                                  if (showDue) {
+                                    dataTemp = data
+                                        .where((element) => element['due'] != 0)
+                                        .toList();
+                                  } else {
+                                    dataTemp = data;
+                                  }
+                                });
+                              },
+                              label: const Text(
+                                'Due',
+                                style: kTotalSalesStyle,
+                              ),
+                            ),
+                            const DataColumn(
+                              label: Text(
+                                'Amount',
+                                style: kTotalSalesStyle,
+                              ),
+                            ),
+                          ],
+                          rows: List.generate(dataTemp.length, (index) {
+                            int counter = index + 1;
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(
+                                    counter.toString(),
+                                    style: kTableCellStyle,
+                                  ),
+                                ),
+                                DataCell(
+                                    Text(
+                                      '${dataTemp[index]['invoiceNo']}',
+                                      style: kCustomerCellStyle,
+                                    ), onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -297,146 +352,164 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                       },
                                     ),
                                   );
-                                }
-                            ),
-                            DataCell(
-                              Text(
-                                dataTemp[index]['paid'].toString(),
-                                style: kTotalTextStyle,
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                dataTemp[index]['due'].toString(),
-                                style: kDueCellStyle,
-                              ),
-                            ),
-                            DataCell(
-                              Text(
-                                dataTemp[index]['price'].toString(),
-                                style: kTotalTextStyle,
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          FractionallySizedBox(
-            alignment: Alignment.bottomCenter,
-            heightFactor: 0.24,
-            child: Container(
-              color: kBackgroundColor,
-              padding: const EdgeInsets.all(15.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    LimitedBox(
-                      maxHeight: 140,
-                      child: GridView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 10.0,
-                          crossAxisSpacing: 10.0,
-                          childAspectRatio: 1,
-                        ),
-                        children: [
-                          showDue ? const SizedBox() : SpecialContainer(
-                            value: totalsTemp.item1.toString(),
-                            title: 'Total Paid',
-                            color: kNewTextColor,
-                          ),
-                         showPaid ? const SizedBox() : SpecialContainer(
-                            value: totalsTemp.item2.toString(),
-                            title: 'Total Due',
-                            color: kRedColor,
-                          ),
-                          SpecialContainer(
-                            value: totalsTemp.item3.toString(),
-                            title: 'Amount',
-                            color: kBlueColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        buttons(
-                          title: 'Save PDF',
-                          onTap: () {
-                            try{
-                              shareCustomerStatement(
-                                name: widget.name,
-                                email: dataTemp[0]['customerInfo']['email'] ?? '',
-                                mobile: dataTemp[0]['customerInfo']['mobile'],
-                                address: dataTemp[0]['customerInfo']['address'],
-                                isInventory: true,
-                                items: data,
-                                begin: begin,
-                                end: end,
-                                totalAmount: totalsTemp.item3.toString(),
-                                totalDue: totalsTemp.item2.toString(),
-                                totalPay: totalsTemp.item1.toString(),
-                                isSave: true,
-                              );
-                              toast(context: context, title: 'Saved', color: kNewMainColor);
-                            }catch (e){
-                              if(kDebugMode){
-                                print(e);
-                              }
-                            }
-                          },
-                        ),
-                        buttons(
-                          onTap: () {
-                            shareCustomerStatement(
-                              name: widget.name,
-                              email: dataTemp[0]['customerInfo']['email'] ?? '',
-                              mobile: dataTemp[0]['customerInfo']['mobile'],
-                              address: dataTemp[0]['customerInfo']['address'],
-                              isInventory: true,
-                              items: data,
-                              begin: begin,
-                              end: end,
-                              totalAmount: totalsTemp.item3.toString(),
-                              totalDue: totalsTemp.item2.toString(),
-                              totalPay: totalsTemp.item1.toString(),
+                                }),
+                                DataCell(
+                                  Text(
+                                    dataTemp[index]['paid'].toString(),
+                                    style: kTotalTextStyle,
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    dataTemp[index]['due'].toString(),
+                                    style: kDueCellStyle,
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    dataTemp[index]['price'].toString(),
+                                    style: kTotalTextStyle,
+                                  ),
+                                ),
+                              ],
                             );
-                          },
-                          title: 'Share',
+                          }),
                         ),
-                        buttons(
-                            onTap: () {
-                              shareCustomerStatement(
-                                name: widget.name,
-                                email: dataTemp[0]['customerInfo']['email'] ?? '',
-                                mobile: dataTemp[0]['customerInfo']['mobile'],
-                                address: dataTemp[0]['customerInfo']['address'],
-                                isInventory: true,
-                                items: data,
-                                begin: begin,
-                                end: end,
-                                totalAmount: totalsTemp.item3.toString(),
-                                totalDue: totalsTemp.item2.toString(),
-                                totalPay: totalsTemp.item1.toString(),
-                                isPrint: true
-                              );
-                            },
-                            title: 'Print'),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+              FractionallySizedBox(
+                alignment: Alignment.bottomCenter,
+                heightFactor: 0.24,
+                child: Container(
+                  color: kBackgroundColor,
+                  padding: const EdgeInsets.all(15.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        LimitedBox(
+                          maxHeight: 140,
+                          child: GridView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              mainAxisSpacing: 10.0,
+                              crossAxisSpacing: 10.0,
+                              childAspectRatio: 1,
+                            ),
+                            children: [
+                              showDue
+                                  ? const SizedBox()
+                                  : SpecialContainer(
+                                      value: totalsTemp.item1.toString(),
+                                      title: 'Total Paid',
+                                      color: kNewTextColor,
+                                    ),
+                              showPaid
+                                  ? const SizedBox()
+                                  : SpecialContainer(
+                                      value: totalsTemp.item2.toString(),
+                                      title: 'Total Due',
+                                      color: kRedColor,
+                                    ),
+                              SpecialContainer(
+                                value: totalsTemp.item3.toString(),
+                                title: 'Amount',
+                                color: kBlueColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buttons(
+                              title: 'Save PDF',
+                              onTap: () {
+                                try {
+                                  shareCustomerStatement(
+                                    name: widget.name,
+                                    email: dataTemp[0]['customerInfo']
+                                            ['email'] ??
+                                        '',
+                                    mobile: dataTemp[0]['customerInfo']
+                                        ['mobile'],
+                                    address: dataTemp[0]['customerInfo']
+                                        ['address'],
+                                    isInventory: true,
+                                    items: data,
+                                    begin: begin,
+                                    end: end,
+                                    totalAmount: totalsTemp.item3.toString(),
+                                    totalDue: totalsTemp.item2.toString(),
+                                    totalPay: totalsTemp.item1.toString(),
+                                    isSave: true,
+                                  );
+                                  toast(
+                                      context: context,
+                                      title: 'Saved',
+                                      color: kNewMainColor);
+                                } catch (e) {
+                                  if (kDebugMode) {
+                                    print(e);
+                                  }
+                                }
+                              },
+                            ),
+                            buttons(
+                              onTap: () {
+                                shareCustomerStatement(
+                                  name: widget.name,
+                                  email: dataTemp[0]['customerInfo']['email'] ??
+                                      '',
+                                  mobile: dataTemp[0]['customerInfo']['mobile'],
+                                  address: dataTemp[0]['customerInfo']
+                                      ['address'],
+                                  isInventory: true,
+                                  items: data,
+                                  begin: begin,
+                                  end: end,
+                                  totalAmount: totalsTemp.item3.toString(),
+                                  totalDue: totalsTemp.item2.toString(),
+                                  totalPay: totalsTemp.item1.toString(),
+                                );
+                              },
+                              title: 'Share',
+                            ),
+                            buttons(
+                                onTap: () {
+                                  shareCustomerStatement(
+                                      name: widget.name,
+                                      email: dataTemp[0]['customerInfo']
+                                              ['email'] ??
+                                          '',
+                                      mobile: dataTemp[0]['customerInfo']
+                                          ['mobile'],
+                                      address: dataTemp[0]['customerInfo']
+                                          ['address'],
+                                      isInventory: true,
+                                      items: data,
+                                      begin: begin,
+                                      end: end,
+                                      totalAmount: totalsTemp.item3.toString(),
+                                      totalDue: totalsTemp.item2.toString(),
+                                      totalPay: totalsTemp.item1.toString(),
+                                      isPrint: true);
+                                },
+                                title: 'Print'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -483,13 +556,13 @@ Tuple3<num, num, num> tuple(List items, DateTime begin, DateTime end) {
     if ((begin.isAfter(dateFormatted) ||
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
-        paid += element['paid'];
-        if(element['paid'] == 0 && element['advance'] != 0){
-          paid += element['advance'];
-        }
-        sale += element['price'];
-        due += element['due'];
+      paid += element['paid'];
+      if (element['paid'] == 0 && element['advance'] != 0) {
+        paid += element['advance'];
       }
+      sale += element['price'];
+      due += element['due'];
+    }
   }
   Tuple3<num, num, num> data = Tuple3<num, num, num>(paid, due, sale);
   return data;

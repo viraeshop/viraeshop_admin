@@ -16,11 +16,12 @@ import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions
 Future<void> shareStatement({
   bool isWithAddress = true,
   bool isEmployee = false,
-  required Map<String, Tuple3> items,
+  required List items,
   Map<String, dynamic> data = const {},
   bool isSave = false,
   bool isPrint = false,
   name,
+  businessName,
   totalAmount,
   totalDue,
   totalPay,
@@ -151,16 +152,16 @@ Future<void> shareStatement({
   headerRow.cells[3].value = 'Due';
   headerRow.cells[4].value = 'Amount';
   int index = 0;
-  items.keys.toList().forEach((element) {
+  for (var element in items) {
     ++index;
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
         index >= 10 ? index.toString() : '0${index.toString()}';
-    row.cells[1].value = TransacFunctions.nameProvider(element, data[element]);
-    row.cells[2].value = '${items[element]!.item1}';
-    row.cells[3].value = '${items[element]!.item2}';
-    row.cells[4].value = '${items[element]!.item3}';
-  });
+    row.cells[1].value = element['businessName'] != '' ? element['businessName'] : element['name'];
+    row.cells[2].value = '${element['totalPaid']}';
+    row.cells[3].value = '${element['totalDue']}';
+    row.cells[4].value = '${element['totalAmount']}';
+  }
   // for (int i = 0; i < items.keys.length; i++) {
   //   int index = i + 1;
   // }

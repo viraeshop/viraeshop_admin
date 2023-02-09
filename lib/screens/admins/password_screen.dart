@@ -88,6 +88,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextFormField(
+                          keyboardType: TextInputType.number,
                           obscureText: true,
                           controller: _passwordController,
                           validator: (value) {

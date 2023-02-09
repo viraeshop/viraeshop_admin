@@ -135,14 +135,15 @@ class _AppDrawerState extends State<AppDrawer> {
                       alignment: Alignment.centerRight,
                       child: InkWell(
                         onTap: () {
-                          Map<String, dynamic> adminInfo = Hive.box('adminInfo').toMap() as Map<String, dynamic>;
+                          final adminInfo = Hive.box('adminInfo').toMap().cast<String, dynamic>();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) {
                                 return EditUserScreen(
                                     selfAdmin: true,
-                                    adminInfo: adminInfo);
+                                    adminInfo: adminInfo,
+                                );
                               },
                             ),
                           );

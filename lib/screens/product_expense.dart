@@ -26,10 +26,10 @@ class _ProductExpenseState extends State<ProductExpense> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Product Expense',
           style: kAppBarTitleTextStyle,
         ),

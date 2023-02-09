@@ -9,6 +9,7 @@ class NewTextField extends StatelessWidget {
   final int lines;
   final dynamic prefix;
   final dynamic prefixIcon;
+  final Widget? suffixIcon;
   final String hintText;
   final String helperText;
   final String labelText;
@@ -17,7 +18,10 @@ class NewTextField extends StatelessWidget {
   final void Function(String)? onSubmitted;
   final void Function()? onTap;
   final int? maxLength;
+  final TextInputType keyboardType;
  const NewTextField({
+   this.suffixIcon,
+   this.keyboardType = TextInputType.text,
     this.prefixIcon,
     this.prefix,
     this.readOnly = false,
@@ -38,6 +42,7 @@ class NewTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      keyboardType: keyboardType,
       controller: controller,
       onTap: onTap,
       style: kTableCellStyle,
@@ -54,6 +59,7 @@ class NewTextField extends StatelessWidget {
         prefixText: prefix,
         prefixIcon: prefixIcon,
         hintText: hintText,
+        suffixIcon: suffixIcon,
         labelStyle: kTableCellStyle,
         labelText: labelText,
         hintStyle: kTableCellStyle,

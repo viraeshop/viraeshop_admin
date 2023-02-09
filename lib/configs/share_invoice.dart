@@ -149,9 +149,9 @@ Future<void> shareInvoice({
   for (var element in items) {
     PdfGridRow row = grid.rows.add();
     row.cells[0].value = '${element['quantity']} X';
-    row.cells[1].value = '${element['product_name']}(${element['product_id']})';
-    row.cells[2].value = '${element['unit_price']}';
-    row.cells[3].value = '${element['product_price']}';
+    row.cells[1].value = '${element['productName']}(${element['productId']})';
+    row.cells[2].value = '${element['unitPrice']}';
+    row.cells[3].value = '${element['productPrice']}';
   }
   //Set padding for grid cells
   grid.style.cellPadding = PdfPaddings(left: 2, right: 2, top: 2, bottom: 2);

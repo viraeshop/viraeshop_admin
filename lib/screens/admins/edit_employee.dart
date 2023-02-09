@@ -1,16 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:provider/provider.dart';
 import 'package:viraeshop/admin/admin_bloc.dart';
 import 'package:viraeshop/admin/admin_event.dart';
 import 'package:viraeshop/admin/admin_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
+import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
 import 'package:viraeshop_admin/screens/admins/allusers.dart';
+import 'package:viraeshop_admin/screens/admins/authenticate_popup.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
@@ -53,10 +58,12 @@ class _EditUserScreenState extends State<EditUserScreen> {
           setState(() {
             isLoading = false;
           });
-          Future.delayed(const Duration(milliseconds: 0), () {
-            Navigator.popUntil(
-                context, ModalRoute.withName(AllUserScreen.path));
-          });
+          final adminBloc = BlocProvider.of<AdminBloc>(context);
+          final jWTToken = Hive.box('adminInfo').get('token');
+          adminBloc.add(GetAdminsEvent(
+              token: jWTToken
+          ));
+          Navigator.pop(context);
         } else if (state is RequestFinishedAdminState &&
             state.requestType == 'update') {
           toast(
@@ -84,6 +91,11 @@ class _EditUserScreenState extends State<EditUserScreen> {
               backgroundColor: kBackgroundColor,
               leading: IconButton(
                 onPressed: () {
+                  final adminBloc = BlocProvider.of<AdminBloc>(context);
+                  final jWTToken = Hive.box('adminInfo').get('token');
+                  adminBloc.add(GetAdminsEvent(
+                      token: jWTToken
+                  ));
                   Navigator.pop(context);
                 },
                 icon: const Icon(
@@ -112,7 +124,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
               ),
               actions: [
                 if (!widget.selfAdmin)
-                  if (!isDeleteEmployee)
+                  if (isDeleteEmployee)
                     IconButton(
                       onPressed: () {
                         showDialog(
@@ -131,13 +143,13 @@ class _EditUserScreenState extends State<EditUserScreen> {
                                     setState(() {
                                       isLoading = true;
                                     });
+                                    Navigator.pop(context);
                                     final adminBloc =
                                         BlocProvider.of<AdminBloc>(context);
                                     final jWTToken = Hive.box('adminInfo').get('token');
                                     adminBloc.add(DeleteAdminEvent(
                                       token: jWTToken,
                                         adminId: widget.adminInfo['adminId']));
-                                    Navigator.pop(context);
                                   },
                                   child: const Text(
                                     'Yes',
@@ -163,18 +175,16 @@ class _EditUserScreenState extends State<EditUserScreen> {
                       icon: const Icon(
                         Icons.delete,
                       ),
-                      color: kSubMainColor,
+                      color: kRedColor,
                       iconSize: 20.0,
                     ),
               ],
             ),
             body: TabBarView(
               children: [
-                infoTab(
-                  id: widget.adminInfo['adminId'],
+                InfoTab(
                   email: widget.adminInfo['email'],
                   name: widget.adminInfo['name'],
-                  context: context,
                 ),
                 SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
                 if (!widget.selfAdmin)
@@ -262,91 +272,103 @@ class _EditUserScreenState extends State<EditUserScreen> {
 //       });
 // }
 
-Widget infoTab(
-    {required String name, id, email, required BuildContext context}) {
-  TextEditingController nameController = TextEditingController(text: name),
-      iDController = TextEditingController(text: id),
-      emailController = TextEditingController(text: email);
-  return SingleChildScrollView(
-    padding: const EdgeInsets.all(10.0),
-    child: SizedBox(
-      height: MediaQuery.of(context).size.height,
-      // width: MediaQuery.of(context).size.width * 0.45,
-      child: Stack(
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 10),
-                TextField(
-                  style: kProductNameStylePro,
-                  cursorColor: kSubMainColor,
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: kSubMainColor,
+class InfoTab extends StatefulWidget {
+  final String name;
+  final String email;
+  const InfoTab( {required this.name, required this.email, Key? key}) : super(key: key);
+
+  @override
+  State<InfoTab> createState() => _InfoTabState();
+}
+
+class _InfoTabState extends State<InfoTab> {
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    nameController = TextEditingController(text: widget.name);
+    emailController = TextEditingController(text: widget.email);
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      Provider.of<AdminProvider>(context, listen: false).updateName(widget.name);
+      Provider.of<AdminProvider>(context, listen: false).updateEmail(widget.email);
+      Provider.of<AdminProvider>(context, listen: false).saveExistingEmail(widget.email);
+    });
+    super.initState();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(10.0),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        // width: MediaQuery.of(context).size.width * 0.45,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 10),
+                  TextField(
+                    style: kProductNameStylePro,
+                    cursorColor: kSubMainColor,
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: kSubMainColor,
+                        ),
                       ),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: kMainColor,
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: kMainColor,
+                        ),
                       ),
+                      labelText: "Full Name",
+                      labelStyle: kProductNameStylePro,
                     ),
-                    labelText: "Full Name",
-                    labelStyle: kProductNameStylePro,
+                    onChanged: (value){
+                      Provider.of<AdminProvider>(context, listen: false).updateName(value);
+                    },
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                TextField(
-                  style: kProductNameStylePro,
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: kSubMainColor,
-                      ),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: kMainColor,
-                      ),
-                    ),
-                    labelText: "Email",
-                    labelStyle: kProductNameStylePro,
+                  const SizedBox(
+                    height: 20,
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                // TextField(
-                //   style: kProductNameStylePro,
-                //   controller: iDController,
-                //   decoration: const InputDecoration(
-                //       enabledBorder: UnderlineInputBorder(
-                //         borderSide: BorderSide(
-                //           color: kSubMainColor,
-                //         ),
-                //       ),
-                //       focusedBorder: UnderlineInputBorder(
-                //         borderSide: BorderSide(
-                //           color: kMainColor,
-                //         ),
-                //       ),
-                //       labelText: "ID",
-                //       labelStyle: kProductNameStylePro),
-                // ),
-              ],
+                  TextField(
+                    style: kProductNameStylePro,
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: kSubMainColor,
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: kMainColor,
+                        ),
+                      ),
+                      labelText: "Email",
+                      labelStyle: kProductNameStylePro,
+                    ),
+                    onChanged: (value){
+                      Provider.of<AdminProvider>(context, listen: false).updateEmail(value);
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class PermissionTab extends StatefulWidget {
@@ -364,7 +386,7 @@ class _PermissionTabState extends State<PermissionTab> {
       isTransaction = false,
       isMakeCustomer = false,
       isMakeAdmin = false,
-      isLoading = false,
+      //isLoading = false,
       isDeleteCustomer = false,
       isDeleteEmployee = false,
       isManageDue = false,
@@ -372,19 +394,19 @@ class _PermissionTabState extends State<PermissionTab> {
   @override
   void initState() {
     // TODO: implement initState
-    isAdmin = widget.adminModel.isAdmin!;
-    isInventory = widget.adminModel.isInventory!;
-    isMakeAdmin = widget.adminModel.isMakeAdmin!;
-    isMakeCustomer = widget.adminModel.isMakeCustomer!;
-    isProduct = widget.adminModel.isProducts!;
-    isTransaction = widget.adminModel.isTransactions!;
-    isManageDue = widget.adminModel.isManageDue!;
-    isDeleteEmployee = widget.adminModel.isDeleteEmployee!;
-    isDeleteCustomer = widget.adminModel.isDeleteCustomer!;
-    isEditCustomer = widget.adminModel.isEditCustomer!;
+    isAdmin = widget.adminModel.isAdmin;
+    isInventory = widget.adminModel.isInventory;
+    isMakeAdmin = widget.adminModel.isMakeAdmin;
+    isMakeCustomer = widget.adminModel.isMakeCustomer;
+    isProduct = widget.adminModel.isProducts;
+    isTransaction = widget.adminModel.isTransactions;
+    isManageDue = widget.adminModel.isManageDue;
+    isDeleteEmployee = widget.adminModel.isDeleteEmployee;
+    isDeleteCustomer = widget.adminModel.isDeleteCustomer;
+    isEditCustomer = widget.adminModel.isEditCustomer;
     super.initState();
   }
-
+  final auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -603,52 +625,62 @@ class _PermissionTabState extends State<PermissionTab> {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: InkWell(
-              onTap: () {
-                snackBar(
-                  text: 'Updating your information please wait....',
-                  context: context,
-                  duration: 450,
-                );
-                Map<String, dynamic> info = {
-                  'isAdmin': isAdmin,
-                  'isInventory': isInventory,
-                  'isProducts': isProduct,
-                  'isTransactions': isTransaction,
-                  'isMakeCustomer': isMakeCustomer,
-                  'isMakeAdmin': isMakeAdmin,
-                  'isDeleteCustomer': isDeleteCustomer,
-                  'isManageDue': isManageDue,
-                  'isDeleteEmployee': isDeleteEmployee,
-                  'adminId': widget.adminModel.adminId,
-                  'name': widget.adminModel.name,
-                  'email': widget.adminModel.email,
-                };
-                final adminBloc = BlocProvider.of<AdminBloc>(context);
-                final jWTToken = Hive.box('adminInfo').get('token');
-                adminBloc.add(
-                  UpdateAdminEvent(
-                    token: jWTToken,
-                    adminId: info['adminId'],
-                    adminModel: AdminModel.fromJson(info),
+            child: Consumer<AdminProvider>(
+              builder: (context, admin, any) {
+                return InkWell(
+                  onTap: () async {
+                    final adminBloc = BlocProvider.of<AdminBloc>(context);
+                    final jWTToken = Hive.box('adminInfo').get('token');
+                    Map<String, dynamic> info = {
+                      'isAdmin': isAdmin,
+                      'isInventory': isInventory,
+                      'isProducts': isProduct,
+                      'isTransactions': isTransaction,
+                      'isMakeCustomer': isMakeCustomer,
+                      'isMakeAdmin': isMakeAdmin,
+                      'isDeleteCustomer': isDeleteCustomer,
+                      'isManageDue': isManageDue,
+                      'isDeleteEmployee': isDeleteEmployee,
+                      'adminId': widget.adminModel.adminId,
+                      'name': admin.name,
+                      'email': admin.email,
+                    };
+                    admin.updateAdminInfo(info);
+                    if(widget.adminModel.email != admin.email){
+                      showAuthDialog(context);
+                    }else{
+                      snackBar(
+                        text: 'Updating your information please wait....',
+                        context: context,
+                        duration: 600,
+                        color: kNewMainColor,
+                      );
+                      adminBloc.add(
+                        UpdateAdminEvent(
+                          token: jWTToken,
+                          adminId: info['adminId'],
+                          adminModel: AdminModel.fromJson(info),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    height: 50.0,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      color: kSubMainColor,
+                      borderRadius: BorderRadius.circular(10.0),
+                      // border: Border.all(color: kMainColor),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Update',
+                        style: kDrawerTextStyle2,
+                      ),
+                    ),
                   ),
                 );
-              },
-              child: Container(
-                height: 50.0,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: kSubMainColor,
-                  borderRadius: BorderRadius.circular(10.0),
-                  // border: Border.all(color: kMainColor),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Update',
-                    style: kDrawerTextStyle2,
-                  ),
-                ),
-              ),
+              }
             ),
           )
         ],

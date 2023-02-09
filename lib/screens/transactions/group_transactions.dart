@@ -1,223 +1,273 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 import 'user_transaction_screen.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class GroupTransactions extends StatefulWidget {
-  final List data;
-  GroupTransactions({required this.data});
+  const GroupTransactions({Key? key}) : super(key: key);
+
 
   @override
   _GroupTransactionsState createState() => _GroupTransactionsState();
 }
 
 class _GroupTransactionsState extends State<GroupTransactions> {
-  Map<String, List> transactionData = {};
-  Map<String, Tuple2> balances = {};
-  Map<String, Tuple2> balancesTemp = {};
+  List transactionData = [];
   Tuple2 totalBalance = const Tuple2<num, num>(0, 0);
   Tuple2 totalBalanceTemp = const Tuple2<num, num>(0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
   @override
   void initState() {
+    final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+    transactionBloc.add(
+      GetTransactionDetailsEvent(
+        queryType: 'customers',
+        isFilter: false,
+        token: jWTToken,
+      ),
+    );
+
     // TODO: implement initState
-    List generalItems = [], agentsItems = [], architectItems = [];
-    for (var element in widget.data) {
-      if (element['role'] == 'general') {
-        generalItems.add(element);
-      } else if (element['role'] == 'agents') {
-        agentsItems.add(element);
-      } else {
-        architectItems.add(element);
-      }
-      setState(() {
-        transactionData['General'] = generalItems;
-        transactionData['Agents'] = agentsItems;
-        transactionData['Architects'] = architectItems;
-      });
-    }
-    setState(() {
-      balances = <String, Tuple2>{
-        'General': tuple(transactionData['General']!),
-        'Agents': tuple(transactionData['Agents']!),
-        'Architects': tuple(transactionData['Architects']!),
-      };
-      balancesTemp = balances;
-      totalBalance = tuple(widget.data);
-      totalBalanceTemp = totalBalance;
-    });
+    // List generalItems = [], agentsItems = [], architectItems = [];
+    // for (var element in widget.data) {
+    //   if (element['role'] == 'general') {
+    //     generalItems.add(element);
+    //   } else if (element['role'] == 'agents') {
+    //     agentsItems.add(element);
+    //   } else {
+    //     architectItems.add(element);
+    //   }
+    //   setState(() {
+    //     transactionData['General'] = generalItems;
+    //     transactionData['Agents'] = agentsItems;
+    //     transactionData['Architects'] = architectItems;
+    //   });
+    // }
+    // setState(() {
+    //   balances = <String, Tuple2>{
+    //     'General': tuple(transactionData['General']!),
+    //     'Agents': tuple(transactionData['Agents']!),
+    //     'Architects': tuple(transactionData['Architects']!),
+    //   };
+    //   balancesTemp = balances;
+    //   totalBalance = tuple(widget.data);
+    //   totalBalanceTemp = totalBalance;
+    // });
     super.initState();
   }
-
+  final jWTToken = Hive.box('adminInfo').get('token');
+  bool isLoading = true;
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      inAsyncCall: balancesTemp.isEmpty,
-      progressIndicator: const SizedBox(
-        height: 100.0,
-        width: 100.0,
-        child: LoadingIndicator(
-          indicatorType: Indicator.lineScale,
-          colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
-          strokeWidth: 2,
+    return BlocListener<TransactionsBloc, TransactionState>(
+      listener: (context, state){
+        if (state is OnErrorTransactionState) {
+          setState(() {
+            isLoading = false;
+          });
+        } else if (state is RequestFinishedTransactionState) {
+          final data = state.response.result;
+          setState(() {
+            isLoading = false;
+            totalBalance =
+                Tuple2(data!['totalSales'] ?? 0, data['totalDue'] ?? 0);
+            totalBalanceTemp = totalBalance;
+            transactionData = data['details'].where((element){
+              String role = element['role'] ?? '';
+              return role.isNotEmpty;
+            }).toList();
+          });
+        }
+      },
+      child: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        progressIndicator: const SizedBox(
+          height: 100.0,
+          width: 100.0,
+          child: LoadingIndicator(
+            indicatorType: Indicator.lineScale,
+            colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
+            strokeWidth: 2,
+          ),
         ),
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(FontAwesomeIcons.chevronLeft),
-            color: kSubMainColor,
-            iconSize: 20.0,
-          ),
-          title: const Text(
-            'Customers',
-            style: kAppBarTitleTextStyle,
-          ),
-          actions: [
-            IconButton(
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
               onPressed: () {
-                setState(() {
-                  balancesTemp = balances;
-                  totalBalanceTemp = totalBalance;
-                });
+                final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                transactionBloc.add(
+                  GetTransactionDetailsEvent(
+                    queryType: 'all',
+                    isFilter: false,
+                    token: jWTToken,
+                  ),
+                );
+                Navigator.pop(context);
               },
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(FontAwesomeIcons.chevronLeft),
               color: kSubMainColor,
-              iconSize: 30.0,
+              iconSize: 20.0,
             ),
-          ],
-        ),
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            FractionallySizedBox(
-              heightFactor: 0.7,
-              alignment: Alignment.topCenter,
-              child: ListView.builder(
-                  padding: const EdgeInsets.all(10.0),
-                  itemCount: balancesTemp.keys.toList().length,
-                  itemBuilder: (context, i) {
-                    return InfoWidget(
-                        textWidget: rowWidget(
-                            balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString(),
-                            balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()),
-                        title: balancesTemp.keys.toList()[i],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return UserTransactionScreen(
-                                data: transactionData[
-                                    transactionData.keys.toList()[i]]!,
-                                name: transactionData.keys.toList()[i],
-                              );
-                            }),
-                          );
-                        });
-                  }),
+            title: const Text(
+              'Customers',
+              style: kAppBarTitleTextStyle,
             ),
-            FractionallySizedBox(
-              heightFactor: 0.25,
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: const BoxDecoration(
-                  color: kBackgroundColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      offset: Offset(0, 0),
-                      spreadRadius: 2.0,
+            actions: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  final transactionBloc =
+                  BlocProvider.of<TransactionsBloc>(context);
+                  transactionBloc.add(
+                    GetTransactionDetailsEvent(
+                      queryType: 'customers',
+                      isFilter: false,
+                      token: jWTToken,
                     ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        dateWidget(
-                          title: begin.toString().split(' ')[0],
+                  );
+                },
+                icon: const Icon(Icons.refresh),
+                color: kSubMainColor,
+                iconSize: 30.0,
+              ),
+            ],
+          ),
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              FractionallySizedBox(
+                heightFactor: 0.7,
+                alignment: Alignment.topCenter,
+                child: ListView.builder(
+                    padding: const EdgeInsets.all(10.0),
+                    itemCount: transactionData.length,
+                    itemBuilder: (context, i) {
+                      return InfoWidget(
+                          textWidget: rowWidget(
+                              transactionData[i]['totalSales'].toString(),
+                              transactionData[i]['totalDue'].toString()),
+                          title: transactionData[i]['role'].toUpperCase(),
                           onTap: () {
-                            buildMaterialDatePicker(context, true);
-                          },
-                        ),
-                        const Icon(
-                          Icons.arrow_forward,
-                          color: kSubMainColor,
-                          size: 20.0,
-                        ),
-                        dateWidget(
-                            onTap: () {
-                              buildMaterialDatePicker(context, false);
-                            },
-                            title: end.isAtSameMomentAs(DateTime.now())
-                                ? 'To this date..'
-                                : end.toString().split(' ')[0]),
-                        const SizedBox(
-                          width: 20.0,
-                        ),
-                        roundedTextButton(onTap: () {
-                          setState(() {
-                            balancesTemp = <String, Tuple2>{
-                              'General': dateTuple(
-                                  transactionData['General']!,
-                                  begin,
-                                  end),
-                              'Agents': dateTuple(
-                                  transactionData['Agents']!,
-                                  begin,
-                                  end),
-                              'Architects': dateTuple(
-                                  transactionData['Architects']!,
-                                  begin,
-                                  end),
-                            };
-                            totalBalanceTemp =
-                                dateTuple(widget.data, begin, end);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return UserTransactionScreen(
+                                  userID: transactionData[i]['role'],
+                                  queryType: 'roleInvoices',
+                                  name: transactionData[i]['role'].toUpperCase(),
+                                );
+                              }),
+                            );
                           });
-                        }),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SpecialContainer(
-                          height: 110.0,
-                          width: 150.0,
-                          value: totalBalanceTemp.item1.toString(),
-                          title: 'Total Sales',
-                          color: kYellowColor,
-                        ),
-                        const SizedBox(
-                          width: 20.0,
-                        ),
-                        SpecialContainer(
-                          height: 110.0,
-                          width: 150.0,
-                          value: totalBalanceTemp.item2.toString(),
-                          title: 'Total Due',
-                          color: kRedColor,
-                        ),
-                      ],
-                    ),
-                  ],
+                    }),
+              ),
+              FractionallySizedBox(
+                heightFactor: 0.25,
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: kBackgroundColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        offset: Offset(0, 0),
+                        spreadRadius: 2.0,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          dateWidget(
+                            title: begin.toString().split(' ')[0],
+                            onTap: () {
+                              buildMaterialDatePicker(context, true);
+                            },
+                          ),
+                          const Icon(
+                            Icons.arrow_forward,
+                            color: kSubMainColor,
+                            size: 20.0,
+                          ),
+                          dateWidget(
+                              onTap: () {
+                                buildMaterialDatePicker(context, false);
+                              },
+                              title: end.isAtSameMomentAs(DateTime.now())
+                                  ? 'To this date..'
+                                  : end.toString().split(' ')[0]),
+                          const SizedBox(
+                            width: 20.0,
+                          ),
+                          roundedTextButton(onTap: () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            final transactionBloc =
+                            BlocProvider.of<TransactionsBloc>(
+                                context);
+                            transactionBloc.add(
+                              GetTransactionDetailsEvent(
+                                queryType: 'customers',
+                                isFilter: true,
+                                token: jWTToken,
+                                begin: dateToJson(
+                                  Timestamp.fromDate(begin),
+                                ),
+                                end: dateToJson(
+                                  Timestamp.fromDate(end),
+                                ),
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SpecialContainer(
+                            height: 110.0,
+                            width: 150.0,
+                            value: totalBalanceTemp.item1.toString(),
+                            title: 'Total Sales',
+                            color: kYellowColor,
+                          ),
+                          const SizedBox(
+                            width: 20.0,
+                          ),
+                          SpecialContainer(
+                            height: 110.0,
+                            width: 150.0,
+                            value: totalBalanceTemp.item2.toString(),
+                            title: 'Total Due',
+                            color: kRedColor,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

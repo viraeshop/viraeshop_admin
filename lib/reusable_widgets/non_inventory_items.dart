@@ -155,7 +155,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                   final jWTToken = Hive.box('adminInfo').get('token');
                   final supplierBloc = BlocProvider.of<SuppliersBloc>(context);
                   supplierBloc.add(GetSuppliersEvent(token: jWTToken));
-                  getNonInventoryDialog(buildContext: context);
+                  getNonInventoryDialog(buildContext: context, box: 'shops');
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

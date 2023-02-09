@@ -20,7 +20,6 @@ class OrderTranzCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Invoice no: $invoiceId');
     return InkWell(
       onTap: onTap,
       child: Container(

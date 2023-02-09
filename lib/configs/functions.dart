@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/configs/baxes.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 Future<void> updateProductInventory(String docPath, num productQuantity, [bool isReturn = false]) {
   DocumentReference documentReference = FirebaseFirestore.instance
@@ -33,7 +34,7 @@ Future<void> updateProductInventory(String docPath, num productQuantity, [bool i
     // Return the new count
   });
 }
-initSearch({required String value,required BuildContext context,required List temps, reset, update}) {
+initSearch({required String value, required BuildContext context,required List temps, reset, update}) {
   List products = Hive.box(productsBox).get(productsKey);
   List tempStore = temps;
     if (value.length == 0) {
@@ -71,7 +72,7 @@ List searchEngine({required String value,required String key,required List temps
 
 List dateFilter (List data, DateTime begin, DateTime end){
   return data.where((element) {
-    Timestamp timestamp = element['date'];
+    Timestamp timestamp = dateFromJson(element['createdAt']);
     DateTime date = timestamp.toDate();
     begin = DateTime(begin.year, begin.month, begin.day);
     end = DateTime(end.year, end.month, end.day);

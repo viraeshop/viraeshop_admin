@@ -25,6 +25,7 @@ class Cart {
   @HiveField(9)
   num buyPrice;
 
+
   Cart({
     required this.productName,
     required this.productId,

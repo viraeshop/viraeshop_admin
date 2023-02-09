@@ -6,7 +6,10 @@ import 'package:viraeshop/admin/admin_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_admin/configs/configs.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TestApi extends StatefulWidget {
   const TestApi({Key? key}) : super(key: key);
@@ -18,6 +21,7 @@ class TestApi extends StatefulWidget {
 class _TestApiState extends State<TestApi> {
   // bool start = false;
   final jWTToken = Hive.box('adminInfo').get('token');
+  final auth = FirebaseAuth.instance;
   @override
   void initState() {
     // TODO: implement initState
@@ -28,12 +32,7 @@ class _TestApiState extends State<TestApi> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: BlocBuilder<AdminBloc, AdminState>(
-      builder: (context, state) {
-        if (state is FetchedAdminsState) {
-          final adminBloc = BlocProvider.of<AdminBloc>(context);
-          List<AdminModel>? value = state.adminList;
-          return Container(
+    return Scaffold(body: Container(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             color: kBackgroundColor,
@@ -42,12 +41,19 @@ class _TestApiState extends State<TestApi> {
               children: [
                 ElevatedButton(
                   child: const Text(
-                    'Delete',
+                    'Update Email',
                     style: kProductNameStyle,
                   ),
-                  onPressed: () {
-                    adminBloc.add(
-                        DeleteAdminEvent(adminId: '654321', token: jWTToken));
+                  onPressed: () async{
+                    snackBar(text: 'Updating', context: context, duration: 100,);
+                    try{
+                      final user = await auth.signInWithEmailAndPassword(email: 'omar@gmail.com', password: '2337271a');
+                      final update = await user.user?.updateEmail('viraeshop@gmail.com');
+                      final passwordUpdate = user.user?.updatePassword("233727");
+                      toast(context: context, title: 'Updated successfully');
+                    } catch (e){
+                      print(e);
+                    }
                   },
                 ),
                 ElevatedButton(
@@ -65,58 +71,14 @@ class _TestApiState extends State<TestApi> {
                     'Create',
                     style: kProductNameStyle,
                   ),
-                  onPressed: () async {
-                    AdminModel admin = AdminModel(
-                      email: 'hawwau@gmail.com',
-                      name: 'Hauwa Sani',
-                      isAdmin: true,
-                      isDeleteCustomer: true,
-                      isDeleteEmployee: true,
-                      isEditCustomer: true,
-                      isInventory: true,
-                      isMakeAdmin: true,
-                      isMakeCustomer: true,
-                      isManageDue: true,
-                      isProducts: true,
-                      isTransactions: true,
-                      adminId: '362789',
-                      active: true,
-                    );
-                    adminBloc
-                        .add(AddAdminEvent(adminModel: admin, token: jWTToken));
-                  },
+                  onPressed: () async {},
                 ),
                 const SizedBox(
                   height: 20,
                 ),
-                Column(
-                  children: List.generate(
-                    value != null ? value.length : 0,
-                    (i) => Text(
-                      value != null ? value[i].name : '',
-                      style: kProductNameStyle,
-                    ),
-                  ),
-                )
               ],
             ),
-          );
-        } else if (state is OnErrorAdminState) {
-          String message = state.message;
-          return Center(
-              child: Text(
-            message,
-            style: kDueCellStyle,
-          ));
-        }
-        return const SizedBox(
-          height: 100,
-          width: 100,
-          child: CircularProgressIndicator(
-            color: kNewMainColor,
           ),
         );
-      },
-    ));
   }
 }

@@ -582,6 +582,7 @@ Future<void> getAdvertsDialog({
 
 Future<void> getNonInventoryDialog({
   required BuildContext buildContext,
+  required String box,
 }) async {
   TextEditingController controller = TextEditingController();
   return showDialog<void>(
@@ -613,7 +614,6 @@ Future<void> getNonInventoryDialog({
         // ignore: dead_code
         content: BlocBuilder<SuppliersBloc, SupplierState>(
           builder: (context, state) {
-            print(state);
             if (state is OnErrorSupplierState) {
               return Center(
                 child: Text(
@@ -667,7 +667,7 @@ Future<void> getNonInventoryDialog({
                           }
                           return InkWell(
                               onTap: () {
-                                Hive.box('shops')
+                                Hive.box(box)
                                     .putAll(shops[index - 1])
                                     .whenComplete(() => Navigator.pop(context));
                               },

@@ -83,18 +83,14 @@ class _SplashScreenState extends State<SplashScreen> {
                 setState(() {
                   isIndicator = false;
                 });
-                if (Hive.box('adminInfo').isEmpty) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return const LoginPage();
-                      },
-                    ),
-                  );
-                } else {
-                  Navigator.popAndPushNamed(context, HomeScreen.path);
-                }
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const LoginPage();
+                    },
+                  ),
+                );
               } else if (state is OnErrorProductsState) {
                 setState(() {
                   onError = true;
@@ -119,14 +115,18 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(
               height: 10.0,
             ),
-           if(isIndicator) const SizedBox(
-              height: 30.0,
-              width: 30.0,
-              child: CircularProgressIndicator(
-                      color: kBackgroundColor,
-                    )
-            ),
-            if(onError) Text(errorMessage, style: kBigErrorTextStyle,),
+            if (isIndicator)
+              const SizedBox(
+                  height: 30.0,
+                  width: 30.0,
+                  child: CircularProgressIndicator(
+                    color: kBackgroundColor,
+                  )),
+            if (onError)
+              Text(
+                errorMessage,
+                style: kBigErrorTextStyle,
+              ),
           ],
         ),
       ),

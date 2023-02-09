@@ -1,215 +1,288 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop/transactions/barrel.dart';
+import 'package:viraeshop/transactions/transactions_bloc.dart';
+import 'package:viraeshop/transactions/transactions_event.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 import 'user_transaction_screen.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Employees extends StatefulWidget {
-  final List data;
-  const Employees({required this.data, Key? key}) : super(key: key);
+  const Employees({Key? key})
+      : super(key: key);
 
   @override
   _EmployeesState createState() => _EmployeesState();
 }
 
 class _EmployeesState extends State<Employees> {
-  Map<String, List> transactionData = {};
-  Map<String, Tuple2> balances = {};
-  Map<String, Tuple2> balancesTemp = {};
+  List transactionData = [];
   Tuple2 totalBalance = const Tuple2<num, num>(0, 0);
   Tuple2 totalBalanceTemp = const Tuple2<num, num>(0, 0);
   DateTime begin = DateTime.now();
   DateTime end = DateTime.now();
   Set employees = {};
+  final jWTToken = Hive.box('adminInfo').get('token');
   @override
   void initState() {
     // TODO: implement initState
-    List employeeId = [];
-    for (var element in widget.data) {
-      employeeId.add(element['adminId']);
-    }
-    Set employeeSet = Set.from(employeeId);
-    for (var employee in employeeSet) {
-      List items = [];
-      for (var element in widget.data) {
-        if (element['adminId'] == employee) {
-          items.add(element);
-        }
-        setState(() {
-          transactionData[employee] = items;
-        });
-      }
-    }
-    setState(() {
-      balances = { for (var element in employeeSet) element : tuple(transactionData[element]!) };
-      balancesTemp = balances;
-      totalBalance = tuple(widget.data);
-      totalBalanceTemp = totalBalance;
-      employees = employeeSet;
-    });
+    final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+    transactionBloc.add(
+      GetTransactionDetailsEvent(
+        queryType: 'employees',
+        isFilter: false,
+        token: jWTToken,
+      ),
+    );
+    // List employeeId = [];
+    // for (var element in widget.data) {
+    //   employeeId.add(element['adminId']);
+    // }
+    // Set employeeSet = Set.from(employeeId);
+    // for (var employee in employeeSet) {
+    //   List items = [];
+    //   for (var element in widget.data) {
+    //     if (element['adminId'] == employee) {
+    //       items.add(element);
+    //     }
+    //     setState(() {
+    //       transactionData[employee] = items;
+    //     });
+    //   }
+    // }
+    // setState(() {
+    //   balances = { for (var element in employeeSet) element : tuple(transactionData[element]!) };
+    //   balancesTemp = balances;
+    //   employees = employeeSet;
+    // });
     super.initState();
   }
 
+  bool isLoading = true;
+  String message = '';
   @override
   Widget build(BuildContext context) {
-    return ModalProgressHUD(
-      inAsyncCall: balancesTemp.isEmpty,
-      progressIndicator: const SizedBox(
-        height: 100.0,
-        width: 100.0,
-        child: LoadingIndicator(
-          indicatorType: Indicator.lineScale,
-          colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
-          strokeWidth: 2,
+    return BlocListener<TransactionsBloc, TransactionState>(
+      listener: (context, state) {
+        print(state);
+        if (state is OnErrorTransactionState) {
+          setState(() {
+            isLoading = false;
+            message = state.message;
+          });
+        } else if (state is RequestFinishedTransactionState) {
+          final data = state.response.result ?? {};
+          final invoices = data['details'] ?? [];
+          setState(() {
+            isLoading = false;
+            totalBalance =
+                Tuple2(data['totalSales'] ?? 0, data['totalDue'] ?? 0);
+            totalBalanceTemp = totalBalance;
+            transactionData = invoices.toList();
+            if(transactionData.isEmpty){
+              message = 'No available history';
+            }
+          });
+        } else if (state is LoadingTransactionState){
+          setState(() {
+            isLoading = true;
+          });
+        }
+      },
+      child: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        progressIndicator: const SizedBox(
+          height: 100.0,
+          width: 100.0,
+          child: LoadingIndicator(
+            indicatorType: Indicator.lineScale,
+            colors: [kMainColor, kBlueColor, kRedColor, kYellowColor],
+            strokeWidth: 2,
+          ),
         ),
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(FontAwesomeIcons.chevronLeft),
-            color: kSubMainColor,
-            iconSize: 30.0,
-          ),
-          title: const Text(
-            'Employees',
-            style: kAppBarTitleTextStyle,
-          ),
-          actions: [
-            IconButton(
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
               onPressed: () {
-                setState(() {
-                  balancesTemp = balances;
-                  totalBalanceTemp = totalBalance;
-                });
-              },
-              icon: const Icon(Icons.refresh),
-              color: kSubMainColor,
-              iconSize: 20.0,
-            ),
-          ],
-        ),
-        body: balancesTemp.isEmpty
-            ? Container()
-            : Stack(
-              fit: StackFit.expand,
-              children: [
-                FractionallySizedBox(
-                  heightFactor: 0.7,
-                  alignment: Alignment.topCenter,
-                  child: ListView.builder(
-                      padding: const EdgeInsets.all(10.0),
-                      itemCount: balancesTemp.keys.toList().length,
-                      itemBuilder: (context, i) {
-                        return InfoWidget(
-                            textWidget: rowWidget(
-                                balancesTemp[balancesTemp.keys.toList()[i]]!.item1.toString(),
-                                balancesTemp[balancesTemp.keys.toList()[i]]!.item2.toString()),
-                            title: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) {
-                                  return UserTransactionScreen(
-                                    data: transactionData[transactionData.keys.toList()[i]]!,
-                                    name: TransacFunctions.nameProvider(balancesTemp.keys.toList()[i], transactionData[transactionData.keys.toList()[i]]!, true),
-                                  );
-                                }),
-                              );
-                            });
-                      }),
-                ),
-                FractionallySizedBox(
-                  heightFactor: 0.3,
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: kBackgroundColor,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          offset: Offset(0, 0),
-                          spreadRadius: 2.0,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            dateWidget(
-                              title: begin.toString().split(' ')[0],
-                              onTap: () {
-                                buildMaterialDatePicker(context, true);
-                              },
-                            ),
-                            const Icon(
-                              Icons.arrow_forward,
-                              color: kSubMainColor,
-                              size: 20.0,
-                            ),
-                            dateWidget(
-                                onTap: () {
-                                  buildMaterialDatePicker(context, false);
-                                },
-                                title: end.isAtSameMomentAs(DateTime.now())
-                                    ? 'To this date..'
-                                    : end.toString().split(' ')[0]),
-                            const SizedBox(
-                              width: 20.0,
-                            ),
-                            roundedTextButton(onTap: () {
-                              setState(() {
-                                balancesTemp = { for (var element in employees) element : dateTuple(
-                                        transactionData[element]!,
-                                        begin,
-                                        end) };
-                                totalBalanceTemp =
-                                    dateTuple(widget.data, begin, end);
-                              });
-                            }),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SpecialContainer(
-                              height: 110.0,
-                              width: 150.0,
-                              value: totalBalanceTemp.item1.toString(),
-                              title: 'Total Sales',
-                              color: kYellowColor,
-                            ),
-                            const SizedBox(
-                              width: 20.0,
-                            ),
-                            SpecialContainer(
-                              height: 110.0,
-                              width: 150.0,
-                              value: totalBalanceTemp.item2.toString(),
-                              title: 'Total Due',
-                              color: kRedColor,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                transactionBloc.add(
+                  GetTransactionDetailsEvent(
+                    queryType: 'all',
+                    isFilter: false,
+                    token: jWTToken,
                   ),
-                ),
-              ],
+                );
+                Navigator.pop(context);
+              },
+              icon: const Icon(FontAwesomeIcons.chevronLeft),
+              color: kSubMainColor,
+              iconSize: 30.0,
             ),
+            title: const Text(
+              'Employees',
+              style: kAppBarTitleTextStyle,
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    isLoading = true;
+                  });
+                  final transactionBloc =
+                      BlocProvider.of<TransactionsBloc>(context);
+                  transactionBloc.add(
+                    GetTransactionDetailsEvent(
+                      queryType: 'employees',
+                      isFilter: false,
+                      token: jWTToken,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.refresh),
+                color: kSubMainColor,
+                iconSize: 20.0,
+              ),
+            ],
+          ),
+          body: transactionData.isEmpty
+              ? Center(
+                child: Text(message, style: kProductNameStylePro,),
+              )
+              : Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    FractionallySizedBox(
+                      heightFactor: 0.7,
+                      alignment: Alignment.topCenter,
+                      child: ListView.builder(
+                          padding: const EdgeInsets.all(10.0),
+                          itemCount: transactionData.length,
+                          itemBuilder: (context, i) {
+                            return InfoWidget(
+                                textWidget: rowWidget(
+                                    transactionData[i]['totalSales'].toString(),
+                                    transactionData[i]['totalDue'].toString()),
+                                title: transactionData[i]['name'],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) {
+                                      return UserTransactionScreen(
+                                        name: transactionData[i]['name'],
+                                        userID: transactionData[i]['adminId'],
+                                        queryType: 'adminInvoices',
+                                      );
+                                    }),
+                                  );
+                                });
+                          }),
+                    ),
+                    FractionallySizedBox(
+                      heightFactor: 0.3,
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: kBackgroundColor,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              offset: Offset(0, 0),
+                              spreadRadius: 2.0,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                dateWidget(
+                                  title: begin.toString().split(' ')[0],
+                                  onTap: () {
+                                    buildMaterialDatePicker(context, true);
+                                  },
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward,
+                                  color: kSubMainColor,
+                                  size: 20.0,
+                                ),
+                                dateWidget(
+                                    onTap: () {
+                                      buildMaterialDatePicker(context, false);
+                                    },
+                                    title: end.isAtSameMomentAs(DateTime.now())
+                                        ? 'To this date..'
+                                        : end.toString().split(' ')[0]),
+                                const SizedBox(
+                                  width: 20.0,
+                                ),
+                                roundedTextButton(
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    final transactionBloc =
+                                        BlocProvider.of<TransactionsBloc>(
+                                            context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: 'employees',
+                                        isFilter: true,
+                                        token: jWTToken,
+                                        begin: dateToJson(
+                                          Timestamp.fromDate(begin),
+                                        ),
+                                        end: dateToJson(
+                                          Timestamp.fromDate(end),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SpecialContainer(
+                                  height: 110.0,
+                                  width: 150.0,
+                                  value: totalBalanceTemp.item1.toString(),
+                                  title: 'Total Sales',
+                                  color: kYellowColor,
+                                ),
+                                const SizedBox(
+                                  width: 20.0,
+                                ),
+                                SpecialContainer(
+                                  height: 110.0,
+                                  width: 150.0,
+                                  value: totalBalanceTemp.item2.toString(),
+                                  title: 'Total Due',
+                                  color: kRedColor,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }
@@ -220,7 +293,7 @@ class _EmployeesState extends State<Employees> {
       context: context,
       initialDate: date,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
+      lastDate: DateTime(2100),
       initialEntryMode: DatePickerEntryMode.calendar,
       initialDatePickerMode: DatePickerMode.day,
       fieldHintText: 'Month/Date/Year',

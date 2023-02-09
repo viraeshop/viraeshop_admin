@@ -1,5 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
+import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
 import 'package:viraeshop_admin/tests/testing.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -144,6 +146,7 @@ void main() async {
   await Hive.openBox<Cart>('cart');
   await Hive.openBox('cartDetails');
   await Hive.openBox('shops');
+  await Hive.openBox('suppliers');
   await Hive.openBox<Shop>('shopList');
   await Hive.openBox('images');
   await Hive.openBox('orderItems');
@@ -164,6 +167,12 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => OrderProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AdminProvider(),
+        ),
+        ChangeNotifierProvider(
+            create: (context) => CustomerProvider(),
         ),
       ],
       child: MultiBlocProvider(providers: [
@@ -280,7 +289,7 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
-      //home: const TestingScreen(),
+      //home: const TestApi(),
       initialRoute: SplashScreen.path,
       routes: {
         SplashScreen.path: (context) => const SplashScreen(),

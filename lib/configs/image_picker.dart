@@ -86,7 +86,8 @@ DecorationImage imageBG(Uint8List? images,
             image: FileImage(
               File(imagePath),
             ),
-            fit: BoxFit.cover);
+            fit: BoxFit.cover,
+    );
   }
 }
 
@@ -103,15 +104,22 @@ Future<Tuple2<Uint8List?, String?>> getImageWeb(String folder) async {
   return Tuple2<Uint8List?, String?>(imageBytes, productImageLink);
 }
 
-Future<Tuple2<String?, String?>> getImageNative(String folder) async {
+Future<Map<String, dynamic>> getImageNative(String folder) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles();
   String? path;
-  String? productImageLink;
+  Map<String, dynamic> productImageLink = {};
   if (result != null) {
     path = result.paths.first;
     String fileName = result.files.first.name;
     productImageLink = await NetworkUtility.uploadImageFromNative(
-        File(path!), fileName, folder);
+        file: File(path!),fileName: fileName,folder: folder,
+    );
   }
-  return Tuple2<String?, String?>(path, productImageLink);
+  if (kDebugMode) {
+    print(path);
+  }
+  return {
+    'path': path ?? '',
+    'imageData': productImageLink,
+  };
 }

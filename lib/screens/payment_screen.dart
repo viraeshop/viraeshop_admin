@@ -66,8 +66,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'isInventory': element.isInventory,
         'buyPrice': element.buyPrice,
       };
-      if (element.shopName != '') {
-        cartProduct['shopName'] = element.shopName;
+      if (element.supplierId != '') {
+        cartProduct['shopName'] = element.supplierId;
       }
       transDesc.add(cartProduct);
       if (element.isInventory == false) {
@@ -75,38 +75,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
       }
     }
     for (var element in shops) {
-      //if (shop.isNotEmpty) {
-        for (var item in shop) {
-          if (item['supplierId'] == element.supplierId) {
-            item['price'] += element.price;
-            item['buyPrice'] += element.buyPrice;
-            item['profit'] += element.profit;
-            item['paid'] += element.paid;
-            item['due'] += element.due;
-            item['description'] += ', ${element.description}';
+      if (!shop.any((item) => element.supplierId == item['supplierId'])) {
+        List<Cart> nonInventoryItems = cartItems
+            .where((cartItem) =>
+                !cartItem.isInventory &&
+                element.supplierId == cartItem.supplierId)
+            .toList();
+        Map<String, dynamic> shopItem = {};
+        for (var item in nonInventoryItems) {
+          if (shopItem.isNotEmpty) {
+            shopItem['supplierId'] = item.supplierId;
+            shopItem['price'] += item.price;
+            shopItem['buyPrice'] += item.buyPrice;
+            shopItem['profit'] += 0;
+            shopItem['paid'] += 0;
+            shopItem['due'] += 0;
+            shopItem['description'] +=
+                ' ,${item.productName}(${item.quantity} Items)';
           } else {
-            shop.add({
-              'supplierId': element.supplierId,
-              'price': element.price,
-              'buyPrice': element.buyPrice,
-              'profit': element.profit,
-              'paid': element.paid,
-              'due': element.due,
-              'description': element.description,
-            });
+            shopItem['supplierId'] = item.supplierId;
+            shopItem['price'] = item.price;
+            shopItem['buyPrice'] = item.buyPrice;
+            shopItem['profit'] = 0;
+            shopItem['paid'] = 0;
+            shopItem['due'] = 0;
+            shopItem['description'] =
+                '${item.productName}(${item.quantity} Items)';
           }
         }
-      // } else {
-      //   shop.add({
-      //     'supplierId': element.supplierId,
-      //     'price': element.price,
-      //     'buyPrice': element.buyPrice,
-      //     'profit': element.profit,
-      //     'paid': element.paid,
-      //     'due': element.due,
-      //     'description': element.description,
-      //   });
-      // }
+        shop.add(shopItem);
+      }
     }
     super.initState();
   }
@@ -241,52 +239,50 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   alignment: Alignment.bottomCenter,
                   child: InkWell(
                     onTap: () async {
-                      print(shop);
-                      // setState(() {
-                      //   isLoading = true;
-                      // });
-                      //   transInfo = {
-                      //     'price': totalPrice - discount,
-                      //     'quantity': totalQuantity.toString(),
-                      //     'createdAt': dateToJson(Timestamp.now()),
-                      //     'adminId': adminId,
-                      //     'items': transDesc,
-                      //     'isWithNonInventory': isWithNonInventory,
-                      //     'customerId': customerId,
-                      //     'role': customerRole,
-                      //     'paid': widget.paid,
-                      //     'due': widget.due,
-                      //     'advance': widget.advance,
-                      //     'discount': discount,
-                      //     'profit': profit,
-                      //   };
-                      //   if (isWithNonInventory) transInfo['shops'] = shop;
-                      //   if (customerRole == 'agents' && widget.paid == 0) {
-                      //     num wallet = customerBox.get('wallet', defaultValue: 0);
-                      //     num balanceToPay = totalPrice - discount;
-                      //     if (wallet >= balanceToPay) {
-                      //       num balance = wallet - balanceToPay;
-                      //       customerBox.put('wallet', balance);
-                      //       customerBloc.add(UpdateCustomerEvent(
-                      //           token: jWTToken,
-                      //           customerId: customerId,
-                      //           customerModel: {
-                      //             'wallet': balance,
-                      //           }));
-                      //     } else {
-                      //       toast(
-                      //         context: context,
-                      //         title:
-                      //         'Sorry customer has insufficient balance in his account',
-                      //       );
-                      //     }
-                      //   } else {
-                      //     transacBloc.add(
-                      //       AddTransactionEvent(
-                      //           token: jWTToken,
-                      //           transactionModel: transInfo),
-                      //     );
-                      //   }
+                      setState(() {
+                        isLoading = true;
+                      });
+                      transInfo = {
+                        'price': totalPrice - discount,
+                        'quantity': totalQuantity.toString(),
+                        'createdAt': dateToJson(Timestamp.now()),
+                        'adminId': adminId,
+                        'items': transDesc,
+                        'isWithNonInventory': isWithNonInventory,
+                        'customerId': customerId,
+                        'role': customerRole,
+                        'paid': widget.paid,
+                        'due': widget.due,
+                        'advance': widget.advance,
+                        'discount': discount,
+                        'profit': profit,
+                      };
+                      if (isWithNonInventory) transInfo['shops'] = shop;
+                      if (customerRole == 'agents' && widget.paid == 0) {
+                        num wallet = customerBox.get('wallet', defaultValue: 0);
+                        num balanceToPay = totalPrice - discount;
+                        if (wallet >= balanceToPay) {
+                          num balance = wallet - balanceToPay;
+                          customerBox.put('wallet', balance);
+                          customerBloc.add(UpdateCustomerEvent(
+                              token: jWTToken,
+                              customerId: customerId,
+                              customerModel: {
+                                'wallet': balance,
+                              }));
+                        } else {
+                          toast(
+                            context: context,
+                            title:
+                                'Sorry customer has insufficient balance in his account',
+                          );
+                        }
+                      } else {
+                        transacBloc.add(
+                          AddTransactionEvent(
+                              token: jWTToken, transactionModel: transInfo),
+                        );
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.all(10.0),

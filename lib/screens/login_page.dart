@@ -168,7 +168,6 @@ class _LoginPageState extends State<LoginPage> {
                                 password: _passwordController.text,
                               );
                               token = await _userCredential.user!.getIdToken();
-                              print('token: $token');
                               adminBloc.add(GetAdminEvent(
                                   adminId: _userCredential.user!.uid,
                                   token: token));

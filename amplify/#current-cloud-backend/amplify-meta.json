@@ -1,0 +1,76 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-viraeshop-staging-164825-authRole",
+      "UnauthRoleArn": "arn:aws:iam::902375473945:role/amplify-viraeshop-staging-164825-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::902375473945:role/amplify-viraeshop-staging-164825-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-viraeshop-staging-164825-deployment",
+      "UnauthRoleName": "amplify-viraeshop-staging-164825-unauthRole",
+      "StackName": "amplify-viraeshop-staging-164825",
+      "StackId": "arn:aws:cloudformation:ap-south-1:902375473945:stack/amplify-viraeshop-staging-164825/66804c40-ac87-11ed-a287-0a3c543bcc10",
+      "AmplifyAppId": "d2svmiz8y6o2dd"
+    }
+  },
+  "auth": {
+    "viraeshop46f9a7bd": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL",
+          "PHONE_NUMBER"
+        ],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-viraeshop-staging-164825-deployment/amplify-cfn-templates/auth/viraeshop46f9a7bd-cloudformation-template.json",
+        "logicalId": "authviraeshop46f9a7bd"
+      },
+      "lastPushTimeStamp": "2023-02-14T17:32:00.745Z",
+      "output": {
+        "UserPoolId": "ap-south-1_Oy0t8AruX",
+        "AppClientIDWeb": "1pf37r5l7fcva6mjpm4kouce7f",
+        "AppClientID": "2c7okbnt3r439c4vlu8atrl8bv",
+        "IdentityPoolId": "ap-south-1:7e1d5599-e4cf-41e0-831f-8bf2c0091efc",
+        "UserPoolArn": "arn:aws:cognito-idp:ap-south-1:902375473945:userpool/ap-south-1_Oy0t8AruX",
+        "IdentityPoolName": "viraeshop46f9a7bd_identitypool_46f9a7bd__staging",
+        "UserPoolName": "viraeshop46f9a7bd_userpool_46f9a7bd"
+      },
+      "lastPushDirHash": "kcjzm/52YcBKJAyBISYbbFiIUMs="
+    }
+  },
+  "storage": {
+    "s3Viraeshop": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "lastPushTimeStamp": "2023-02-14T17:32:00.745Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-viraeshop-staging-164825-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storages3Viraeshop"
+      },
+      "output": {
+        "BucketName": "viraeshop651eba4c26954ae8a7fe1762740a14ef164825-staging",
+        "Region": "ap-south-1"
+      },
+      "lastPushDirHash": "xQVbSADBjPOUK9rBvQNpbXwMXeo="
+    }
+  }
+}

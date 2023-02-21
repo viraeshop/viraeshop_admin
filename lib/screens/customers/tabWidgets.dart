@@ -12,7 +12,7 @@ import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
-import '../../configs/baxes.dart';
+import '../../configs/boxes.dart';
 import '../transactions/customer_transactions.dart';
 import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';

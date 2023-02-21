@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/non_inventory_items.dart';

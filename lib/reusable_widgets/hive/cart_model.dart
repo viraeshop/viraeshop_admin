@@ -19,9 +19,9 @@ class Cart {
   @HiveField(6)
   num discountValue;
   @HiveField(7)
-  bool? isInventory;
+  bool isInventory;
   @HiveField(8)
-  String shopName;
+  String supplierId;
   @HiveField(9)
   num buyPrice;
 
@@ -36,6 +36,6 @@ class Cart {
     this.discountPercent = 0,
     this.discountValue = 0,
     this.isInventory = true,
-    this.shopName = '',
+    this.supplierId = '',
   });
 }

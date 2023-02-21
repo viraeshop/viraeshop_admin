@@ -35,7 +35,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
   late String verificationId;
   bool onError = false;
   bool isLoading = false;
-  static const String countryCode = '+234';
+  static const String countryCode = '+88';
   @override
   void initState() {
     // TODO: implement initState

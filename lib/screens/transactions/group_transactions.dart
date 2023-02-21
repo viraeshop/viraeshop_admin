@@ -221,6 +221,20 @@ class _GroupTransactionsState extends State<GroupTransactions> {
                             setState(() {
                               isLoading = true;
                             });
+                            final beginFormat = DateTime(begin.year, begin.month, begin.day);
+                            final endFormat = DateTime(end.year, end.month, end.day);
+                            if(beginFormat == endFormat){
+                              int day = begin.day;
+                              int month = begin.month;
+                              int year = begin.year;
+                              if(lastDayOfMonth(begin.day, begin.month) == LastDay.lastDay){
+                                end = DateTime(begin.year, month++, 1);
+                              }else if(lastDayOfMonth(begin.day, begin.month) == LastDay.endingYear){
+                                end = DateTime(year++, 1, 1);
+                              }else{
+                                begin = DateTime(begin.year, begin.month, day++);
+                              }
+                            }
                             final transactionBloc =
                             BlocProvider.of<TransactionsBloc>(
                                 context);

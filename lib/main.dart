@@ -1,3 +1,4 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
@@ -21,7 +22,7 @@ import 'package:viraeshop/supplier_invoice/supplier_invoice_bloc.dart';
 import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/animation_testing.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
@@ -75,6 +76,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:viraeshop/notifications/notifications_bloc.dart';
 import 'package:viraeshop_api/apiCalls/notifications.dart';
 import 'package:viraeshop/tokens/tokens_bloc.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'apmplify_configs/amplifyconfiguration.dart';
 
 import 'tests/test_api.dart';
 
@@ -262,6 +266,23 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    _configureAmplify();
+    super.initState();
+  }
+  Future<void> _configureAmplify() async {
+    try {
+      final auth = AmplifyAuthCognito();
+      final storage = AmplifyStorageS3();
+      await Amplify.addPlugins([auth, storage]);
+      // call Amplify.configure to use the initialized categories in your app
+      await Amplify.configure(amplifyconfig);
+    } on Exception catch (e) {
+      safePrint('An error occurred configuring Amplify: $e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

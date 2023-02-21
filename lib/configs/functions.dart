@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 

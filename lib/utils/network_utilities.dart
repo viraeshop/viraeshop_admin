@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:amplify_flutter/amplify_flutter.dart' hide QuerySnapshot;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -92,12 +93,40 @@ class NetworkUtility {
     return user.docs.isNotEmpty;
   }
 
-  static Future<String> uploadImageFromNative(
-      File file, String fileName, folder) async {
-    await _storage.ref().child('$folder/$fileName').putFile(file, metadata);
-    Reference fileRef = _storage.ref('$folder/$fileName');
-    String fileUrl = await fileRef.getDownloadURL();
-    return fileUrl;
+  static Future<Map<String, dynamic>> uploadImageFromNative(
+      {required File file,
+      required String fileName,
+      required String folder}) async {
+    // await _storage.ref().child('$folder/$fileName').putFile(file, metadata);
+    // Reference fileRef = _storage.ref('$folder/$fileName');\
+    try {
+      final UploadFileResult result = await Amplify.Storage.uploadFile(
+        local: file,
+        key: '$folder/$fileName',
+        onProgress: (progress) {
+          safePrint('Fraction completed: ${progress.getFractionCompleted()}');
+        },
+        options: UploadFileOptions(
+          accessLevel: StorageAccessLevel.guest
+        ),
+      );
+      safePrint('Successfully uploaded file: ${result.key}');
+      final fileUrl = await Amplify.Storage.getUrl(
+        key: result.key,
+        options: GetUrlOptions(accessLevel: StorageAccessLevel.guest),
+      );
+      if (kDebugMode) {
+        print(fileUrl.url.split('?')[0]);
+      }
+      Map<String, dynamic> image = {
+        'url': fileUrl.url.split('?')[0],
+        'key': '$folder/$fileName',
+      };
+      return image;
+    } on StorageException catch (e) {
+      safePrint('Error uploading file: $e');
+      throw StorageException(e.message);
+    }
   }
 
   static Future<void> saveAdminInfo(String userId, data) async {
@@ -108,21 +137,27 @@ class NetworkUtility {
     await _firestore.collection('users').doc(adminId).update(info);
   }
 
-  static Future deleteImage(String ref) async {
-    await _storage.refFromURL(ref).delete();
+  static Future deleteImage({required String key}) async {
+    try {
+      final result = await Amplify.Storage.remove(key: key);
+      safePrint('Removed file: ${result.key}');
+    } on StorageException catch (e) {
+      safePrint('Error deleting file: $e');
+    }
   }
 
-  static Future<String>? deleteProductImages(List image) async {
+  static Future<String>? deleteProductImages({required List images}) async {
     String message = 'Deleted successfully';
-    if (image.isNotEmpty) {
-      for (var element in image) {
+    if (images.isNotEmpty) {
+      for (var element in images) {
         try {
-          await deleteImage(element);
+          await deleteImage(key: element['key']);
         } on FirebaseException catch (e) {
           if (kDebugMode) {
             print(e.message);
           }
           message = e.message!;
+          throw Exception(e.message);
         }
       }
     } else {

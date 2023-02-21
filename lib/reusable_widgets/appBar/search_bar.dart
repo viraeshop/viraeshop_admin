@@ -6,7 +6,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 
-import '../../configs/baxes.dart';
+import '../../configs/boxes.dart';
 
 class SearchBar extends StatelessWidget {
   SearchBar({this.onChange});

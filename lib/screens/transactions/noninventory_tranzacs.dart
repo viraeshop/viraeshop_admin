@@ -45,43 +45,6 @@ class _NonInventoryTransactionShopsState
         token: jWTToken,
       ),
     );
-
-    // TODO: implement initState
-    // List shops = [];
-    // for (var element in widget.data) {
-    //   if (widget.isSupplier) {
-    //     shops.add(element['supplierInfos']['businessName']);
-    //   } else {
-    //     shops.add(element['supplierInfo']['businessName']);
-    //   }
-    // }
-    // Set shopSet = Set.from(shops);
-    // for (var shop in shopSet) {
-    //   List items = [];
-    //   for (var element in widget.data) {
-    //     if (widget.isSupplier) {
-    //       if (element['supplierInfos']['businessName'] == shop) {
-    //         items.add(element);
-    //       }
-    //     } else {
-    //       if (element['supplierInfo']['businessName'] == shop) {
-    //         items.add(element);
-    //       }
-    //     }
-    //   }
-    //   setState(() {
-    //     transactionData[shop] = items;
-    //   });
-    // }
-    // setState(() {
-    //   balances = {
-    //     for (var element in shopSet) element: tuple(transactionData[element] ?? [], widget.isSupplier)
-    //   };
-    //   balancesTemp = balances;
-    //   totalBalance = tuple(widget.data, widget.isSupplier);
-    //   totalBalanceTemp = totalBalance;
-    //   employees = shopSet;
-    // });
     super.initState();
   }
 
@@ -100,7 +63,7 @@ class _NonInventoryTransactionShopsState
             totalBalance =
                 Tuple2(data![widget.isSupplier ? 'totalPaid' : 'totalSales'] ?? 0, data['totalDue'] ?? 0);
             totalBalanceTemp = totalBalance;
-            transactionData = data['details'];
+            transactionData = data['details'] ?? [];
           });
         }
       },
@@ -239,6 +202,20 @@ class _NonInventoryTransactionShopsState
                                     setState(() {
                                       isLoading = true;
                                     });
+                                    final beginFormat = DateTime(begin.year, begin.month, begin.day);
+                                    final endFormat = DateTime(end.year, end.month, end.day);
+                                    if(beginFormat == endFormat){
+                                      int day = begin.day;
+                                      int month = begin.month;
+                                      int year = begin.year;
+                                      if(lastDayOfMonth(begin.day, begin.month) == LastDay.lastDay){
+                                        end = DateTime(begin.year, month++, 1);
+                                      }else if(lastDayOfMonth(begin.day, begin.month) == LastDay.endingYear){
+                                        end = DateTime(year++, 1, 1);
+                                      }else{
+                                        begin = DateTime(begin.year, begin.month, day++);
+                                      }
+                                    }
                                     final transactionBloc =
                                         BlocProvider.of<TransactionsBloc>(
                                             context);

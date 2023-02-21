@@ -17,7 +17,7 @@ import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/product_price.dart';
 import 'package:viraeshop_admin/reusable_widgets/desktop_product_cards2.dart';
@@ -141,14 +141,14 @@ class _NewProductState extends State<NewProduct>
       isArchitectDiscount = widget.info['isArchitectDiscount'];
       selectedSellby = widget.info['sellBy'];
       isInfinity = widget.info['isInfinity'];
-      List productPics = widget.info['images'] ?? [];
-      Hive.box('images').put('productImages', productPics.map((e) => e['imageLink']).toList());
+      // List productPics = widget.info['images'] ?? [];
+      Hive.box('images').put('productImages', widget.info['images'] ?? []);
       Hive.box('suppliers').putAll(widget.info['supplier']);
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
         Provider.of<GeneralProvider>(context, listen: false)
             .updateAdList(widget.info['adverts'] ?? []);
         Provider.of<GeneralProvider>(context, listen: false)
-        .updateExistingAdverts(widget.info['adverts'] ?? []);
+            .updateExistingAdverts(widget.info['adverts'] ?? []);
       });
     }
     super.initState();
@@ -185,7 +185,7 @@ class _NewProductState extends State<NewProduct>
           height: 150.0,
           width: 150.0,
           fit: BoxFit.cover,
-          imageUrl: urls.isNotEmpty ? urls[0] : '',
+          imageUrl: urls.isNotEmpty ? urls[0]['imageLink'] : '',
           errorWidget: (context, url, childs) {
             return Image.asset(
               'assets/default.jpg',
@@ -222,12 +222,11 @@ class _NewProductState extends State<NewProduct>
           List products = Hive.box(productsBox).get(productsKey);
           Map supplier = Hive.box('suppliers').toMap();
           if (widget.isUpdateProduct) {
-            List deletedImages =
-                Hive.box('images').get('deletedImages') ?? [];
+            List deletedImages = Hive.box('images').get('deletedImages') ?? [];
             List img = widget.info['images'] ?? [];
-            if(deletedImages.isNotEmpty && img.isNotEmpty){
-              for(var image in deletedImages){
-                img.removeWhere((element) => element['imageLink'] == image);
+            if (deletedImages.isNotEmpty && img.isNotEmpty) {
+              for (var image in deletedImages) {
+                img.removeWhere((element) => element['imageLink'] == image['imageLink']);
               }
             }
             for (int i = 0; i < products.length; i++) {
@@ -240,8 +239,8 @@ class _NewProductState extends State<NewProduct>
                 products[i] = fields;
               }
             }
-            Provider.of<GeneralProvider>(context, listen: false)
-                .clearLists();
+            Provider.of<GeneralProvider>(context, listen: false).clearLists();
+
             ///todo: check here
           } else if (onDelete) {
             for (int i = 0; i < products.length; i++) {
@@ -254,7 +253,8 @@ class _NewProductState extends State<NewProduct>
             fields['productId'] = state.response.result!['productId'];
             products.add(fields);
           }
-          Provider.of<AdsProvider>(context, listen: false).updateProductList(products);
+          Provider.of<AdsProvider>(context, listen: false)
+              .updateProductList(products);
           Hive.box(productsBox).put(productsKey, products);
           Hive.box('images').clear();
           Hive.box('category').clear();
@@ -315,11 +315,11 @@ class _NewProductState extends State<NewProduct>
                                           String deleteOperationResponse =
                                               await NetworkUtility
                                                   .deleteProductImages(
-                                                      productImageUrls
+                                                      images: productImageUrls
                                                               .isNotEmpty
                                                           ? productImageUrls
                                                           : widget
-                                                              .info['image'])!;
+                                                              .info['images'])!;
                                           if (deleteOperationResponse ==
                                               'No image') {
                                             snackBar(
@@ -669,7 +669,9 @@ class _NewProductState extends State<NewProduct>
                                       final advertBloc =
                                           BlocProvider.of<AdvertsBloc>(context);
                                       advertBloc.add(GetAdvertsEvent());
-                                      getAdvertsDialog(buildContext: context, isUpdate: widget.isUpdateProduct,
+                                      getAdvertsDialog(
+                                        buildContext: context,
+                                        isUpdate: widget.isUpdateProduct,
                                       );
                                     },
                               decoration: const InputDecoration(
@@ -750,7 +752,8 @@ class _NewProductState extends State<NewProduct>
                             height: 20,
                           ),
                           ValueListenableBuilder(
-                              valueListenable: Hive.box('suppliers').listenable(),
+                              valueListenable:
+                                  Hive.box('suppliers').listenable(),
                               builder: (context, Box box, childs) {
                                 String shopName = box.get('businessName',
                                     defaultValue: 'Suppliers');
@@ -758,11 +761,11 @@ class _NewProductState extends State<NewProduct>
                                   onTap: () {
                                     final supplierBloc =
                                         BlocProvider.of<SuppliersBloc>(context);
-                                    supplierBloc.add(
-                                        GetSuppliersEvent(token: jWTToken ?? ''));
+                                    supplierBloc.add(GetSuppliersEvent(
+                                        token: jWTToken ?? ''));
                                     getNonInventoryDialog(
-                                        buildContext: context,
-                                        box: 'suppliers',
+                                      buildContext: context,
+                                      box: 'suppliers',
                                     );
                                   },
                                   child: Container(
@@ -1036,8 +1039,10 @@ class _NewProductState extends State<NewProduct>
                             List newList = [];
                             for (var image in imagesList) {
                               newList.add({
-                               if(widget.isUpdateProduct) 'productId': widget.info['productId'],
-                                'imageLink': image
+                                if (widget.isUpdateProduct)
+                                  'productId': widget.info['productId'],
+                                'imageLink': image['imageLink'],
+                                'imageKey': image['imageKey'],
                               });
                             }
                             imagesList = newList;
@@ -1048,8 +1053,8 @@ class _NewProductState extends State<NewProduct>
                             List newList = [];
                             for (var image in deletedImages) {
                               newList.add({
-                                'productId': num.parse(widget.info['productId']),
-                                'imageLink': image
+                                //'productId': num.parse(widget.info['productId']),
+                                'imageLink': image['imageLink'],
                               });
                             }
                             deletedImages = newList;
@@ -1059,9 +1064,11 @@ class _NewProductState extends State<NewProduct>
                             print('AdvertsBeforeFilter: $adverts');
                           }
                           if (kDebugMode) {
-                            print('UpdatedAdvertsBeforeFilter: $updatedAdverts');
+                            print(
+                                'UpdatedAdvertsBeforeFilter: $updatedAdverts');
                           }
-                          if (widget.isUpdateProduct && existingAdverts.isNotEmpty) {
+                          if (widget.isUpdateProduct &&
+                              existingAdverts.isNotEmpty) {
                             for (var advert in existingAdverts) {
                               if (updatedAdverts.contains(advert)) {
                                 updatedAdverts.remove(advert);
@@ -1076,7 +1083,8 @@ class _NewProductState extends State<NewProduct>
                               }
                               newList.add({
                                 'advert': advert,
-                                if(widget.isUpdateProduct) 'productId': widget.info['productId'],
+                                if (widget.isUpdateProduct)
+                                  'productId': widget.info['productId'],
                               });
                             }
                             updatedAdverts = newList;
@@ -1138,9 +1146,9 @@ class _NewProductState extends State<NewProduct>
                           if (widget.isUpdateProduct) {
                             productBloc.add(
                               UpdateProductEvent(
-                                  token: jWTToken ?? '',
-                                  productId: widget.info['productId'],
-                                  productModel: fields,
+                                token: jWTToken ?? '',
+                                productId: widget.info['productId'],
+                                productModel: fields,
                               ),
                             );
                           } else {

@@ -27,7 +27,7 @@ class _ShopsState extends State<Shops> {
       List.generate(6, (index) => TextEditingController());
   bool isLoading = false;
   Uint8List bundleImage = Uint8List(0);
-  String imageUrl = '';
+  Map<String, dynamic> imageUrlData = {};
   String imagePath = '';
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
@@ -97,17 +97,17 @@ class _ShopsState extends State<Shops> {
                       GestureDetector(
                         onTap: () {
                           if (kIsWeb) {
-                            getImageWeb('suppliers').then((value) {
-                              setState(() {
-                                bundleImage = value.item1!;
-                                imageUrl = value.item2!;
-                              });
-                            });
+                            // getImageWeb('suppliers').then((value) {
+                            //   setState(() {
+                            //     bundleImage = value.item1!;
+                            //     imageUrlData = value.item2!;
+                            //   });
+                            // });
                           } else {
                             getImageNative('suppliers').then((value) {
                               setState(() {
-                                imagePath = value.item1!;
-                                imageUrl = value.item2!;
+                                imagePath = value['path'];
+                                imageUrlData = value['imageData'];
                               });
                             });
                           }
@@ -264,7 +264,8 @@ class _ShopsState extends State<Shops> {
                           'optionalPhone': controllers[3].text,
                           'email': controllers[4].text,
                           'address': controllers[5].text,
-                          'profileImage': imageUrl,
+                          'profileImage': imageUrlData['url'] ?? '',
+                          'imageKey': imageUrlData['key'] ?? '',
                         });
                         supplierBloc
                             .add(AddSupplierEvent(

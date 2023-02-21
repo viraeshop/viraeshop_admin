@@ -68,8 +68,8 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
         _preferences.addControllers =
             TextEditingController(text: userInfo['idNumber']);
         _preferences.addIconData = Icons.badge_outlined;
-        strings['idFrontImage'] = userInfo['idFrontImage'];
-        strings['idBackImage'] = userInfo['idBackImage'];
+        strings['idFrontImage'] = userInfo['idFrontImage'] ?? '';
+        strings['idBackImage'] = userInfo['idBackImage'] ?? '';
       }
     } else if (userInfo['role'] == 'agents') {
       _preferences.addHint = 'Business name';
@@ -275,14 +275,14 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                 try {
                                   if (widget.info['role'] == 'architect') {
                                     await NetworkUtility.deleteImage(
-                                        widget.info['idFrontImage']);
+                                       key: widget.info['idFrontImageKey']);
                                     await NetworkUtility.deleteImage(
-                                        widget.info['idBackImage']);
+                                        key: widget.info['idBackImageKey']);
                                   } else if (widget.info['role'] == 'agents') {
                                     await NetworkUtility.deleteImage(
-                                        widget.info['tinImage']);
+                                       key: widget.info['tinImageKey']);
                                     await NetworkUtility.deleteImage(
-                                        widget.info['binImage']);
+                                       key: widget.info['binImageKey']);
                                   }
                                   final jWTToken = Hive.box('adminInfo').get('token');
                                   customerBloc.add(
@@ -338,20 +338,20 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                                 if (widget.info['role'] ==
                                                     'architect') {
                                                   await NetworkUtility
-                                                      .deleteImage(widget.info[
-                                                          'idFrontImage']);
+                                                      .deleteImage(key: widget.info[
+                                                          'idFrontImageKey']);
                                                   await NetworkUtility
-                                                      .deleteImage(widget
-                                                          .info['idBackImage']);
+                                                      .deleteImage( key: widget
+                                                          .info['idBackImageKey']);
                                                 } else if (widget
                                                         .info['role'] ==
                                                     'agents') {
                                                   await NetworkUtility
-                                                      .deleteImage(widget
-                                                          .info['tinImage']);
+                                                      .deleteImage(key: widget
+                                                          .info['tinImageKey']);
                                                   await NetworkUtility
-                                                      .deleteImage(widget
-                                                          .info['binImage']);
+                                                      .deleteImage(key: widget
+                                                          .info['binImageKey']);
                                                 }
                                               } on FirebaseException catch (e) {
                                                 if (kDebugMode) {

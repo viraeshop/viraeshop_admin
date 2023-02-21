@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
+import 'package:viraeshop_api/apiCalls/category.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TestApi extends StatefulWidget {
@@ -41,16 +42,24 @@ class _TestApiState extends State<TestApi> {
               children: [
                 ElevatedButton(
                   child: const Text(
-                    'Update Email',
+                    'Add Category',
                     style: kProductNameStyle,
                   ),
                   onPressed: () async{
-                    snackBar(text: 'Updating', context: context, duration: 100,);
-                    try{
-                      final user = await auth.signInWithEmailAndPassword(email: 'omar@gmail.com', password: '2337271a');
-                      final update = await user.user?.updateEmail('viraeshop@gmail.com');
-                      final passwordUpdate = user.user?.updatePassword("233727");
-                      toast(context: context, title: 'Updated successfully');
+                    // snackBar(text: 'Updating', context: context, duration: 100,);
+                     try{
+                    //   final user = await auth.signInWithEmailAndPassword(email: 'omar@gmail.com', password: '2337271a');
+                    //   final update = await user.user?.updateEmail('viraeshop@gmail.com');
+                    //   final passwordUpdate = user.user?.updatePassword("233727");
+                    //   toast(context: context, title: 'Updated successfully');
+                       final jWTToken = Hive.box('adminInfo').get('token');
+                       CategoryCalls().addCategory(
+                         {
+                           'category': 'Api testing',
+                           'image': '',
+                           'imageKey': '',
+                         },
+                        jWTToken);
                     } catch (e){
                       print(e);
                     }

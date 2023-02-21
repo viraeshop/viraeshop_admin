@@ -54,8 +54,10 @@ class _SupplierPayState extends State<SupplierPay> {
   bool invoiceExist = false;
   List payList = [];
   List images = [];
-  String updatingImage = '';
+  Map<String, dynamic> updatingImageData = {};
   num paidAmount = 0;
+  bool onEditPay = false;
+  Map<String, dynamic> data = {};
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
@@ -65,8 +67,22 @@ class _SupplierPayState extends State<SupplierPay> {
         if (state is OnErrorSupplierInvoiceState) {
           setState(() {
             isLoading = false;
+            onEditPay = false;
             if (state.message == 'Invoice not found') {
-              invoiceExist = false;
+              setState(() {
+                supplierInvoice.clear();
+                images.clear();
+                payList.clear();
+                imageBytes?.clear();
+                invoiceCont.clear();
+                invoiceAmountCont.clear();
+                dueAmountCont.clear();
+                payAmountCont.clear();
+                noteCont.clear();
+                paidAmount = 0;
+                invoiceExist = false;
+                imageFilePath = '';
+              });
             }
           });
           if (state.message != 'Invoice not found') {
@@ -81,8 +97,10 @@ class _SupplierPayState extends State<SupplierPay> {
           Hive.box('shops').clear();
           setState(() {
             isLoading = false;
+            onEditPay = false;
             invoiceExist = true;
             supplierInvoice = state.supplierInvoiceModel.toJson();
+            invoiceCont.text = supplierInvoice['invoiceNo'];
             dueAmountCont.text = supplierInvoice['due'].toString();
             payAmountCont.text = supplierInvoice['paid'].toString();
             paidAmount = supplierInvoice['paid'];
@@ -96,7 +114,11 @@ class _SupplierPayState extends State<SupplierPay> {
           });
         } else if (state is RequestFinishedSupplierInvoiceState) {
           setState(() {
+            onEditPay = false;
             isLoading = false;
+            if(state.response.message == 'Invoice created successfully'){
+              invoiceExist = true;
+            }
           });
           toast(context: context, title: state.response.message);
         }
@@ -136,21 +158,33 @@ class _SupplierPayState extends State<SupplierPay> {
                   images.isNotEmpty
                       ? GestureDetector(
                           onTap: () async {
-                            if (kIsWeb) {
-                              final Tuple2<Uint8List?, String?> images =
-                                  await getImageWeb('supplier_payments');
-                              setState(() {
-                                imageBytes = images.item1;
-                                updatingImage = images.item2 ?? '';
-                              });
-                            } else {
-                              final Tuple2<String?, String?> images =
-                                  await getImageNative('supplier_payments');
-                              setState(() {
-                                imageFilePath = images.item1;
-                                updatingImage = images.item2 ?? '';
+                            if(!kIsWeb){
+                              getImageNative('returns').then((value){
+                                setState(() {
+                                  imageFilePath = value['path'];
+                                  updatingImageData = value['imageData'];
+                                });
+                              }).catchError((e){
+                                if (kDebugMode) {
+                                  print(e);
+                                }
                               });
                             }
+                            // if (kIsWeb) {
+                            //   final Tuple2<Uint8List?, String?> images =
+                            //       await getImageWeb('supplier_payments');
+                            //   setState(() {
+                            //     imageBytes = images.item1;
+                            //     updatingImageData = images.item2 ?? '';
+                            //   });
+                            // } else {
+                            //   final Tuple2<String?, String?> images =
+                            //       await getImageNative('supplier_payments');
+                            //   setState(() {
+                            //     imageFilePath = images.item1;
+                            //     updatingImageData = images.item2 ?? '';
+                            //   });
+                            // }
                           },
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10.0),
@@ -166,21 +200,33 @@ class _SupplierPayState extends State<SupplierPay> {
                           imagePath: imageFilePath,
                           images: imageBytes,
                           onTap: () async {
-                            if (kIsWeb) {
-                              final Tuple2<Uint8List?, String?> images =
-                                  await getImageWeb('supplier_payments');
-                              setState(() {
-                                imageBytes = images.item1;
-                                updatingImage = images.item2 ?? '';
-                              });
-                            } else {
-                              final Tuple2<String?, String?> images =
-                                  await getImageNative('supplier_payments');
-                              setState(() {
-                                imageFilePath = images.item1;
-                                updatingImage = images.item2 ?? '';
+                            if(!kIsWeb){
+                              getImageNative('returns').then((value){
+                                setState(() {
+                                  imageFilePath = value['path'];
+                                  updatingImageData = value['imageData'];
+                                });
+                              }).catchError((e){
+                                if (kDebugMode) {
+                                  print(e);
+                                }
                               });
                             }
+                            // if (kIsWeb) {
+                            //   final Tuple2<Uint8List?, String?> images =
+                            //       await getImageWeb('supplier_payments');
+                            //   setState(() {
+                            //     imageBytes = images.item1;
+                            //     updatingImageData = images.item2 ?? '';
+                            //   });
+                            // } else {
+                            //   final Tuple2<String?, String?> images =
+                            //       await getImageNative('supplier_payments');
+                            //   setState(() {
+                            //     imageFilePath = images.item1;
+                            //     updatingImageData = images.item2 ?? '';
+                            //   });
+                            // }
                           },
                         ),
                   const SizedBox(
@@ -217,6 +263,9 @@ class _SupplierPayState extends State<SupplierPay> {
                                   'supplierInfos': {
                                     'businessName': box.get('businessName'),
                                     'supplierId': box.get('supplierId'),
+                                    'address': box.get('address'),
+                                    'mobile': box.get('mobile'),
+                                    'email': box.get('email'),
                                   },
                                   'supplierId': box.get('supplierId'),
                                 });
@@ -360,6 +409,7 @@ class _SupplierPayState extends State<SupplierPay> {
                                       num.parse(invoiceAmountCont.text ?? '0') -
                                           (num.parse(value) + paidAmount);
                                   setState(() {
+                                    onEditPay = true;
                                     dueAmountCont.text =
                                         due >= 0 ? due.toString() : '0';
                                   });
@@ -410,49 +460,69 @@ class _SupplierPayState extends State<SupplierPay> {
                           });
                           final supplierInvoiceBloc =
                               BlocProvider.of<SupplierInvoiceBloc>(context);
-                          if ((num.parse(invoiceAmountCont.text) -
-                                  (paidAmount +=
-                                      num.parse(payAmountCont.text ?? '0'))) >=
-                              0) {
-                            paidAmount += num.parse(payAmountCont.text ?? '0');
-                            payList.add({
-                              'paid': num.parse(payAmountCont.text ?? '0'),
-                              'createdAt': dateToJson(Timestamp.now()),
-                              'refNo': invoiceCont.text,
-                            });
+                          if(onEditPay){
+                            if ((num.parse(invoiceAmountCont.text) -
+                                (paidAmount +
+                                    num.parse(payAmountCont.text ?? '0'))) >=
+                                0) {
+                              paidAmount += num.parse(payAmountCont.text ?? '0');
+                              payList.add({
+                                'paid': num.parse(payAmountCont.text ?? '0'),
+                                'createdAt': dateToJson(Timestamp.now()),
+                                'refNo': invoiceCont.text,
+                              });
+                            }
+                            supplierInvoice['payList'] = payList;
+                            if(!supplierInvoice.containsKey('buyPrice')){
+                              supplierInvoice['buyPrice'] = num.parse(invoiceAmountCont.text ?? '0');
+                            }
                           }
-                          supplierInvoice['payList'] = payList;
-                          supplierInvoice['images'].add({
-                            'refNo': invoiceCont.text,
-                            'imageLink': updatingImage,
-                            'createdAt': dateToJson(Timestamp.now()),
-                          });
-                          Map<String, dynamic> data = {
-                            'invoiceNo': invoiceCont.text,
-                            'paid': paidAmount,
-                            'due': num.parse(dueAmountCont.text ?? '0'),
+                          if(updatingImageData.isNotEmpty){
+                            if(supplierInvoice.containsKey('images')){
+                              supplierInvoice['images'].add({
+                                'refNo': refCont.text,
+                                'imageLink': updatingImageData,
+                                'imageKey': updatingImageData['key'],
+                                'createdAt': dateToJson(Timestamp.now()),
+                              });
+                            }else{
+                              supplierInvoice['images'] = [{
+                                'refNo': refCont.text,
+                                'imageLink': updatingImageData,
+                                'imageKey': updatingImageData['key'],
+                                'createdAt': dateToJson(Timestamp.now()),
+                              }];
+                            }
+                          }
+                          data = {
+                            if(!invoiceExist)'invoiceNo': invoiceCont.text,
+                            if(onEditPay)'paid': paidAmount,
+                            if(onEditPay)'due': num.parse(dueAmountCont.text ?? '0'),
                             'buyPrice':
                                 num.parse(invoiceAmountCont.text ?? '0'),
-                            'refNo': refCont.text,
+                            if(!invoiceExist)'refNo': refCont.text,
                             'description': noteCont.text,
-                            'supplierId': supplierInvoice['supplierId'],
-                            'payList': {
+                            if(!invoiceExist)'supplierId': supplierInvoice['supplierId'],
+                            if(onEditPay)'payList': {
                               'paid': num.parse(payAmountCont.text ?? '0'),
                               'createdAt': dateToJson(Timestamp.now()),
-                              'refNo': invoiceCont.text,
+                              'refNo': refCont.text,
                             },
-                            'images': {
-                              'refNo': invoiceCont.text,
-                              'imageLink': updatingImage,
+                            if(updatingImageData.isNotEmpty)'images': {
+                              'refNo': refCont.text,
+                              'imageLink': updatingImageData['url'],
+                              'imageKey': updatingImageData['key'],
                               'createdAt': dateToJson(Timestamp.now()),
                             },
                           };
+                          onEditPay = false;
                           if (invoiceExist) {
                             supplierInvoiceBloc.add(
                               UpdateSupplierInvoiceEvent(
                                 token: jWTToken,
-                                  invoiceNo: invoiceCont.text,
-                                  supplierInvoiceModel: data),
+                                  invoiceNo: refCont.text,
+                                  supplierInvoiceModel: data,
+                              ),
                             );
                           } else {
                             supplierInvoiceBloc.add(AddSupplierInvoiceEvent(

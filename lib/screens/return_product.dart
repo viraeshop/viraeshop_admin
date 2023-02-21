@@ -33,7 +33,7 @@ class ReturnProduct extends StatefulWidget {
 
 class _ReturnProductState extends State<ReturnProduct> {
   Uint8List? images;
-  String productImage = '';
+  Map<String, dynamic> productImage = {};
   String imagePath = '';
   List<TextEditingController> controllers =
       List.generate(4, (index) => TextEditingController());
@@ -88,17 +88,17 @@ class _ReturnProductState extends State<ReturnProduct> {
                     onTap: () {
                       try {
                         if(kIsWeb){
-                          getImageWeb('returns').then((value) {
-                            setState(() {
-                              images = value.item1;
-                              productImage = value.item2 ?? '';
-                            });
-                          });
+                          // getImageWeb('returns').then((value) {
+                          //   setState(() {
+                          //     images = value.item1;
+                          //     productImage = value.item2 ?? '';
+                          //   });
+                          // });
                         }else{
                           getImageNative('returns').then((value){
                             setState(() {
-                              imagePath = value.item1 ?? '';
-                              productImage = value.item2 ?? '';
+                              imagePath = value['path'];
+                              productImage = value['imageData'];
                             });
                           });
                         }
@@ -159,7 +159,8 @@ class _ReturnProductState extends State<ReturnProduct> {
                         'productName': controllers[1].text,
                         'productPrice': num.parse(controllers[2].text),
                         'reason': controllers[3].text,
-                        'image': productImage,
+                        'image': productImage['url'] ?? '',
+                        'imageKey': productImage['key'] ?? '',
                       };
                       returnBloc.add(AddReturnEvent(
                           token: jWTToken,

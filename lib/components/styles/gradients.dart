@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'colors.dart';
 
-final Gradient kLinearGradient = LinearGradient(
+const Gradient kLinearGradient = LinearGradient(
     colors: [
       kNewMainColor,
       Color(0xFF6ad5b4),
@@ -10,4 +10,5 @@ final Gradient kLinearGradient = LinearGradient(
     begin: FractionalOffset(1.0, 0.0),
     end: FractionalOffset(0.0, 0.0),
     stops: [0.0, 1.0],
-    tileMode: TileMode.clamp);
+    tileMode: TileMode.clamp,
+);

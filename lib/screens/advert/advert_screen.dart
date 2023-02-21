@@ -8,7 +8,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:viraeshop/adverts/adverts_event.dart';
 import 'package:viraeshop/adverts/adverts_state.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/category/categories.dart';
 import 'package:viraeshop_admin/reusable_widgets/drawer.dart';

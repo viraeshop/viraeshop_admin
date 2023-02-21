@@ -1,7 +1,7 @@
 name: viraeshop_admin
 description: Admin IOS and Android App for Viraeshop
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.2.1+26
+version: 1.2.2+33
 environment:
   sdk: ">=2.12.0 <3.0.0"
 dependencies:
@@ -51,6 +51,9 @@ dependencies:
   flutter_linkify: ^5.0.2
   bluetooth_thermal_printer: ^0.0.6
   flutter_styled_toast: ^2.0.0
+  amplify_flutter: ^0.6.0
+  amplify_auth_cognito: ^0.6.0
+  amplify_storage_s3: ^0.6.0
   file_saver: ^0.1.1
   viraeshop_api:
     path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api

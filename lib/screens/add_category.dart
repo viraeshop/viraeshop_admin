@@ -17,12 +17,12 @@ import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop/category/category_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../configs/baxes.dart';
+import '../configs/boxes.dart';
 
 class AddCategory extends StatefulWidget {
   final bool isEdit;
   final String category;
-  AddCategory({this.isEdit = false, this.category = ''});
+  const AddCategory({this.isEdit = false, this.category = ''});
 
   @override
   _AddCategoryState createState() => _AddCategoryState();
@@ -32,7 +32,7 @@ class _AddCategoryState extends State<AddCategory> {
   TextEditingController nameController = TextEditingController();
   bool load = false;
   Uint8List images = Uint8List(0);
-  String imageLink = '';
+  Map<String, dynamic> imageData = {};
   String imagePath = '';
   final _formKey = GlobalKey<FormState>();
   final jWTToken = Hive.box('adminInfo').get('token');
@@ -50,26 +50,27 @@ class _AddCategoryState extends State<AddCategory> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<CategoryBloc, CategoryState>(
-      listener: (context, state){
-        if(state is OnErrorCategoryState){
+      listener: (context, state) {
+        if (state is OnErrorCategoryState) {
           setState(() {
             load = false;
           });
           snackBar(text: state.message, context: context, duration: 50);
-        }else if(state is RequestFinishedCategoryState){
+        } else if (state is RequestFinishedCategoryState) {
           setState(() {
             load = false;
           });
-          if(widget.isEdit){
+          if (widget.isEdit) {
             toast(context: context, title: 'Category updated successfully');
-          }else{
+          } else {
             nameController.clear();
             toast(context: context, title: 'Category created successfully');
           }
           List categories = Hive.box(productsBox).get(catKey);
           categories.add({
             'category': nameController.text,
-            'image': imageLink,
+            'image': imageData['url'],
+            'imageKey': imageData['key'],
           });
           Hive.box(productsBox).put(catKey, categories);
         }
@@ -79,7 +80,7 @@ class _AddCategoryState extends State<AddCategory> {
         child: Scaffold(
           appBar: AppBar(
             leading: IconButton(
-              onPressed: (){
+              onPressed: () {
                 final categoryBloc = BlocProvider.of<CategoryBloc>(context);
                 categoryBloc.add(GetCategoriesEvent());
                 Navigator.pop(context);
@@ -109,18 +110,18 @@ class _AddCategoryState extends State<AddCategory> {
                     children: [
                       imagePickerWidget(
                         onTap: () {
-                          if(kIsWeb){
-                            getImageWeb('category_images').then((value) {
+                          if (kIsWeb) {
+                            // getImageWeb('category_images').then((value) {
+                            //   setState(() {
+                            //     images = value.item1!;
+                            //     imageData = value.item2!;
+                            //   });
+                            // });
+                          } else {
+                            getImageNative('category_images').then((value) {
                               setState(() {
-                                images = value.item1!;
-                                imageLink = value.item2!;
-                              });
-                            });
-                          }else{
-                            getImageNative('category_images').then((value){
-                              setState(() {
-                                imagePath = value.item1!;
-                                imageLink = value.item2!;
+                                imagePath = value['path'];
+                                imageData = value['imageData'];
                               });
                             });
                           }
@@ -139,7 +140,8 @@ class _AddCategoryState extends State<AddCategory> {
                           return null;
                         },
                         controller: nameController,
-                        decoration: const InputDecoration(labelText: 'Enter name.'),
+                        decoration:
+                            const InputDecoration(labelText: 'Enter name.'),
                       ),
                       const Padding(
                         padding: EdgeInsets.all(8.0),
@@ -159,7 +161,6 @@ class _AddCategoryState extends State<AddCategory> {
               text: 'Add Category',
               onTap: () {
                 final categoryBloc = BlocProvider.of<CategoryBloc>(context);
-                AdminCrud adminCrud = AdminCrud();
                 if (_formKey.currentState!.validate()) {
                   setState(() {
                     load = true;
@@ -167,17 +168,25 @@ class _AddCategoryState extends State<AddCategory> {
                   if (widget.isEdit) {
                     categoryBloc.add(UpdateCategoryEvent(
                         token: jWTToken,
-                        categoryId: widget.category, categoryModel: {
-                      'category': nameController.text,
-                      'image': imageLink,
-                    }));
-                  } else {
-                    categoryBloc.add(AddCategoryEvent(
-                        token: jWTToken,
+                        categoryId: widget.category,
                         categoryModel: {
+                          'category': nameController.text,
+                          'image': imageData['url'],
+                          'imageKey': imageData['key'],
+                        }));
+                  } else {
+                    Map<String, dynamic> data = {
                       'category': nameController.text,
-                      'image': imageLink,
-                    }));
+                      'image': imageData['url'],
+                      'imageKey': imageData['key'],
+                    };
+                    print('data to go: $data');
+                    categoryBloc.add(
+                      AddCategoryEvent(
+                        token: jWTToken,
+                        categoryModel: data,
+                      ),
+                    );
                   }
                 } else {
                   showDialogBox(

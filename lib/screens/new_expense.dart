@@ -34,7 +34,7 @@ class _NewExpenseState extends State<NewExpense>{
   AdminCrud adminCrud = AdminCrud();
   String imagePath = '';
   Uint8List? images;
-  String productImage = '';
+  Map<String, dynamic> productImageData = {};
   bool isLoading = false;
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
@@ -82,17 +82,17 @@ class _NewExpenseState extends State<NewExpense>{
                   onTap: () {
                     try {
                       if(kIsWeb){
-                        getImageWeb('expenses').then((value) {
-                          setState(() {
-                            images = value.item1;
-                            productImage = value.item2 ?? '';
-                          });
-                        });
+                        // getImageWeb('expenses').then((value) {
+                        //   setState(() {
+                        //     images = value.item1;
+                        //     productImageData = value.item2 ?? '';
+                        //   });
+                        // });
                       }else{
                         getImageNative('expenses').then((value){
                           setState(() {
-                            imagePath = value.item1!;
-                            productImage = value.item2 ?? '';
+                            imagePath = value['path'];
+                            productImageData = value['imageData'];
                           });
                         });
                       }
@@ -167,7 +167,8 @@ class _NewExpenseState extends State<NewExpense>{
                         'title': expenseTitle.text,
                         'cost': expenseCost.text != null ? num.parse(expenseCost.text) : 0,
                         'description': expenseDescription.text ?? '',
-                        'image': productImage,
+                        'image': productImageData['url'],
+                        'imageKey': productImageData['key'],
                         'adminId': adminId,
                       };
                       expenseBloc.add(

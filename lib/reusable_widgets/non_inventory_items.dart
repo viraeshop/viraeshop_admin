@@ -225,7 +225,6 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                       'totalPrice',
                       totalPrice + price,
                     );
-                    // print('keys: ${Hive.box<Cart>('cart').keys}');
                     box.put('isAdded', true);
                     int id = random.nextInt(100);
                     cart.put(
@@ -237,7 +236,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                         quantity: 1,
                         unitPrice: num.parse(_controller.text),
                         isInventory: false,
-                        shopName: shopBox.get('businessName'),
+                        supplierId: shopBox.get('supplierId').toString(),
                       ),
                     );
 

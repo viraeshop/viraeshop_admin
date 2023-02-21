@@ -22,7 +22,7 @@ import 'package:viraeshop_api/utils/utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../components/ui_components/delete_popup.dart';
-import '../../configs/baxes.dart';
+import '../../configs/boxes.dart';
 import '../transactions/non_inventory_transaction_info.dart';
 
 class DueReceipt extends StatefulWidget {
@@ -108,7 +108,7 @@ class _DueReceiptState extends State<DueReceipt> {
             isLoading = false;
             onEdit = true;
           });
-          List deletedItems = editedInvoice['deletedItems'];
+          List deletedItems = editedInvoice['deletedItems'] ?? [];
           if (deletedItems.isNotEmpty) {
             List products = Hive.box(productsBox).get(productsKey);
             for (var item in deletedItems) {
@@ -350,24 +350,20 @@ class _DueReceiptState extends State<DueReceipt> {
                                           items[i]['productPrice'] += unitPrice;
                                           subTotal += unitPrice;
                                           due += unitPrice;
-                                          if (editedInvoice['editedItems'] ==
-                                              null) {
-                                            editedInvoice['editedItems'] = [
-                                              items[i]
-                                            ];
+                                          if (editedInvoice['editedItems'] == null) {
+                                            editedInvoice['editedItems'] = [items[i]];
                                           } else {
-                                            List onEditItems =
-                                                editedInvoice['editedItems'];
-                                            int index = getItemIndex(
-                                                onEditItems, items[i]);
+                                            List onEditItems = editedInvoice['editedItems'];
+                                            int index = getItemIndex(onEditItems, items[i]);
                                             if (index == -1) {
                                               onEditItems.add(items[i]);
                                             } else {
                                               onEditItems[index] = items[i];
                                             }
-                                            editedInvoice['editedItems'] =
-                                                onEditItems;
+                                            editedInvoice['editedItems'] = onEditItems;
                                           }
+                                          editedInvoice['due'] = due;
+                                          editedInvoice['price'] = subTotal;
                                         });
                                       },
                                       icon: Icons.add,
@@ -387,6 +383,8 @@ class _DueReceiptState extends State<DueReceipt> {
                                             } else if (due - unitPrice < 0) {
                                               due = 0;
                                             }
+                                            editedInvoice['due'] = due;
+                                            editedInvoice['price'] = subTotal;
                                             if (editedInvoice['editedItems'] ==
                                                 null) {
                                               editedInvoice['editedItems'] = [
@@ -464,6 +462,8 @@ class _DueReceiptState extends State<DueReceipt> {
                                         0) {
                                       due = 0;
                                     }
+                                    editedInvoice['due'] = due;
+                                    editedInvoice['price'] = subTotal;
                                     items.removeAt(i);
                                   });
                                 } : null,
@@ -755,7 +755,7 @@ class _DueReceiptState extends State<DueReceipt> {
                     flex: 1,
                     child: IconButton(
                       onPressed: isManageDue
-                          ? () async {
+                          ? () {
                               setState(() {
                                 isLoading = true;
                                 onEdit = true;

@@ -8,7 +8,7 @@ import 'package:viraeshop/expense/expense_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/screens/product_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

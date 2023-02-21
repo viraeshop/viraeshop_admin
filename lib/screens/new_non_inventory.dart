@@ -36,7 +36,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
     return TextEditingController();
   });
   Timestamp date = Timestamp.now();
-  String? uploadImageString = '';
+  Map<String, dynamic> uploadImageString = {};
   String errorMessage = '', invoiceNo = '';
   String? receipt;
   Uint8List? image;
@@ -138,24 +138,26 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                           onTap: () {
                             try {
                               if (kIsWeb) {
-                                getImageWeb('product_expense_images')
-                                    .then((value) {
-                                  setState(() {
-                                    image = value.item1;
-                                    uploadImageString = value.item2;
-                                  });
-                                });
+                                // getImageWeb('product_expense_images')
+                                //     .then((value) {
+                                //   setState(() {
+                                //     image = value.item1;
+                                //     uploadImageString = value.item2;
+                                //   });
+                                // });
                               } else {
                                 getImageNative('product_expense_images')
                                     .then((value) {
                                   setState(() {
-                                    imagePath = value.item1!;
-                                    uploadImageString = value.item2;
+                                    imagePath = value['path'];
+                                    uploadImageString = value['imageData'];
                                   });
                                 });
                               }
                             } catch (e) {
-                              print(e);
+                              if (kDebugMode) {
+                                print(e);
+                              }
                             }
                           },
                           images: image,
@@ -165,21 +167,21 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                           onTap: () {
                             try {
                               if (kIsWeb) {
-                                getImageWeb('product_expense_images')
-                                    .then((value) {
-                                  setState(() {
-                                    image = value.item1;
-                                    uploadImageString = value.item2;
-                                    receipt = value.item2!;
-                                  });
-                                });
+                                // getImageWeb('product_expense_images')
+                                //     .then((value) {
+                                //   setState(() {
+                                //     image = value.item1;
+                                //     uploadImageString = value.item2;
+                                //     receipt = value.item2!;
+                                //   });
+                                // });
                               } else {
                                 getImageNative('product_expense_images')
                                     .then((value) {
                                   setState(() {
-                                    imagePath = value.item1!;
-                                    uploadImageString = value.item2;
-                                    receipt = value.item2!;
+                                    imagePath = value['path'];
+                                    uploadImageString = value['imageData'];
+                                    receipt = value['imageData']['url'];
                                   });
                                 });
                               }
@@ -282,7 +284,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                               dropdownValue = value.toString();
                               currentShop = shop;
                               receipt = currentShop.images.isNotEmpty
-                                  ? currentShop.images[0]
+                                  ? currentShop.images[0]['imageLink']
                                   : null;
                               controllers[3].text =
                                   currentShop.price.toString();
@@ -373,7 +375,8 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                   element.supplierInfo.businessName) {
                                 updatingShopId = element.shopId!;
                                 Map<String, dynamic> imageList = {
-                                      'imageLink': uploadImageString,
+                                      'imageLink': uploadImageString['url'],
+                                      'imageKey': uploadImageString['key'],
                                       'shopId': element.shopId
                                     },
                                     payLists = {

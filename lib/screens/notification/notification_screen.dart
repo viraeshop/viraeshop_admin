@@ -202,7 +202,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
 
   String imagePath = '';
 
-  String imageLink = 'https://www.google.com/';
+  Map<String, dynamic> imageLinkData = {};
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
@@ -225,7 +225,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
               subTitleController.clear();
               bodyController.clear();
               imageBytes.clear();
-              imageLink = '';
+              imageLinkData.clear();
             });
           }
         },
@@ -296,17 +296,17 @@ class _NotificationMakerState extends State<NotificationMaker> {
                         InkWell(
                           onTap: () {
                             if (kIsWeb) {
-                              getImageWeb('notifications').then((value) {
-                                setState(() {
-                                  imageBytes = value.item1!;
-                                  imageLink = value.item2!;
-                                });
-                              });
+                              // getImageWeb('notifications').then((value) {
+                              //   setState(() {
+                              //     imageBytes = value.item1!;
+                              //     imageLink = value.item2!;
+                              //   });
+                              // });
                             } else {
                               getImageNative('notifications').then((value) {
                                 setState(() {
-                                  imagePath = value.item1!;
-                                  imageLink = value.item2!;
+                                  imagePath = value['path'];
+                                  imageLinkData = value['imageData'];
                                 });
                               });
                             }
@@ -350,7 +350,8 @@ class _NotificationMakerState extends State<NotificationMaker> {
                               'title': titleController.text,
                               'subTitle': subTitleController.text,
                               'body': bodyController.text,
-                              'image': imageLink,
+                              'image': imageLinkData['url'],
+                              'imageKey': imageLinkData['key'],
                             };
                             notificationBloc.add(AddNotificationEvent(
                               token: jWTToken,

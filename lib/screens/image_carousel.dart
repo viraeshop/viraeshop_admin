@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,7 +39,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
   void initState() {
     // TODO: implement initState
     if (widget.isUpdate) {
-      allImages = widget.images!;
+      allImages = widget.images!.toList();
+      print(allImages);
       //   this.productImage = widget.images!;
       //   print('Init State');
       // print('All Images: $allImages');
@@ -90,9 +92,11 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           children: [
                             allImages.isNotEmpty
                                 ? ImageFromUpdate(
-                                    image: allImages[0] is String
-                                        ? allImages[0]
-                                        : '',
+                                    image: allImages[0] is Map<String, dynamic>
+                                        ? allImages[0]['imageLink']
+                                        : allImages[0] is String
+                                            ? allImages[0]
+                                            : '',
                                     isUpdate: widget.isUpdate,
                                     imageBytes: allImages[0] is Uint8List
                                         ? allImages[0]
@@ -105,17 +109,16 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                     ),
                                   ),
                             topCancelButton(onTap: () async {
-                              if (allImages[0] is String) {
-                                if (allImages[0].contains('https')) {
-                                  try {
-                                    await NetworkUtility.deleteImage(
-                                        allImages[0]);
-                                  } on FirebaseException catch (e) {
-                                    if (kDebugMode) {
-                                      print(e);
-                                    }
+                              if (allImages[0] is Map<String, dynamic>) {
+                                try {
+                                  await NetworkUtility.deleteImage(
+                                      key: allImages[0]['imageKey']);
+                                } on FirebaseException catch (e) {
+                                  if (kDebugMode) {
+                                    print(e);
                                   }
                                 }
+                              } else if (allImages[0] is String) {
                                 filesPath.removeWhere(
                                     (key, value) => value == allImages[0]);
                               } else {
@@ -159,22 +162,28 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           }
                           return Stack(fit: StackFit.expand, children: [
                             ImageFromUpdate(
-                                image: allImages[i], isUpdate: widget.isUpdate),
+                                image: allImages[i] is Map<String, dynamic>
+                                    ? allImages[i]['imageLink']
+                                    : allImages[i] is String
+                                    ? allImages[i]
+                                    : '',
+                              isUpdate: widget.isUpdate,
+                            ),
                             topCancelButton(onTap: () async {
                               if (kDebugMode) {
                                 print('initial List: $filesPath');
                               }
-                              if (allImages[i] is String) {
-                                if (allImages[i].contains('https')) {
-                                  try {
-                                    await NetworkUtility.deleteImage(
-                                        allImages[i]);
-                                  } on FirebaseException catch (e) {
-                                    if (kDebugMode) {
-                                      print(e);
-                                    }
+                              if (allImages[i] is Map<String, dynamic>) {
+                                try {
+                                  await NetworkUtility.deleteImage(
+                                    key: allImages[i]['imageKey'],
+                                  );
+                                } on FirebaseException catch (e) {
+                                  if (kDebugMode) {
+                                    print(e);
                                   }
                                 }
+                              } else if (allImages[i] is String) {
                                 filesPath.removeWhere(
                                     (key, value) => value == allImages[i]);
                               } else {
@@ -228,13 +237,17 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           }
                         } else {
                           for (int i = 0; i < filesNames.length; i++) {
-                            String imageUrl =
+                            Map<String, dynamic> imageUrlData =
                                 await NetworkUtility.uploadImageFromNative(
-                                    File(filesPath[filesNames[i]]),
-                                    filesNames[i],
-                                    'product_images');
-                            print('imageUrl: $imageUrl');
-                            productImage.add(imageUrl);
+                              file: File(filesPath[filesNames[i]]),
+                              fileName: filesNames[i],
+                              folder: 'product_images',
+                            );
+                            print('imageUrl: $imageUrlData');
+                            productImage.add({
+                              'imageLink': imageUrlData['url'],
+                              'imageKey': imageUrlData['key'],
+                            });
                           }
                         }
                         Hive.box('images')
@@ -275,10 +288,15 @@ class _ImageCarouselState extends State<ImageCarousel> {
       /// Replacing the first image
       if (isFirst && allImages.isNotEmpty) {
         try {
-          if (allImages[0].contains('http')) {
-            await NetworkUtility.deleteImage(allImages[0]);
+          if (allImages[0] is Map<String, dynamic>) {
+            await NetworkUtility.deleteImage(key: allImages[0]['imageKey']);
           }
         } on FirebaseException catch (e) {
+          snackBar(
+            text: e.message!,
+            context: context,
+            duration: 600,
+          );
           if (kDebugMode) {
             print(e.message);
           }
@@ -314,7 +332,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
           }
           filesPath[fileName] = filePath;
         });
-        print('total images: $filesPath');
+        print('total images: $filePath');
         // print('Replaced: $isReplaced');
       }
     }

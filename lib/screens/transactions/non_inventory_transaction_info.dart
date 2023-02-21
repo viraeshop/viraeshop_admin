@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 import 'package:viraeshop_api/utils/utils.dart';
@@ -66,168 +66,166 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
           style: kAppBarTitleTextStyle,
         ),
       ),
-      body: Container(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// name
-                  Text(
-                    '${supplier?.businessName}',
-                    style: kTotalSalesStyle,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      /// mobile
-                      Text(
-                        '${supplier?.mobile}',
-                        style: kProductNameStylePro,
-                      ),
-                      textContainer(date),
-                    ],
-                  ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// name
+                Text(
+                  '${supplier?.businessName}',
+                  style: kTotalSalesStyle,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    /// mobile
+                    Text(
+                      '${supplier?.mobile}',
+                      style: kProductNameStylePro,
+                    ),
+                    textContainer(date),
+                  ],
+                ),
 
-                  /// email
-                  Text(
-                    'Email: ${supplier?.email}',
-                    style: kProductNameStylePro,
-                  ),
+                /// email
+                Text(
+                  'Email: ${supplier?.email}',
+                  style: kProductNameStylePro,
+                ),
 
-                  /// address
-                  Text(
-                    '${supplier?.address}',
-                    style: kProductNameStylePro,
-                  ),
-                  const SizedBox(
-                    height: 10.0,
-                  ),
-                  Row(
-                    children: [
-                      textContainer('Invoice No.'),
-                      const SizedBox(
-                        width: 5.0,
-                      ),
+                /// address
+                Text(
+                  '${supplier?.address}',
+                  style: kProductNameStylePro,
+                ),
+                const SizedBox(
+                  height: 10.0,
+                ),
+                Row(
+                  children: [
+                    textContainer('Invoice No.'),
+                    const SizedBox(
+                      width: 5.0,
+                    ),
 
-                      /// Invoice no
-                      Text(
-                        widget.invoiceId,
-                        style: kTotalSalesStyle,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  images.isEmpty
-                      ? SizedBox(
+                    /// Invoice no
+                    Text(
+                      widget.invoiceId,
+                      style: kTotalSalesStyle,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 10.0,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                images.isEmpty
+                    ? SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.45,
+                        width: MediaQuery.of(context).size.width * 0.4,
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(5.0),
+                        child: CachedNetworkImage(
+                          imageUrl: images[imageIndex]['imageLink'],
+                          errorWidget: (context, url, childs) {
+                            return Image.asset('assets/default.jpg');
+                          },
                           height: MediaQuery.of(context).size.height * 0.45,
                           width: MediaQuery.of(context).size.width * 0.4,
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(5.0),
-                          child: CachedNetworkImage(
-                            imageUrl: images[imageIndex]['imageLink'],
-                            errorWidget: (context, url, childs) {
-                              return Image.asset('assets/default.jpg');
-                            },
-                            height: MediaQuery.of(context).size.height * 0.45,
-                            width: MediaQuery.of(context).size.width * 0.4,
-                          ),
                         ),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    buttons(
-                        title: 'Previous',
-                        onTap: () {
-                          if (imageIndex > 0) {
-                            setState(() {
-                              imageIndex--;
-                              Timestamp timestamp = dateFromJson(
-                                  payList[imageIndex]['createdAt']);
-                              date = formatter.format(timestamp.toDate());
-                            });
-                          }
-                        }),
-                    const SizedBox(
-                      width: 10.0,
-                    ),
-                    buttons(
-                        title: 'Next',
-                        onTap: () {
-                          if (imageIndex < images.length - 1) {
-                            setState(() {
-                              imageIndex++;
-                              Timestamp timestamp = dateFromJson(
-                                  payList[imageIndex]['createdAt']);
-                              date = formatter.format(timestamp.toDate());
-                            });
-                          }
-                        }),
-                  ]),
+                      ),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  buttons(
+                      title: 'Previous',
+                      onTap: () {
+                        if (imageIndex > 0) {
+                          setState(() {
+                            imageIndex--;
+                            Timestamp timestamp = dateFromJson(
+                                payList[imageIndex]['createdAt']);
+                            date = formatter.format(timestamp.toDate());
+                          });
+                        }
+                      }),
                   const SizedBox(
-                    height: 7.0,
+                    width: 10.0,
                   ),
-                  Text(
-                    'Total Buying Price: ${widget.data['buyPrice']}$bdtSign',
-                    style: kTableCellStyle,
-                  ),
-                  const SizedBox(
-                    height: 7.0,
-                  ),
-                  Column(
-                    children: payList.isEmpty
-                        ? [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                textContainer('Pay'),
-                                const SizedBox(
-                                  width: 3.0,
-                                ),
-                                textContainer('        '),
-                                const SizedBox(
-                                  width: 3.0,
-                                ),
-                                textContainer('        '),
-                              ],
-                            )
-                          ]
-                        : List.generate(payList.length, (index) {
-                            Timestamp timestamp =
-                                dateFromJson(payList[index]['createdAt']);
-                            final formatter = DateFormat('MM/dd/yyyy');
-                            String dateTime = formatter.format(
-                              timestamp.toDate(),
-                            );
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                textContainer('Pay'),
-                                const SizedBox(
-                                  width: 3.0,
-                                ),
-                                textContainer(dateTime),
-                                const SizedBox(
-                                  width: 3.0,
-                                ),
-                                textContainer(
-                                    payList[index]['paid'].toString()),
-                              ],
-                            );
-                          }),
-                  ),
-                ],
-              )
-            ],
-          ),
+                  buttons(
+                      title: 'Next',
+                      onTap: () {
+                        if (imageIndex < images.length - 1) {
+                          setState(() {
+                            imageIndex++;
+                            Timestamp timestamp = dateFromJson(
+                                payList[imageIndex]['createdAt']);
+                            date = formatter.format(timestamp.toDate());
+                          });
+                        }
+                      }),
+                ]),
+                const SizedBox(
+                  height: 7.0,
+                ),
+                Text(
+                  'Total Buying Price: ${widget.data['buyPrice']}$bdtSign',
+                  style: kTableCellStyle,
+                ),
+                const SizedBox(
+                  height: 7.0,
+                ),
+                Column(
+                  children: payList.isEmpty
+                      ? [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              textContainer('Pay'),
+                              const SizedBox(
+                                width: 3.0,
+                              ),
+                              textContainer('        '),
+                              const SizedBox(
+                                width: 3.0,
+                              ),
+                              textContainer('        '),
+                            ],
+                          )
+                        ]
+                      : List.generate(payList.length, (index) {
+                          Timestamp timestamp =
+                              dateFromJson(payList[index]['createdAt']);
+                          final formatter = DateFormat('MM/dd/yyyy');
+                          String dateTime = formatter.format(
+                            timestamp.toDate(),
+                          );
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              textContainer('Pay'),
+                              const SizedBox(
+                                width: 3.0,
+                              ),
+                              textContainer(dateTime),
+                              const SizedBox(
+                                width: 3.0,
+                              ),
+                              textContainer(
+                                  payList[index]['paid'].toString()),
+                            ],
+                          );
+                        }),
+                ),
+              ],
+            )
+          ],
         ),
       ),
     );

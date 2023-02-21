@@ -347,25 +347,23 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                                 width: 20.0,
                               ),
                               roundedTextButton(onTap: () {
-                                num totalValue = 0;
                                 setState(() {
                                   isLoading = true;
-                                  // groupTupleTemp =
-                                  //     dateTuple3(transactionData, begin, end);
-                                  // totalsTemp = dateTotalTuple(
-                                  //     transactionData, begin, end);
-                                  // totalValue = sumTotal(totalsTemp);
-                                  // salesPercent = percentageCounter(
-                                  //     totalsTemp.item1, totalValue);
-                                  // duePercent = percentageCounter(
-                                  //     totalsTemp.item2, totalValue);
-                                  // paidPercent = percentageCounter(
-                                  //     totalsTemp.item3, totalValue);
-                                  // expensePercent = percentageCounter(
-                                  //     totalsTemp.item4, totalValue);
-                                  // profitPercent = percentageCounter(
-                                  //     totalsTemp.item5, totalValue);
                                 });
+                                final beginFormat = DateTime(begin.year, begin.month, begin.day);
+                                final endFormat = DateTime(end.year, end.month, end.day);
+                                if(beginFormat == endFormat){
+                                 int day = begin.day;
+                                 int month = begin.month;
+                                 int year = begin.year;
+                                 if(lastDayOfMonth(begin.day, begin.month) == LastDay.lastDay){
+                                   end = DateTime(begin.year, month++, 1);
+                                 }else if(lastDayOfMonth(begin.day, begin.month) == LastDay.endingYear){
+                                   end = DateTime(year++, 1, 1);
+                                 }else{
+                                   begin = DateTime(begin.year, begin.month, day++);
+                                 }
+                                }
                                 final transactionBloc =
                                     BlocProvider.of<TransactionsBloc>(context);
                                 transactionBloc.add(
@@ -373,8 +371,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                                     queryType: 'all',
                                     isFilter: true,
                                     token: jWTToken,
-                                    begin:
-                                        dateToJson(Timestamp.fromDate(begin)),
+                                    begin: begin.toUtc().toIso8601String(),
                                     end: dateToJson(Timestamp.fromDate(end)),
                                   ),
                                 );
@@ -468,6 +465,23 @@ class _TransactionDetailsState extends State<TransactionDetails> {
         });
       }
     }
+  }
+}
+
+enum LastDay {
+  lastDay,
+  endingYear,
+  none
+}
+
+LastDay lastDayOfMonth (int day, int month){
+  List monthOf30s = [30, 29, 31];
+  if(monthOf30s.contains(day) && month == 12){
+    return LastDay.endingYear;
+  }else if(monthOf30s.contains(day)){
+    return LastDay.lastDay;
+  }else{
+    return LastDay.none;
   }
 }
 

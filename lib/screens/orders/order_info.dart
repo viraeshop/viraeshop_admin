@@ -14,7 +14,7 @@ import 'package:viraeshop/transactions/barrel.dart';
 
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/baxes.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';

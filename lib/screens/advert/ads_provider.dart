@@ -73,12 +73,13 @@ class AdsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void saveImages({required String adId, image, Uint8List? imagesBytes, String? imagePath}) {
+  void saveImages({required String adId, image, Uint8List? imagesBytes, String? imagePath,required String imageKey}) {
     int index = adIndex(adId);
     if (kDebugMode) {
       print('Item index $index');
     }
     adCards[index]['image'] = image;
+    adCards[index]['imageKey'] = imageKey;
     adCards[index]['imageBytes'] = imagesBytes;
     adCards[index]['imagePath'] = imagePath;
     notifyListeners();

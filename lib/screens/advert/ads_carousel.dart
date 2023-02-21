@@ -158,7 +158,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                       ),
                     );
                   }
-                  String imageLink = ads[itemIndex]['image'];
+                  String imageKey = ads[itemIndex]['imageKey'] ?? '';
                   String currentId = ads[itemIndex]['adId'];
                   return AdsCard(
                     isEdit: ads[itemIndex]['isEdit'],
@@ -168,7 +168,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                     title2Controller: controllers[currentId]!['title2']!,
                     title3: ads[itemIndex]['title3'],
                     title3Controller: controllers[currentId]!['title3']!,
-                    image: ads[itemIndex]['image'],
+                    image: ads[itemIndex]['image'] ?? '',
                     imageBytes: ads[itemIndex]['imageBytes'],
                     imagePath: ads[itemIndex]['imagePath'],
                     onEdit: () {
@@ -176,9 +176,9 @@ class _AdsCarouselState extends State<AdsCarousel> {
                           .onEdit(ads[itemIndex]['adId'], true);
                     },
                     getImage: () async {
-                      if (imageLink.isNotEmpty) {
+                      if (imageKey.isNotEmpty) {
                         try {
-                          await NetworkUtility.deleteImage(imageLink);
+                          await NetworkUtility.deleteImage(key: ads[itemIndex]['imageKey']);
                         } on FirebaseException catch (e) {
                           if (kDebugMode) {
                             print(e);
@@ -186,20 +186,21 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         }
                       }
                       if (kIsWeb) {
-                        getImageWeb('ads_banners').then((value) {
-                          Provider.of<AdsProvider>(context, listen: false)
-                              .saveImages(
-                                  adId: ads[itemIndex]['adId'],
-                                  image: value.item2,
-                                  imagesBytes: value.item1!);
-                        });
+                        // getImageWeb('ads_banners').then((value) {
+                        //   Provider.of<AdsProvider>(context, listen: false)
+                        //       .saveImages(
+                        //           adId: ads[itemIndex]['adId'],
+                        //           image: value.item2,
+                        //           imagesBytes: value.item1!);
+                        // });
                       } else {
                         getImageNative('ads_banners').then((value) {
                           Provider.of<AdsProvider>(context, listen: false)
                               .saveImages(
                             adId: ads[itemIndex]['adId'],
-                            image: value.item2,
-                            imagePath: value.item1!,
+                            image: value['imageData']['url'],
+                            imageKey: value['imageData']['key'],
+                            imagePath: value['path'],
                           );
                         });
                       }
@@ -215,14 +216,15 @@ class _AdsCarouselState extends State<AdsCarousel> {
                       String title1 = controllers[currentId]!['title1']!.text;
                       String title2 = controllers[currentId]!['title2']!.text;
                       String title3 = controllers[currentId]!['title3']!.text;
-                      AdvertsModel advert = AdvertsModel(
-                        adId: currentId,
-                        image: ads[itemIndex]['imagePath'] ?? '',
-                        advertsCategory: ads[itemIndex]['adsCategory'],
-                        title1: title1,
-                        title2: title2,
-                        title3: title3,
-                      );
+                      Map<String, dynamic> advert = {
+                        'adId': currentId,
+                        'image': ads[itemIndex]['image'] ?? '',
+                        'imageKey': ads[itemIndex]['imageKey'] ?? '',
+                        'advertsCategory': ads[itemIndex]['adsCategory'],
+                        'title1': title1,
+                        'title2': title2,
+                        'title3': title3,
+                      };
                       final jWTToken = Hive.box('adminInfo').get('token');
                       advertBloc.add(UpdateAdvertEvent(
                         token: jWTToken,
@@ -240,7 +242,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         color: kNewMainColor,
                       );
                       try {
-                        await NetworkUtility.deleteImage(imageLink);
+                        await NetworkUtility.deleteImage(key: imageKey);
                         final jWTToken = Hive.box('adminInfo').get('token');
                         advertBloc.add(
                             DeleteAdvertEvent(

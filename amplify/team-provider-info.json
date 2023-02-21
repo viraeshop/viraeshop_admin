@@ -1,0 +1,23 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-viraeshop-staging-164825-authRole",
+      "UnauthRoleArn": "arn:aws:iam::902375473945:role/amplify-viraeshop-staging-164825-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::902375473945:role/amplify-viraeshop-staging-164825-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-viraeshop-staging-164825-deployment",
+      "UnauthRoleName": "amplify-viraeshop-staging-164825-unauthRole",
+      "StackName": "amplify-viraeshop-staging-164825",
+      "StackId": "arn:aws:cloudformation:ap-south-1:902375473945:stack/amplify-viraeshop-staging-164825/66804c40-ac87-11ed-a287-0a3c543bcc10",
+      "AmplifyAppId": "d2svmiz8y6o2dd"
+    },
+    "categories": {
+      "auth": {
+        "viraeshop46f9a7bd": {}
+      },
+      "storage": {
+        "s3Viraeshop": {}
+      }
+    }
+  }
+}

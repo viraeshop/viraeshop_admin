@@ -1,0 +1,18 @@
+{
+  "resourceName": "s3Viraeshop",
+  "policyUUID": "5bcadb3b",
+  "bucketName": "viraeshop651eba4c26954ae8a7fe1762740a14ef",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

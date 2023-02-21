@@ -25,8 +25,8 @@ class CartAdapter extends TypeAdapter<Cart> {
       buyPrice: fields[9] as num,
       discountPercent: fields[5] as num,
       discountValue: fields[6] as num,
-      isInventory: fields[7] as bool?,
-      shopName: fields[8] as String,
+      isInventory: fields[7] as bool,
+      supplierId: fields[8] as String,
     );
   }
 
@@ -51,7 +51,7 @@ class CartAdapter extends TypeAdapter<Cart> {
       ..writeByte(7)
       ..write(obj.isInventory)
       ..writeByte(8)
-      ..write(obj.shopName)
+      ..write(obj.supplierId)
       ..writeByte(9)
       ..write(obj.buyPrice);
   }

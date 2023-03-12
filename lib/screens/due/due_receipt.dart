@@ -150,7 +150,7 @@ class _DueReceiptState extends State<DueReceipt> {
                 onPressed: () {
                   if (widget.isNeedRefresh && onEdit) {
                     final transactionBloc =
-                        BlocProvider.of<TransactionsBloc>(context);
+                    BlocProvider.of<TransactionsBloc>(context);
                     transactionBloc.add(GetTransactionsEvent(
                       token: jWTToken,
                       queryType: widget.fromWho,
@@ -170,46 +170,46 @@ class _DueReceiptState extends State<DueReceipt> {
             centerTitle: true,
             titleTextStyle: kTextStyle1,
             actions: [
-                IconButton(
-                  onPressed: isManageDue ? () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return DeletePopup(
-                            onDelete: () async {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              Navigator.pop(context);
-                              final transactionBloc =
-                                  BlocProvider.of<TransactionsBloc>(context);
-                              transactionBloc.add(DeleteTransactionEvent(
-                                  token: jWTToken,
-                                  invoiceNo: widget.data['invoiceNo']));
+              IconButton(
+                onPressed: isManageDue ? () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return DeletePopup(
+                          onDelete: () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            Navigator.pop(context);
+                            final transactionBloc =
+                            BlocProvider.of<TransactionsBloc>(context);
+                            transactionBloc.add(DeleteTransactionEvent(
+                                token: jWTToken,
+                                invoiceNo: widget.data['invoiceNo']));
 
-                              ///TODO: Implement product delete here and update in single function
-                              // try {
-                              // await NetworkUtility.deleteInvoice(
-                              //     widget.data['invoiceNo']);
-                              // await NetworkUtility.updateProducts(items, true);
+                            ///TODO: Implement product delete here and update in single function
+                            // try {
+                            // await NetworkUtility.deleteInvoice(
+                            //     widget.data['invoiceNo']);
+                            // await NetworkUtility.updateProducts(items, true);
 
-                              // } on FirebaseException catch (e) {
-                              //   if (kDebugMode) {
-                              //     print(e.message);
-                              //   }
-                              // } finally {
-                              //   setState(() {
-                              //     isLoading = false;
-                              //   });
-                              // }
-                            },
-                          );
-                        });
-                  } : null,
-                  icon: const Icon(Icons.delete),
-                  color: kRedColor,
-                  iconSize: 30.0,
-                )
+                            // } on FirebaseException catch (e) {
+                            //   if (kDebugMode) {
+                            //     print(e.message);
+                            //   }
+                            // } finally {
+                            //   setState(() {
+                            //     isLoading = false;
+                            //   });
+                            // }
+                          },
+                        );
+                      });
+                } : null,
+                icon: const Icon(Icons.delete),
+                color: kRedColor,
+                iconSize: 30.0,
+              )
             ],
           ),
           body: SingleChildScrollView(
@@ -315,7 +315,7 @@ class _DueReceiptState extends State<DueReceipt> {
                 ),
                 Padding(
                   padding:
-                      const EdgeInsets.only(left: 0.0, top: 10.0, bottom: 10.0),
+                  const EdgeInsets.only(left: 0.0, top: 10.0, bottom: 10.0),
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: ListView.builder(
@@ -330,10 +330,10 @@ class _DueReceiptState extends State<DueReceipt> {
                               TextButton(
                                 onPressed: isManageDue
                                     ? () {
-                                        setState(() {
-                                          isEditItem[i] = !isEditItem[i];
-                                        });
-                                      }
+                                  setState(() {
+                                    isEditItem[i] = !isEditItem[i];
+                                  });
+                                }
                                     : null,
                                 child: Text(
                                   '${items[i]['quantity'].toString()} X',
@@ -392,7 +392,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                               ];
                                             } else {
                                               List onEditItems =
-                                                  editedInvoice['editedItems'];
+                                              editedInvoice['editedItems'];
                                               int index = getItemIndex(
                                                   onEditItems, items[i]);
                                               if (index == -1) {
@@ -458,7 +458,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                     if (due != 0) {
                                       due -= items[i]['productPrice'];
                                     } else if ((due -
-                                            items[i]['productPrice']) <
+                                        items[i]['productPrice']) <
                                         0) {
                                       due = 0;
                                     }
@@ -505,32 +505,39 @@ class _DueReceiptState extends State<DueReceipt> {
                                   }
                                 },
                                 decoration: InputDecoration(
-                                  suffix: IconButton(
+                                  suffixIcon: IconButton(
                                     onPressed: () {
                                       setState(() {
                                         discount = discountController
-                                                .text.isNotEmpty
+                                            .text.isNotEmpty
                                             ? num.parse(discountController.text)
                                             : discount;
                                         subTotal -= discount;
-                                        due -= discount;
+                                        if (due != 0) {
+                                          due -= discount;
+                                        } else if (due - discount < 0) {
+                                          due = 0;
+                                        }
                                         editedInvoice['price'] = subTotal;
                                         editedInvoice['discount'] = discount;
                                         editedInvoice['due'] = due;
                                         isDiscount = false;
                                       });
                                     },
-                                    icon: const Icon(Icons.done),
+                                    icon: const Icon(Icons.done,
+                                      color: kNewMainColor,
+                                    ),
                                     iconSize: 20.0,
-                                    color: kNewMainColor,
+                                    //color: kNewMainColor,
                                   ),
+                                  suffixIconColor: kNewMainColor,
                                   border: const UnderlineInputBorder(
                                     borderSide:
-                                        BorderSide(color: kSubMainColor),
+                                    BorderSide(color: kSubMainColor),
                                   ),
                                   focusedBorder: const UnderlineInputBorder(
                                     borderSide:
-                                        BorderSide(color: kNewMainColor),
+                                    BorderSide(color: kNewMainColor),
                                   ),
                                 ),
                               ),
@@ -561,7 +568,7 @@ class _DueReceiptState extends State<DueReceipt> {
                             Column(
                               children: List.generate(payList.length, (index) {
                                 Timestamp timestamp =
-                                    dateFromJson(payList[index]['createdAt']);
+                                dateFromJson(payList[index]['createdAt']);
                                 final formatter = DateFormat('MM/dd/yyyy');
                                 String dateTime = formatter.format(
                                   timestamp.toDate(),
@@ -607,58 +614,58 @@ class _DueReceiptState extends State<DueReceipt> {
                                       style: kProductNameStylePro,
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
-                                        suffix: IconButton(
+                                        suffixIcon: IconButton(
                                           onPressed: () {
-                                                  setState(() {
-                                                    due -= num.parse(controller
-                                                            .text.isNotEmpty
-                                                        ? controller.text
-                                                        : '0');
-                                                    payList.add({
-                                                      'createdAt': dateToJson(
-                                                          Timestamp.now()),
-                                                      'paid': num.parse(
-                                                          controller.text ??
-                                                              '0'),
-                                                      'isSupplier': false,
-                                                      'invoiceNo': widget
-                                                          .data['invoiceNo'],
-                                                    });
-                                                    newPayList.add({
-                                                      'createdAt': dateToJson(
-                                                          Timestamp.now()),
-                                                      'paid': num.parse(
-                                                          controller.text ??
-                                                              '0'),
-                                                      'isSupplier': false,
-                                                      'invoiceNo': widget
-                                                          .data['invoiceNo'],
-                                                    });
-                                                    if (controller.text !=
-                                                        '0') {
-                                                      paid += num.parse(
-                                                          controller.text);
-                                                    }
-                                                    editedInvoice['paid'] =
-                                                        paid;
-                                                    editedInvoice['payList'] =
-                                                        newPayList;
-                                                    editedInvoice['due'] = due;
-                                                    isEditing = false;
-                                                  });
-                                                },
+                                            setState(() {
+                                              due -= num.parse(controller
+                                                  .text.isNotEmpty
+                                                  ? controller.text
+                                                  : '0');
+                                              payList.add({
+                                                'createdAt': dateToJson(
+                                                    Timestamp.now()),
+                                                'paid': num.parse(
+                                                    controller.text ??
+                                                        '0'),
+                                                'isSupplier': false,
+                                                'invoiceNo': widget
+                                                    .data['invoiceNo'],
+                                              });
+                                              newPayList.add({
+                                                'createdAt': dateToJson(
+                                                    Timestamp.now()),
+                                                'paid': num.parse(
+                                                    controller.text ??
+                                                        '0'),
+                                                'isSupplier': false,
+                                                'invoiceNo': widget
+                                                    .data['invoiceNo'],
+                                              });
+                                              if (controller.text !=
+                                                  '0') {
+                                                paid += num.parse(
+                                                    controller.text);
+                                              }
+                                              editedInvoice['paid'] =
+                                                  paid;
+                                              editedInvoice['payList'] =
+                                                  newPayList;
+                                              editedInvoice['due'] = due;
+                                              isEditing = false;
+                                            });
+                                          },
                                           icon: const Icon(Icons.done),
                                           iconSize: 20.0,
-                                          color: kNewMainColor,
                                         ),
+                                        suffixIconColor: kNewMainColor,
                                         border: const UnderlineInputBorder(
                                           borderSide:
-                                              BorderSide(color: kSubMainColor),
+                                          BorderSide(color: kSubMainColor),
                                         ),
                                         focusedBorder:
-                                            const UnderlineInputBorder(
+                                        const UnderlineInputBorder(
                                           borderSide:
-                                              BorderSide(color: kNewMainColor),
+                                          BorderSide(color: kNewMainColor),
                                         ),
                                       ),
                                     ),
@@ -736,7 +743,7 @@ class _DueReceiptState extends State<DueReceipt> {
                           address: widget.data['customerInfo']['address'],
                           name: role == 'general'
                               ? widget.data['customerInfo']['name']
-                              : '${widget.data['customerInfo']['businessName']} (${widget.data['customerInfo']['name']})',
+                              : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
                           advance: widget.data['advance'].toString(),
                           due: due.toString(),
                           paid: paid.toString(),
@@ -756,22 +763,22 @@ class _DueReceiptState extends State<DueReceipt> {
                     child: IconButton(
                       onPressed: isManageDue
                           ? () {
-                              setState(() {
-                                isLoading = true;
-                                onEdit = true;
-                              });
-                              debugPrint(editedInvoice.toString());
-                              final transacBloc =
-                                  BlocProvider.of<TransactionsBloc>(context);
-                              transacBloc.add(
-                                UpdateTransactionEvent(
-                                  token: jWTToken,
-                                  transactionModel: editedInvoice,
-                                  invoiceNo:
-                                      widget.data['invoiceNo'].toString(),
-                                ),
-                              );
-                            }
+                        setState(() {
+                          isLoading = true;
+                          onEdit = true;
+                        });
+                        debugPrint(editedInvoice.toString());
+                        final transacBloc =
+                        BlocProvider.of<TransactionsBloc>(context);
+                        transacBloc.add(
+                          UpdateTransactionEvent(
+                            token: jWTToken,
+                            transactionModel: editedInvoice,
+                            invoiceNo:
+                            widget.data['invoiceNo'].toString(),
+                          ),
+                        );
+                      }
                           : null,
                       icon: const Icon(Icons.update),
                       iconSize: 40.0,
@@ -790,7 +797,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 payList: payList,
                                 isWithBusinessName: role != 'general',
                                 businessName: widget.data['customerInfo']
-                                        ['businessName'] ??
+                                ['businessName'] ??
                                     '',
                                 quantity: quantity,
                                 subTotal: widget.data['price'].toString(),
@@ -802,7 +809,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 due: widget.data['due'].toString(),
                                 paid: widget.data['paid'].toString(),
                                 discountAmount:
-                                    widget.data['discount'].toString(),
+                                widget.data['discount'].toString(),
                                 invoiceId: widget.data['invoiceNo'].toString(),
                               );
                             },

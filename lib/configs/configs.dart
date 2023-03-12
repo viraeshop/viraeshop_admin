@@ -15,12 +15,11 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
-import 'package:viraeshop_admin/screens/add_category.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/screens/layout_screen/modal_view.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
-import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 import 'package:viraeshop_api/apiCalls/suppliers.dart';
@@ -28,6 +27,8 @@ import 'package:viraeshop_api/apiCalls/suppliers.dart';
 import '../reusable_widgets/text_field.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/suppliers/suppliers.dart';
+
+import '../screens/products/add_category.dart';
 
 class Configs extends ChangeNotifier {
   Widget currentScreen = const ModalWidget();
@@ -389,7 +390,7 @@ Future<void> getCategoryDialog({
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddCategory(),
+                  builder: (context) => const AddCategory(),
                 ),
               );
             },
@@ -528,11 +529,13 @@ Future<void> getAdvertsDialog({
                             Provider.of<GeneralProvider>(context, listen: false)
                                 .addAdvert(adName);
                           }
-                          if(isUpdate){
+                          if (isUpdate) {
                             if (existingAdvert.contains(adName)) {
-                              Provider.of<GeneralProvider>(context, listen: false)
+                              Provider.of<GeneralProvider>(context,
+                                      listen: false)
                                   .deleteAdvert(adName);
-                              print('DeletedAdvertsFromProductPopUp: ${provider.deletedAdverts}');
+                              print(
+                                  'DeletedAdvertsFromProductPopUp: ${provider.deletedAdverts}');
                             }
                           }
                         },

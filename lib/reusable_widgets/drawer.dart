@@ -13,6 +13,7 @@ import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
 import 'package:viraeshop_admin/screens/customers/all_customers.dart';
 import 'package:viraeshop_admin/screens/customers/general_customers.dart';
 import 'package:viraeshop_admin/screens/admins/edit_employee.dart';
+import 'package:viraeshop_admin/screens/supplier/suppliers_list.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
@@ -20,10 +21,7 @@ import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
 import 'package:viraeshop_admin/screens/agent_products.dart';
 import 'package:viraeshop_admin/screens/customers/agents_list.dart';
 import 'package:viraeshop_admin/screens/admins/allusers.dart';
-import 'package:viraeshop_admin/screens/architect_products.dart';
 import 'package:viraeshop_admin/screens/customers/architects_list.dart';
-import 'package:viraeshop_admin/screens/catalog.dart';
-import 'package:viraeshop_admin/screens/category_screen.dart';
 import 'package:viraeshop_admin/screens/customers/customer_request.dart';
 import 'package:viraeshop_admin/screens/due/due_screen.dart';
 import 'package:viraeshop_admin/screens/expense_history.dart';
@@ -40,6 +38,7 @@ import 'package:viraeshop_admin/settings/login_preferences.dart';
 
 import '../screens/about_us_page.dart';
 import '../screens/new_non_inventory.dart';
+import '../screens/products/category_screen.dart';
 
 class AppDrawer extends StatefulWidget {
   var info;
@@ -541,6 +540,17 @@ class _AppDrawerState extends State<AppDrawer> {
                               );
                               //}
                             }),
+                  ReusableTile(
+                      icon: FontAwesomeIcons.userCog,
+                      title: 'Suppliers',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SupplierList(),
+                          ),
+                        );
+                      }),
                   ReusableTile(
                     icon: Icons.settings,
                     title: 'Settings',

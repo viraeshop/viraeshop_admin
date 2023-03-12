@@ -14,7 +14,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/clipper.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
-import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_api/apiCalls/notifications.dart';
 
 import '../../components/styles/text_styles.dart';

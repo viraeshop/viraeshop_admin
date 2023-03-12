@@ -16,7 +16,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/screens/image/image_update_widget.dart';
-import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 

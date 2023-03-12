@@ -157,7 +157,9 @@ Future<void> shareStatement({
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
         index >= 10 ? index.toString() : '0${index.toString()}';
-    row.cells[1].value = element['businessName'] != '' ? element['businessName'] : element['name'];
+    row.cells[1].value = element['businessName'] != ''
+        ? element['businessName']
+        : element['name'];
     row.cells[2].value = '${element['totalPaid']}';
     row.cells[3].value = '${element['totalDue']}';
     row.cells[4].value = '${element['totalAmount']}';
@@ -212,25 +214,55 @@ Future<void> shareStatement({
   /// total paid
   String totalPays = 'Total Pay $totalPay BDT';
   Size vatSize = timesRoman.measureString(totalPays);
-  gridResult.page.graphics.drawString(totalPays, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - vatSize.width,
-          gridResult.bounds.bottom + 30, 0, 0));
+  PdfTextElement(
+    text: totalPays,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - vatSize.width,
+      gridResult.bounds.bottom + 30,
+      0,
+      0,
+    ),
+  );
 
   ///total due
   String totalDues = 'Total Due $totalDue BDT';
   Size textSize1 = timesRoman.measureString(totalDues);
-  gridResult.page.graphics.drawString(totalDues, timesRoman,
-      brush: PdfSolidBrush(PdfColor(215, 44, 67)),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - textSize1.width,
-          gridResult.bounds.bottom + 50, 0, 0));
+  PdfTextElement(
+    text: totalDues,
+    font: timesRoman,
+    brush: PdfSolidBrush(PdfColor(215, 44, 67)),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - textSize1.width,
+      gridResult.bounds.bottom + 50,
+      0,
+      0,
+    ),
+  );
   // sub total
   String totalAmounts = 'Total Amount $totalAmount BDT';
   Size subTotalSize = timesRoman.measureString(totalAmounts);
-  gridResult.page.graphics.drawString(totalAmounts, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - subTotalSize.width,
-          gridResult.bounds.bottom + 70, 0, 0));
+  PdfTextElement(
+    text: totalAmounts,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - subTotalSize.width,
+      gridResult.bounds.bottom + 70,
+      0,
+      0,
+    ),
+  );
   //Save the document
   List<int> bytes = document.save();
   // print

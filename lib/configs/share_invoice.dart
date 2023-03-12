@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
+import 'package:random_string/random_string.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'dart:async';
 import 'package:file_saver/file_saver.dart';
@@ -189,33 +190,67 @@ Future<void> shareInvoice({
   // vat
   String vat = 'VAT %';
   Size vatSize = timesRoman.measureString(vat);
-  gridResult.page.graphics.drawString(vat, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - vatSize.width,
-          gridResult.bounds.bottom + 30, 0, 0));
+  PdfTextElement(
+    text: vat,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - vatSize.width,
+      gridResult.bounds.bottom + 30,
+      0,
+      0,
+    ),
+  );
 
   ///to add Discount
   Size textSize1 = timesRoman.measureString('Discount $discountAmount BDT');
-  gridResult.page.graphics.drawString(
-      'Discount $discountAmount BDT', timesRoman,
-      brush: PdfSolidBrush(PdfColor(215, 44, 67)),
+  PdfTextElement(
+    text: 'Discount $discountAmount BDT',
+    font: timesRoman,
+    brush: PdfSolidBrush(PdfColor(215, 44, 67)),
+  ).draw(
+      format: layoutFormat,
+      page: gridResult.page,
       bounds: Rect.fromLTWH(graphics.clientSize.width - textSize1.width,
           gridResult.bounds.bottom + 50, 0, 0));
   // sub total
   String subTotals = 'Sub Total $subTotal  BDT';
   Size subTotalSize = timesRoman.measureString(subTotals);
-  gridResult.page.graphics.drawString(subTotals, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - subTotalSize.width,
-          gridResult.bounds.bottom + 70, 0, 0));
+  PdfTextElement(
+    text: subTotals,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - subTotalSize.width,
+      gridResult.bounds.bottom + 70,
+      0,
+      0,
+    ),
+  );
 
   /// advance
   String advanceText = 'Advance $advance BDT';
   Size textSize2 = timesRoman.measureString(advanceText);
-  gridResult.page.graphics.drawString(advanceText, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - textSize2.width,
-          gridResult.bounds.bottom + 90, 0, 0));
+  PdfTextElement(
+    text: advanceText,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - textSize2.width,
+      gridResult.bounds.bottom + 90,
+      0,
+      0,
+    ),
+  );
 
   ///pay list
   int spacing = 110;
@@ -227,36 +262,67 @@ Future<void> shareInvoice({
     );
     String paidText = '$dateTime  Pay ${element['paid']}';
     Size dueSize = timesRoman.measureString(paidText);
-    gridResult.page.graphics.drawString(paidText, timesRoman,
-        brush: PdfSolidBrush(color),
-        bounds: Rect.fromLTWH(graphics.clientSize.width - dueSize.width,
-            gridResult.bounds.bottom + spacing, 0, 0));
+    PdfTextElement(
+      text: paidText,
+      font: timesRoman,
+      brush: PdfSolidBrush(color),
+    ).draw(
+      format: layoutFormat,
+      page: gridResult.page,
+      bounds: Rect.fromLTWH(
+        graphics.clientSize.width - dueSize.width,
+        gridResult.bounds.bottom + spacing,
+        0,
+        0,
+      ),
+    );
     spacing += 20;
   }
 
   /// Due
   String dueText = 'Due $due BDT';
   Size dueSize = timesRoman.measureString(dueText);
-  gridResult.page.graphics.drawString(dueText, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - dueSize.width,
-          gridResult.bounds.bottom + spacing, 0, 0));
+  PdfTextElement(
+    text: dueText,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    format: layoutFormat,
+    page: gridResult.page,
+    bounds: Rect.fromLTWH(
+      graphics.clientSize.width - dueSize.width,
+      gridResult.bounds.bottom + spacing,
+      0,
+      0,
+    ),
+  );
 
   /// paid
   String paidText = 'Paid $paid BDT';
   Size paidSize = timesRoman.measureString(paidText);
-  gridResult.page.graphics.drawString(paidText, timesRoman,
-      brush: PdfSolidBrush(color),
+  PdfTextElement(
+    text: paidText,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+      page: gridResult.page,
+      format: layoutFormat,
       bounds: Rect.fromLTWH(graphics.clientSize.width - paidSize.width,
           gridResult.bounds.bottom + spacing + 20, 0, 0));
 
   /// total amount
   String amountText = 'Amount $subTotal BDT';
   Size amountSize = timesRoman.measureString(amountText);
-  gridResult.page.graphics.drawString(amountText, timesRoman,
-      brush: PdfSolidBrush(color),
-      bounds: Rect.fromLTWH(graphics.clientSize.width - amountSize.width,
-          gridResult.bounds.bottom + spacing + 40, 0, 0));
+  PdfTextElement(
+    text: amountText,
+    font: timesRoman,
+    brush: PdfSolidBrush(color),
+  ).draw(
+    page: gridResult.page,
+    format: layoutFormat,
+    bounds: Rect.fromLTWH(graphics.clientSize.width - amountSize.width,
+        gridResult.bounds.bottom + spacing + 40, 0, 0),
+  );
   //Save the document
   List<int> bytes = document.save();
   if (isSave) {

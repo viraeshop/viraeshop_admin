@@ -1,44 +1,44 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/category/category_bloc.dart';
-import 'package:viraeshop/category/category_event.dart';
 import 'package:viraeshop/category/category_state.dart';
+import 'package:viraeshop/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
-import 'package:viraeshop_admin/settings/admin_CRUD.dart';
-import 'package:viraeshop_api/models/products/product_category.dart';
-import 'add_category.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 
-class CategoryScreen extends StatefulWidget {
-  const CategoryScreen({Key? key}) : super(key: key);
+class SupplierList extends StatefulWidget {
+  const SupplierList({Key? key}) : super(key: key);
 
   @override
-  _CategoryScreenState createState() => _CategoryScreenState();
+  _SupplierListState createState() => _SupplierListState();
 }
 
-class _CategoryScreenState extends State<CategoryScreen> {
+class _SupplierListState extends State<SupplierList> {
   TextEditingController searchController = TextEditingController();
   @override
   void initState() {
     // TODO: implement initState
-    final categoryBloc = BlocProvider.of<CategoryBloc>(context);
-    categoryBloc.add(GetCategoriesEvent());
+    final supplierBloc = BlocProvider.of<SuppliersBloc>(context);
+    supplierBloc.add(GetSuppliersEvent(token: jWTToken));
     super.initState();
   }
 
   final jWTToken = Hive.box('adminInfo').get('token');
   bool isLoaded = false;
   bool loading = false;
+  bool onDelete = false;
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
-      inAsyncCall: false,
+      inAsyncCall: loading,
       progressIndicator: const CircularProgressIndicator(
         color: kNewMainColor,
       ),
@@ -49,7 +49,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
           title: const Text(
-            'Category',
+            'Suppliers',
             style: kAppBarTitleTextStyle,
           ),
           centerTitle: true,
@@ -59,36 +59,45 @@ class _CategoryScreenState extends State<CategoryScreen> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => AddCategory()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const Shops(),
+                      ),
+                    );
                   },
                   child: const Icon(Icons.add)),
             )
           ],
         ),
-        body: BlocConsumer<CategoryBloc, CategoryState>(
+        body: BlocConsumer<SuppliersBloc, SupplierState>(
             listenWhen: (context, state) {
-          if ((state is OnErrorCategoryState && isLoaded) ||
-              (state is RequestFinishedCategoryState) ||
-              (state is LoadingCategoryState && isLoaded)) {
+          if ((state is OnErrorSupplierState && isLoaded) ||
+              (state is RequestFinishedSupplierState) ||
+              (state is LoadingSupplierState && isLoaded)) {
             return true;
           } else {
             return false;
           }
         }, listener: (context, state) {
-          if (state is LoadingCategoryState) {
+          if (state is LoadingSupplierState) {
             setState(() {
               loading = true;
             });
-          } else if (state is RequestFinishedCategoryState) {
+          } else if (state is RequestFinishedSupplierState) {
             setState(() {
               loading = false;
             });
-            toast(
-              context: context,
-              title: 'Operation completed successfully',
-            );
-          } else if(state is OnErrorCategoryState){
+            if (onDelete) {
+              final supplierBloc = BlocProvider.of<SuppliersBloc>(context);
+              supplierBloc.add(GetSuppliersEvent(token: jWTToken));
+            } else {
+              toast(
+                context: context,
+                title: 'Operation completed successfully',
+              );
+            }
+          } else if (state is OnErrorCategoryState) {
             setState(() {
               loading = false;
             });
@@ -100,26 +109,36 @@ class _CategoryScreenState extends State<CategoryScreen> {
             );
           }
         }, buildWhen: (context, state) {
-          if (state is FetchedCategoryState ||
-              (state is OnErrorCategoryState && !isLoaded)) {
+          if (state is FetchedSuppliersState ||
+              (state is OnErrorSupplierState && !isLoaded)) {
             return true;
           } else {
             return false;
           }
         }, builder: (context, state) {
-          if (state is FetchedCategoryState) {
-            List<ProductCategory> myCategories = state.categories;
-            List categoryList = [];
-            for (var element in myCategories) {
-              categoryList.add(element.toJson());
+          if (state is FetchedSuppliersState) {
+            List<Suppliers> suppliers = state.supplierList;
+            List supplierList = [];
+            for (var element in suppliers) {
+              supplierList.add(element.toJson());
+            }
+            if (kDebugMode) {
+              print(supplierList);
             }
             isLoaded = true;
-            print(isLoaded);
+            if(loading){
+              SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+                setState(() {
+                  loading = false;
+                });
+              });
+            }
+            //print(isLoaded);
             return ListView.builder(
-              itemCount: myCategories.length,
+              itemCount: suppliers.length,
               itemBuilder: (BuildContext context, int i) {
                 return Container(
-                  height: 70,
+                  height: 100,
                   decoration: const BoxDecoration(
                     color: kBackgroundColor,
                     border: Border(
@@ -136,16 +155,30 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             CircleAvatar(
                               backgroundColor: kCategoryBackgroundColor,
                               backgroundImage: CachedNetworkImageProvider(
-                                  '${categoryList[i]['image']}'),
+                                  '${supplierList[i]['profileImage']}'),
                               radius: 50.0,
                             ),
                             const SizedBox(
                               width: 5.0,
                             ),
-                            Text(
-                              '${categoryList[i]['category']}',
-                              style: kProductNameStyle,
-                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${supplierList[i]['businessName']}',
+                                  style: kProductNameStyle,
+                                  overflow: TextOverflow.fade,
+                                ),
+                                const SizedBox(
+                                  height: 5.0,
+                                ),
+                                Text(
+                                  '${supplierList[i]['supplierName']}',
+                                  style: kProductNameStyle,
+                                  overflow: TextOverflow.fade,
+                                ),
+                              ],
+                            )
                           ],
                         ),
                         Row(
@@ -156,9 +189,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => AddCategory(
-                                      isEdit: true,
-                                      category: categoryList[i]['category'],
+                                    ///TODO: Add edit supplier here
+                                    builder: (context) => Shops(
+                                      isUpdate: true,
+                                      data: supplierList[i],
                                     ),
                                   ),
                                 );
@@ -167,32 +201,33 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               color: kSubMainColor,
                               iconSize: 20.0,
                             ),
-                            // SizedBox(
-                            //   width: 5.0,
-                            // ),
                             IconButton(
                               onPressed: () {
                                 showDialog<void>(
                                   context: context,
                                   builder: (context) {
                                     return AlertDialog(
-                                      title: const Text('Delete Category'),
+                                      title: const Text('Delete Supplier'),
                                       content: const Text(
-                                        'Are you sure you want to remove this Category?',
+                                        'Are you sure you want to remove this Supplier?',
                                         softWrap: true,
                                         style: kSourceSansStyle,
                                       ),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
-                                            final categoryBloc =
-                                                BlocProvider.of<CategoryBloc>(
+                                            setState(() {
+                                              onDelete = true;
+                                            });
+                                            final supplierBloc =
+                                                BlocProvider.of<SuppliersBloc>(
                                                     context);
-                                            categoryBloc.add(
-                                              DeleteCategoryEvent(
+                                            supplierBloc.add(
+                                              DeleteSupplierEvent(
                                                 token: jWTToken,
-                                                categoryId: categoryList[i]
-                                                    ['category'],
+                                                supplierId: supplierList[i]
+                                                        ['supplierId']
+                                                    .toString(),
                                               ),
                                             );
                                             Navigator.pop(context);
@@ -230,15 +265,24 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 );
               },
             );
-          } else if (state is OnErrorCategoryState) {
+          } else if (state is OnErrorSupplierState) {
             return Center(
               child: Text(
                 state.message,
                 style: kProductNameStylePro,
               ),
             );
+          } else {
+            if (isLoaded) {
+              return const SizedBox();
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(
+                  //color: kNewMainColor,
+                ),
+              );
+            }
           }
-          return const Center(child: CircularProgressIndicator());
         }),
       ),
     );

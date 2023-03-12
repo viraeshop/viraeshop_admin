@@ -16,7 +16,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/non_inventory_transaction_info.dart';
-import 'package:viraeshop_admin/screens/shops.dart' hide Shops;
+import 'package:viraeshop_admin/screens/supplier/shops.dart' hide Shops;
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_api/models/shops/shops.dart';
 import 'package:viraeshop_api/models/suppliers/suppliers.dart';

@@ -13,13 +13,10 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
-import 'package:viraeshop_admin/screens/non_inventory_product.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
 
 import '../configs/configs.dart';
 import 'customers/preferences.dart';
-import 'new_non_inventory.dart';
-import 'shops.dart';
+import 'supplier/shops.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop/return/return_bloc.dart';
 
@@ -103,7 +100,9 @@ class _ReturnProductState extends State<ReturnProduct> {
                           });
                         }
                       } catch (e) {
-                        print(e);
+                        if (kDebugMode) {
+                          print(e);
+                        }
                       }
                     },
                     images: images,

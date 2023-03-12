@@ -1,8 +1,10 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
 import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
+import 'package:viraeshop_admin/screens/products/product_provider.dart';
 import 'package:viraeshop_admin/tests/testing.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -42,7 +44,7 @@ import 'package:viraeshop_admin/screens/non_inventory_product.dart';
 import 'package:viraeshop_admin/screens/notification/notification_screen.dart';
 import 'package:viraeshop_admin/screens/orders/order_info.dart';
 import 'package:viraeshop_admin/screens/products_screen.dart';
-import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_admin/screens/splash_screen.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_api/apiCalls/admins.dart';
@@ -86,24 +88,24 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-  if (messaging.isSupported()) {
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  if (kDebugMode) {
     print('User granted permission: ${settings.authorizationStatus}');
-// for ios notification priority
-    await messaging.setForegroundNotificationPresentationOptions(
-      alert: true, // Required to display a heads up notification
-      badge: true,
-      sound: true,
-    );
   }
+// for ios notification priority
+  await messaging.setForegroundNotificationPresentationOptions(
+    alert: true, // Required to display a heads up notification
+    badge: true,
+    sound: true,
+  );
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
@@ -176,7 +178,10 @@ void main() async {
           create: (context) => AdminProvider(),
         ),
         ChangeNotifierProvider(
-            create: (context) => CustomerProvider(),
+          create: (context) => CustomerProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ProductProvider(),
         ),
       ],
       child: MultiBlocProvider(providers: [
@@ -196,7 +201,8 @@ void main() async {
           ),
         ),
         BlocProvider(
-          create: (BuildContext context) => CategoryBloc(categoryCalls: CategoryCalls(),
+          create: (BuildContext context) => CategoryBloc(
+            categoryCalls: CategoryCalls(),
           ),
         ),
         BlocProvider(
@@ -272,6 +278,7 @@ class _MyAppState extends State<MyApp> {
     _configureAmplify();
     super.initState();
   }
+
   Future<void> _configureAmplify() async {
     try {
       final auth = AmplifyAuthCognito();
@@ -283,6 +290,7 @@ class _MyAppState extends State<MyApp> {
       safePrint('An error occurred configuring Amplify: $e');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

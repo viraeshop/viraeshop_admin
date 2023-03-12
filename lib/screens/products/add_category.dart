@@ -17,7 +17,7 @@ import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop/category/category_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../configs/boxes.dart';
+import '../../configs/boxes.dart';
 
 class AddCategory extends StatefulWidget {
   final bool isEdit;

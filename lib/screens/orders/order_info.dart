@@ -20,7 +20,7 @@ import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/orders/customer_order_history.dart';
 import 'package:viraeshop_admin/screens/orders/order_configs.dart';
-import 'package:viraeshop_admin/screens/shops.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_api/models/customers/customers.dart';

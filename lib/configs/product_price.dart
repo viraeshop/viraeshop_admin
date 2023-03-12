@@ -6,9 +6,11 @@ class ProductPrice extends StatefulWidget {
   final bool isSelected;
   final TextEditingController controller;
   final Function(bool?) onChanged;
+  final String? Function(String?)? validator;
   final String title;
-  ProductPrice(
+  const ProductPrice(
       {required this.title,
+        this.validator,
       required this.isSelected,
       required this.controller,
       required this.onChanged});
@@ -30,15 +32,16 @@ class _ProductPriceState extends State<ProductPrice> {
           widget.title,
           style: kTableCellStyle,
         ),
-        secondary: Container(
+        secondary: SizedBox(
           width: 100.0,
           height: 40.0,
           child: Center(
-            child: TextField(
+            child: TextFormField(
               style: kTableCellStyle,
               controller: widget.controller,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              validator: widget.validator,
+              decoration: const InputDecoration(
                 // labelText: "Price",
                 // labelStyle: kProductNameStylePro,
                 focusedBorder: OutlineInputBorder(

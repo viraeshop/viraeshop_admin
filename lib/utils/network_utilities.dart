@@ -14,7 +14,7 @@ class NetworkUtility {
   static final FirebaseStorage _storage = FirebaseStorage.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static firebase_storage.SettableMetadata metadata =
-      firebase_storage.SettableMetadata(
+  firebase_storage.SettableMetadata(
     contentType: 'image/jpeg',
   );
   static Future<QuerySnapshot> getCustomerTransactionInvoices(List customerId) {
@@ -95,8 +95,8 @@ class NetworkUtility {
 
   static Future<Map<String, dynamic>> uploadImageFromNative(
       {required File file,
-      required String fileName,
-      required String folder}) async {
+        required String fileName,
+        required String folder}) async {
     // await _storage.ref().child('$folder/$fileName').putFile(file, metadata);
     // Reference fileRef = _storage.ref('$folder/$fileName');\
     try {
@@ -107,19 +107,17 @@ class NetworkUtility {
           safePrint('Fraction completed: ${progress.getFractionCompleted()}');
         },
         options: UploadFileOptions(
-          accessLevel: StorageAccessLevel.guest
+            accessLevel: StorageAccessLevel.guest
         ),
       );
       safePrint('Successfully uploaded file: ${result.key}');
-      final fileUrl = await Amplify.Storage.getUrl(
-        key: result.key,
-        options: GetUrlOptions(accessLevel: StorageAccessLevel.guest),
-      );
-      if (kDebugMode) {
-        print(fileUrl.url.split('?')[0]);
-      }
+      // final fileUrl = await Amplify.Storage.getUrl(
+      //   key: result.key,
+      //   options: GetUrlOptions(accessLevel: StorageAccessLevel.guest),
+      // );
+      //fileUrl.url.split('?')[0]
       Map<String, dynamic> image = {
-        'url': fileUrl.url.split('?')[0],
+        'url': 'https://ik.imagekit.io/vira1212/${result.key}',
         'key': '$folder/$fileName',
       };
       return image;

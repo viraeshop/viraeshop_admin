@@ -290,7 +290,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Total: ${widget.subTotal}$bdtSign',
+    bytes += receipt.text('Total: ${widget.total}$bdtSign',
         styles: const PosStyles(
           align: PosAlign.right,
         ));    

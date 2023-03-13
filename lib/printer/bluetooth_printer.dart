@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:image/image.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
 
 class BluetoothPrinter extends StatefulWidget {
   final List items;
@@ -24,6 +25,7 @@ class BluetoothPrinter extends StatefulWidget {
       address,
       discountAmount,
       subTotal,
+      total,
       advance,
       paid,
       quantity,
@@ -40,6 +42,7 @@ class BluetoothPrinter extends StatefulWidget {
     required this.due,
     required this.paid,
     required this.subTotal,
+    required this.total,
     required this.quantity,
     required this.isWithBusinessName,
     required this.payList,
@@ -291,15 +294,15 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         styles: const PosStyles(
           align: PosAlign.right,
         ));    
-    bytes += receipt.text('Discount: ${widget.discountAmount}BDT',
+    bytes += receipt.text('Discount: ${widget.discountAmount}$bdtSign',
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Sub-Total: ${widget.subTotal}BDT',
+    bytes += receipt.text('Sub-Total: ${widget.subTotal}$bdtSign',
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Advance: ${widget.advance}BDT',
+    bytes += receipt.text('Advance: ${widget.advance}$bdtSign',
         styles: const PosStyles(
           align: PosAlign.right,
         ));
@@ -316,11 +319,11 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
             ));
       }
     }
-    bytes += receipt.text('Due: ${widget.due}BDT',
+    bytes += receipt.text('Due: ${widget.due}$bdtSign',
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Paid: ${widget.paid}BDT',
+    bytes += receipt.text('Paid: ${widget.paid}$bdtSign',
         styles: const PosStyles(
           align: PosAlign.right,
         ));

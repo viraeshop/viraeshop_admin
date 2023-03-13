@@ -79,12 +79,11 @@ class _DueReceiptState extends State<DueReceipt> {
     isEditItem = List.generate(items.length, (index) => false);
     quantity = totalQuantity.toString();
     due = widget.data['due'];
-    print('due: $due');
     paid = widget.data['paid'];
     payList = widget.data['payList'] ?? [];
     role = widget.data['role'];
     discount = widget.data['discount'];
-    subTotal = widget.data['price'];
+    subTotal = widget.data['price'] - (widget.data['discount'] ?? 0);
     super.initState();
   }
 
@@ -488,6 +487,10 @@ class _DueReceiptState extends State<DueReceipt> {
                             'VAT: %',
                             style: kProductNameStylePro,
                           ),
+                          Text(
+                            'Total: ${widget.data['price']}',
+                            style: kProductNameStylePro,
+                          ),
                           const SizedBox(height: 10),
                           if (isDiscount && !widget.isOnlyShow)
                             SizedBox(
@@ -518,7 +521,6 @@ class _DueReceiptState extends State<DueReceipt> {
                                         } else if (due - discount < 0) {
                                           due = 0;
                                         }
-                                        editedInvoice['price'] = subTotal;
                                         editedInvoice['discount'] = discount;
                                         editedInvoice['due'] = due;
                                         isDiscount = false;
@@ -800,7 +802,8 @@ class _DueReceiptState extends State<DueReceipt> {
                                 ['businessName'] ??
                                     '',
                                 quantity: quantity,
-                                subTotal: widget.data['price'].toString(),
+                                subTotal: subTotal.toString(),
+                                total: widget.data['price'].toString(),
                                 items: items,
                                 mobile: widget.data['customerInfo']['mobile'],
                                 address: widget.data['customerInfo']['address'],

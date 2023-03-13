@@ -411,6 +411,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                               businessName: widget.isFromOrder ? widget.data['customer_info']['business_name'] : widget.data['user_info']['business_name'],
                               quantity: quantity,
                               subTotal: widget.data['price'].toString(),
+                              total: widget.data['price'].toString(),
                               items: items,
                               mobile: widget.isFromOrder
                                   ? '${widget.data['customer_info']['mobile']}'

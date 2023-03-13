@@ -287,6 +287,10 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         styles: const PosStyles(
           align: PosAlign.right,
         ));
+    bytes += receipt.text('Total: ${widget.subTotal}$bdtSign',
+        styles: const PosStyles(
+          align: PosAlign.right,
+        ));    
     bytes += receipt.text('Discount: ${widget.discountAmount}BDT',
         styles: const PosStyles(
           align: PosAlign.right,

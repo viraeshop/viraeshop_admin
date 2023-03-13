@@ -47,7 +47,9 @@ class _SalesTabState extends State<SalesTab> {
   @override
   void initState() {
     // TODO: implement initState
-    print(widget.userId);
+    if (kDebugMode) {
+      print(widget.userId);
+    }
     String filterField = widget.isAdmin == true ? 'employee' : 'customer';
     final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
     transactionBloc.add(GetTransactionsEvent(

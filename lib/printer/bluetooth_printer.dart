@@ -114,8 +114,10 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     }
     if (isConnected == BTStatus.connected) {
       List<int> bytes = await printDemoReceipt();
-      print(bytes);
-      await printerManager.send(type: , bytes: bytes);
+      if (kDebugMode) {
+        print(bytes);
+      }
+      await printerManager.bluetoothPrinterConnector.send(bytes);
       // if (kDebugMode) {
       //   print("Print ${}");
       // }
@@ -380,7 +382,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
                         // in other to change the status message
                         // since we currently have one printer
                         // but subsequently this must be changed for every printer
-                        connected ? "Connected" : 'Click to connect',
+                        connected ? 'Connected' : 'Click to connect',
                         style: kProductNameStylePro,
                       ),
                     );

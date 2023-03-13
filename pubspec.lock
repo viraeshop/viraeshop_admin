@@ -1621,20 +1621,16 @@ packages:
   viraeshop:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "90df3f80240f9cc36561d181d5a212ba8f2d4ffc"
-      url: "https://github.com/viraeshop/viraeshop-bloc.git"
-    source: git
+      path: "../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc"
+      relative: true
+    source: path
     version: "0.0.1"
   viraeshop_api:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "29052d7fb03b106d1ede327f098b83d719b382e4"
-      url: "https://github.com/viraeshop/viraeshop-api.git"
-    source: git
+      path: "../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api"
+      relative: true
+    source: path
     version: "0.0.1"
   watcher:
     dependency: transitive

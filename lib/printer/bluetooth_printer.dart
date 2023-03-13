@@ -53,6 +53,7 @@ class BluetoothPrinter extends StatefulWidget {
 class _BluetoothPrinterState extends State<BluetoothPrinter> {
   bool connected = false;
   List<PrinterDevice> availableBluetoothDevices = [];
+  BluetoothPrinter? selectedDevice;
   var printerManager = PrinterManager.instance;
   @override
   void initState() {
@@ -79,7 +80,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
 
   Future<void> getBluetoothDevices() async {
     PrinterManager.instance
-        .discovery(type: PrinterType.bluetooth, isBle: true)
+        .discovery(type: PrinterType.bluetooth, isBle: false)
         .listen((device) {
       setState(() {
         availableBluetoothDevices.add(device);
@@ -94,7 +95,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         model: BluetoothPrinterInput(
           name: printer.name,
           address: printer.address!,
-          isBle: true,
+          isBle: false,
           autoConnect: true,
         ),
       );
@@ -113,7 +114,8 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
     }
     if (isConnected == BTStatus.connected) {
       List<int> bytes = await printDemoReceipt();
-      await PrinterManager.instance.send(type: PrinterType.bluetooth, bytes: bytes);
+      print(bytes);
+      await printerManager.send(type: , bytes: bytes);
       // if (kDebugMode) {
       //   print("Print ${}");
       // }
@@ -264,15 +266,15 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
           styles: const PosStyles(align: PosAlign.left),
         ),
         PosColumn(
-            text: element['product_name'] + ' (${element['product_id']})',
+            text: element['productName'] + ' (${element['productId']})',
             width: 7),
         PosColumn(
-          text: element['unit_price'].toString(),
+          text: element['unitPrice'].toString(),
           width: 2,
           styles: const PosStyles(align: PosAlign.right),
         ),
         PosColumn(
-          text: element['product_price'].toString(),
+          text: element['productPrice'].toString(),
           width: 2,
           styles: const PosStyles(align: PosAlign.right),
         ),

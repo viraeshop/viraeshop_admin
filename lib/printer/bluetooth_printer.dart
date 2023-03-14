@@ -14,6 +14,7 @@ import 'package:image/image.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
+import 'package:viraeshop_api/utils/utils.dart';
 
 class BluetoothPrinter extends StatefulWidget {
   final List items;
@@ -290,29 +291,29 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Total: ${widget.total}$bdtSign',
-        containsChinese: true,
+    bytes += receipt.text('Total: ${widget.total} BDT',
+        //containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Discount: ${widget.discountAmount}$bdtSign',
-        containsChinese: true,
+    bytes += receipt.text('Discount: ${widget.discountAmount} BDT',
+        //containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Sub-Total: ${widget.subTotal}$bdtSign',
-        containsChinese: true,
+    bytes += receipt.text('Sub-Total: ${widget.subTotal} BDT',
+        //containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Advance: ${widget.advance}$bdtSign',
-        containsChinese: true,
+    bytes += receipt.text('Advance: ${widget.advance} BDT',
+        //containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
     if (widget.payList.isNotEmpty) {
       for (var pay in widget.payList) {
-        Timestamp timestamp = pay['date'];
+        Timestamp timestamp = dateFromJson(pay['createdAt']);
         final formatter = DateFormat('MM/dd/yyyy');
         String dateTime = formatter.format(
           timestamp.toDate(),
@@ -323,13 +324,13 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
             ));
       }
     }
-    bytes += receipt.text('Due: ${widget.due}$bdtSign',
-        containsChinese: true,
+    bytes += receipt.text('Due: ${widget.due} BDT',
+        //containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
-    bytes += receipt.text('Paid: ${widget.paid}$bdtSign',
-        containsChinese: true,
+    bytes += receipt.text('Paid: ${widget.paid} BDT',
+        //containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));

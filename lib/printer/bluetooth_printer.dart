@@ -69,11 +69,11 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
       if (kDebugMode) {
         print(event);
       }
-      if(event == BTStatus.connected){
+      if (event == BTStatus.connected) {
         setState(() {
           connected = true;
         });
-      }else if(event == BTStatus.none){
+      } else if (event == BTStatus.none) {
         setState(() {
           connected = false;
         });
@@ -92,7 +92,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
   }
 
   Future<void> setConnect(PrinterDevice printer) async {
-    try{
+    try {
       await PrinterManager.instance.connect(
         type: PrinterType.bluetooth,
         model: BluetoothPrinterInput(
@@ -105,13 +105,13 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
       setState(() {
         connected = true;
       });
-    }catch (e){
+    } catch (e) {
       debugPrint(e.toString());
     }
   }
 
   Future<void> printTicket() async {
-     BTStatus isConnected = printerManager.currentStatusBT;
+    BTStatus isConnected = printerManager.currentStatusBT;
     if (kDebugMode) {
       print(isConnected);
     }
@@ -291,18 +291,22 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
           align: PosAlign.right,
         ));
     bytes += receipt.text('Total: ${widget.total}$bdtSign',
+        containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
-        ));    
+        ));
     bytes += receipt.text('Discount: ${widget.discountAmount}$bdtSign',
+        containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
     bytes += receipt.text('Sub-Total: ${widget.subTotal}$bdtSign',
+        containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
     bytes += receipt.text('Advance: ${widget.advance}$bdtSign',
+        containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
@@ -320,10 +324,12 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
       }
     }
     bytes += receipt.text('Due: ${widget.due}$bdtSign',
+        containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));
     bytes += receipt.text('Paid: ${widget.paid}$bdtSign',
+        containsChinese: true,
         styles: const PosStyles(
           align: PosAlign.right,
         ));

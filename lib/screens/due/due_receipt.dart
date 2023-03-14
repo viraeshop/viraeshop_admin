@@ -487,11 +487,12 @@ class _DueReceiptState extends State<DueReceipt> {
                             'VAT: %',
                             style: kProductNameStylePro,
                           ),
+                          const SizedBox(height: 5),
                           Text(
                             'Total: ${widget.data['price']}',
                             style: kProductNameStylePro,
                           ),
-                          const SizedBox(height: 10),
+                          //const SizedBox(height: 5),
                           if (isDiscount && !widget.isOnlyShow)
                             SizedBox(
                               width: 150.0,
@@ -556,16 +557,17 @@ class _DueReceiptState extends State<DueReceipt> {
                                 style: kProductNameStylePro,
                               ),
                             ),
+                          //const SizedBox(height: 5),
                           Text(
                             'Sub Total: ${subTotal.toString()}',
                             style: kProductNameStylePro,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           Text(
                             'Advance: ${widget.data['advance'].toString()}',
                             style: kProductNameStylePro,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           if (payList.isNotEmpty)
                             Column(
                               children: List.generate(payList.length, (index) {
@@ -674,12 +676,12 @@ class _DueReceiptState extends State<DueReceipt> {
                                   ),
                               ],
                             ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           Text(
                             'Due: ${due.toString()}',
                             style: kProductNameStylePro,
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
                           Text(
                             'Paid: ${paid.toString()}',
                             style: kProductNameStylePro,

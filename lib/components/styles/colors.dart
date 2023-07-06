@@ -23,5 +23,6 @@ const Color kCategoryBackgroundColor = Color(0xffdbefe3);
 const Color kNewYellowColor = Color(0xffffe082);
 const Color kTextBoxColor = Color(0xffB8EEDE);
 const Color kBrownColor = Color(0xffFFA51F);
+const Color kNewBrownColor = Color(0xffD96612);
 const Color kBrownColorAccent = Color(0xffFE801E);
 const Color kNewMainColor = Color(0xff0cbb8b);

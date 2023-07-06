@@ -162,11 +162,11 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           }
                           return Stack(fit: StackFit.expand, children: [
                             ImageFromUpdate(
-                                image: allImages[i] is Map<String, dynamic>
-                                    ? allImages[i]['imageLink']
-                                    : allImages[i] is String
-                                    ? allImages[i]
-                                    : '',
+                              image: allImages[i] is Map<String, dynamic>
+                                  ? allImages[i]['imageLink']
+                                  : allImages[i] is String
+                                      ? allImages[i]
+                                      : '',
                               isUpdate: widget.isUpdate,
                             ),
                             topCancelButton(onTap: () async {
@@ -255,7 +255,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         Hive.box('images').put('imagesPath', filesPaths);
 
                         Hive.box('images').put('productImages', productImage);
-                        Hive.box('images').put('deletedImages', deletedImages);
+                        Hive.box('images')
+                            .put('deletedImages', deletedImages)
+                            .then((value) => Navigator.pop(context));
                         // if (kDebugMode) {
                         //   print(productImages);
                         // }

@@ -60,9 +60,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
           });
           final adminBloc = BlocProvider.of<AdminBloc>(context);
           final jWTToken = Hive.box('adminInfo').get('token');
-          adminBloc.add(GetAdminsEvent(
-              token: jWTToken
-          ));
+          adminBloc.add(GetAdminsEvent(token: jWTToken));
           Navigator.pop(context);
         } else if (state is RequestFinishedAdminState &&
             state.requestType == 'update') {
@@ -93,9 +91,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 onPressed: () {
                   final adminBloc = BlocProvider.of<AdminBloc>(context);
                   final jWTToken = Hive.box('adminInfo').get('token');
-                  adminBloc.add(GetAdminsEvent(
-                      token: jWTToken
-                  ));
+                  adminBloc.add(GetAdminsEvent(token: jWTToken));
                   Navigator.pop(context);
                 },
                 icon: const Icon(
@@ -146,9 +142,10 @@ class _EditUserScreenState extends State<EditUserScreen> {
                                     Navigator.pop(context);
                                     final adminBloc =
                                         BlocProvider.of<AdminBloc>(context);
-                                    final jWTToken = Hive.box('adminInfo').get('token');
+                                    final jWTToken =
+                                        Hive.box('adminInfo').get('token');
                                     adminBloc.add(DeleteAdminEvent(
-                                      token: jWTToken,
+                                        token: jWTToken,
                                         adminId: widget.adminInfo['adminId']));
                                   },
                                   child: const Text(
@@ -185,6 +182,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
                 InfoTab(
                   email: widget.adminInfo['email'],
                   name: widget.adminInfo['name'],
+                  isActive: widget.adminInfo['active'],
                 ),
                 SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
                 if (!widget.selfAdmin)
@@ -200,82 +198,16 @@ class _EditUserScreenState extends State<EditUserScreen> {
   }
 }
 
-// Widget salesTab({required String adminId}) {
-//   print(adminId);
-//   return FutureBuilder<QuerySnapshot>(
-//       future: FirebaseFirestore.instance
-//           .collection('transaction')
-//           .where('employee_id', isEqualTo: adminId)
-//           .get(),
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return Center(
-//             child: Container(
-//               height: 50.0,
-//               width: 50.0,
-//               child: CircularProgressIndicator(
-//                 color: kMainColor,
-//               ),
-//             ),
-//           );
-//         } else if (snapshot.hasError) {
-//           print(snapshot.error);
-//           return Center(
-//             child: Text(
-//               'Oops an error occured.',
-//               style: kProductNameStyle,
-//             ),
-//           );
-//         }else{
-//           final data = snapshot.data!.docs;
-//           print(data.first);
-//           List transactions = [];
-//           data.forEach((element) {
-//             transactions.add(element.data());
-//           });
-//           // print(transactions);
-//           return transactions.isNotEmpty
-//               ? ListView.builder(
-//                   itemCount: transactions.length,
-//                   shrinkWrap: true,
-//                   itemBuilder: (BuildContext context, int i) {
-//                     List items = transactions[i]['items'];
-//                     String description = '';
-//                     items.forEach((element) {
-//                       description +=
-//                           '${element['quantity']} X ${element['product_name']}, ';
-//                     });
-//                     Timestamp timestamp = transactions[i]['date'];
-//                     String date = DateFormat.yMMMd().format(timestamp.toDate());
-//                     return OrderTranzCard(
-//                       onTap: () {
-//                         Navigator.push(context,
-//                             MaterialPageRoute(builder: (context) {
-//                           return ReceiptScreen(data: transactions[i]);
-//                         }));
-//                       },
-//                       date: date,
-//                       price: transactions[i]['price'].toString(),
-//                       employeeName: transactions[i]['employee_id'],
-//                       customerName: transactions[i]['user_info']['name'],
-//                       desc: description,
-//                     );
-//                   },
-//                 )
-//               : Center(
-//                   child: Text(
-//                     'You have\'nt made sale yet.',
-//                     style: kProductNameStyle,
-//                   ),
-//                 );
-//         }
-//       });
-// }
-
 class InfoTab extends StatefulWidget {
   final String name;
   final String email;
-  const InfoTab( {required this.name, required this.email, Key? key}) : super(key: key);
+  final bool isActive;
+  const InfoTab(
+      {required this.name,
+      required this.email,
+      required this.isActive,
+      Key? key})
+      : super(key: key);
 
   @override
   State<InfoTab> createState() => _InfoTabState();
@@ -284,19 +216,26 @@ class InfoTab extends StatefulWidget {
 class _InfoTabState extends State<InfoTab> {
   late TextEditingController nameController;
   late TextEditingController emailController;
-
+  bool isActive = true;
   @override
   void initState() {
     // TODO: implement initState
     nameController = TextEditingController(text: widget.name);
     emailController = TextEditingController(text: widget.email);
+    isActive = widget.isActive;
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      Provider.of<AdminProvider>(context, listen: false).updateName(widget.name);
-      Provider.of<AdminProvider>(context, listen: false).updateEmail(widget.email);
-      Provider.of<AdminProvider>(context, listen: false).saveExistingEmail(widget.email);
+      Provider.of<AdminProvider>(context, listen: false)
+          .updateName(widget.name);
+      Provider.of<AdminProvider>(context, listen: false)
+          .updateEmail(widget.email);
+      Provider.of<AdminProvider>(context, listen: false)
+          .saveExistingEmail(widget.email);
+      Provider.of<AdminProvider>(context, listen: false)
+          .updateActive(widget.isActive);
     });
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -330,8 +269,9 @@ class _InfoTabState extends State<InfoTab> {
                       labelText: "Full Name",
                       labelStyle: kProductNameStylePro,
                     ),
-                    onChanged: (value){
-                      Provider.of<AdminProvider>(context, listen: false).updateName(value);
+                    onChanged: (value) {
+                      Provider.of<AdminProvider>(context, listen: false)
+                          .updateName(value);
                     },
                   ),
                   const SizedBox(
@@ -354,13 +294,25 @@ class _InfoTabState extends State<InfoTab> {
                       labelText: "Email",
                       labelStyle: kProductNameStylePro,
                     ),
-                    onChanged: (value){
-                      Provider.of<AdminProvider>(context, listen: false).updateEmail(value);
+                    onChanged: (value) {
+                      Provider.of<AdminProvider>(context, listen: false)
+                          .updateEmail(value);
                     },
                   ),
                   const SizedBox(
                     height: 20,
                   ),
+                  SwitchListTile(
+                      value: isActive,
+                      title: const Text('Activate Admin', style: kProductNameStylePro,),
+                      activeColor: kNewMainColor,
+                      onChanged: (bool value) {
+                        setState(() {
+                          isActive = value;
+                        });
+                        Provider.of<AdminProvider>(context, listen: false)
+                            .updateActive(value);
+                      })
                 ],
               ),
             ),
@@ -406,6 +358,7 @@ class _PermissionTabState extends State<PermissionTab> {
     isEditCustomer = widget.adminModel.isEditCustomer;
     super.initState();
   }
+
   final auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
@@ -466,7 +419,6 @@ class _PermissionTabState extends State<PermissionTab> {
                 ),
               ),
               ListTile(
-                // leading: Icon(Icons.dark_mode),
                 title: const Text(
                   'Manage Inventory',
                   style: kProductNameStyle,
@@ -485,7 +437,6 @@ class _PermissionTabState extends State<PermissionTab> {
                 ),
               ),
               ListTile(
-                // leading: Icon(Icons.dark_mode),
                 title: const Text(
                   'View Transactions',
                   style: kProductNameStyle,
@@ -522,7 +473,7 @@ class _PermissionTabState extends State<PermissionTab> {
               ),
               ListTile(
                 title: const Text(
-                  'Create Customers',
+                  'Edit Customers',
                   style: kProductNameStyle,
                 ),
                 trailing: Switch(
@@ -612,8 +563,7 @@ class _PermissionTabState extends State<PermissionTab> {
                 trailing: Switch(
                   activeColor: kMainColor,
                   value: isManageDue,
-                  onChanged: isAdmin == true
-                      ? null
+                  onChanged: isAdmin ? null
                       : (status) {
                           setState(() {
                             isManageDue = status;
@@ -625,63 +575,62 @@ class _PermissionTabState extends State<PermissionTab> {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: Consumer<AdminProvider>(
-              builder: (context, admin, any) {
-                return InkWell(
-                  onTap: () async {
-                    final adminBloc = BlocProvider.of<AdminBloc>(context);
-                    final jWTToken = Hive.box('adminInfo').get('token');
-                    Map<String, dynamic> info = {
-                      'isAdmin': isAdmin,
-                      'isInventory': isInventory,
-                      'isProducts': isProduct,
-                      'isTransactions': isTransaction,
-                      'isMakeCustomer': isMakeCustomer,
-                      'isMakeAdmin': isMakeAdmin,
-                      'isDeleteCustomer': isDeleteCustomer,
-                      'isManageDue': isManageDue,
-                      'isDeleteEmployee': isDeleteEmployee,
-                      'adminId': widget.adminModel.adminId,
-                      'name': admin.name,
-                      'email': admin.email,
-                    };
-                    admin.updateAdminInfo(info);
-                    if(widget.adminModel.email != admin.email){
-                      showAuthDialog(context);
-                    }else{
-                      snackBar(
-                        text: 'Updating your information please wait....',
-                        context: context,
-                        duration: 600,
-                        color: kNewMainColor,
-                      );
-                      adminBloc.add(
-                        UpdateAdminEvent(
-                          token: jWTToken,
-                          adminId: info['adminId'],
-                          adminModel: AdminModel.fromJson(info),
-                        ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    height: 50.0,
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      color: kSubMainColor,
-                      borderRadius: BorderRadius.circular(10.0),
-                      // border: Border.all(color: kMainColor),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Update',
-                        style: kDrawerTextStyle2,
+            child: Consumer<AdminProvider>(builder: (context, admin, any) {
+              return InkWell(
+                onTap: () async {
+                  final adminBloc = BlocProvider.of<AdminBloc>(context);
+                  final jWTToken = Hive.box('adminInfo').get('token');
+                  Map<String, dynamic> info = {
+                    'isAdmin': isAdmin,
+                    'isInventory': isInventory,
+                    'isProducts': isProduct,
+                    'isTransactions': isTransaction,
+                    'isMakeCustomer': isMakeCustomer,
+                    'isMakeAdmin': isMakeAdmin,
+                    'isDeleteCustomer': isDeleteCustomer,
+                    'isManageDue': isManageDue,
+                    'isDeleteEmployee': isDeleteEmployee,
+                    'adminId': widget.adminModel.adminId,
+                    'name': admin.name,
+                    'email': admin.email,
+                    'active': admin.active,
+                  };
+                  admin.updateAdminInfo(info);
+                  if (widget.adminModel.email != admin.email) {
+                    showAuthDialog(context);
+                  } else {
+                    snackBar(
+                      text: 'Updating your information please wait....',
+                      context: context,
+                      duration: 600,
+                      color: kNewMainColor,
+                    );
+                    adminBloc.add(
+                      UpdateAdminEvent(
+                        token: jWTToken,
+                        adminId: info['adminId'],
+                        adminModel: AdminModel.fromJson(info),
                       ),
+                    );
+                  }
+                },
+                child: Container(
+                  height: 50.0,
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color: kSubMainColor,
+                    borderRadius: BorderRadius.circular(10.0),
+                    // border: Border.all(color: kMainColor),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Update',
+                      style: kDrawerTextStyle2,
                     ),
                   ),
-                );
-              }
-            ),
+                ),
+              );
+            }),
           )
         ],
       ),

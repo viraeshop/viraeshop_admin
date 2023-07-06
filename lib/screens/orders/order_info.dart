@@ -576,7 +576,7 @@ class _OrderInfoState extends State<OrderInfo>
                                     child: TabBarView(
                                       controller: tabController,
                                       children: [
-                                        OrderProducts(
+                                        OrderProductList(
                                           isCancelOrConfirm: isCancelOrConfirm,
                                         ),
                                         ValueListenableBuilder(
@@ -690,7 +690,7 @@ class _OrderInfoState extends State<OrderInfo>
                                         orderBloc.add(UpdateOrderEvent(
                                           token: jWTToken,
                                             orderId: widget.orderId,
-                                            orderModel: orderInfo));
+                                            orderModel: orderInfo.toJson()));
                                       }
                                       ///Todo: update order count here..
                                     },
@@ -781,9 +781,9 @@ Widget customerInfo({required Map info}) {
   );
 }
 
-class OrderProducts extends StatelessWidget {
+class OrderProductList extends StatelessWidget {
   final bool isCancelOrConfirm;
-  const OrderProducts({required this.isCancelOrConfirm});
+  const OrderProductList({required this.isCancelOrConfirm});
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(

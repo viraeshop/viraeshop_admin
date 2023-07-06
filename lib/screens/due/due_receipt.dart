@@ -55,7 +55,7 @@ class _DueReceiptState extends State<DueReceipt> {
   bool isEditing = false;
   bool isLoading = false;
   bool isDiscount = false;
-  num due = 0, paid = 0, discount = 0, subTotal = 0;
+  num due = 0, paid = 0, discount = 0, subTotal = 0, total = 0;
   List payList = [];
   List newPayList = [];
   String role = '';
@@ -64,7 +64,9 @@ class _DueReceiptState extends State<DueReceipt> {
   String dateTime = formatter.format(
     timestamp.toDate(),
   );
+
   final jWTToken = Hive.box('adminInfo').get('token');
+  bool isManageDue = Hive.box('adminInfo').get('isManageDue');
   @override
   void initState() {
     // TODO: implement initState
@@ -75,7 +77,7 @@ class _DueReceiptState extends State<DueReceipt> {
       totalQuantity += element['quantity'];
     }
     date = timestamp.toDate();
-    items = item;
+    items = item.toList();
     isEditItem = List.generate(items.length, (index) => false);
     quantity = totalQuantity.toString();
     due = widget.data['due'];
@@ -83,11 +85,11 @@ class _DueReceiptState extends State<DueReceipt> {
     payList = widget.data['payList'] ?? [];
     role = widget.data['role'];
     discount = widget.data['discount'];
-    subTotal = widget.data['price'] - (widget.data['discount'] ?? 0);
+    subTotal = widget.data['price'];
+    total = widget.data['price'] + (widget.data['discount'] ?? 0);
     super.initState();
   }
 
-  bool isManageDue = Hive.box('adminInfo').get('isManageDue');
   bool onEdit = false;
   Map<String, dynamic> editedInvoice = {};
   @override
@@ -149,7 +151,7 @@ class _DueReceiptState extends State<DueReceipt> {
                 onPressed: () {
                   if (widget.isNeedRefresh && onEdit) {
                     final transactionBloc =
-                    BlocProvider.of<TransactionsBloc>(context);
+                        BlocProvider.of<TransactionsBloc>(context);
                     transactionBloc.add(GetTransactionsEvent(
                       token: jWTToken,
                       queryType: widget.fromWho,
@@ -170,41 +172,47 @@ class _DueReceiptState extends State<DueReceipt> {
             titleTextStyle: kTextStyle1,
             actions: [
               IconButton(
-                onPressed: isManageDue ? () {
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return DeletePopup(
-                          onDelete: () async {
-                            setState(() {
-                              isLoading = true;
+                onPressed: isManageDue
+                    ? () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return DeletePopup(
+                                onDelete: () async {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  Navigator.pop(context);
+                                  final transactionBloc =
+                                      BlocProvider.of<TransactionsBloc>(
+                                          context);
+                                  transactionBloc.add(
+                                    DeleteTransactionEvent(
+                                      token: jWTToken,
+                                      invoiceNo: widget.data['invoiceNo'],
+                                    ),
+                                  );
+
+                                  ///TODO: Implement product delete here and update in single function
+                                  // try {
+                                  // await NetworkUtility.deleteInvoice(
+                                  //     widget.data['invoiceNo']);
+                                  // await NetworkUtility.updateProducts(items, true);
+
+                                  // } on FirebaseException catch (e) {
+                                  //   if (kDebugMode) {
+                                  //     print(e.message);
+                                  //   }
+                                  // } finally {
+                                  //   setState(() {
+                                  //     isLoading = false;
+                                  //   });
+                                  // }
+                                },
+                              );
                             });
-                            Navigator.pop(context);
-                            final transactionBloc =
-                            BlocProvider.of<TransactionsBloc>(context);
-                            transactionBloc.add(DeleteTransactionEvent(
-                                token: jWTToken,
-                                invoiceNo: widget.data['invoiceNo']));
-
-                            ///TODO: Implement product delete here and update in single function
-                            // try {
-                            // await NetworkUtility.deleteInvoice(
-                            //     widget.data['invoiceNo']);
-                            // await NetworkUtility.updateProducts(items, true);
-
-                            // } on FirebaseException catch (e) {
-                            //   if (kDebugMode) {
-                            //     print(e.message);
-                            //   }
-                            // } finally {
-                            //   setState(() {
-                            //     isLoading = false;
-                            //   });
-                            // }
-                          },
-                        );
-                      });
-                } : null,
+                      }
+                    : null,
                 icon: const Icon(Icons.delete),
                 color: kRedColor,
                 iconSize: 30.0,
@@ -314,7 +322,7 @@ class _DueReceiptState extends State<DueReceipt> {
                 ),
                 Padding(
                   padding:
-                  const EdgeInsets.only(left: 0.0, top: 10.0, bottom: 10.0),
+                      const EdgeInsets.only(left: 0.0, top: 10.0, bottom: 10.0),
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: ListView.builder(
@@ -329,10 +337,10 @@ class _DueReceiptState extends State<DueReceipt> {
                               TextButton(
                                 onPressed: isManageDue
                                     ? () {
-                                  setState(() {
-                                    isEditItem[i] = !isEditItem[i];
-                                  });
-                                }
+                                        setState(() {
+                                          isEditItem[i] = !isEditItem[i];
+                                        });
+                                      }
                                     : null,
                                 child: Text(
                                   '${items[i]['quantity'].toString()} X',
@@ -348,12 +356,18 @@ class _DueReceiptState extends State<DueReceipt> {
                                           items[i]['quantity'] += 1;
                                           items[i]['productPrice'] += unitPrice;
                                           subTotal += unitPrice;
+                                          total += unitPrice;
                                           due += unitPrice;
-                                          if (editedInvoice['editedItems'] == null) {
-                                            editedInvoice['editedItems'] = [items[i]];
+                                          if (editedInvoice['editedItems'] ==
+                                              null) {
+                                            editedInvoice['editedItems'] = [
+                                              items[i]
+                                            ];
                                           } else {
-                                            List onEditItems = editedInvoice['editedItems'];
-                                            int index = getItemIndex(onEditItems, items[i]);
+                                            List onEditItems =
+                                                editedInvoice['editedItems'];
+                                            int index = getItemIndex(
+                                                onEditItems, items[i]);
                                             if (index == -1) {
                                               onEditItems.add(items[i]);
                                             } else {
@@ -377,6 +391,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                             items[i]['productPrice'] -=
                                                 unitPrice;
                                             subTotal -= unitPrice;
+                                            total -= unitPrice;
                                             if (due != 0) {
                                               due -= unitPrice;
                                             } else if (due - unitPrice < 0) {
@@ -391,7 +406,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                               ];
                                             } else {
                                               List onEditItems =
-                                              editedInvoice['editedItems'];
+                                                  editedInvoice['editedItems'];
                                               int index = getItemIndex(
                                                   onEditItems, items[i]);
                                               if (index == -1) {
@@ -443,29 +458,36 @@ class _DueReceiptState extends State<DueReceipt> {
                                 width: 5.0,
                               ),
                               IconButton(
-                                onPressed: isManageDue ? () async {
-                                  setState(() {
-                                    onEdit = true;
-                                  });
-                                  if (editedInvoice['deletedItems'] == null) {
-                                    editedInvoice['deletedItems'] = [items[i]];
-                                  } else {
-                                    editedInvoice['deletedItems'].add(items[i]);
-                                  }
-                                  setState(() {
-                                    subTotal -= items[i]['productPrice'];
-                                    if (due != 0) {
-                                      due -= items[i]['productPrice'];
-                                    } else if ((due -
-                                        items[i]['productPrice']) <
-                                        0) {
-                                      due = 0;
-                                    }
-                                    editedInvoice['due'] = due;
-                                    editedInvoice['price'] = subTotal;
-                                    items.removeAt(i);
-                                  });
-                                } : null,
+                                onPressed: isManageDue
+                                    ? () async {
+                                        setState(() {
+                                          onEdit = true;
+                                        });
+                                        if (editedInvoice['deletedItems'] ==
+                                            null) {
+                                          editedInvoice['deletedItems'] = [
+                                            items[i]
+                                          ];
+                                        } else {
+                                          editedInvoice['deletedItems']
+                                              .add(items[i]);
+                                        }
+                                        setState(() {
+                                          subTotal -= items[i]['productPrice'];
+                                          total -= items[i]['productPrice'];
+                                          if (due != 0) {
+                                            due -= items[i]['productPrice'];
+                                          } else if ((due -
+                                                  items[i]['productPrice']) <
+                                              0) {
+                                            due = 0;
+                                          }
+                                          editedInvoice['due'] = due;
+                                          editedInvoice['price'] = subTotal;
+                                          items.removeAt(i);
+                                        });
+                                      }
+                                    : null,
                                 icon: const Icon(Icons.delete),
                                 iconSize: 20.0,
                                 color: kRedColor,
@@ -489,11 +511,11 @@ class _DueReceiptState extends State<DueReceipt> {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            'Total: ${widget.data['price']}',
+                            'Total: $total',
                             style: kProductNameStylePro,
                           ),
                           //const SizedBox(height: 5),
-                          if (isDiscount && !widget.isOnlyShow)
+                          if (isDiscount && !widget.isOnlyShow && isManageDue)
                             SizedBox(
                               width: 150.0,
                               child: TextField(
@@ -513,7 +535,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                     onPressed: () {
                                       setState(() {
                                         discount = discountController
-                                            .text.isNotEmpty
+                                                .text.isNotEmpty
                                             ? num.parse(discountController.text)
                                             : discount;
                                         subTotal -= discount;
@@ -527,7 +549,8 @@ class _DueReceiptState extends State<DueReceipt> {
                                         isDiscount = false;
                                       });
                                     },
-                                    icon: const Icon(Icons.done,
+                                    icon: const Icon(
+                                      Icons.done,
                                       color: kNewMainColor,
                                     ),
                                     iconSize: 20.0,
@@ -536,11 +559,11 @@ class _DueReceiptState extends State<DueReceipt> {
                                   suffixIconColor: kNewMainColor,
                                   border: const UnderlineInputBorder(
                                     borderSide:
-                                    BorderSide(color: kSubMainColor),
+                                        BorderSide(color: kSubMainColor),
                                   ),
                                   focusedBorder: const UnderlineInputBorder(
                                     borderSide:
-                                    BorderSide(color: kNewMainColor),
+                                        BorderSide(color: kNewMainColor),
                                   ),
                                 ),
                               ),
@@ -572,7 +595,7 @@ class _DueReceiptState extends State<DueReceipt> {
                             Column(
                               children: List.generate(payList.length, (index) {
                                 Timestamp timestamp =
-                                dateFromJson(payList[index]['createdAt']);
+                                    dateFromJson(payList[index]['createdAt']);
                                 final formatter = DateFormat('MM/dd/yyyy');
                                 String dateTime = formatter.format(
                                   timestamp.toDate(),
@@ -600,11 +623,13 @@ class _DueReceiptState extends State<DueReceipt> {
                               children: [
                                 if (!isEditing && !widget.isOnlyShow)
                                   TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isEditing = true;
-                                      });
-                                    },
+                                    onPressed: isManageDue
+                                        ? () {
+                                            setState(() {
+                                              isEditing = true;
+                                            });
+                                          }
+                                        : null,
                                     child: Text(
                                       'Pay: ${controller.text}',
                                       style: kProductNameStylePro,
@@ -621,37 +646,33 @@ class _DueReceiptState extends State<DueReceipt> {
                                         suffixIcon: IconButton(
                                           onPressed: () {
                                             setState(() {
-                                              due -= num.parse(controller
-                                                  .text.isNotEmpty
-                                                  ? controller.text
-                                                  : '0');
+                                              due -= num.parse(
+                                                  controller.text.isNotEmpty
+                                                      ? controller.text
+                                                      : '0');
                                               payList.add({
-                                                'createdAt': dateToJson(
-                                                    Timestamp.now()),
+                                                'createdAt':
+                                                    dateToJson(Timestamp.now()),
                                                 'paid': num.parse(
-                                                    controller.text ??
-                                                        '0'),
+                                                    controller.text ?? '0'),
                                                 'isSupplier': false,
-                                                'invoiceNo': widget
-                                                    .data['invoiceNo'],
+                                                'invoiceNo':
+                                                    widget.data['invoiceNo'],
                                               });
                                               newPayList.add({
-                                                'createdAt': dateToJson(
-                                                    Timestamp.now()),
+                                                'createdAt':
+                                                    dateToJson(Timestamp.now()),
                                                 'paid': num.parse(
-                                                    controller.text ??
-                                                        '0'),
+                                                    controller.text ?? '0'),
                                                 'isSupplier': false,
-                                                'invoiceNo': widget
-                                                    .data['invoiceNo'],
+                                                'invoiceNo':
+                                                    widget.data['invoiceNo'],
                                               });
-                                              if (controller.text !=
-                                                  '0') {
-                                                paid += num.parse(
-                                                    controller.text);
+                                              if (controller.text != '0') {
+                                                paid +=
+                                                    num.parse(controller.text);
                                               }
-                                              editedInvoice['paid'] =
-                                                  paid;
+                                              editedInvoice['paid'] = paid;
                                               editedInvoice['payList'] =
                                                   newPayList;
                                               editedInvoice['due'] = due;
@@ -664,12 +685,12 @@ class _DueReceiptState extends State<DueReceipt> {
                                         suffixIconColor: kNewMainColor,
                                         border: const UnderlineInputBorder(
                                           borderSide:
-                                          BorderSide(color: kSubMainColor),
+                                              BorderSide(color: kSubMainColor),
                                         ),
                                         focusedBorder:
-                                        const UnderlineInputBorder(
+                                            const UnderlineInputBorder(
                                           borderSide:
-                                          BorderSide(color: kNewMainColor),
+                                              BorderSide(color: kNewMainColor),
                                         ),
                                       ),
                                     ),
@@ -767,22 +788,22 @@ class _DueReceiptState extends State<DueReceipt> {
                     child: IconButton(
                       onPressed: isManageDue
                           ? () {
-                        setState(() {
-                          isLoading = true;
-                          onEdit = true;
-                        });
-                        debugPrint(editedInvoice.toString());
-                        final transacBloc =
-                        BlocProvider.of<TransactionsBloc>(context);
-                        transacBloc.add(
-                          UpdateTransactionEvent(
-                            token: jWTToken,
-                            transactionModel: editedInvoice,
-                            invoiceNo:
-                            widget.data['invoiceNo'].toString(),
-                          ),
-                        );
-                      }
+                              setState(() {
+                                isLoading = true;
+                                onEdit = true;
+                              });
+                              debugPrint(editedInvoice.toString());
+                              final transacBloc =
+                                  BlocProvider.of<TransactionsBloc>(context);
+                              transacBloc.add(
+                                UpdateTransactionEvent(
+                                  token: jWTToken,
+                                  transactionModel: editedInvoice,
+                                  invoiceNo:
+                                      widget.data['invoiceNo'].toString(),
+                                ),
+                              );
+                            }
                           : null,
                       icon: const Icon(Icons.update),
                       iconSize: 40.0,
@@ -798,10 +819,11 @@ class _DueReceiptState extends State<DueReceipt> {
                           MaterialPageRoute(
                             builder: (context) {
                               return BluetoothPrinter(
+                                date: DateFormat.yMMMd().format(date),
                                 payList: payList,
                                 isWithBusinessName: role != 'general',
                                 businessName: widget.data['customerInfo']
-                                ['businessName'] ??
+                                        ['businessName'] ??
                                     '',
                                 quantity: quantity,
                                 subTotal: subTotal.toString(),
@@ -814,7 +836,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 due: widget.data['due'].toString(),
                                 paid: widget.data['paid'].toString(),
                                 discountAmount:
-                                widget.data['discount'].toString(),
+                                    widget.data['discount'].toString(),
                                 invoiceId: widget.data['invoiceNo'].toString(),
                               );
                             },

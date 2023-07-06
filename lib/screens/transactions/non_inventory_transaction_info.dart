@@ -10,6 +10,8 @@ import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dar
 import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
+import '../photoslide_show.dart';
+
 class NonInventoryInfo extends StatefulWidget {
   final Map data;
   final String invoiceId;
@@ -40,10 +42,14 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
     Timestamp timestamp = widget.date;
     date = formatter.format(timestamp.toDate());
     images = widget.data['images'] ?? [];
-    payList = widget.isSupplierPay ? widget.data['payList'] : widget.data['paylist'] ?? [];
+    payList = widget.isSupplierPay
+        ? widget.data['payList']
+        : widget.data['paylist'] ?? [];
     supplier = widget.isSupplierPay
         ? Suppliers.fromJson(widget.data['supplierInfos'])
-        : widget.data['supplierInfo'] is! Suppliers ? Suppliers.fromJson(widget.data['supplierInfo']) : widget.data['supplierInfo'];
+        : widget.data['supplierInfo'] is! Suppliers
+            ? Suppliers.fromJson(widget.data['supplierInfo'])
+            : widget.data['supplierInfo'];
     print(images);
     super.initState();
   }
@@ -131,16 +137,41 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                         height: MediaQuery.of(context).size.height * 0.45,
                         width: MediaQuery.of(context).size.width * 0.4,
                       )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(5.0),
-                        child: CachedNetworkImage(
-                          imageUrl: images[imageIndex]['imageLink'],
-                          errorWidget: (context, url, childs) {
-                            return Image.asset('assets/default.jpg');
-                          },
-                          height: MediaQuery.of(context).size.height * 0.45,
-                          width: MediaQuery.of(context).size.width * 0.4,
-                        ),
+                    : Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(5.0),
+                            child: CachedNetworkImage(
+                              imageUrl: images[imageIndex]['imageLink'],
+                              errorWidget: (context, url, childs) {
+                                return Image.asset('assets/default.jpg');
+                              },
+                              height: MediaQuery.of(context).size.height * 0.45,
+                              width: MediaQuery.of(context).size.width * 0.4,
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.topRight,
+                            child: IconButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PhotoSlideShow(
+                                      images: images[imageIndex]['imageLink'],
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.crop_free_outlined,
+                                size: 20.0,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   buttons(
@@ -149,8 +180,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                         if (imageIndex > 0) {
                           setState(() {
                             imageIndex--;
-                            Timestamp timestamp = dateFromJson(
-                                payList[imageIndex]['createdAt']);
+                            Timestamp timestamp =
+                                dateFromJson(payList[imageIndex]['createdAt']);
                             date = formatter.format(timestamp.toDate());
                           });
                         }
@@ -164,8 +195,8 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                         if (imageIndex < images.length - 1) {
                           setState(() {
                             imageIndex++;
-                            Timestamp timestamp = dateFromJson(
-                                payList[imageIndex]['createdAt']);
+                            Timestamp timestamp =
+                                dateFromJson(payList[imageIndex]['createdAt']);
                             date = formatter.format(timestamp.toDate());
                           });
                         }
@@ -217,8 +248,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                               const SizedBox(
                                 width: 3.0,
                               ),
-                              textContainer(
-                                  payList[index]['paid'].toString()),
+                              textContainer(payList[index]['paid'].toString()),
                             ],
                           );
                         }),

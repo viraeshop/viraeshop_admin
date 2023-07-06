@@ -4,7 +4,8 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class OrderTranzCard extends StatelessWidget {
   final String price, employeeName, date, desc, customerName;
-  final String? invoiceId;
+  final String? id, status;
+  final bool isTransaction;
   final Function()? onTap;
   const OrderTranzCard(
       {required this.price,
@@ -13,7 +14,9 @@ class OrderTranzCard extends StatelessWidget {
       required this.date,
       required this.customerName,
       required this.onTap,
-      this.invoiceId,
+        this.isTransaction = true,
+      this.id,
+        this.status = '',
       Key? key
       }
   ) : super(key: key);
@@ -133,19 +136,31 @@ class OrderTranzCard extends StatelessWidget {
                             letterSpacing: 1.3,
                             fontWeight: FontWeight.bold,
                           ),
-
                         ),
                       ),
                     ],
                   ),
                 ),
-                invoiceId != null ? Text(
-                  'Invoice No: $invoiceId',
+                Text(
+                  '${isTransaction ? 'Invoice No' : 'OrderID'}: $id',
                   overflow: TextOverflow.ellipsis,
                   style: kTableCellStyle,
-                ) : const SizedBox()
+                ),
               ],
             ),
+           if(!isTransaction) Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ///TODO: TO ADD COLOR HERE BASE ON STATUS
+                Text(status!, style: const TextStyle(
+                  color: kBlackColor,
+                  fontFamily: 'Montserrat',
+                  fontSize: 15,
+                  letterSpacing: 1.3,
+                  fontWeight: FontWeight.bold,
+                ),)
+              ],
+            )
           ],
         ),
       ),

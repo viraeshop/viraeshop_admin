@@ -1,7 +1,7 @@
 name: viraeshop_admin
 description: Admin IOS and Android App for Viraeshop
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.2.3+36
+version: 1.2.4+46
 environment:
   sdk: ">=2.12.0 <3.3.10"
 dependencies:
@@ -29,15 +29,15 @@ dependencies:
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   numeric_keyboard: ^1.1.0
-  syncfusion_flutter_pdf: ^19.3.55-beta
-  syncfusion_flutter_charts: ^19.3.59
+  syncfusion_flutter_pdf: ^20.4.51
+  syncfusion_flutter_charts: ^20.4.51
   currency_text_input_formatter: ^2.1.5
   url_launcher: ^6.0.17
   esc_pos_printer: ^4.1.0
   esc_pos_utils: ^1.1.0
   ping_discover_network_forked: ^0.0.1
   #network_info_plus: ^3.0.2
-  printing: ^5.6.6
+#  printing: ^5.6.6
   pdf: ^3.6.5
   share_plus: ^4.0.10
   tuple: ^2.0.0
@@ -56,19 +56,22 @@ dependencies:
   amplify_storage_s3: ^0.6.0
   flutter_pos_printer_platform: ^1.1.0
   file_saver: ^0.1.1
+  dart_date: ^1.2.1
+  flutter_bloc: ^8.0.0
   viraeshop_api:
-    git:
-      url: https://github.com/viraeshop/viraeshop-api.git
-#    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
+#    git:
+#      url: https://github.com/viraeshop/viraeshop-api.git
+      path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
   viraeshop:
-    git:
-      url: https://github.com/viraeshop/viraeshop-bloc.git
-#    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc
+#    git:
+#      url: https://github.com/viraeshop/viraeshop-bloc.git
+    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc
 dependency_overrides:
   xml: ^6.0.1
   firebase_core_platform_interface: ^4.5.1
-#  viraeshop_api:
-#    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
+  intl: ^0.17.0
+  viraeshop_api:
+    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +79,7 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   build_runner: ^2.1.5
   hive_generator: ^2.0.0
+  printing: ^5.6.6
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -84,6 +88,8 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/category/
+    - assets/orders/
     - assets/default.jpg
     - assets/vira_shop.png
 
@@ -91,6 +97,9 @@ flutter:
     - family: SourceSans
       fonts:
         - asset: assets/fonts/SourceSansPro-Regular.ttf
+    - family: TenorSans
+      fonts:
+        - asset: assets/fonts/TenorSans-Regular.ttf
     - family: Montserrat
       fonts:
         - asset: assets/fonts/Montserrat-Regular.ttf

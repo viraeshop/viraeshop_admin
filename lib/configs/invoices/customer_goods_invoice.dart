@@ -207,7 +207,7 @@ Future<void> generateCustomerStatement({
           gridResult.bounds.bottom + 90, 0, 0),);
   }
   //Save the document
-  List<int> bytes = document.save();
+  List<int> bytes = await document.save();
   //Dispose the document
   //js.context['pdfData'] = base64.encode(bytes);
   //js.context['filename'] = 'Invoice_$invoiceId.pdf';

@@ -204,7 +204,7 @@ import 'package:tuple/tuple.dart';
         bounds: Rect.fromLTWH(graphics.clientSize.width - subTotalSize.width,
             gridResult.bounds.bottom + 70, 0, 0));    
     //Save the document
-    List<int> bytes = document.save();
+    List<int> bytes = await document.save();
     // print 
     await Printing.layoutPdf(
       onLayout: (pdf.PdfPageFormat format) => Uint8List.fromList(bytes));   

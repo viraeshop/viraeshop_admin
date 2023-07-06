@@ -232,7 +232,7 @@ Future<void> printPDF({
         bounds: Rect.fromLTWH(graphics.clientSize.width - paidSize.width,
             gridResult.bounds.bottom + 130, 0, 0));
     //Save the document
-    List<int> bytes = document.save();
+    List<int> bytes = await document.save();
     await Printing.layoutPdf(
       onLayout: (pdf.PdfPageFormat format) async => Uint8List.fromList(bytes));
     document.dispose();

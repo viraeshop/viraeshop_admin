@@ -14,8 +14,12 @@ import 'add_category.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CategoryScreen extends StatefulWidget {
-  const CategoryScreen({Key? key}) : super(key: key);
+  const CategoryScreen(
+      {this.isSubCategory = false, this.categoryId = 0, Key? key})
+      : super(key: key);
 
+  final bool isSubCategory;
+  final int categoryId;
   @override
   _CategoryScreenState createState() => _CategoryScreenState();
 }
@@ -26,7 +30,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
   void initState() {
     // TODO: implement initState
     final categoryBloc = BlocProvider.of<CategoryBloc>(context);
-    categoryBloc.add(GetCategoriesEvent());
+    categoryBloc.add(
+        GetCategoriesEvent(
+          isSubCategory: widget.isSubCategory,
+          categoryId: widget.categoryId,
+        ),);
     super.initState();
   }
 
@@ -46,8 +54,8 @@ class _CategoryScreenState extends State<CategoryScreen> {
           iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: const Text(
-            'Category',
+          title: Text(
+            widget.isSubCategory ? 'Sub-Categories' : 'Categories',
             style: kAppBarTitleTextStyle,
           ),
           centerTitle: true,
@@ -57,62 +65,29 @@ class _CategoryScreenState extends State<CategoryScreen> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => AddCategory()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddCategory(
+                          isSubCategory: widget.isSubCategory,
+                          categoryId: widget.categoryId,
+                        ),
+                      ),
+                    );
                   },
                   child: const Icon(Icons.add)),
             )
           ],
         ),
-        body: BlocConsumer<CategoryBloc, CategoryState>(
-            listenWhen: (context, state) {
-          if ((state is OnErrorCategoryState && isLoaded) ||
-              (state is RequestFinishedCategoryState) ||
-              (state is LoadingCategoryState && isLoaded)) {
-            return true;
-          } else {
-            return false;
-          }
-        }, listener: (context, state) {
-          if (state is LoadingCategoryState) {
-            setState(() {
-              loading = true;
-            });
-          } else if (state is RequestFinishedCategoryState) {
-            setState(() {
-              loading = false;
-            });
-            toast(
-              context: context,
-              title: 'Operation completed successfully',
-            );
-          } else if(state is OnErrorCategoryState){
-            setState(() {
-              loading = false;
-            });
-            snackBar(
-              context: context,
-              text: 'Operation completed successfully',
-              color: kRedColor,
-              duration: 600,
-            );
-          }
-        }, buildWhen: (context, state) {
-          if (state is FetchedCategoryState ||
-              (state is OnErrorCategoryState && !isLoaded)) {
-            return true;
-          } else {
-            return false;
-          }
-        }, builder: (context, state) {
+        body: BlocBuilder<CategoryBloc, CategoryState>(
+        builder: (context, state) {
           if (state is FetchedCategoryState) {
             List<ProductCategory> myCategories = state.categories;
             List categoryList = [];
             for (var element in myCategories) {
               categoryList.add(element.toJson());
             }
-            isLoaded = true;
-            print(isLoaded);
+            // isLoaded = true;
             return ListView.builder(
               itemCount: myCategories.length,
               itemBuilder: (BuildContext context, int i) {
@@ -156,7 +131,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => AddCategory(
                                       isEdit: true,
-                                      category: categoryList[i]['category'],
+                                      isSubCategory: widget.isSubCategory,
+                                      category: categoryList[i],
+                                      categoryId: categoryList[i]['categoryId'],
                                     ),
                                   ),
                                 );
@@ -167,59 +144,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             ),
                             // SizedBox(
                             //   width: 5.0,
-                            // ),
-                            IconButton(
-                              onPressed: () {
-                                showDialog<void>(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text('Delete Category'),
-                                      content: const Text(
-                                        'Are you sure you want to remove this Category?',
-                                        softWrap: true,
-                                        style: kSourceSansStyle,
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            final categoryBloc =
-                                                BlocProvider.of<CategoryBloc>(
-                                                    context);
-                                            categoryBloc.add(
-                                              DeleteCategoryEvent(
-                                                token: jWTToken,
-                                                categoryId: categoryList[i]
-                                                    ['category'],
-                                              ),
-                                            );
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            'Yes',
-                                            softWrap: true,
-                                            style: kSourceSansStyle,
-                                          ),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            'No',
-                                            softWrap: true,
-                                            style: kSourceSansStyle,
-                                          ),
-                                        )
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              icon: const Icon(Icons.delete),
-                              color: kSubMainColor,
-                              iconSize: 20.0,
-                            ),
+                            // )
                           ],
                         ),
                       ],

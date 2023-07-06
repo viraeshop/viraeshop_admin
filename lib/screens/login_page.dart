@@ -81,6 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                         'isDeleteCustomer': adminInfo.isDeleteCustomer,
                         'isDeleteEmployee': adminInfo.isDeleteEmployee,
                         'isEditCustomer': adminInfo.isEditCustomer,
+                        'active': adminInfo.active,
                         'token': token ?? '',
                       });
                       setState(() {
@@ -189,6 +190,13 @@ class _LoginPageState extends State<LoginPage> {
                                 });
                                 showMyDialog(
                                     'You have entered a wrong password',
+                                    context);
+                              }else {
+                                setState(() {
+                                  _isStart = false;
+                                });
+                                showMyDialog(
+                                    e.message!,
                                     context);
                               }
                             }

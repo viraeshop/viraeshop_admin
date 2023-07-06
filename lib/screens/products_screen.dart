@@ -7,7 +7,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/product_cards.dart';
-import 'package:viraeshop_admin/screens/new_product_screen.dart';
+import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

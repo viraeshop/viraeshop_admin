@@ -33,7 +33,7 @@ class _OrdersState extends State<Orders> {
   void initState() {
     final orderBloc = BlocProvider.of<OrdersBloc>(context);
     final jWTToken = Hive.box('adminInfo').get('token');
-    orderBloc.add(GetOrdersEvent(token: jWTToken));
+    //orderBloc.add(GetOrdersEvent(token: jWTToken));
     super.initState();
   }
 

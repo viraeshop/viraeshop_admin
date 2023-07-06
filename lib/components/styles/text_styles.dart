@@ -43,6 +43,14 @@ const TextStyle kDrawerTextStyle2 = TextStyle(
   color: kBackgroundColor,
   letterSpacing: 1.3,
 );
+
+const TextStyle kDrawerTextStyle3 = TextStyle(
+  fontFamily: 'Montserrat',
+  fontSize: 13.0,
+  color: kBackgroundColor,
+  letterSpacing: 1.3,
+);
+
 const TextStyle kTextStyle1 = TextStyle(
   fontSize: 15.0,
   color: Colors.black87,
@@ -194,4 +202,66 @@ const TextStyle kSansTextStyle1 = TextStyle(
   fontSize: 15,
   letterSpacing: 1.3,
   fontWeight: FontWeight.bold,
+);
+const TextStyle kSansTextStyleWhite = TextStyle(
+  color: kBackgroundColor,
+  fontFamily: 'SourceSans',
+  fontSize: 20,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);
+const TextStyle kSansTextStyleWhite1 = TextStyle(
+  color: kBackgroundColor,
+  fontFamily: 'SourceSans',
+  fontSize: 15,
+  letterSpacing: 1.3,
+  //fontWeight: FontWeight.bold,
+);
+
+const TextStyle kSansTextStyleSmallBlack = TextStyle(
+  color: kBlackColor,
+  fontFamily: 'SourceSans',
+  fontSize: 15,
+  letterSpacing: 1.3,
+  //fontWeight: FontWeight.bold,
+);
+
+const TextStyle kSansTextStyleBigBlack = TextStyle(
+  color: kBlackColor,
+  fontFamily: 'SourceSans',
+  fontSize: 20,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);
+
+
+const TextStyle kGreenText = TextStyle(
+  color: kNewMainColor,
+  fontFamily: 'SourceSans',
+  fontSize: 20,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);
+
+const TextStyle kBigBrownText = TextStyle(
+  color: kNewBrownColor,
+  fontFamily: 'SourceSans',
+  fontSize: 25,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold,
+);
+
+const TextStyle kAshTenorStyle = TextStyle(
+  color: kSubMainColor,
+  fontFamily: 'TenorSans',
+  fontSize: 15,
+  letterSpacing: 1.3,
+);
+
+const TextStyle kBlackTenorStyle = TextStyle(
+  color: kBlackColor,
+  fontFamily: 'TenorSans',
+  fontSize: 15,
+  letterSpacing: 1.3,
+  fontWeight: FontWeight.bold
 );

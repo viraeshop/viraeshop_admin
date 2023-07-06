@@ -33,6 +33,7 @@ class _ShopsState extends State<Shops> {
   Uint8List bundleImage = Uint8List(0);
   Map<String, dynamic> imageUrlData = {};
   String imagePath = '';
+  bool isNonInventory = false;
   final jWTToken = Hive.box('adminInfo').get('token');
 
   @override
@@ -309,8 +310,27 @@ class _ShopsState extends State<Shops> {
                       },
                     ),
                     const SizedBox(
-                      height: 20.0,
+                      height: 10.0,
                     ),
+                    if (widget.isUpdate)
+                      SwitchListTile(
+                        activeColor: kNewMainColor,
+                        tileColor: kBackgroundColor,
+                        title: const Text(
+                          'Non Inventory Product',
+                          style: kTableCellStyle,
+                        ),
+                        value: isNonInventory,
+                        onChanged: (value) {
+                          setState(() {
+                            isNonInventory = value;
+                          });
+                        },
+                      ),
+                    if (widget.isUpdate)
+                      const SizedBox(
+                        height: 10.0,
+                      ),
                     sendButton(
                       title: widget.isUpdate ? 'Update' : 'Create',
                       onTap: () {
@@ -327,6 +347,8 @@ class _ShopsState extends State<Shops> {
                             'optionalPhone': controllers[3].text,
                             'email': controllers[4].text,
                             'address': controllers[5].text,
+                            if (widget.isUpdate)
+                              'isNonInventory': isNonInventory,
                             if (!widget.isUpdate || imageUpdated)
                               'profileImage': imageUrlData['url'] ?? '',
                             if (!widget.isUpdate || imageUpdated)
@@ -338,7 +360,9 @@ class _ShopsState extends State<Shops> {
                               UpdateSupplierEvent(
                                   token: jWTToken,
                                   supplierModel: supplier,
-                                  supplierId: widget.data!['supplierId'].toString() ?? ''),
+                                  supplierId:
+                                      widget.data!['supplierId'].toString() ??
+                                          ''),
                             );
                           } else {
                             supplierBloc.add(AddSupplierEvent(

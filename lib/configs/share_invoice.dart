@@ -9,6 +9,7 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'dart:async';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:viraeshop_api/utils/utils.dart';
 
 Future<void> shareInvoice({
   required String totalItems,
@@ -255,12 +256,12 @@ Future<void> shareInvoice({
   ///pay list
   int spacing = 110;
   for (var element in payList) {
-    Timestamp timestamp = element['date'];
+    Timestamp timestamp = dateFromJson(element['createdAt']);
     final formatter = DateFormat('MM/dd/yyyy');
     String dateTime = formatter.format(
       timestamp.toDate(),
     );
-    String paidText = '$dateTime  Pay ${element['paid']}';
+    String paidText = '$dateTime  Pay ${element['paid']} BDT';
     Size dueSize = timesRoman.measureString(paidText);
     PdfTextElement(
       text: paidText,
@@ -324,7 +325,7 @@ Future<void> shareInvoice({
         gridResult.bounds.bottom + spacing + 40, 0, 0),
   );
   //Save the document
-  List<int> bytes = document.save();
+  List<int> bytes = await document.save();
   if (isSave) {
     try {
       await FileSaver.instance.saveAs(

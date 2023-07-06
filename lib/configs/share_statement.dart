@@ -264,7 +264,7 @@ Future<void> shareStatement({
     ),
   );
   //Save the document
-  List<int> bytes = document.save();
+  List<int> bytes = await document.save();
   // print
   if (isSave) {
     try {

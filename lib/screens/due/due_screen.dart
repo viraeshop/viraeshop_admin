@@ -19,6 +19,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/transactions/transactions.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
+import '../../reusable_widgets/date/my_date_picker.dart';
+import '../transactions/customer_transactions.dart';
+import '../transactions/transaction_details.dart';
+
 class DueScreen extends StatefulWidget {
   const DueScreen({Key? key}) : super(key: key);
 
@@ -34,6 +38,8 @@ class _DueScreenState extends State<DueScreen> {
   num totalDue = 0;
   bool isLoading = false;
   bool dueCalculated = false;
+  DateTime begin = DateTime.now();
+  DateTime end = DateTime.now();
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
@@ -103,7 +109,7 @@ class _DueScreenState extends State<DueScreen> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 120),
+                    padding: const EdgeInsets.only(top: 190),
                     child: Column(
                       children: List.generate(customerInvoices.length, (i) {
                         List items = customerInvoices[i]['items'] ?? [];
@@ -124,7 +130,7 @@ class _DueScreenState extends State<DueScreen> {
                           date: date,
                           customerName: customerInvoices[i]['customerInfo']
                               ['name'],
-                          invoiceId:
+                          id:
                               customerInvoices[i]['invoiceNo'].toString(),
                           onTap: () {
                             Navigator.push(
@@ -143,10 +149,74 @@ class _DueScreenState extends State<DueScreen> {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Container(
-                    height: 120,
+                    height: 170,
                     color: kBackgroundColor,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            dateWidget(
+                              borderColor: kSubMainColor,
+                              color: kSubMainColor,
+                              title: begin.toString().split(' ')[0],
+                              onTap: () async {
+                                final result = await myDatePicker(context);
+                                setState(() {
+                                  begin = result;
+                                });
+                              },
+                            ),
+                            const Icon(
+                              Icons.arrow_forward,
+                              color: kSubMainColor,
+                              size: 20.0,
+                            ),
+                            dateWidget(
+                                borderColor: kSubMainColor,
+                                color: kSubMainColor,
+                                onTap: () async {
+                                  final result = await myDatePicker(context);
+                                  setState(() {
+                                    end = result;
+                                  });
+                                },
+                                title: end.isAtSameMomentAs(DateTime.now())
+                                    ? 'To this date..'
+                                    : end.toString().split(' ')[0]),
+                            const SizedBox(
+                              width: 20.0,
+                            ),
+                            roundedTextButton(
+                                borderColor: kSubMainColor,
+                                textColor: kSubMainColor,
+                                onTap: () {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  final transactionBloc =
+                                      BlocProvider.of<TransactionsBloc>(
+                                          context);
+                                  transactionBloc.add(
+                                    SearchTransactionEvent(
+                                      token: jWTToken,
+                                      data: {
+                                        'isDateSearch': true,
+                                        'startDate': begin.toIso8601String(),
+                                        'endDate': end.toIso8601String(),
+                                      },
+                                    ),
+                                  );
+                                }),
+                            const SizedBox(
+                              width: 20.0,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
                         SearchWidget(
                           controller: nameController,
                           onChanged: (value) async {
@@ -195,8 +265,15 @@ class _DueScreenState extends State<DueScreen> {
                               });
                               final transactionBloc =
                                   BlocProvider.of<TransactionsBloc>(context);
-                              transactionBloc.add(SearchTransactionEvent(
-                                  token: jWTToken, terms: value));
+                              transactionBloc.add(
+                                SearchTransactionEvent(
+                                  token: jWTToken,
+                                  data: {
+                                    'terms': value,
+                                    'isDateSearch': false,
+                                  },
+                                ),
+                              );
                             } else if (value.length > 2) {
                               setState(() {
                                 customerInvoices = searchEngine(

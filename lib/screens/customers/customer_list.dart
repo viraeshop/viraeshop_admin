@@ -6,6 +6,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
+import 'package:viraeshop_admin/screens/customers/register_customer.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/customers/customers.dart';
@@ -27,6 +28,7 @@ class _CustomersState extends State<Customers> {
   num agentsBalancesBackup = 0;
   List<CustomerModel> customersList = [];
   List<CustomerModel> tempStore = [];
+  TextEditingController controller = TextEditingController();
   initSearch(String value) {
     if (value.isEmpty) {
       setState(
@@ -52,7 +54,8 @@ class _CustomersState extends State<Customers> {
       final valueLower = value.toLowerCase();
       return nameLower.contains(valueLower) ||
           mobile.contains(valueLower) ||
-          businessName!.contains(valueLower) || email.contains(valueLower);
+          businessName!.contains(valueLower) ||
+          email.contains(valueLower);
     }).toList();
     if (customersList.isEmpty && value.isNotEmpty) {
       items = tempStore.where((element) {
@@ -62,9 +65,6 @@ class _CustomersState extends State<Customers> {
             element.role != 'general' && element.businessName != null
                 ? element.businessName?.toLowerCase()
                 : '';
-        if (kDebugMode) {
-          print(businessName);
-        }
         final valueLower = value.toLowerCase();
         return nameLower.contains(valueLower) ||
             mobile.contains(valueLower) ||
@@ -80,25 +80,28 @@ class _CustomersState extends State<Customers> {
       // }
     });
   }
+
   String statusMessage = 'Fetching customers please wait...';
+  bool isNumeric(String value) {
+    return RegExp(r'^[0-9]+$').hasMatch(value);
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     final customerBloc = BlocProvider.of<CustomersBloc>(context);
     final jWTToken = Hive.box('adminInfo').get('token');
-    customerBloc.add(GetCustomersEvent(
-        token: jWTToken,
-        query: widget.role));
+    customerBloc.add(GetCustomersEvent(token: jWTToken, query: widget.role));
     super.initState();
   }
+
   bool loaded = false;
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CustomersBloc, CustomerState>(
       builder: (context, state) {
         if (state is FetchedCustomersState) {
-          if(!loaded){
+          if (!loaded) {
             customersList = state.customerList.toList();
             tempStore = customersList.toList();
             for (var customer in customersList) {
@@ -179,7 +182,7 @@ class _CustomersState extends State<Customers> {
                                           letterSpacing: 1.3,
                                           fontWeight: FontWeight.bold,
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                               ],
@@ -201,16 +204,38 @@ class _CustomersState extends State<Customers> {
                   child: Center(
                     child: TextFormField(
                       textAlignVertical: TextAlignVertical.bottom,
-                      decoration: const InputDecoration(
+                      controller: controller,
+                      decoration: InputDecoration(
+                        suffixIcon: (isNumeric(controller.text) &&
+                                    controller.text.length == 11) &&
+                                customersList.isEmpty
+                            ? GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          RegisterCustomer(
+                                            mobile: controller.text,
+                                          ),
+                                    ),
+                                  );
+                                },
+                                child: const Chip(
+                                  label: Text('Create Account'),
+                                  labelStyle: kProductNameStylePro,
+                                ),
+                              )
+                            : null,
                         border: InputBorder.none,
                         focusedBorder: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         hintText: 'Search by name or phone number',
-                        hintStyle: TextStyle(
+                        hintStyle: const TextStyle(
                           color: kSubMainColor,
                           fontSize: 15.0,
                         ),
-                        prefixIcon: Icon(
+                        prefixIcon: const Icon(
                           Icons.search,
                           size: 30.0,
                           color: kSubMainColor,

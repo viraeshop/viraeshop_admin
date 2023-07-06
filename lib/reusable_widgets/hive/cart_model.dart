@@ -26,6 +26,7 @@ class Cart {
   num buyPrice;
 
 
+
   Cart({
     required this.productName,
     required this.productId,

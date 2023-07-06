@@ -11,6 +11,8 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop/adverts/adverts_bloc.dart';
 import 'package:viraeshop/adverts/adverts_event.dart';
+import 'package:viraeshop/category/category_bloc.dart';
+import 'package:viraeshop/category/category_event.dart';
 import 'package:viraeshop/products/barrel.dart';
 import 'package:viraeshop/products/products_bloc.dart';
 import 'package:viraeshop/suppliers/barrel.dart';
@@ -31,11 +33,19 @@ import 'package:random_string/random_string.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 
-import '../configs/image_picker.dart';
-import 'advert/ads_provider.dart';
-import 'home_screen.dart';
-import 'image_carousel.dart';
+import '../../components/category_component/category.dart';
+import '../../components/category_component/sub-category.dart';
+import '../../configs/image_picker.dart';
+import '../advert/ads_provider.dart';
+import '../home_screen.dart';
+import '../image_carousel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+enum Events {
+  onUpdate,
+  onDelete,
+  onCreate
+}
 
 class NewProduct extends StatefulWidget {
   static String path = 'newProductPath';
@@ -76,6 +86,10 @@ class _NewProductState extends State<NewProduct>
   bool isAgent = true;
   bool isArchitect = true;
   bool isInfinity = false;
+  bool isNonInventory = false;
+  bool topDiscount = false;
+  bool freeShipping = false;
+  bool comingSoon = false;
   //var selected_category = '';
   // final List _pr_user_List = ['general', 'agents', 'architect'];
   // final List _category_List = [];
@@ -96,6 +110,7 @@ class _NewProductState extends State<NewProduct>
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _minimumController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _subCategoryController = TextEditingController();
   final TextEditingController _adsController = TextEditingController();
   final TextEditingController _generalController = TextEditingController();
   final TextEditingController _agentController = TextEditingController();
@@ -119,11 +134,13 @@ class _NewProductState extends State<NewProduct>
   bool onDelete = false;
   final jWTToken = Hive.box('adminInfo').get('token');
   final _formKey = GlobalKey<FormState>();
+  Events currentEvent = Events.onCreate;
   @override
   void initState() {
     // TODO: implement initState
     _tabController = TabController(length: 2, vsync: this);
-    if (widget.isUpdateProduct == true) {
+    if (widget.isUpdateProduct) {
+      currentEvent = Events.onUpdate;
       descController.text = widget.info['description'];
       _nameController.text = widget.info['name'];
       _generalController.text = widget.info['generalPrice'].toString();
@@ -143,7 +160,19 @@ class _NewProductState extends State<NewProduct>
       isArchitectDiscount = widget.info['isArchitectDiscount'];
       selectedSellBy = widget.info['sellBy'];
       isInfinity = widget.info['isInfinity'];
-      // List productPics = widget.info['images'] ?? [];
+      isNonInventory = widget.info['isNonInventory'] ?? false;
+      topDiscount = widget.info['topDiscount'] ?? false;
+      comingSoon = widget.info['comingSoon'] ?? false;
+      freeShipping = widget.info['freeShipping'] ?? false;
+      Hive.box('category').putAll({
+        'name': widget.info['category'] ?? '',
+        'categoryId': widget.info['categoryId'] ?? '',
+      });
+      Hive.box('subCategory').putAll({
+        'name': widget.info['subCategory'] ?? '',
+        'subCategoryId': widget.info['subCategoryId'] ?? '',
+        'categoryId': widget.info['categoryId'] ?? '',
+      });
       Hive.box('images').put('productImages', widget.info['images'] ?? []);
       Hive.box('suppliers').putAll(widget.info['supplier']);
       SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
@@ -223,7 +252,7 @@ class _NewProductState extends State<NewProduct>
           });
           List products = Hive.box(productsBox).get(productsKey);
           Map supplier = Hive.box('suppliers').toMap();
-          if (widget.isUpdateProduct) {
+          if (currentEvent == Events.onUpdate) {
             List deletedImages = Hive.box('images').get('deletedImages') ?? [];
             List img = widget.info['images'] ?? [];
             if (deletedImages.isNotEmpty && img.isNotEmpty) {
@@ -245,7 +274,7 @@ class _NewProductState extends State<NewProduct>
             Provider.of<GeneralProvider>(context, listen: false).clearLists();
 
             ///todo: check here
-          } else if (onDelete) {
+          } else if (currentEvent == Events.onDelete) {
             for (int i = 0; i < products.length; i++) {
               if (widget.info['productId'] == products[i]['productId']) {
                 products.removeAt(i);
@@ -289,7 +318,7 @@ class _NewProductState extends State<NewProduct>
                 centerTitle: false,
                 titleTextStyle: kAppBarTitleTextStyle,
                 actions: [
-                  widget.isUpdateProduct == true
+                  widget.isUpdateProduct
                       ? IconButton(
                           onPressed: () {
                             showDialog(
@@ -307,7 +336,7 @@ class _NewProductState extends State<NewProduct>
                                       onPressed: () async {
                                         setState(() {
                                           loading = true;
-                                          onDelete = true;
+                                          currentEvent = Events.onDelete;
                                         });
                                         Navigator.pop(dialogContext);
                                         List productImageUrls =
@@ -315,37 +344,28 @@ class _NewProductState extends State<NewProduct>
                                                 'productImages',
                                                 defaultValue: []);
                                         try {
-                                          String deleteOperationResponse =
-                                              await NetworkUtility
-                                                  .deleteProductImages(
-                                                      images: productImageUrls
-                                                              .isNotEmpty
-                                                          ? productImageUrls
-                                                          : widget
-                                                              .info['images'])!;
-                                          if (deleteOperationResponse ==
-                                              'No image') {
-                                            snackBar(
-                                              text: 'No image found',
-                                              context: context,
-                                              duration: 40,
-                                              color: kRedColor,
-                                            );
-                                          }
-
-                                          ///Todo: Delete Product here...
+                                         if(productImageUrls.isNotEmpty){
+                                           await NetworkUtility
+                                               .deleteProductImages(
+                                               images: productImageUrls);
+                                         }
                                           productBloc.add(DeleteProductEvent(
                                               token: jWTToken,
                                               productId:
                                                   widget.info['productId']));
-                                        } on FirebaseException catch (e) {
+                                        } catch (e) {
                                           if (kDebugMode) {
-                                            print(e.message);
+                                            print(e);
                                           }
-                                        } finally {
                                           setState(() {
                                             loading = false;
                                           });
+                                          snackBar(
+                                            text: e.toString(),
+                                            context: context,
+                                            duration: 100,
+                                            color: kRedColor,
+                                          );
                                         }
                                       },
                                       child: const Text(
@@ -419,10 +439,10 @@ class _NewProductState extends State<NewProduct>
                             box.get('imagesBytes', defaultValue: []);
                         List imagesPath =
                             box.get('imagesPath', defaultValue: []);
-                        if (widget.isUpdateProduct == true &&
-                            imagesByte.isEmpty) {
-                          List images = box.get('productImages');
-                          return imageProduct(images ?? []);
+                        if (widget.isUpdateProduct && imagesByte.isEmpty) {
+                          List images =
+                              box.get('productImages', defaultValue: []);
+                          return imageProduct(images);
                         } else {
                           return SizedBox(
                             height: 100,
@@ -496,7 +516,7 @@ class _NewProductState extends State<NewProduct>
                 child: Column(
                   children: [
                     TextFieldWidget(
-                      onTap: (){
+                      onTap: () {
                         _formKey.currentState!.validate();
                       },
                       controller: _nameController,
@@ -509,7 +529,7 @@ class _NewProductState extends State<NewProduct>
                       },
                     ),
                     TextFieldWidget(
-                      onTap: (){
+                      onTap: () {
                         _formKey.currentState!.validate();
                       },
                       controller: _productCodeController,
@@ -555,7 +575,7 @@ class _NewProductState extends State<NewProduct>
                         setState(() {
                           isGeneral = value!;
                         });
-                          _formKey.currentState!.validate();
+                        _formKey.currentState!.validate();
                       },
                     ),
                     ProductPrice(
@@ -574,7 +594,7 @@ class _NewProductState extends State<NewProduct>
                         setState(() {
                           isAgent = value!;
                         });
-                          _formKey.currentState!.validate();
+                        _formKey.currentState!.validate();
                       },
                     ),
                     ProductPrice(
@@ -585,7 +605,7 @@ class _NewProductState extends State<NewProduct>
                         setState(() {
                           isArchitect = value!;
                         });
-                          _formKey.currentState!.validate();
+                        _formKey.currentState!.validate();
                       },
                       validator: isArchitect
                           ? (value) {
@@ -630,7 +650,7 @@ class _NewProductState extends State<NewProduct>
                         setState(() {
                           isAgentDiscount = value!;
                         });
-                          _formKey.currentState!.validate();
+                        _formKey.currentState!.validate();
                       },
                       validator: isAgentDiscount
                           ? (value) {
@@ -649,7 +669,7 @@ class _NewProductState extends State<NewProduct>
                         setState(() {
                           isArchitectDiscount = value!;
                         });
-                          _formKey.currentState!.validate();
+                        _formKey.currentState!.validate();
                       },
                       validator: isArchitectDiscount
                           ? (value) {
@@ -689,16 +709,26 @@ class _NewProductState extends State<NewProduct>
                                   defaultValue: widget.isUpdateProduct
                                       ? widget.info['category']
                                       : '');
-                              if(category.isNotEmpty){
-                                _categoryController.text = category;
+                              if (category.isNotEmpty) {
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((timeStamp) {
+                                  _categoryController.text = category;
+                                });
                               }
                               return TextFieldWidget(
                                 readOnly: true,
+                                labelText: 'Category',
                                 controller: _categoryController,
                                 onTap: isProducts == false
                                     ? null
                                     : () {
-                                    _formKey.currentState!.validate();
+                                        _formKey.currentState!.validate();
+                                        final categoryBloc =
+                                            BlocProvider.of<CategoryBloc>(
+                                                context);
+                                        categoryBloc.add(
+                                          GetCategoriesEvent(),
+                                        );
                                         getCategoryDialog(
                                             buildContext: context);
                                       },
@@ -708,6 +738,60 @@ class _NewProductState extends State<NewProduct>
                                   }
                                   return null;
                                 },
+                              );
+                            }),
+
+                        ValueListenableBuilder(
+                            valueListenable:
+                                Hive.box('subCategory').listenable(),
+                            builder: (context, Box box, childs) {
+                              String subCategory = box.get('name',
+                                  defaultValue: widget.isUpdateProduct
+                                      ? widget.info['category']
+                                      : '');
+                              if (subCategory.isNotEmpty) {
+                                SchedulerBinding.instance
+                                    .addPostFrameCallback((timeStamp) {
+                                  _subCategoryController.text = subCategory;
+                                });
+                              }
+                              return TextFieldWidget(
+                                readOnly: true,
+                                controller: _subCategoryController,
+                                labelText: 'Sub-Category',
+                                onTap: isProducts == false
+                                    ? null
+                                    : () {
+                                        _formKey.currentState!.validate();
+                                        if (Hive.box('category').isEmpty) {
+                                          showMyDialog(
+                                            'Please select category first!',
+                                            context,
+                                          );
+                                        } else {
+                                          final categoryBloc =
+                                              BlocProvider.of<CategoryBloc>(
+                                                  context);
+                                          categoryBloc.add(
+                                            GetCategoriesEvent(
+                                              isSubCategory: true,
+                                              categoryId: Hive.box('category')
+                                                  .get('categoryId'),
+                                            ),
+                                          );
+                                          getSubCategoryDialog(
+                                            buildContext: context,
+                                            categoryId: Hive.box('category')
+                                                .get('categoryId'),
+                                          );
+                                        }
+                                      },
+                                // validator: (value) {
+                                //   if (value == null || value.isEmpty) {
+                                //     return 'Please add category';
+                                //   }
+                                //   return null;
+                                // },
                               );
                             }),
                         // const SizedBox(
@@ -734,7 +818,7 @@ class _NewProductState extends State<NewProduct>
                             onTap: isProducts == false
                                 ? null
                                 : () {
-                                _formKey.currentState!.validate();
+                                    _formKey.currentState!.validate();
                                     final advertBloc =
                                         BlocProvider.of<AdvertsBloc>(context);
                                     advertBloc.add(GetAdvertsEvent());
@@ -749,7 +833,7 @@ class _NewProductState extends State<NewProduct>
                           labelText: 'Cost',
                           controller: _costController,
                           keyboardType: TextInputType.number,
-                          onTap: (){
+                          onTap: () {
                             _formKey.currentState!.validate();
                           },
                           validator: (value) {
@@ -776,16 +860,16 @@ class _NewProductState extends State<NewProduct>
                         ValueListenableBuilder(
                             valueListenable: Hive.box('suppliers').listenable(),
                             builder: (context, Box box, childs) {
-                              String shopName = box.get('businessName',
-                                  defaultValue: '');
-                              if(shopName.isNotEmpty){
+                              String shopName =
+                                  box.get('businessName', defaultValue: '');
+                              if (shopName.isNotEmpty) {
                                 _supplierController.text = shopName;
                               }
                               return TextFieldWidget(
                                 onTap: () {
                                   _formKey.currentState!.validate();
                                   final supplierBloc =
-                                  BlocProvider.of<SuppliersBloc>(context);
+                                      BlocProvider.of<SuppliersBloc>(context);
                                   supplierBloc.add(
                                       GetSuppliersEvent(token: jWTToken ?? ''));
                                   getNonInventoryDialog(
@@ -867,6 +951,62 @@ class _NewProductState extends State<NewProduct>
           onChanged: (value) {
             setState(() {
               isInfinity = value;
+            });
+          },
+        ),
+        SwitchListTile(
+          activeColor: kNewMainColor,
+          tileColor: kBackgroundColor,
+          title: const Text(
+            'Non Inventory Product',
+            style: kTableCellStyle,
+          ),
+          value: isNonInventory,
+          onChanged: (value) {
+            setState(() {
+              isNonInventory = value;
+            });
+          },
+        ),
+        SwitchListTile(
+          activeColor: kNewMainColor,
+          tileColor: kBackgroundColor,
+          title: const Text(
+            'Free Shipping',
+            style: kTableCellStyle,
+          ),
+          value: freeShipping,
+          onChanged: (value) {
+            setState(() {
+              freeShipping = value;
+            });
+          },
+        ),
+        SwitchListTile(
+          activeColor: kNewMainColor,
+          tileColor: kBackgroundColor,
+          title: const Text(
+            'Coming soon',
+            style: kTableCellStyle,
+          ),
+          value: comingSoon,
+          onChanged: (value) {
+            setState(() {
+              comingSoon = value;
+            });
+          },
+        ),
+        SwitchListTile(
+          activeColor: kNewMainColor,
+          tileColor: kBackgroundColor,
+          title: const Text(
+            'Top Discount',
+            style: kTableCellStyle,
+          ),
+          value: topDiscount,
+          onChanged: (value) {
+            setState(() {
+              topDiscount = value;
             });
           },
         ),
@@ -1016,6 +1156,7 @@ class _NewProductState extends State<NewProduct>
                             return false;
                           }
                         }
+
                         if (isNotEmpty()) {
                           List imagesList =
                               Hive.box('images').get('productImages') ?? [];
@@ -1120,6 +1261,13 @@ class _NewProductState extends State<NewProduct>
                               'isAgentDiscount': isAgentDiscount,
                               'isArchitectDiscount': isArchitectDiscount,
                               'isInfinity': isInfinity,
+                              'isNonInventory': isNonInventory,
+                              'topDiscount': topDiscount,
+                              'freeShipping': freeShipping,
+                              'comingSoon': comingSoon,
+                              'subCategory': _subCategoryController.text,
+                              'subCategoryId':
+                                  Hive.box('subCategory').get('subCategoryId'),
                               'adverts': updatedAdverts,
                               if (widget.isUpdateProduct)
                                 'deletedAdverts': deletedAdverts,
@@ -1150,7 +1298,8 @@ class _NewProductState extends State<NewProduct>
                           });
                           showDialogBox(
                             buildContext: context,
-                            msg: 'Fields can\'t be empty!, please check and add any missing field',
+                            msg:
+                                'Fields can\'t be empty!, please check and add any missing field',
                           );
                         }
                       },

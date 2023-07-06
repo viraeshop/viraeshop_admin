@@ -11,7 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/reusable_widgets/drawer.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
-import 'package:viraeshop_admin/screens/new_product_screen.dart';
+import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/screens/product_info.dart';
 import 'package:viraeshop_admin/screens/products_screen.dart';
 import 'package:viraeshop_admin/screens/user_list.dart';

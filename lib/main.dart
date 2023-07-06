@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
 import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
+import 'package:viraeshop_admin/screens/orders/details.dart';
+import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
+import 'package:viraeshop_admin/screens/orders/order_products.dart';
 import 'package:viraeshop_admin/screens/products/product_provider.dart';
 import 'package:viraeshop_admin/tests/testing.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -146,6 +149,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('adminInfo');
   await Hive.openBox('category');
+  await Hive.openBox('subCategory');
   await Hive.openBox('newAdmin');
   await Hive.openBox('customer');
   await Hive.openBox(productsBox);
@@ -318,7 +322,7 @@ class _MyAppState extends State<MyApp> {
           titleTextStyle: kAppBarTitleTextStyle,
         ),
       ),
-      //home: const TestApi(),
+      //home: const OrderProducts(),
       initialRoute: SplashScreen.path,
       routes: {
         SplashScreen.path: (context) => const SplashScreen(),

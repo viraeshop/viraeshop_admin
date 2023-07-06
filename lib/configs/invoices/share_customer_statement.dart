@@ -240,7 +240,7 @@ Future<void> shareCustomerStatement({
             gridResult.bounds.bottom + 90, 0, 0));
   }
   //Save the document
-  List<int> bytes = document.save();
+  List<int> bytes = await document.save();
   //Dispose the document
   if (isSave) {
     try {

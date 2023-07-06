@@ -8,10 +8,14 @@ class CategoryCard extends StatelessWidget {
     required this.title,
     this.onTap,
     required this.isSelected,
+    this.isAssetImage = false,
+    this.isSubCategory = false,
   });
   final String title;
   final String imageUrl;
   final bool isSelected;
+  final bool isAssetImage;
+  final bool isSubCategory;
   final void Function()? onTap;
 
   @override
@@ -21,30 +25,42 @@ class CategoryCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            margin: EdgeInsets.all(10.0),
-            height: 50.0,
-            width: 60.0,
+            margin: const EdgeInsets.all(7.0),
+            padding: const EdgeInsets.all(3.0),
+            height: 75.0,
+            width: isSubCategory ? 100.0 : 150.0,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: CachedNetworkImageProvider(
-                  imageUrl,
-                ),
+                image: image(isAssetImage, imageUrl),
                 fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.5),
+                  BlendMode.srcOver,
+                ),
               ),
               color: kCategoryBackgroundColor,
               borderRadius: BorderRadius.circular(12.0),
+              // border: Border.all(
+              //   color: isSelected ? kNewMainColor : kSubMainColor,
+              //   width: 3.0,
+              // ),
+            ),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isSelected ? kNewMainColor : kBackgroundColor,
+                  //backgroundColor: Colors.white24,
+                  fontSize: 13.0,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
           // SizedBox(height: 3.0),
-          Text(
-            title,
-            style: TextStyle(
-              color: isSelected ? kNewMainColor : kSubMainColor,
-              fontSize: 15.0,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.bold,
-            ),
-          ),          
           // isSelected
           //     ? Column(
           //       children: [
@@ -62,6 +78,16 @@ class CategoryCard extends StatelessWidget {
           //     : SizedBox(),
         ],
       ),
+    );
+  }
+}
+
+ImageProvider image(bool isAssetImage, String path) {
+  if (isAssetImage) {
+    return AssetImage(path);
+  } else {
+    return CachedNetworkImageProvider(
+      path,
     );
   }
 }

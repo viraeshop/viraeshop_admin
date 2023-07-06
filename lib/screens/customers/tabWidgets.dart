@@ -4,15 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:viraeshop/orders/barrel.dart';
 import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
+import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
+import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
 import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
+import 'package:viraeshop_admin/screens/orders/order_products.dart';
+import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
+import 'package:viraeshop_api/models/items/items.dart';
+import 'package:viraeshop_api/models/orders/orders.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
 import '../../configs/boxes.dart';
+import '../../reusable_widgets/loading_widget.dart';
 import '../transactions/customer_transactions.dart';
 import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';
@@ -166,7 +175,7 @@ class _SalesTabState extends State<SalesTab> {
                                             ['adminInfo']['name'],
                                         customerName: customerName,
                                         desc: description,
-                                        invoiceId: transactions[i]['invoiceNo']
+                                        id: transactions[i]['invoiceNo']
                                             .toString(),
                                       );
                                     },
@@ -469,86 +478,175 @@ class OrdersTab extends StatefulWidget {
 }
 
 class _OrdersTabState extends State<OrdersTab> {
-  List orders = [];
-  bool isLoading = true, isError = false;
+  List<Orders> orders = [];
+  bool isLoading = false, onError = false, onUpdate = false;
+  String errorMessage = '';
+  final jWTToken = Hive.box('adminInfo').get('token');
+  final ScrollController _scrollController = ScrollController();
+  int offset = 0;
   @override
   void initState() {
-    // TODO: implement initState
-    FirebaseFirestore.instance
-        .collection('order')
-        .where('customer_info.customer_id', isEqualTo: widget.userId)
-        .orderBy('date', descending: true)
-        .get()
-        .then((snapshot) {
-      final data = snapshot.docs;
-      for (var element in data) {
-        orders.add(
-          element.data(),
-        );
-      }
-      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-        setState(() {
-          isLoading = false;
-        });
+    getOrders(
+      data: {
+        'filterType': 'default',
+        'filterData': {
+          'customerId': widget.userId,
+        }
+      },
+      context: context,
+    );
+    _scrollController.addListener(() {
+      bool onStatusFilter = Provider.of<OrderProvider>(context, listen: false).onStatusFilter;
+      String currentStatus =  Provider.of<OrderProvider>(context, listen: false).currentOrderStatus;
+      setState(() {
+        isLoading = true;
+        offset += 20;
+        onUpdate = true;
       });
-    }).catchError((error) {
-      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-        setState(() {
-          isLoading = false;
-          isError = true;
-        });
-      });
+      getOrders(
+        data: {
+          'offSet': offset,
+          'filterType': onStatusFilter ? 'orderStatus' : 'default',
+          'filterData': {
+            'customerId': widget.userId,
+            if(onStatusFilter)'orderStatus': currentStatus,
+          }
+        },
+        context: context,
+      );
     });
     super.initState();
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      child: orders.isNotEmpty && isError == false
-          ? ListView.builder(
-              itemCount: orders.length,
-              shrinkWrap: true,
-              itemBuilder: (BuildContext context, int i) {
-                List items = orders[i]['items'];
-                String description = '';
-                for (var element in items) {
-                  description +=
-                      '${element['quantity']}x ${element['productName']} ';
-                }
-                Timestamp timestamp = orders[i]['date'];
-                String date = DateFormat.yMMMd().format(timestamp.toDate());
-                return OrderTranzCard(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return OrderInfoView(order: orders[i]);
-                    }));
-                  },
-                  date: date,
-                  price: orders[i]['price'].toString(),
-                  employeeName: 'Riyadh',
-                  customerName: orders[i]['customer_info']['customer_name'],
-                  desc: description,
+    return BlocConsumer<OrdersBloc, OrderState>(
+        buildWhen: (prevState, currentState) {
+      if (currentState is FetchedOrdersState) {
+        return true;
+      } else if (currentState is OnErrorOrderState && !onUpdate) {
+        return true;
+      } else if (currentState is LoadingOrderState && !onUpdate) {
+        return true;
+      } else {
+        return false;
+      }
+    }, listenWhen: (prevState, state) {
+      if (state is OnErrorOrderState && onUpdate) {
+        return true;
+      } else {
+        return false;
+      }
+    }, listener: (context, state) {
+      if (state is OnErrorOrderState) {
+        setState(() {
+          onError = true;
+          isLoading = false;
+          errorMessage = state.message;
+        });
+      }
+      // } else if (state is FetchedOrdersState) {
+      //   setState(() {
+      //     isLoading = false;
+      //     orders.addAll(state.orderList);
+      //   });
+      // }
+    }, builder: (context, state) {
+      if (state is FetchedOrdersState) {
+        if(orders.isNotEmpty){
+          orders.addAll(state.orderList);
+          isLoading = false;
+          onUpdate = false;
+        }else{
+          orders = state.orderList;
+        }
+        return ListView.builder(
+          itemCount: onUpdate ? orders.length + 1 : orders.length,
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemBuilder: (BuildContext context, int i) {
+            List<Items> items = orders[i].items;
+            String description = '';
+            for (var element in items) {
+              description += '${element.quantity}x ${element.productName} ';
+            }
+            Timestamp timestamp = dateFromJson(orders[i].createdAt);
+            String date = DateFormat.yMMMd().format(timestamp.toDate());
+            if(onUpdate && i == orders.length){
+              return const FetchingMoreLoadingIndicator();
+            }
+            return OrderTranzCard(
+              onTap: () {
+                OrderStages currentStage =
+                    Provider.of<OrderProvider>(context, listen: false).currentStage;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return OrderProducts(
+                        customerInfo: orders[i].customerInfo.toJson(),
+                        orderInfo: orders[i].toJson(),
+                        onGetAdmins: currentStage != OrderStages.order,
+                      );
+                    },
+                  ),
                 );
               },
-            )
-          : isLoading
-              ? const Center(
-                  child: SizedBox(
-                      height: 40.0,
-                      width: 40.0,
-                      child: CircularProgressIndicator(
-                        color: kMainColor,
-                      )),
-                )
-              : const Center(
-                  child: Text(
-                    'May be You have\'nt made sale yet. or an error occured. Make sure you already made a sale or try again.',
-                    textAlign: TextAlign.center,
-                    style: kProductNameStyle,
-                  ),
-                ),
+              date: date,
+              price: orders[i].price.toString(),
+              employeeName: 'Riyadh',
+              customerName: orders[i].customerInfo.name,
+              desc: description,
+              id: orders[i].orderId,
+            );
+          },
+        );
+      } else if (state is OnErrorOrderState) {
+        return OnErrorWidget(message: state.message);
+      }
+      return const LoadingWidget();
+    });
+  }
+}
+
+class FetchingMoreLoadingIndicator extends StatelessWidget {
+  const FetchingMoreLoadingIndicator({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 50.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          LoadingWidget(),
+          SizedBox(
+            width: 5.0,
+          ),
+          Text('Fetching more....', style: kSansTextStyleSmallBlack,),
+        ],
+      ),
     );
   }
+}
+
+void getOrders(
+    {required Map<String, dynamic> data, required BuildContext context}) {
+  final jWTToken = Hive.box('adminInfo').get('token');
+  final orderBloc = BlocProvider.of<OrdersBloc>(context);
+  orderBloc.add(
+    GetOrdersEvent(
+      token: jWTToken,
+      data: data,
+    ),
+  );
 }

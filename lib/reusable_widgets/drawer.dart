@@ -13,6 +13,8 @@ import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
 import 'package:viraeshop_admin/screens/customers/all_customers.dart';
 import 'package:viraeshop_admin/screens/customers/general_customers.dart';
 import 'package:viraeshop_admin/screens/admins/edit_employee.dart';
+import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
+import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_admin/screens/supplier/suppliers_list.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/add_user.dart';
@@ -88,7 +90,7 @@ class _AppDrawerState extends State<AppDrawer> {
         width: 10,
         color: kSubMainColor,
         child: Scrollbar(
-          isAlwaysShown: false,
+          thumbVisibility: false,
           controller: _scrollController,
           child: ListView(
             controller: _scrollController,
@@ -173,16 +175,9 @@ class _AppDrawerState extends State<AppDrawer> {
                     // selected: true,
                     title: 'Home',
                     onTap: () {
-                      // if (widget.isBigScreen == true) {
-                      //   Provider.of<Configs>(context, listen: false)
-                      //       .updateWidget(
-                      //     ModalWidget(),
-                      //   );
-                      // } else {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateDrawerWidget('Tab Widget');
                       Navigator.pop(context);
-                      //}
                     },
                   ),
                   ReusableTile(
@@ -192,31 +187,57 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Orders',
                     onTap: () {
-                      // if (widget.isBigScreen == true) {
-                      //   Provider.of<Configs>(context, listen: false)
-                      //       .updateWidget(
-                      //     DesktopOrders(),
-                      //   );
-                      // } else {
+                      Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.order);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const Orders(),
+                          builder: (context) => const OrderRoutineReport(
+                              title: 'Orders',
+                          ),
                         ),
                       );
-                      //}
+                    },
+                  ),
+                  ReusableTile(
+                    // ticker: widget.newOrders != '0'
+                    //     ? NotificationTicker(value: widget.newOrders)
+                    //     : const SizedBox(),
+                    icon: FontAwesomeIcons.shoppingBag,
+                    title: 'Processing',
+                    onTap: () {
+                      Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.processing);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const OrderRoutineReport(
+                            title: 'Processing',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  ReusableTile(
+                    // ticker: widget.newOrders != '0'
+                    //     ? NotificationTicker(value: widget.newOrders)
+                    //     : const SizedBox(),
+                    icon: FontAwesomeIcons.shoppingBag,
+                    title: 'Delivery',
+                    onTap: () {
+                      Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.receiving);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const OrderRoutineReport(
+                            title: 'Delivery',
+                          ),
+                        ),
+                      );
                     },
                   ),
                   ReusableTile(
                     icon: FontAwesomeIcons.cube,
                     title: 'Products',
                     onTap: () {
-                      // if (widget.isBigScreen == true) {
-                      //   Provider.of<Configs>(context, listen: false)
-                      //       .updateWidget(
-                      //     Products(),
-                      //   );
-                      // } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -230,16 +251,6 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: Icons.grid_view,
                     title: 'Category',
                     onTap: () {
-                      // if (widget.isBigScreen == true) {
-                      //   Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //       builder: (context) {
-                      //         return CategoryScreen();
-                      //       },
-                      //     ),
-                      //   );
-                      // } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -252,7 +263,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     icon: Icons.grid_view,
                     title: 'Transactions',
-                    onTap: isTransactions == false
+                    onTap: !isTransactions
                         ? null
                         : () {
                             Navigator.push(
@@ -272,9 +283,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     padding: true,
                     title: 'All Customers',
-                    onTap: isMakeCustomer == false
-                        ? null
-                        : () {
+                    onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -286,9 +295,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     padding: true,
                     title: 'General',
-                    onTap: isMakeCustomer == false
-                        ? null
-                        : () {
+                    onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -298,15 +305,7 @@ class _AppDrawerState extends State<AppDrawer> {
                           },
                   ),
                   ReusableTile(
-                    onTap: isMakeCustomer == false
-                        ? null
-                        : () {
-                            //     if (widget.isBigScreen == true) {
-                            //       Provider.of<Configs>(context, listen: false)
-                            //           .updateWidget(
-                            //         AgentsPage(),
-                            //       );
-                            //     } else {
+                    onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -319,15 +318,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     title: 'Agent',
                   ),
                   ReusableTile(
-                    onTap: isMakeCustomer == false
-                        ? null
-                        : () {
-                            // if (widget.isBigScreen == true) {
-                            //   Provider.of<Configs>(context, listen: false)
-                            //       .updateWidget(
-                            //     ArchitectsPage(),
-                            //   );
-                            // } else {
+                    onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -340,8 +331,7 @@ class _AppDrawerState extends State<AppDrawer> {
                     title: 'Architects',
                   ),
                   ReusableTile(
-                    onTap: isMakeCustomer == false
-                        ? null
+                    onTap: !isMakeCustomer ? null
                         : () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -511,9 +501,7 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     icon: Icons.attach_money,
                     title: 'Due',
-                    onTap: !isManageDue
-                        ? null
-                        : () => Navigator.push(
+                    onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const DueScreen(),

@@ -1,9 +1,11 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/foundation.dart';
 
 class AdminProvider extends ChangeNotifier{
   String email = '';
   String name = '';
   String oldEmail = '';
+  bool active = true;
   Map<String, dynamic> adminInfo = {};
 
   void updateEmail (String email){
@@ -11,6 +13,10 @@ class AdminProvider extends ChangeNotifier{
     notifyListeners();
   }
 
+  void updateActive (bool value){
+    active = value;
+    notifyListeners();
+  }
   void saveExistingEmail (String email){
     oldEmail = email;
     notifyListeners();

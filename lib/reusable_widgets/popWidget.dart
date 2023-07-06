@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/home_screen_components/product_pop_widget_supplier_info.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/new_product_screen.dart';
+import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/screens/photoslide_show.dart';
 import 'iconWidget.dart';
 

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -13,14 +14,17 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
-import 'package:viraeshop_admin/screens/customers/phone_verification_screen.dart';
+import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/customers/customers.dart';
 
+import '../home_screen.dart';
+
 class RegisterCustomer extends StatefulWidget {
-  const RegisterCustomer({Key? key}) : super(key: key);
+  final String? mobile;
+  const RegisterCustomer({Key? key, this.mobile = ''}) : super(key: key);
 
   @override
   State<RegisterCustomer> createState() => _RegisterCustomerState();
@@ -42,10 +46,14 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
     _preferences.addControllers = TextEditingController();
     _preferences.addHint = 'Password';
     _preferences.addIconData = Icons.password;
+      setState(() {
+        _preferences.getControllers[1].text = widget.mobile ?? '';
+      });
     // final customerBloc = BlocProvider.of<CustomersBloc>(context);
     // customerBloc.add(GetCustomersEvent(query: 'all'));
     super.initState();
   }
+
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
@@ -112,7 +120,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                   }
                   userInfo['customerId'] = uid;
                   customerBloc.add(AddCustomerEvent(
-                    token: jWTToken,
+                      token: jWTToken,
                       customerModel: CustomerModel.fromJson(userInfo)));
                 } on FirebaseAuthException catch (e) {
                   setState(() {
@@ -129,90 +137,88 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                 }
               }
             } else if (state is RequestFinishedCustomerState) {
-              if (kDebugMode) {
-                print('Done adding customer');
-              }
-              final String number =
-                  countryCode + _preferences.getControllers[1].text;
+              setState(() {
+                isLoading = false;
+              });
               userInfo['id'] = userInfo['customerId'];
               userInfo.remove('customerId');
               Hive.box('customer').putAll(userInfo);
-              toast(
-                  context: context,
-                  title: 'Sending verification code please wait....');
-              try {
-                if (!kIsWeb) {
-                  await _auth.verifyPhoneNumber(
-                      phoneNumber: number,
-                      verificationCompleted:
-                          (PhoneAuthCredential credentials) {},
-                      verificationFailed: (FirebaseAuthException e) {
-                        if (kDebugMode) {
-                          print(e.code);
-                        }
-                        if (e.code == 'invalid-phone-number') {
-                          if (kDebugMode) {
-                            print('The provided phone number is not valid.');
-                          }
-                          snackBar(
-                              duration: 25,
-                              text: 'The provided phone number is not valid.',
-                              context: context,
-                              color: kRedColor);
-                        }
-                        snackBar(
-                          duration: 25,
-                          text: e.code,
-                          context: context,
-                          color: kRedColor,
-                        );
-                      },
-                      codeSent: (String verificationId, int? resendToken) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return PhoneVerificationScreen(
-                                number: _preferences.getControllers[1].text,
-                                verificationId: verificationId,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      codeAutoRetrievalTimeout: (String verificationId) {});
-                } else {
-                  ConfirmationResult confirmationResult =
-                      await _auth.signInWithPhoneNumber(number);
-                  Future.delayed(const Duration(milliseconds: 0), () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return PhoneVerificationScreen(
-                            number: _preferences.getControllers[1].text,
-                            confirmationResult: confirmationResult,
-                          );
-                        },
-                      ),
-                    );
-                  });
-                }
-              } on FirebaseAuthException catch (e) {
-                if (kDebugMode) {
-                  print(e);
-                }
-                snackBar(
-                  text: e.message!,
-                  context: context,
-                  color: kRedColor,
-                  duration: 10,
-                );
-              } finally {
-                setState(() {
-                  isLoading = false;
-                });
-              }
+              Navigator.popUntil(
+                  context, ModalRoute.withName(HomeScreen.path));
+              // try {
+              //   if (!kIsWeb) {
+              //     await _auth.verifyPhoneNumber(
+              //         phoneNumber: number,
+              //         verificationCompleted:
+              //             (PhoneAuthCredential credentials) {},
+              //         verificationFailed: (FirebaseAuthException e) {
+              //           if (kDebugMode) {
+              //             print(e.code);
+              //           }
+              //           if (e.code == 'invalid-phone-number') {
+              //             if (kDebugMode) {
+              //               print('The provided phone number is not valid.');
+              //             }
+              //             snackBar(
+              //                 duration: 25,
+              //                 text: 'The provided phone number is not valid.',
+              //                 context: context,
+              //                 color: kRedColor);
+              //           }
+              //           snackBar(
+              //             duration: 25,
+              //             text: e.code,
+              //             context: context,
+              //             color: kRedColor,
+              //           );
+              //         },
+              //         codeSent: (String verificationId, int? resendToken) {
+              //           Navigator.push(
+              //             context,
+              //             MaterialPageRoute(
+              //               builder: (context) {
+              //                 return PhoneVerificationScreen(
+              //                   number: _preferences.getControllers[1].text,
+              //                   verificationId: verificationId,
+              //                 );
+              //               },
+              //             ),
+              //           );
+              //         },
+              //         codeAutoRetrievalTimeout: (String verificationId) {});
+              //   }
+              //   else {
+              //     ConfirmationResult confirmationResult =
+              //         await _auth.signInWithPhoneNumber(number);
+              //     Future.delayed(const Duration(milliseconds: 0), () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //           builder: (context) {
+              //             return PhoneVerificationScreen(
+              //               number: _preferences.getControllers[1].text,
+              //               confirmationResult: confirmationResult,
+              //             );
+              //           },
+              //         ),
+              //       );
+              //     });
+              //   }
+              // } on FirebaseAuthException catch (e) {
+              //   if (kDebugMode) {
+              //     print(e);
+              //   }
+              //   snackBar(
+              //     text: e.message!,
+              //     context: context,
+              //     color: kRedColor,
+              //     duration: 10,
+              //   );
+              // } finally {
+              //   setState(() {
+              //     isLoading = false;
+              //   });
+              // }
             } else if (state is OnErrorCustomerState) {
               setState(() {
                 isLoading = false;
@@ -272,12 +278,14 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                               ),
                             ),
                             labelText: _preferences.getHint[index],
-                            validator: index == 1 ? (value){
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter phone number';
-                              }
-                              return null;
-                            } : null,
+                            validator: index == 1
+                                ? (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter phone number';
+                                    }
+                                    return null;
+                                  }
+                                : null,
                           ),
                         ),
                       ),
@@ -312,7 +320,8 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                           dropdownValue = value!;
                           if (value != 'general' &&
                               _preferences.getHint.length == 5) {
-                            _preferences.addControllers = TextEditingController();
+                            _preferences.addControllers =
+                                TextEditingController();
                             _preferences.addHint = 'Business name';
                             _preferences.addIconData = Icons.business;
                           } else if (value == 'general' &&
@@ -340,20 +349,19 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                         height: 50.0,
                         width: double.infinity,
                         onTap: () async {
-                          if (_formKey.currentState!.validate()){
+                          if (_formKey.currentState!.validate()) {
                             setState(() {
                               isLoading = true;
                             });
-                            final String number =
-                                countryCode + _preferences.getControllers[1].text;
+                            final String number = countryCode +
+                                _preferences.getControllers[1].text;
                             print(number);
                             final customerBloc =
-                            BlocProvider.of<CustomersBloc>(context);
+                                BlocProvider.of<CustomersBloc>(context);
 
                             customerBloc.add(
                               CheckCustomerEvent(
-                                  token: jWTToken,
-                                  mobile: number),
+                                  token: jWTToken, mobile: number),
                             );
                           }
                           // List searchKeywords = _preferences.getControllers[0].text

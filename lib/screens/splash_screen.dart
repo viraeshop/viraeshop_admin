@@ -30,7 +30,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     // TODO: implement initState
     final categoryBloc = BlocProvider.of<CategoryBloc>(context);
-    print('calling Get Categories()');
+    if (kDebugMode) {
+      print('calling Get Categories()');
+    }
     categoryBloc.add(GetCategoriesEvent());
     super.initState();
   }

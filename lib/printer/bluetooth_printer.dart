@@ -31,7 +31,7 @@ class BluetoothPrinter extends StatefulWidget {
       paid,
       quantity,
       due,
-      businessName;
+      businessName, date;
   const BluetoothPrinter({
     required this.items,
     required this.invoiceId,
@@ -47,6 +47,7 @@ class BluetoothPrinter extends StatefulWidget {
     required this.quantity,
     required this.isWithBusinessName,
     required this.payList,
+    required this.date,
     this.businessName = '',
     Key? key,
   }) : super(key: key);
@@ -188,10 +189,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
       'Web: www.viraeshop.com',
       styles: const PosStyles(align: PosAlign.left),
     );
-    final now = DateTime.now();
-    final formatter = DateFormat('MM/dd/yyyy H:m');
-    final String timestamp = formatter.format(now);
-    bytes += receipt.text(timestamp,
+    bytes += receipt.text(widget.date,
         styles: const PosStyles(align: PosAlign.right), linesAfter: 1);
     bytes += receipt.text(
       'Invoice No. ${widget.invoiceId}',

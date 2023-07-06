@@ -60,6 +60,7 @@ class _ModalWidgetState extends State<ModalWidget> {
           messageOnPress: () {
             Navigator.pushNamed(context, UsersMessagesScreen.path);
           },
+              context: context,
           ),
             body: Consumer<AdsProvider>(
               builder: (context, ads, childs) {

@@ -204,7 +204,7 @@ Future<void> generateStatement({
       bounds: Rect.fromLTWH(graphics.clientSize.width - subTotalSize.width,
           gridResult.bounds.bottom + 70, 0, 0));
   //Save the document
-  List<int> bytes = document.save();
+  List<int> bytes = await document.save();
   //Dispose the document
   // js.context['pdfData'] = base64.encode(bytes);
   // js.context['filename'] = 'Invoice_$invoiceId.pdf';

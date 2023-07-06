@@ -54,7 +54,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     // TODO: implement initState
     amountReceived = widget.advance != 0 ? widget.advance : widget.paid;
     for (var element in cartItems) {
-      if (element.isInventory!) {
+      if (element.isInventory) {
         profit += element.price - (element.buyPrice * element.quantity);
       }
       Map cartProduct = {
@@ -143,8 +143,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 'email': Hive.box('customer').get('email'),
                 'address': Hive.box('customer').get('address'),
                 'mobile': Hive.box('customer').get('mobile'),
-                'business_name':
-                    Hive.box('customer').get('business_name', defaultValue: ''),
+                'businessName':
+                    Hive.box('customer').get('businessName', defaultValue: ''),
               };
               Future.delayed(const Duration(milliseconds: 0), () {
                 Navigator.push(

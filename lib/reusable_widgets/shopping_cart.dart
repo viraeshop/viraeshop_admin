@@ -89,7 +89,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                 valueListenable: Hive.box('customer').listenable(),
                 builder: (context, Box box, childs) {
                   String username = box.get('role') != 'general'
-                      ? box.get('business_name', defaultValue: '') +
+                      ? box.get('businessName', defaultValue: '') +
                           '(${box.get('name')})'
                       : box.get('name', defaultValue: '');
                   if (box.values.isEmpty) {
@@ -213,7 +213,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                       FractionallySizedBox(
                         heightFactor: 0.9,
                         alignment: Alignment.topCenter,
-                        child: Container(
+                        child: SizedBox(
                           // height: MediaQuery.of(context).size.height * 0.8,
                           width: double.infinity,
                           child: SingleChildScrollView(
@@ -290,7 +290,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                     Navigator.push(context,
                                                         MaterialPageRoute(
                                                             builder: (context) {
-                                                      return DiscountScreen();
+                                                      return const DiscountScreen();
                                                     }));
                                                   },
                                                   child: Text(

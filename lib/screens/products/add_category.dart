@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop/category/category_event.dart';
 import 'package:viraeshop/category/category_state.dart';
@@ -13,16 +14,25 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
+import 'package:viraeshop_admin/screens/products/category_screen.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop/category/category_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../components/category_component/category.dart';
 import '../../configs/boxes.dart';
+import 'new_product_screen.dart';
 
 class AddCategory extends StatefulWidget {
   final bool isEdit;
-  final String category;
-  const AddCategory({this.isEdit = false, this.category = ''});
+  final int categoryId;
+  final bool isSubCategory;
+  final Map<String, dynamic>? category;
+  const AddCategory(
+      {this.isEdit = false,
+      this.category,
+      this.isSubCategory = false,
+      this.categoryId = 0});
 
   @override
   _AddCategoryState createState() => _AddCategoryState();
@@ -36,12 +46,15 @@ class _AddCategoryState extends State<AddCategory> {
   String imagePath = '';
   final _formKey = GlobalKey<FormState>();
   final jWTToken = Hive.box('adminInfo').get('token');
+  TextEditingController categoryController = TextEditingController();
+  bool onDelete = false;
   @override
   void initState() {
     // TODO: implement initState
+    print(widget.category);
     if (widget.isEdit == true) {
       setState(() {
-        nameController.text = widget.category;
+        nameController.text = widget.category!['category'] ?? '';
       });
     }
     super.initState();
@@ -57,22 +70,91 @@ class _AddCategoryState extends State<AddCategory> {
           });
           snackBar(text: state.message, context: context, duration: 50);
         } else if (state is RequestFinishedCategoryState) {
+          List categories = Hive.box(productsBox).get(catKey);
           setState(() {
             load = false;
           });
           if (widget.isEdit) {
-            toast(context: context, title: 'Category updated successfully');
+            toast(
+              context: context,
+              title: onDelete
+                  ? 'Category deleted successfully'
+                  : 'Category updated successfully',
+            );
+            for (int i = 0; i < categories.length; i++) {
+              if (categories[i]['categoryId'] == widget.categoryId) {
+                if (onDelete) {
+                  if (!widget.isSubCategory) {
+                    categories.removeAt(i);
+                  } else {
+                    print('This onDelete on sub-category');
+                    List subCatgs = categories[i]['subCategories'] ?? [];
+                    for (int j = 0; j < subCatgs.length; j++) {
+                      if (subCatgs[j]['subCategoryId'] ==
+                          widget.category!['subCategoryId']) {
+                        print('This is the sub-category to be deleted');
+                        subCatgs.removeAt(j);
+                        categories[i]['subCategories'] = subCatgs;
+                      }
+                    }
+                  }
+                } else {
+                  if (!widget.isSubCategory) {
+                    print('This is main category editing');
+                    categories[i]['category'] = nameController.text;
+                    if (imageData.isNotEmpty) {
+                      categories[i]['image'] = imageData['url'];
+                      categories[i]['imageKey'] = imageData['key'];
+                    }
+                  } else {
+                    print('This is sub-category editing');
+                    List subCatgs = categories[i]['subCategories'] ?? [];
+                    for (int j = 0; j < subCatgs.length; j++) {
+                      if (subCatgs[j]['subCategoryId'] ==
+                          widget.category!['subCategoryId']) {
+                        subCatgs[j]['category'] = nameController.text;
+                        if (imageData.isNotEmpty) {
+                          subCatgs[j]['image'] = imageData['url'];
+                          subCatgs[j]['imageKey'] = imageData['key'];
+                        }
+                        categories[i]['subCategories'] = subCatgs;
+                      }
+                    }
+                  }
+                }
+              }
+            }
           } else {
             nameController.clear();
             toast(context: context, title: 'Category created successfully');
+            print('This is category creation');
+            if (!widget.isSubCategory) {
+              categories.add({
+                'category': nameController.text,
+                'image': imageData['url'] ?? '',
+                'imageKey': imageData['key'] ?? '',
+              });
+            } else {
+              for (int i = 0; i < categories.length; i++) {
+                if (categories[i]['categoryId'] == widget.categoryId) {
+                  print('This is sub category creation');
+                  categories[i]['subCategories'] = [
+                    {
+                      'category': nameController.text,
+                      'image': imageData['url'] ?? '',
+                      'imageKey': imageData['key'] ?? '',
+                      'categoryId': widget.categoryId,
+                    }
+                  ];
+                }
+              }
+            }
           }
-          List categories = Hive.box(productsBox).get(catKey);
-          categories.add({
-            'category': nameController.text,
-            'image': imageData['url'],
-            'imageKey': imageData['key'],
-          });
+          print(categories);
           Hive.box(productsBox).put(catKey, categories);
+          setState(() {
+            onDelete = false;
+          });
         }
       },
       child: ModalProgressHUD(
@@ -82,7 +164,10 @@ class _AddCategoryState extends State<AddCategory> {
             leading: IconButton(
               onPressed: () {
                 final categoryBloc = BlocProvider.of<CategoryBloc>(context);
-                categoryBloc.add(GetCategoriesEvent());
+                categoryBloc.add(GetCategoriesEvent(
+                  isSubCategory: widget.isSubCategory,
+                  categoryId: widget.categoryId,
+                ));
                 Navigator.pop(context);
               },
               icon: const Icon(FontAwesomeIcons.chevronLeft),
@@ -94,9 +179,76 @@ class _AddCategoryState extends State<AddCategory> {
             backgroundColor: kBackgroundColor,
             centerTitle: true,
             title: Text(
-              widget.isEdit ? widget.category : 'New Category',
+              widget.isEdit
+                  ? widget.category!['category']
+                  : widget.isSubCategory
+                      ? 'Sub-Category'
+                      : 'New Category',
               style: kAppBarTitleTextStyle,
             ),
+            actions: [
+              if (widget.isEdit)
+                IconButton(
+                  onPressed: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Delete Category'),
+                          content: const Text(
+                            'Are you sure you want to remove this Category?',
+                            softWrap: true,
+                            style: kSourceSansStyle,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  onDelete = true;
+                                });
+                                final categoryBloc =
+                                    BlocProvider.of<CategoryBloc>(context);
+                                categoryBloc.add(
+                                  DeleteCategoryEvent(
+                                    token: jWTToken,
+                                    categoryId: widget.category![
+                                            widget.isSubCategory
+                                                ? 'subCategoryId'
+                                                : 'categoryId']
+                                        .toString(),
+                                    body: {
+                                      'isSubCategory': widget.isSubCategory,
+                                    },
+                                  ),
+                                );
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                'Yes',
+                                softWrap: true,
+                                style: kSourceSansStyle,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                'No',
+                                softWrap: true,
+                                style: kSourceSansStyle,
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.delete),
+                  color: kSubMainColor,
+                  iconSize: 20.0,
+                ),
+            ],
           ),
           body: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -148,6 +300,36 @@ class _AddCategoryState extends State<AddCategory> {
                         child: Text('Max. 20 Characters.',
                             style: TextStyle(fontSize: 16)),
                       ),
+                      const SizedBox(
+                        height: 15.0,
+                      ),
+                      const SizedBox(
+                        height: 70,
+                      ),
+                      if (widget.isEdit && !widget.isSubCategory)
+                        ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CategoryScreen(
+                                  isSubCategory: true,
+                                  categoryId: widget.categoryId,
+                                ),
+                              ),
+                            );
+                          },
+                          tileColor: kSelectedTileColor,
+                          title: const Text(
+                            'Sub-Categories',
+                            style: kTableHeadingStyle,
+                          ),
+                          trailing: const Icon(
+                            FontAwesomeIcons.chevronRight,
+                            color: kBackgroundColor,
+                            size: 20.0,
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -168,19 +350,29 @@ class _AddCategoryState extends State<AddCategory> {
                   if (widget.isEdit) {
                     categoryBloc.add(UpdateCategoryEvent(
                         token: jWTToken,
-                        categoryId: widget.category,
+                        categoryId: widget.category![widget.isSubCategory
+                                    ? 'subCategoryId'
+                                    : 'categoryId']
+                                .toString() ??
+                            '',
                         categoryModel: {
                           'category': nameController.text,
                           'image': imageData['url'],
                           'imageKey': imageData['key'],
+                          'categoryId': widget.categoryId,
+                          if (widget.isSubCategory) 'isSubCategory': true,
                         }));
                   } else {
                     Map<String, dynamic> data = {
                       'category': nameController.text,
-                      'image': imageData['url'],
-                      'imageKey': imageData['key'],
+                      'image': imageData['url'] ?? '',
+                      'imageKey': imageData['key'] ?? '',
+                      if (widget.isSubCategory) 'categoryId': widget.categoryId,
+                      if (widget.isSubCategory) 'isSubCategory': true,
                     };
-                    print('data to go: $data');
+                    if (kDebugMode) {
+                      print('data to go: $data');
+                    }
                     categoryBloc.add(
                       AddCategoryEvent(
                         token: jWTToken,

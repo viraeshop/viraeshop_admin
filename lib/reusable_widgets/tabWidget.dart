@@ -19,7 +19,9 @@ import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
-import 'package:viraeshop_admin/screens/new_product_screen.dart';
+import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
+import 'package:viraeshop_admin/reusable_widgets/category/special_category_models.dart';
+import 'package:dart_date/dart_date.dart';
 
 import '../components/home_screen_components/decision_components.dart';
 import '../screens/advert/ads_provider.dart';
@@ -55,7 +57,6 @@ class _TabWidgetState extends State<TabWidget> {
   static List productsList = [];
   List tempStore = [];
   bool addedToCart = false;
-  String dropdownValue = 'general';
   double aspectRatio = 0.0, childAspectRatio = 0.0;
   int crossAxisCount = 3;
   final globalKey = GlobalKey();
@@ -65,13 +66,13 @@ class _TabWidgetState extends State<TabWidget> {
   OverlayEntry? entry;
   @override
   void initState() {
-    Hive.box(productsBox).watch(key: productsKey).listen((event){
+    Hive.box(productsBox).watch(key: productsKey).listen((event) {
       if (kDebugMode) {
         print('event: $event');
       }
       products = event.value;
       productsList = event.value;
-    }).onError((_){
+    }).onError((_) {
       if (kDebugMode) {
         print(_);
       }
@@ -84,10 +85,12 @@ class _TabWidgetState extends State<TabWidget> {
       return Consumer<AdsProvider>(builder: (context, animation, childs) {
         final size = MediaQuery.of(context).size.height;
         return AnimatedPositioned(
-            height:
-                animation.addedToCart[index] && animation.isAnimationStarted ? 0 : 100.0,
-            width:
-                animation.addedToCart[index] && animation.isAnimationStarted ? 0 : 150.0,
+            height: animation.addedToCart[index] && animation.isAnimationStarted
+                ? 0
+                : 100.0,
+            width: animation.addedToCart[index] && animation.isAnimationStarted
+                ? 0
+                : 150.0,
             left: offset.dx,
             bottom: animation.addedToCart[index]
                 ? 0
@@ -109,7 +112,7 @@ class _TabWidgetState extends State<TabWidget> {
       });
     });
     final overlay = Overlay.of(context);
-    overlay!.insert(entry!);
+    overlay.insert(entry!);
   }
 
   void unShowOverlay() {
@@ -189,74 +192,27 @@ class _TabWidgetState extends State<TabWidget> {
             child: Column(
               children: [
                 ValueListenableBuilder(
-                    valueListenable: Hive.box(productsBox).listenable(),
-                    builder: (context, Box box, widgets) {
-                      List catgs = box.get(catKey);
-                      return Categories(
-                        catLength: catgs.length + 1,
-                        categories: catgs,
-                      );
-                    }),
-                Container(
-                  height: 30.0,
-                  // width: double.infinity,
-                  margin: const EdgeInsets.all(10.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      DropdownButton(
-                        value: dropdownValue,
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'general',
-                            child: Text(
-                              'General',
-                              style: kProductNameStylePro,
-                            ),
-                          ),
-                          DropdownMenuItem(
-                            value: 'agents',
-                            child: Text(
-                              'Agents',
-                              style: kProductNameStylePro,
-                            ),
-                          ),
-                          DropdownMenuItem(
-                            value: 'architect',
-                            child: Text(
-                              'Architect',
-                              style: kProductNameStylePro,
-                            ),
-                          ),
-                        ],
-                        onChanged: (String? value) {
-                          setState(() {
-                            dropdownValue = value!;
-                          });
-                        },
-                      ),
-                      InkWell(
-                        key: globalKey,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return const NonInventoryScreen();
-                            }),
-                          );
-                        },
-                        child: const ImageIcon(
-                          AssetImage('assets/icons/flash.png'),
-                          color: kSubMainColor,
-                          size: 25.0,
-                        ),
-                      ),
-                    ],
-                  ),
+                  valueListenable: Hive.box(productsBox).listenable(),
+                  builder: (context, Box box, widgets) {
+                    List catgs = box.get(catKey);
+                    return Categories(
+                      catLength: catgs.length + 1,
+                      categories: catgs,
+                      isSecondRow: false,
+                    );
+                  },
                 ),
-                // const SizedBox(
-                //   height: 10.0,
-                // ),
+                Consumer<AdsProvider>(builder: (context, ads, childs) {
+                  //print(ads.hasSubCatg);
+                  return Categories(
+                    catLength: ads.hasSubCatg
+                        ? ads.subCategories.length
+                        : specialCategories.length,
+                    categories:
+                        ads.hasSubCatg ? ads.subCategories : specialCategories,
+                    isSecondRow: true,
+                  );
+                }),
                 Consumer<AdsProvider>(builder: (consumerContext, ads, childs) {
                   if (widget.isAll) {
                     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
@@ -268,9 +224,47 @@ class _TabWidgetState extends State<TabWidget> {
                       }
                     });
                   } else {
-                    List classifiedProducts = products.where((element) {
-                      return element['category'] == widget.category;
-                    }).toList();
+                    /**
+                     * This classified is the list of all products but
+                     * it gets updated base on the current category
+                     * if the category have a sub category,
+                     * it will be updated based on that.
+                     */
+                    List classifiedProducts = [];
+                    if (ads.hasSubCatg && ads.subCategory.isNotEmpty) {
+                      classifiedProducts = products.where((element) {
+                        return element['subCategory'] == ads.subCategory;
+                      }).toList();
+                    } else if (widget.category == 'Top Discount') {
+                      classifiedProducts = products.where((element) {
+                        return element['topDiscount'] ?? false;
+                      }).toList();
+                    } else if (widget.category == 'Free Shipping') {
+                      classifiedProducts = products.where((element) {
+                        return element['freeShipping'] ?? false;
+                      }).toList();
+                    } else if (widget.category == 'Coming Soon') {
+                      classifiedProducts = products.where((element) {
+                        return element['comingSoon'] ?? false;
+                      }).toList();
+                    } else if (widget.category == 'New Arrival') {
+                      classifiedProducts = products.where((element) {
+                        final currentMonth = DateTime.now();
+                        final previousMonth = currentMonth.previousMonth;
+                        final registeredDate =
+                            DateTime.parse(element['createdAt']);
+                        if (currentMonth.isSameOrBefore(registeredDate) &&
+                            previousMonth.isSameOrAfter(registeredDate)) {
+                          return true;
+                        } else {
+                          return false;
+                        }
+                      }).toList();
+                    } else {
+                      classifiedProducts = products.where((element) {
+                        return element['category'] == widget.category;
+                      }).toList();
+                    }
                     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
                       if (!ads.isSearch && !ads.isAnimationStarted) {
                         ads.updateProductList(classifiedProducts);
@@ -304,7 +298,7 @@ class _TabWidgetState extends State<TabWidget> {
                       itemBuilder: (gridContext, index) {
                         if (index == 0) {
                           final bool isProduct =
-                              Hive.box('adminInfo').get('isProducts');
+                              Hive.box('adminInfo').get('isProducts', defaultValue: false);
                           return InkWell(
                             onTap: isProduct == false
                                 ? null
@@ -334,27 +328,33 @@ class _TabWidgetState extends State<TabWidget> {
                             ),
                           );
                         }
-                        List productPics = productsList[index - 1]['images'] ?? [];
-                        List images = productPics.map((e) => e['imageLink']).toList();
+                        List productPics =
+                            productsList[index - 1]['images'] ?? [];
+                        List images =
+                            productPics.map((e) => e['imageLink']).toList();
                         num currentPrice = getCurrentPrice(
-                            productsList[index - 1], dropdownValue);
+                            productsList[index - 1], ads.dropdownValue);
                         Tuple3<num, num, bool> discountData =
                             computeDiscountData(productsList[index - 1],
-                                dropdownValue, currentPrice);
+                                ads.dropdownValue, currentPrice);
                         return InkWell(
                           key: globalKeys[index - 1],
                           onLongPress: () {
                             if (kDebugMode) {
                               print('longggg hawwa\'u i love you');
                             }
-                            List productPics = productsList[index - 1]['images'] ?? [];
+                            List productPics =
+                                productsList[index - 1]['images'] ?? [];
                             showDialog<void>(
                               context: context,
                               // barrierColor: Colors.transparent,
                               builder: (context) => PopWidget(
-                                image: productPics.map((e) => e['imageLink']).toList(),
+                                image: productPics
+                                    .map((e) => e['imageLink'])
+                                    .toList(),
                                 productName: productsList[index - 1]['name'],
-                                productCode: productsList[index - 1]['productCode'],
+                                productCode: productsList[index - 1]
+                                    ['productCode'],
                                 price: currentPrice.toString(),
                                 description: productsList[index - 1]
                                     ['description'],
@@ -411,20 +411,21 @@ class _TabWidgetState extends State<TabWidget> {
                                   productsList[index - 1]['productId'], item);
                             } else {
                               Box<Cart> cart = Hive.box<Cart>('cart');
-                              cart
-                                  .put(
-                                    productsList[index - 1]['productId'],
-                                    Cart(
-                                      productName: productsList[index - 1]
-                                          ['name'],
-                                      productId: productsList[index - 1]
-                                          ['productCode'].toString(),
-                                      price: price,
-                                      quantity: 1,
-                                      unitPrice: price,
-                                      buyPrice: productsList[index - 1]['costPrice'] ?? '0',
-                                    ),
-                                  );
+                              cart.put(
+                                productsList[index - 1]['productId'],
+                                Cart(
+                                  productName: productsList[index - 1]['name'],
+                                  productId: productsList[index - 1]
+                                          ['productCode']
+                                      .toString(),
+                                  price: price,
+                                  quantity: 1,
+                                  unitPrice: price,
+                                  buyPrice: productsList[index - 1]
+                                          ['costPrice'] ??
+                                      '0',
+                                ),
+                              );
                             }
                           },
                           child: Container(
@@ -465,8 +466,7 @@ class _TabWidgetState extends State<TabWidget> {
                                             ),
                                             borderRadius:
                                                 const BorderRadius.only(
-                                              topLeft:
-                                                  Radius.circular(10.0),
+                                              topLeft: Radius.circular(10.0),
                                               topRight: Radius.circular(10.0),
                                             ),
                                           ),
@@ -478,10 +478,8 @@ class _TabWidgetState extends State<TabWidget> {
                                         decoration: const BoxDecoration(
                                           color: kSubMainColor,
                                           borderRadius: BorderRadius.only(
-                                            bottomLeft:
-                                                Radius.circular(10),
-                                            bottomRight:
-                                                Radius.circular(10),
+                                            bottomLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(10),
                                           ),
                                         ),
                                         child: Padding(
@@ -588,14 +586,14 @@ class _TabWidgetState extends State<TabWidget> {
                 children: [
                   InkWell(
                     onTap: () {
-                        // List<Cart> cart = Hive.box<Cart>('cart').values.toList();
-                        // print(cart[0].productName);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ShoppingCart(),
-                          ),
-                        );
+                      // List<Cart> cart = Hive.box<Cart>('cart').values.toList();
+                      // print(cart[0].productName);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ShoppingCart(),
+                        ),
+                      );
                     },
                     child: ValueListenableBuilder(
                         valueListenable: Hive.box('cartDetails').listenable(),

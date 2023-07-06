@@ -25,6 +25,7 @@ class _CustomersScreenState extends State<CustomersScreen> with TickerProviderSt
     Tab(text: 'Agent'),
     Tab(text: 'Architect'),
   ];
+  final bool isMakeCustomer = Hive.box('adminInfo').get('isMakeCustomer');
   //late TabController _tabController;
   @override
   void initState() {
@@ -70,14 +71,14 @@ class _CustomersScreenState extends State<CustomersScreen> with TickerProviderSt
           ),
           actions: [
             IconButton(
-              onPressed: () {
+              onPressed: isMakeCustomer ?  () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const RegisterCustomer(),
                   ),
                 );
-              },
+              } : null,
               icon: const Icon(Icons.add),
               iconSize: 20.0,
               color: kSubMainColor,

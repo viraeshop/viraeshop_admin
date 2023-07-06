@@ -437,6 +437,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                               invoiceId: widget.isFromOrder
                                   ? widget.data['orderId']
                                   : widget.data['invoice_id'],
+                              date: DateFormat.yMMMd().format(date),
                             );
                           },
                         ),

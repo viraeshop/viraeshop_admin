@@ -149,7 +149,7 @@ class NetworkUtility {
     if (images.isNotEmpty) {
       for (var element in images) {
         try {
-          await deleteImage(key: element['key']);
+          await deleteImage(key: element['imageKey']);
         } on FirebaseException catch (e) {
           if (kDebugMode) {
             print(e.message);

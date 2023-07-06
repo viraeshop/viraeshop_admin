@@ -1,50 +1,125 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SearchBar;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/appBar/notification_bell.dart';
 import 'package:viraeshop_admin/reusable_widgets/appBar/search_bar.dart';
+import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/customers/customers_screen.dart';
 
-myAppBar({messageOnPress, notifyOnPress}) {
+import '../non_inventory_items.dart';
+
+myAppBar({messageOnPress, notifyOnPress,required BuildContext context}) {
   return AppBar(
     centerTitle: false,
-    toolbarHeight: 130.0,
+    toolbarHeight: 140.0,
     backgroundColor: kNewMainColor,
     automaticallyImplyLeading: false,
     flexibleSpace: FlexibleSpaceBar(
       centerTitle: true,
       expandedTitleScale: 1.0,
       title: SizedBox(
-        height: 20,
+        height: 30,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const SizedBox(
-              width: 20,
+            Expanded(
+              flex: 2,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  const Icon(
+                    Icons.business,
+                    color: kBackgroundColor,
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  ValueListenableBuilder(
+                      valueListenable: Hive.box('customer').listenable(),
+                      builder: (context, Box box, childs) {
+                        String name = box.get('role') != 'general' && box.isNotEmpty
+                            ? box.get('businessName', defaultValue: '') +
+                                '(${box.get('name')})'
+                            : box.get('name', defaultValue: '');
+                        return Expanded(
+                          child: Text(
+                            name,
+                            overflow: TextOverflow.ellipsis,
+                            style: kDrawerTextStyle2,
+                            softWrap: true,
+                          ),
+                        );
+                      }),
+                ],
+              ),
             ),
-            const Icon(
-              Icons.business,
-              color: kBackgroundColor,
+            Expanded(
+              child: Consumer<AdsProvider>(
+                  builder: (context, ads, any) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        DropdownButton(
+                          value: ads.dropdownValue,
+                          dropdownColor: kNewMainColor,
+                          iconEnabledColor: kBackgroundColor,
+                          //alignment: AlignmentDirectional.bottomCenter,
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'general',
+                              child: Text(
+                                'General',
+                                style: kDrawerTextStyle2,
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'agents',
+                              child: Text(
+                                'Agents',
+                                style: kDrawerTextStyle2,
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'architect',
+                              child: Text(
+                                'Architect',
+                                style: kDrawerTextStyle2,
+                              ),
+                            ),
+                          ],
+                          onChanged: (String? value) {
+                            ads.updateDropdownValue(value ?? '');
+                          },
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return const NonInventoryScreen();
+                              }),
+                            );
+                          },
+                          child: const ImageIcon(
+                            AssetImage('assets/icons/flash.png'),
+                            color: kBackgroundColor,
+                            size: 25.0,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 5.0,
+                        ),
+                      ],
+                    );
+                  }
+              ),
             ),
-            const SizedBox(
-              width: 10,
-            ),
-            ValueListenableBuilder(
-                valueListenable: Hive.box('customer').listenable(),
-                builder: (context, Box box, childs) {
-                  String name = box.get('role') != 'general' && box.isNotEmpty
-                      ? box.get('businessName', defaultValue: '') +
-                          '(${box.get('name')})'
-                      : box.get('name', defaultValue: '');
-                  return Text(
-                    name,
-                    overflow: TextOverflow.ellipsis,
-                    style: kDrawerTextStyle2,
-                    softWrap: true,
-                  );
-                }),
           ],
         ),
       ),

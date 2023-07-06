@@ -7,8 +7,12 @@ class AdsProvider extends ChangeNotifier {
   List adCards = [];
   List products = [];
   List addedToCart = [];
+  List<Map<String, dynamic>> subCategories = [];
   Map<String, Map<String, TextEditingController>> controllers = {};
   String currentCatg = 'All';
+  String subCategory = '';
+  String dropdownValue = 'general';
+  bool hasSubCatg = false;
   String drawerWidget = 'Tab Widget';
   bool isSearch = false;
   bool isAnimationStarted = false;
@@ -16,6 +20,25 @@ class AdsProvider extends ChangeNotifier {
     addedToCart = values;
     notifyListeners();
   }
+  void updateHasSubCatg(bool value){
+    hasSubCatg = value;
+    notifyListeners();
+  }
+  void updateSubCategories(List<Map<String, dynamic>> values){
+    subCategories = values;
+    notifyListeners();
+  }
+
+  void updateCurrentSubCategory(String value){
+    subCategory = value;
+    notifyListeners();
+  }
+
+  void updateDropdownValue(String value){
+    dropdownValue = value;
+    notifyListeners();
+  }
+
   void animationTrigger(bool value, int index){
     addedToCart[index] = value;
     notifyListeners();

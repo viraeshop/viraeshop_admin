@@ -83,7 +83,7 @@ class _CustomerOrdersState extends State<CustomerOrders> {
               listener: (context, state) {
             if (state is FetchedCustomerState) {
               setState(() {
-                customerInfo = state.customerModel.toJson();
+                customerInfo = state.customer.result.toJson();
               });
             } else if (state is OnErrorCustomerState) {
               setState(() {

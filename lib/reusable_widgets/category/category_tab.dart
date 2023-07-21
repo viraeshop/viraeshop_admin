@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 
 class CategoryCard extends StatelessWidget {
-  const CategoryCard({
+  const CategoryCard({Key? key,
     required this.imageUrl,
     required this.title,
     this.onTap,
     required this.isSelected,
     this.isAssetImage = false,
     this.isSubCategory = false,
-  });
+  }) : super(key: key);
   final String title;
   final String imageUrl;
   final bool isSelected;

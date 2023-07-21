@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:viraeshop_api/models/items/items.dart';
 
 enum Values {
   deliveryFee,
@@ -18,7 +19,7 @@ class OrderProvider extends ChangeNotifier {
   bool onStatusFilter = false;
   String currentOrderStatus = 'all';
   List<bool> isChangeQuantity = [];
-  List orderProducts = [];
+  List<Items> orderProducts = [];
   Map<String, dynamic> orderInfo = {};
   OrderStages currentStage = OrderStages.order;
   num due = 0,
@@ -37,7 +38,7 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onUpdateProducts(List<Map<String, dynamic>> value) {
+  void onUpdateProducts(List<Items> value) {
     orderProducts = value;
     notifyListeners();
   }

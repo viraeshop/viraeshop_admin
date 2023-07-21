@@ -1,24 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:random_string/random_string.dart';
 import 'package:viraeshop/customers/barrel.dart';
-import 'package:viraeshop/customers/customers_bloc.dart';
-import 'package:viraeshop/customers/customers_event.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
-import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop_api/models/customers/customers.dart';
 
 import '../home_screen.dart';
 
@@ -46,9 +41,9 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
     _preferences.addControllers = TextEditingController();
     _preferences.addHint = 'Password';
     _preferences.addIconData = Icons.password;
-      setState(() {
-        _preferences.getControllers[1].text = widget.mobile ?? '';
-      });
+    setState(() {
+      _preferences.getControllers[1].text = widget.mobile ?? '';
+    });
     // final customerBloc = BlocProvider.of<CustomersBloc>(context);
     // customerBloc.add(GetCustomersEvent(query: 'all'));
     super.initState();
@@ -81,7 +76,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
           listener: (context, state) async {
             final customerBloc = BlocProvider.of<CustomersBloc>(context);
             if (state is CheckedCustomerState) {
-              bool exist = state.exists.exists;
+              bool exist = state.exists.result['registered'];
               userInfo = {
                 'name': _preferences.getControllers[0].text.toUpperCase(),
                 'mobile': countryCode + _preferences.getControllers[1].text,
@@ -120,8 +115,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                   }
                   userInfo['customerId'] = uid;
                   customerBloc.add(AddCustomerEvent(
-                      token: jWTToken,
-                      customerModel: CustomerModel.fromJson(userInfo)));
+                      token: jWTToken, customerModel: userInfo));
                 } on FirebaseAuthException catch (e) {
                   setState(() {
                     isLoading = false;
@@ -143,8 +137,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
               userInfo['id'] = userInfo['customerId'];
               userInfo.remove('customerId');
               Hive.box('customer').putAll(userInfo);
-              Navigator.popUntil(
-                  context, ModalRoute.withName(HomeScreen.path));
+              Navigator.popUntil(context, ModalRoute.withName(HomeScreen.path));
               // try {
               //   if (!kIsWeb) {
               //     await _auth.verifyPhoneNumber(
@@ -355,32 +348,13 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                             });
                             final String number = countryCode +
                                 _preferences.getControllers[1].text;
-                            print(number);
                             final customerBloc =
                                 BlocProvider.of<CustomersBloc>(context);
 
                             customerBloc.add(
-                              CheckCustomerEvent(
-                                  token: jWTToken, mobile: number),
+                              CheckCustomerEvent(mobile: number),
                             );
                           }
-                          // List searchKeywords = _preferences.getControllers[0].text
-                          //     .toUpperCase()
-                          //     .characters
-                          //     .toList();
-                          // if (dropdownValue == 'architect' ||
-                          //     dropdownValue == 'agents') {
-                          //   userInfo['business_name'] =
-                          //       _preferences.getControllers[5].text;
-                          //   searchKeywords.addAll(_preferences
-                          //       .getControllers[5].text
-                          //       .toUpperCase()
-                          //       .characters
-                          //       .toList());
-                          // }
-                          // searchKeywords.removeWhere((element) => element == ' ');
-                          // searchKeywords = Set.from(searchKeywords).toList();
-                          // userInfo['search_keywords'] = searchKeywords;
                         },
                         title: 'Register'),
                   ],

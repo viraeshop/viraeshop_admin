@@ -261,7 +261,15 @@ const TextStyle kAshTenorStyle = TextStyle(
 const TextStyle kBlackTenorStyle = TextStyle(
   color: kBlackColor,
   fontFamily: 'TenorSans',
-  fontSize: 15,
+  fontSize: 20,
   letterSpacing: 1.3,
   fontWeight: FontWeight.bold
+);
+
+const TextStyle kColoredNameStyle = TextStyle(
+    color: kNewMainColor,
+    fontFamily: 'Montserrat',
+    fontSize: 15,
+    letterSpacing: 1.3,
+    fontWeight: FontWeight.bold
 );

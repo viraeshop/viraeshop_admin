@@ -1,7 +1,7 @@
 name: viraeshop_admin
 description: Admin IOS and Android App for Viraeshop
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.2.4+46
+version: 1.2.4+47
 environment:
   sdk: ">=2.12.0 <3.3.10"
 dependencies:
@@ -58,6 +58,7 @@ dependencies:
   file_saver: ^0.1.1
   dart_date: ^1.2.1
   flutter_bloc: ^8.0.0
+  blurry_modal_progress_hud: ^1.1.0
   viraeshop_api:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-api.git

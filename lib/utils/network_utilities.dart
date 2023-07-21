@@ -97,8 +97,6 @@ class NetworkUtility {
       {required File file,
         required String fileName,
         required String folder}) async {
-    // await _storage.ref().child('$folder/$fileName').putFile(file, metadata);
-    // Reference fileRef = _storage.ref('$folder/$fileName');\
     try {
       final UploadFileResult result = await Amplify.Storage.uploadFile(
         local: file,
@@ -111,11 +109,6 @@ class NetworkUtility {
         ),
       );
       safePrint('Successfully uploaded file: ${result.key}');
-      // final fileUrl = await Amplify.Storage.getUrl(
-      //   key: result.key,
-      //   options: GetUrlOptions(accessLevel: StorageAccessLevel.guest),
-      // );
-      //fileUrl.url.split('?')[0]
       Map<String, dynamic> image = {
         'url': 'https://ik.imagekit.io/vira1212/${result.key}',
         'key': '$folder/$fileName',

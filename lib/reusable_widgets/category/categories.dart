@@ -72,18 +72,18 @@ class Categories extends StatelessWidget {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCurrentSubCategory('');
                     } else if (!isSecondRow && subCategories.isNotEmpty) {
+                      if(ads.currentCatg != categories[i-1]['category']){
+                        Provider.of<AdsProvider>(context, listen: false)
+                            .updateHasSubCatg(true);
+                      } else {
+                        Provider.of<AdsProvider>(context, listen: false)
+                            .updateCurrentSubCategory('');
+                      }
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateSubCategories(
                               categories[i - 1]['subCategories']);
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCatg(categories[i - 1]['category']);
-                      if(ads.currentCatg != categories[i-1]['category']){
-                        Provider.of<AdsProvider>(context, listen: false)
-                            .updateHasSubCatg(true);
-                      }else {
-                        Provider.of<AdsProvider>(context, listen: false)
-                            .updateHasSubCatg(!ads.hasSubCatg);
-                      }
                     } else if (isSecondRow && ads.hasSubCatg) {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCurrentSubCategory(

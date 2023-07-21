@@ -595,12 +595,12 @@ class _OrderInfoState extends State<OrderInfo>
                                                 date: dateFormat,
                                               );
                                             }),
-                                        customerInfo(
-                                          info: order.customerInfo.toJson(),
-                                        ),
-                                        CustomerOrderHistory(
-                                            customerId:
-                                                order.customerInfo.customerId),
+                                        // customerInfo(
+                                        //   info: order.customerInfo.toJson(),
+                                        // ),
+                                        // CustomerOrderHistory(
+                                        //     customerId:
+                                        //         order.customerInfo.customerId),
                                       ],
                                     ),
                                   ),
@@ -654,43 +654,43 @@ class _OrderInfoState extends State<OrderInfo>
                                             'items': items.itemList,
                                           };
                                         });
-                                        Orders orderInfo = Orders(
-                                          customerId: order.customerId,
-                                          role: order.role,
-                                          adminId: adminId,
-                                          orderId: order.orderId,
-                                          deliveryStatus: order.deliveryStatus,
-                                          paymentStatus: order.paymentStatus,
-                                          orderStatus: order.orderStatus,
-                                          isFromCustomer: order.isFromCustomer,
-                                          price: box.get('totalPrice'),
-                                          profit: order.profit,
-                                          quantity: order.quantity,
-                                          seen: order.seen,
-                                          token: order.token,
-                                          items: items.itemList,
-                                          adminInfo: AdminModel(
-                                            name: adminName,
-                                            adminId: adminId,
-                                            isAdmin: false,
-                                          ),
-                                          customerInfo: CustomerModel(
-                                            name: order.customerInfo.name,
-                                            email: order.customerInfo.email,
-                                            address: order.customerInfo.email,
-                                            mobile: order.customerInfo.mobile,
-                                            role: order.customerInfo.role,
-                                            customerId:
-                                                order.customerInfo.customerId,
-                                          ),
-                                          updatedAt:
-                                              dateToJson(Timestamp.now()),
-                                          createdAt: order.createdAt,
-                                        );
+                                        // Orders orderInfo = Orders(
+                                        //   customerId: order.customerId,
+                                        //   role: order.role,
+                                        //   adminId: adminId,
+                                        //   orderId: order.orderId,
+                                        //   deliveryStatus: order.deliveryStatus,
+                                        //   paymentStatus: order.paymentStatus,
+                                        //   orderStatus: order.orderStatus,
+                                        //   isFromCustomer: order.isFromCustomer,
+                                        //   price: box.get('totalPrice'),
+                                        //   profit: order.profit,
+                                        //   quantity: order.quantity,
+                                        //   seen: order.seen,
+                                        //   token: order.token,
+                                        //   items: items.itemList,
+                                          //adminInfo: AdminModel(
+                                          //   name: adminName,
+                                          //   adminId: adminId,
+                                          //   isAdmin: false,
+                                          // ),
+                                          // customerInfo: CustomerModel(
+                                          //   name: order.customerInfo.name,
+                                          //   email: order.customerInfo.email,
+                                          //   address: order.customerInfo.email,
+                                          //   mobile: order.customerInfo.mobile,
+                                          //   role: order.customerInfo.role,
+                                          //   customerId:
+                                          //       order.customerInfo.customerId,
+                                          // ),
+                                          // updatedAt:
+                                          //     dateToJson(Timestamp.now()),
+                                         // createdAt: order.createdAt,
+                                       // );
                                         orderBloc.add(UpdateOrderEvent(
                                           token: jWTToken,
                                             orderId: widget.orderId,
-                                            orderModel: orderInfo.toJson()));
+                                            orderModel: {}));
                                       }
                                       ///Todo: update order count here..
                                     },

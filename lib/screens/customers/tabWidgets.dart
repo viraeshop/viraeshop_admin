@@ -591,7 +591,7 @@ class _OrdersTabState extends State<OrdersTab> {
                   MaterialPageRoute(
                     builder: (context) {
                       return OrderProducts(
-                        customerInfo: orders[i].customerInfo.toJson(),
+                        customerInfo: orders[i].customer.toJson(),
                         orderInfo: orders[i].toJson(),
                         onGetAdmins: currentStage != OrderStages.order,
                       );
@@ -602,7 +602,7 @@ class _OrdersTabState extends State<OrdersTab> {
               date: date,
               price: orders[i].price.toString(),
               employeeName: 'Riyadh',
-              customerName: orders[i].customerInfo.name,
+              customerName: orders[i].customer.name,
               desc: description,
               id: orders[i].orderId,
             );

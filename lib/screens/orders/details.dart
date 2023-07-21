@@ -31,6 +31,9 @@ class _OrdersDetailsState extends State<OrdersDetails> {
   bool onEditCustomerInfo = false;
   String selected = '';
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController deliveryFeeController = TextEditingController();
+  final TextEditingController discountController = TextEditingController();
+  final TextEditingController advanceController = TextEditingController();
   List<String> buttonTitles = ['Confirmed', 'Pending', 'Canceled'];
   final jWTToken = Hive.box('adminInfo').get('token');
   bool isLoading = false;
@@ -44,6 +47,9 @@ class _OrdersDetailsState extends State<OrdersDetails> {
       buttonTitles.insert(0, 'Delivered');
     }
     addressController.text = widget.customerInfo['address'];
+    discountController.text = widget.orderInfo['discount'].toString();
+    deliveryFeeController.text = widget.orderInfo['deliveryFee'].toString();
+    advanceController.text = widget.orderInfo['advance'].toString();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       Provider.of<OrderProvider>(context, listen: false).updateOrderValues(
         due: widget.orderInfo['due'],
@@ -62,6 +68,9 @@ class _OrdersDetailsState extends State<OrdersDetails> {
     final screenSize = MediaQuery.of(context).size;
     return ModalProgressHUD(
       inAsyncCall: isLoading,
+      progressIndicator: const CircularProgressIndicator(
+        color: kNewMainColor,
+      ),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: kBackgroundColor,
@@ -76,7 +85,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
           ),
           centerTitle: true,
         ),
-        body: BlocListener(
+        body: BlocListener<OrdersBloc, OrderState>(
           listener: (context, state) {
             if (state is RequestFinishedOrderState) {
               setState(() {
@@ -95,205 +104,261 @@ class _OrdersDetailsState extends State<OrdersDetails> {
               );
             }
           },
-          child: Container(
-            padding: const EdgeInsets.all(10.0),
-            height: screenSize.height,
-            width: screenSize.width,
-            color: const Color(0xffF9F9F9),
-            child: Stack(
-              children: [
-                FractionallySizedBox(
-                  heightFactor: 0.9,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Text(
-                        'Shipping',
-                        style: kSansTextStyleBigBlack,
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      Card(
-                        elevation: 5.0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0)),
-                        child: Container(
-                          height: 120.0,
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(13.0),
-                          decoration: BoxDecoration(
-                            color: kBackgroundColor,
-                            borderRadius: BorderRadius.circular(18.0),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(10.0),
+              height: screenSize.height,
+              width: screenSize.width,
+              color: const Color(0xffF9F9F9),
+              child: Stack(
+                children: [
+                  FractionallySizedBox(
+                    heightFactor: 0.9,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        const Text(
+                          'Shipping',
+                          style: kSansTextStyleBigBlack,
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Card(
+                          elevation: 5.0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0)),
+                          child: Container(
+                            height: 200.0,
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(13.0),
+                            decoration: BoxDecoration(
+                              color: kBackgroundColor,
+                              borderRadius: BorderRadius.circular(18.0),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      widget.customerInfo['name'],
+                                      style: kColoredNameStyle,
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          onEditCustomerInfo =
+                                              !onEditCustomerInfo;
+                                        });
+                                        if (onEditCustomerInfo &&
+                                            widget.customerInfo['address'] !=
+                                                addressController.text) {
+                                          Provider.of<OrderProvider>(context)
+                                              .updateOrderInfo(
+                                            'shippingAddress',
+                                            addressController.text,
+                                          );
+                                        }
+                                      },
+                                      child: Text(
+                                        onEditCustomerInfo ? 'Done' : 'Change',
+                                        style: const TextStyle(
+                                          color: Color(0xffDB3022),
+                                          fontFamily: 'TenorSans',
+                                          fontSize: 15,
+                                          letterSpacing: 1.3,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10.0,
+                                ),
+                                if (onEditCustomerInfo)
+                                  TextField(
+                                    controller: addressController,
+                                    maxLines: 3,
+                                    style: kBlackTenorStyle,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.all(10.0),
+                                    ),
+                                  )
+                                else
                                   Text(
-                                    widget.customerInfo['name'],
+                                    '🚋 ${addressController.text}',
+                                    maxLines: 3,
                                     style: kBlackTenorStyle,
                                   ),
-                                  TextButton(
-                                    onPressed: () {
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          'Delivery Options',
+                          style: kSansTextStyleBigBlack,
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: const [
+                            DeliveryOptions(),
+                            DeliveryOptions(),
+                            DeliveryOptions(),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Consumer<OrderProvider>(
+                            builder: (context, provider, any) {
+                          return Column(
+                            children: [
+                              TextRow(
+                                title: 'Delivery-Fee',
+                                controller: deliveryFeeController,
+                              ),
+                              TextRow(
+                                title: 'Total',
+                                isEditable: false,
+                                subTitle: provider.total.toString(),
+                              ),
+                              TextRow(
+                                title: 'Sub-total',
+                                isEditable: false,
+                                subTitle: provider.subTotal.toString(),
+                              ),
+                              TextRow(
+                                title: 'Discount',
+                                controller: discountController,
+                              ),
+                              TextRow(
+                                title: 'Advance',
+                                controller: advanceController,
+                              ),
+                              TextRow(
+                                title: 'Due',
+                                isEditable: false,
+                                subTitle: provider.due.toString(),
+                              ),
+                              const SizedBox(
+                                height: 20.0,
+                              ),
+                            ],
+                          );
+                        })
+                      ],
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Consumer<OrderProvider>(
+                                builder: (context, provider, any) {
+                              if (provider.currentStage == OrderStages.order) {
+                                return OrderChips(
+                                  width: 120,
+                                  height: 50,
+                                  title: 'Update',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    final orderBloc =
+                                        BlocProvider.of<OrdersBloc>(context);
+                                    orderBloc.add(
+                                      UpdateOrderEvent(
+                                        orderId: widget.orderInfo['orderId']
+                                            .toString(),
+                                        orderModel: provider.orderInfo,
+                                        token: jWTToken,
+                                      ),
+                                    );
+                                  },
+                                  isSelected: false,
+                                );
+                              } else {
+                                return const SizedBox();
+                              }
+                            }),
+                            const SizedBox(
+                              width: 20.0,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: List.generate(
+                              buttonTitles.length,
+                              (index) => OrderChips(
+                                    title: buttonTitles[index],
+                                    onTap: () {
+                                      final orderProvider =
+                                          Provider.of<OrderProvider>(context,
+                                              listen: false);
+                                      final orderBloc =
+                                          BlocProvider.of<OrdersBloc>(context);
+                                      OrderStages currentStage =
+                                          orderProvider.currentStage;
                                       setState(() {
-                                        onEditCustomerInfo =
-                                            !onEditCustomerInfo;
+                                        selected = buttonTitles[index];
+                                        isLoading = true;
                                       });
-                                      if (onEditCustomerInfo &&
-                                          widget.customerInfo['address'] !=
-                                              addressController.text) {
-                                        Provider.of<OrderProvider>(context)
-                                            .updateOrderInfo(
-                                          'shippingAddress',
-                                          addressController.text,
+                                      if (currentStage == OrderStages.order) {
+                                        Map<String, dynamic> orderInfo = {
+                                          'orderStatus':
+                                              buttonTitles[index].toLowerCase(),
+                                        };
+                                        orderBloc.add(
+                                          UpdateOrderEvent(
+                                            orderId: widget.orderInfo['orderId']
+                                                .toString(),
+                                            orderModel: orderInfo,
+                                            token: jWTToken,
+                                          ),
+                                        );
+                                      } else if (currentStage ==
+                                          OrderStages.delivery) {
+                                        orderBloc.add(
+                                          UpdateOrderEvent(
+                                            orderId:
+                                                widget.orderInfo['orderId'],
+                                            orderModel: {
+                                              'deliveryStatus':
+                                                  buttonTitles[index]
+                                                      .toLowerCase(),
+                                            },
+                                            token: jWTToken,
+                                          ),
                                         );
                                       }
                                     },
-                                    child: const Text(
-                                      'Change',
-                                      style: TextStyle(
-                                        color: Color(0xffDB3022),
-                                        fontFamily: 'TenorSans',
-                                        fontSize: 15,
-                                        letterSpacing: 1.3,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 10.0,
-                              ),
-                              if (onEditCustomerInfo)
-                                TextField(
-                                  controller: addressController,
-                                  maxLines: 3,
-                                  style: kBlackTenorStyle,
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.all(10.0),
-                                  ),
-                                )
-                              else
-                                Text(
-                                  addressController.text,
-                                  maxLines: 3,
-                                  style: kBlackTenorStyle,
-                                ),
-                            ],
-                          ),
+                                    isSelected: buttonTitles[index] == selected,
+                                    width: 120,
+                                    height: 50,
+                                  )),
                         ),
-                      ),
-                      const Text(
-                        'Delivery Options',
-                        style: kSansTextStyleBigBlack,
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          DeliveryOptions(),
-                          DeliveryOptions(),
-                          DeliveryOptions(),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      Consumer<OrderProvider>(
-                          builder: (context, provider, any) {
-                        return Column(
-                          children: [
-                            const TextRow(
-                              title: 'Delivery-Fee',
-                            ),
-                            TextRow(
-                              title: 'Total',
-                              isEditable: false,
-                              subTitle: provider.total.toString(),
-                            ),
-                            TextRow(
-                              title: 'Sub-total',
-                              isEditable: false,
-                              subTitle: provider.total.toString(),
-                            ),
-                            const TextRow(
-                              title: 'Discount',
-                            ),
-                            const TextRow(
-                              title: 'Advance',
-                            ),
-                            TextRow(
-                              title: 'Due',
-                              isEditable: false,
-                              subTitle: provider.total.toString(),
-                            ),
-                          ],
-                        );
-                      })
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(
-                        buttonTitles.length,
-                        (index) => OrderChips(
-                              title: buttonTitles[index],
-                              onTap: () {
-                                final orderProvider =
-                                    Provider.of<OrderProvider>(context,
-                                        listen: false);
-                                final orderBloc =
-                                    BlocProvider.of<OrdersBloc>(context);
-                                OrderStages currentStage =
-                                    orderProvider.currentStage;
-                                setState(() {
-                                  selected = buttonTitles[index];
-                                  isLoading = true;
-                                });
-                                if (currentStage == OrderStages.order) {
-                                  Map<String, dynamic> orderInfo =
-                                      orderProvider.orderInfo;
-                                  orderInfo['orderStatus'] =
-                                      buttonTitles[index];
-                                  orderBloc.add(
-                                    UpdateOrderEvent(
-                                      orderId: widget.orderInfo['orderId'],
-                                      orderModel: orderInfo,
-                                      token: jWTToken,
-                                    ),
-                                  );
-                                } else if (currentStage ==
-                                    OrderStages.delivery) {
-                                  orderBloc.add(
-                                    UpdateOrderEvent(
-                                      orderId: widget.orderInfo['orderId'],
-                                      orderModel: {
-                                        'deliveryStatus':
-                                            buttonTitles[index].toLowerCase(),
-                                      },
-                                      token: jWTToken,
-                                    ),
-                                  );
-                                }
-                              },
-                              isSelected: buttonTitles[index] == selected,
-                              width: 120,
-                              height: 50,
-                            )),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -308,10 +373,12 @@ class TextRow extends StatefulWidget {
     required this.title,
     this.isEditable = true,
     this.subTitle = '',
+    this.controller,
   }) : super(key: key);
   final String title;
   final bool isEditable;
   final String? subTitle;
+  final TextEditingController? controller;
 
   @override
   State<TextRow> createState() => _TextRowState();
@@ -319,7 +386,6 @@ class TextRow extends StatefulWidget {
 
 class _TextRowState extends State<TextRow> {
   bool onEdit = false;
-  final TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -332,17 +398,22 @@ class _TextRowState extends State<TextRow> {
         Row(
           children: [
             if (onEdit)
-              TextField(
-                controller: controller,
-                style: kBlackTenorStyle,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(10.0),
+              SizedBox(
+                width: 100,
+                child: TextField(
+                  controller: widget.controller,
+                  style: kBlackTenorStyle,
+                  cursorColor: kNewMainColor,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(10.0),
+                  ),
                 ),
               )
             else
               Text(
-                '${widget.isEditable ? controller.text : widget.subTitle}$bdtSign',
+                '${widget.isEditable ? widget.controller!.text : widget.subTitle}$bdtSign',
                 style: kBlackTenorStyle,
               ),
             const SizedBox(
@@ -358,7 +429,7 @@ class _TextRowState extends State<TextRow> {
                               num deliveryFee = provider.deliveryFee,
                                   total = provider.total,
                                   subTotal = provider.subTotal;
-                              deliveryFee = num.parse(controller.text);
+                              deliveryFee = num.parse(widget.controller!.text.isNotEmpty ? widget.controller!.text : '0');
                               total -= provider.deliveryFee;
                               subTotal -= provider.deliveryFee;
                               total += deliveryFee;
@@ -379,7 +450,7 @@ class _TextRowState extends State<TextRow> {
                               num discount = provider.discount,
                                   total = provider.total,
                                   subTotal = provider.subTotal;
-                              discount = num.parse(controller.text);
+                              discount = num.parse(widget.controller!.text.isNotEmpty ? widget.controller!.text : '0');
                               total -= provider.discount;
                               subTotal += provider.discount;
                               total += discount;
@@ -399,7 +470,7 @@ class _TextRowState extends State<TextRow> {
                               num advance = provider.advance,
                                   due = provider.due,
                                   subTotal = provider.subTotal;
-                              advance = num.parse(controller.text);
+                              advance = num.parse(widget.controller!.text.isNotEmpty ? widget.controller!.text : '0');
                               due = subTotal - advance;
                               provider.updateValue(
                                   updatingValue: Values.advance,

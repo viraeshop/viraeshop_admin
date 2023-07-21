@@ -264,8 +264,8 @@ class _OrderState extends State<Order> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => OrderInfo(
-                          orderId: orders[i].orderId,
-                          customerName: orders[i].customerInfo.name,
+                          orderId: orders[i].orderId!,
+                          customerName: orders[i].customer.name,
                         ),
                       ),
                     );
@@ -289,7 +289,7 @@ class _OrderState extends State<Order> {
                       size: 25.0,
                     ),
                     title: Text(
-                      orders[i].customerInfo.name,
+                      orders[i].customer.name,
                       style: TextStyle(
                         color: kSubMainColor,
                         fontFamily: 'Montserrat',

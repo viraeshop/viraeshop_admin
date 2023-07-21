@@ -95,6 +95,15 @@ class _CustomersState extends State<Customers> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    print('Im getting disposed ${widget.role}');
+    final customerBloc = BlocProvider.of<CustomersBloc>(context);
+    customerBloc.close();
+    super.dispose();
+  }
+
   bool loaded = false;
   @override
   Widget build(BuildContext context) {

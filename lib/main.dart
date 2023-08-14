@@ -225,8 +225,8 @@ void main() async {
           ),
         ),
         BlocProvider(
-          create: (BuildContext context) => ItemsBloc(
-            itemCalls: ItemCalls(),
+          create: (BuildContext context) => OrderItemsBloc(
+            orderCalls: OrderCalls(),
           ),
         ),
         BlocProvider(

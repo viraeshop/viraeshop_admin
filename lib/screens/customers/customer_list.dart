@@ -99,8 +99,8 @@ class _CustomersState extends State<Customers> {
   void dispose() {
     // TODO: implement dispose
     print('Im getting disposed ${widget.role}');
-    final customerBloc = BlocProvider.of<CustomersBloc>(context);
-    customerBloc.close();
+    // final customerBloc = BlocProvider.of<CustomersBloc>(context);
+    // customerBloc.close();
     super.dispose();
   }
 

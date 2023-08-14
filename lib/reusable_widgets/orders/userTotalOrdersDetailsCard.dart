@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -12,7 +13,10 @@ class UserTotalOrderDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    return GestureDetector(
+    if (kDebugMode) {
+      print(info);
+
+    }return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
@@ -100,10 +104,12 @@ class UserTotalOrderDetailsCard extends StatelessWidget {
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             top: 50.0,
             left: 10,
-            child: ProfileImage(),
+            child: ProfileImage(
+              image: info['profileImage'] ?? '',
+            ),
           ),
         ],
       ),

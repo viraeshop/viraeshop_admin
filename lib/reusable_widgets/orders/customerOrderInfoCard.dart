@@ -28,7 +28,9 @@ class CustomerOrderInfoCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ProfileImage(),
+                ProfileImage(
+                  image: customerInfo['profileImage'],
+                ),
                 Text(
                   'Mobile: ${customerInfo['mobile']}',
                   style: kSansTextStyleWhite1,

@@ -10,6 +10,7 @@ import 'package:viraeshop/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
+import 'package:viraeshop_admin/filters/orderFilters.dart';
 import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
 import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
 import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
@@ -22,6 +23,7 @@ import 'package:viraeshop_api/utils/utils.dart';
 
 import '../../configs/boxes.dart';
 import '../../reusable_widgets/loading_widget.dart';
+import '../../reusable_widgets/orders/functions.dart';
 import '../transactions/customer_transactions.dart';
 import '../due/due_receipt.dart';
 import '../orders/order_tranz_card.dart';
@@ -471,7 +473,7 @@ class _SalesTabState extends State<SalesTab> {
 
 class OrdersTab extends StatefulWidget {
   final String userId;
-  OrdersTab({required this.userId});
+  const OrdersTab({Key? key, this.userId = ''}) : super(key: key);
 
   @override
   _OrdersTabState createState() => _OrdersTabState();
@@ -484,36 +486,43 @@ class _OrdersTabState extends State<OrdersTab> {
   final jWTToken = Hive.box('adminInfo').get('token');
   final ScrollController _scrollController = ScrollController();
   int offset = 0;
+  bool isProductEnd = false;
   @override
   void initState() {
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    OrderStages currentStage = orderProvider.currentStage;
+    orders.clear();
+    Map<String, dynamic> filterInfo = {
+      'filterType': orderFilter(currentStage),
+      'filterData': {
+        if (currentStage == OrderStages.order) 'customerId': widget.userId,
+        if(currentStage == OrderStages.admin) 'adminId': widget.userId,
+        if (currentStage == OrderStages.processing) 'isAll': true,
+        if(currentStage == OrderStages.receiving)'status': 'pending',
+        if(currentStage == OrderStages.delivery)'status': 'pending',
+      }
+    };
     getOrders(
-      data: {
-        'filterType': 'default',
-        'filterData': {
-          'customerId': widget.userId,
-        }
-      },
+      data: filterInfo,
       context: context,
     );
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      Provider.of<OrderProvider>(context, listen: false)
+          .updateFilterInfo(filterInfo);
+    });
     _scrollController.addListener(() {
-      bool onStatusFilter = Provider.of<OrderProvider>(context, listen: false).onStatusFilter;
-      String currentStatus =  Provider.of<OrderProvider>(context, listen: false).currentOrderStatus;
-      setState(() {
-        isLoading = true;
-        offset += 20;
-        onUpdate = true;
-      });
-      getOrders(
-        data: {
-          'offSet': offset,
-          'filterType': onStatusFilter ? 'orderStatus' : 'default',
-          'filterData': {
-            'customerId': widget.userId,
-            if(onStatusFilter)'orderStatus': currentStatus,
-          }
-        },
-        context: context,
-      );
+      if(_scrollController.position.atEdge &&
+          _scrollController.position.pixels != 0 && !isProductEnd){
+        setState(() {
+          isLoading = true;
+          offset += 20;
+          onUpdate = true;
+        });
+        getOrders(
+          data: orderProvider.filterInfo,
+          context: context,
+        );
+      }
     });
     super.initState();
   }
@@ -560,12 +569,16 @@ class _OrdersTabState extends State<OrdersTab> {
       // }
     }, builder: (context, state) {
       if (state is FetchedOrdersState) {
-        if(orders.isNotEmpty){
-          orders.addAll(state.orderList);
+        if (onUpdate) {
+          if(state.orderList.isNotEmpty){
+            orders.addAll(state.orderList.toList());
+          } else{
+            isProductEnd = true;
+          }
           isLoading = false;
           onUpdate = false;
-        }else{
-          orders = state.orderList;
+        } else {
+          orders = state.orderList.toList();
         }
         return ListView.builder(
           itemCount: onUpdate ? orders.length + 1 : orders.length,
@@ -579,13 +592,14 @@ class _OrdersTabState extends State<OrdersTab> {
             }
             Timestamp timestamp = dateFromJson(orders[i].createdAt);
             String date = DateFormat.yMMMd().format(timestamp.toDate());
-            if(onUpdate && i == orders.length){
+            if (onUpdate && i == orders.length) {
               return const FetchingMoreLoadingIndicator();
             }
             return OrderTranzCard(
               onTap: () {
                 OrderStages currentStage =
-                    Provider.of<OrderProvider>(context, listen: false).currentStage;
+                    Provider.of<OrderProvider>(context, listen: false)
+                        .currentStage;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -593,7 +607,7 @@ class _OrdersTabState extends State<OrdersTab> {
                       return OrderProducts(
                         customerInfo: orders[i].customer.toJson(),
                         orderInfo: orders[i].toJson(),
-                        onGetAdmins: currentStage != OrderStages.order,
+                        onGetAdmins: currentStage == OrderStages.processing,
                       );
                     },
                   ),
@@ -609,7 +623,20 @@ class _OrdersTabState extends State<OrdersTab> {
           },
         );
       } else if (state is OnErrorOrderState) {
-        return OnErrorWidget(message: state.message);
+        return OnErrorWidget(
+          onRefresh: () {
+            Map<String, dynamic> filterInfo =
+                Provider.of<OrderProvider>(context, listen: false).filterInfo;
+            setState(() {
+              isLoading = true;
+            });
+            getOrders(
+              data: filterInfo,
+              context: context,
+            );
+          },
+          message: state.message,
+        );
       }
       return const LoadingWidget();
     });
@@ -632,21 +659,12 @@ class FetchingMoreLoadingIndicator extends StatelessWidget {
           SizedBox(
             width: 5.0,
           ),
-          Text('Fetching more....', style: kSansTextStyleSmallBlack,),
+          Text(
+            'Fetching more....',
+            style: kSansTextStyleSmallBlack,
+          ),
         ],
       ),
     );
   }
-}
-
-void getOrders(
-    {required Map<String, dynamic> data, required BuildContext context}) {
-  final jWTToken = Hive.box('adminInfo').get('token');
-  final orderBloc = BlocProvider.of<OrdersBloc>(context);
-  orderBloc.add(
-    GetOrdersEvent(
-      token: jWTToken,
-      data: data,
-    ),
-  );
 }

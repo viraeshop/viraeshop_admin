@@ -38,6 +38,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
   bool isDeleteEmployee = Hive.box('adminInfo').get('isDeleteEmployee');
   List<Tab> tabs = [
     const Tab(text: 'Info'),
+    const Tab(text: 'Orders'),
     const Tab(text: 'Sales'),
   ];
   @override
@@ -183,6 +184,10 @@ class _EditUserScreenState extends State<EditUserScreen> {
                   email: widget.adminInfo['email'],
                   name: widget.adminInfo['name'],
                   isActive: widget.adminInfo['active'],
+                  isSelf: widget.selfAdmin,
+                ),
+                OrdersTab(
+                  userId: widget.adminInfo['adminId'],
                 ),
                 SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
                 if (!widget.selfAdmin)
@@ -202,10 +207,12 @@ class InfoTab extends StatefulWidget {
   final String name;
   final String email;
   final bool isActive;
+  final bool isSelf;
   const InfoTab(
       {required this.name,
       required this.email,
       required this.isActive,
+        required this.isSelf,
       Key? key})
       : super(key: key);
 
@@ -255,6 +262,7 @@ class _InfoTabState extends State<InfoTab> {
                     style: kProductNameStylePro,
                     cursorColor: kSubMainColor,
                     controller: nameController,
+                    readOnly: widget.isSelf,
                     decoration: const InputDecoration(
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
@@ -280,6 +288,7 @@ class _InfoTabState extends State<InfoTab> {
                   TextField(
                     style: kProductNameStylePro,
                     controller: emailController,
+                    readOnly: widget.isSelf,
                     decoration: const InputDecoration(
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
@@ -302,7 +311,7 @@ class _InfoTabState extends State<InfoTab> {
                   const SizedBox(
                     height: 20,
                   ),
-                  SwitchListTile(
+                if(!widget.isSelf)  SwitchListTile(
                       value: isActive,
                       title: const Text('Activate Admin', style: kProductNameStylePro,),
                       activeColor: kNewMainColor,

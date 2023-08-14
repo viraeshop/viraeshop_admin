@@ -6,12 +6,14 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 class CylindricalButton extends StatelessWidget {
   const CylindricalButton({
     Key? key,
+    required this.deleteColor,
     required this.quantity,
     required this.onDelete,
     required this.onAdd,
     required this.onReduce,
   }) : super(key: key);
   final String quantity;
+  final Color deleteColor;
   final void Function()? onAdd;
   final void Function()? onReduce;
   final void Function()? onDelete;
@@ -52,7 +54,7 @@ class CylindricalButton extends StatelessWidget {
         ),
         OpaqueButton(
           onTap: onDelete,
-          color: kRedColor,
+          color: deleteColor,
           icon: Icons.delete,
         )
       ],

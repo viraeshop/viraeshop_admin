@@ -43,8 +43,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
     OrderStages currentStage =
         Provider.of<OrderProvider>(context, listen: false).currentStage;
     if (currentStage == OrderStages.delivery) {
-      buttonTitles.removeAt(0);
-      buttonTitles.insert(0, 'Delivered');
+      buttonTitles = ['Completed', 'Pending', 'Failed'];
     }
     addressController.text = widget.customerInfo['address'];
     discountController.text = widget.orderInfo['discount'].toString();
@@ -324,6 +323,10 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                         Map<String, dynamic> orderInfo = {
                                           'orderStatus':
                                               buttonTitles[index].toLowerCase(),
+                                          if (buttonTitles[index]
+                                                  .toLowerCase() ==
+                                              'confirmed')
+                                            'processingStatus': 'pending',
                                         };
                                         orderBloc.add(
                                           UpdateOrderEvent(
@@ -337,12 +340,14 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                           OrderStages.delivery) {
                                         orderBloc.add(
                                           UpdateOrderEvent(
-                                            orderId:
-                                                widget.orderInfo['orderId'],
+                                            orderId: widget.orderInfo['orderId']
+                                                .toString(),
                                             orderModel: {
                                               'deliveryStatus':
                                                   buttonTitles[index]
                                                       .toLowerCase(),
+                                              if(buttonTitles[index] == 'Completed')'orderStatus': 'success',
+                                              if(buttonTitles[index] == 'Failed')'orderStatus': 'failed',
                                             },
                                             token: jWTToken,
                                           ),
@@ -429,7 +434,10 @@ class _TextRowState extends State<TextRow> {
                               num deliveryFee = provider.deliveryFee,
                                   total = provider.total,
                                   subTotal = provider.subTotal;
-                              deliveryFee = num.parse(widget.controller!.text.isNotEmpty ? widget.controller!.text : '0');
+                              deliveryFee = num.parse(
+                                  widget.controller!.text.isNotEmpty
+                                      ? widget.controller!.text
+                                      : '0');
                               total -= provider.deliveryFee;
                               subTotal -= provider.deliveryFee;
                               total += deliveryFee;
@@ -450,7 +458,10 @@ class _TextRowState extends State<TextRow> {
                               num discount = provider.discount,
                                   total = provider.total,
                                   subTotal = provider.subTotal;
-                              discount = num.parse(widget.controller!.text.isNotEmpty ? widget.controller!.text : '0');
+                              discount = num.parse(
+                                  widget.controller!.text.isNotEmpty
+                                      ? widget.controller!.text
+                                      : '0');
                               total -= provider.discount;
                               subTotal += provider.discount;
                               total += discount;
@@ -470,7 +481,10 @@ class _TextRowState extends State<TextRow> {
                               num advance = provider.advance,
                                   due = provider.due,
                                   subTotal = provider.subTotal;
-                              advance = num.parse(widget.controller!.text.isNotEmpty ? widget.controller!.text : '0');
+                              advance = num.parse(
+                                  widget.controller!.text.isNotEmpty
+                                      ? widget.controller!.text
+                                      : '0');
                               due = subTotal - advance;
                               provider.updateValue(
                                   updatingValue: Values.advance,

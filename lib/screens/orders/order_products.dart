@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -48,11 +49,15 @@ class _OrderProductsState extends State<OrderProducts> {
   bool onError = false;
   bool isLoading = false;
   String errorMessage = '';
+  OrderStages? currentStage;
   @override
   void initState() {
     // TODO: implement initState
-    Provider.of<OrderProvider>(context, listen: false)
-        .onUpdateProducts(widget.orderInfo['items'] ?? []);
+    currentStage =  Provider.of<OrderProvider>(context, listen: false).currentStage;
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      Provider.of<OrderProvider>(context, listen: false)
+          .onUpdateProducts(widget.orderInfo['items'] ?? []);
+    });
     if (widget.onGetAdmins) {
       final adminBloc = BlocProvider.of<AdminBloc>(context);
       adminBloc.add(GetAdminsEvent(token: jWTToken));
@@ -65,6 +70,9 @@ class _OrderProductsState extends State<OrderProducts> {
     final screenSize = MediaQuery.of(context).size;
     return ModalProgressHUD(
       inAsyncCall: isLoading,
+      progressIndicator: const CircularProgressIndicator(
+        color: kNewMainColor,
+      ),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: kBackgroundColor,
@@ -131,26 +139,30 @@ class _OrderProductsState extends State<OrderProducts> {
                             FractionallySizedBox(
                               heightFactor: 0.84,
                               child: Consumer<OrderProvider>(
-                                builder: (context, provider, any) {
-                                  return ListView.builder(
-                                    itemCount: provider.orderProducts.length,
-                                    itemBuilder: (context, i) {
-                                      return OrderProductCard(
-                                        product: provider.orderProducts[i],
-                                        admins: admins,
-                                        onNotOrderStage: widget
-                                            .onGetAdmins, //This will be used if the order stage is not order
-                                        index: i,
-                                      );
-                                    },
-                                  );
-                                }
-                              ),
+                                  builder: (context, provider, any) {
+                                return ListView.builder(
+                                  itemCount: provider.orderProducts.length,
+                                  itemBuilder: (context, i) {
+                                    return OrderProductCard(
+                                      orderId: widget.orderInfo['orderId'].toString(),
+                                      product: provider.orderProducts[i],
+                                      admins: provider.currentStage ==
+                                              OrderStages.processing
+                                          ? admins
+                                          : [
+                                              provider
+                                                  .orderProducts[i].adminModel
+                                            ],
+                                      index: i,
+                                    );
+                                  },
+                                );
+                              }),
                             ),
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Container(
-                                  height: 120.0,
+                                  height: currentStage == OrderStages.receiving || currentStage == OrderStages.admin ? 80.0 : 120.0,
                                   padding: const EdgeInsets.all(10.0),
                                   width: double.infinity,
                                   decoration: BoxDecoration(
@@ -159,8 +171,7 @@ class _OrderProductsState extends State<OrderProducts> {
                                   ),
                                   child: Consumer<OrderProvider>(
                                     builder: (context, provider, any) {
-                                      if (provider.currentStage ==
-                                          OrderStages.receiving) {
+                                      if (provider.currentStage == OrderStages.receiving || currentStage == OrderStages.admin) {
                                         return Center(
                                           child: SendButton(
                                             onTap: () {
@@ -172,13 +183,20 @@ class _OrderProductsState extends State<OrderProducts> {
                                                       context);
                                               orderBloc.add(UpdateOrderEvent(
                                                   orderId: widget
-                                                      .orderInfo['orderId'],
-                                                  orderModel: const {
-                                                    'receiveStatus': 'received',
+                                                      .orderInfo['orderId']
+                                                      .toString(),
+                                                  orderModel: {
+                                                    if(provider.currentStage == OrderStages.receiving)'receiveStatus': 'completed',
+                                                    if(provider.currentStage == OrderStages.receiving)'deliveryStatus': 'pending',
+                                                    if(provider.currentStage == OrderStages.admin)'processingStatus': 'confirmed',
+                                                    if(provider.currentStage == OrderStages.admin)'receiveStatus': 'pending',
                                                   },
-                                                  token: jWTToken));
+                                                  token: jWTToken,
+                                              ),
+                                              );
                                             },
-                                            title: 'Received',
+                                            title: provider.currentStage == OrderStages.admin ? 'Processed' : 'Received',
+                                            textStyle: kTotalSalesStyle,
                                             width: 150.0,
                                             color: kBackgroundColor,
                                           ),
@@ -208,8 +226,8 @@ class _OrderProductsState extends State<OrderProducts> {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Text(
-                                                  'Architect',
+                                                Text(
+                                                  widget.customerInfo['role'],
                                                   style: kSansTextStyleWhite1,
                                                 ),
                                                 Row(

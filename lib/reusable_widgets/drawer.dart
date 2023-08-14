@@ -9,6 +9,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/desktop_orders.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
+import 'package:viraeshop_admin/screens/orders/processing.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
 import 'package:viraeshop_admin/screens/customers/all_customers.dart';
 import 'package:viraeshop_admin/screens/customers/general_customers.dart';
@@ -40,6 +41,7 @@ import 'package:viraeshop_admin/settings/login_preferences.dart';
 
 import '../screens/about_us_page.dart';
 import '../screens/new_non_inventory.dart';
+import '../screens/orders/delivery_screen.dart';
 import '../screens/products/category_screen.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -136,14 +138,18 @@ class _AppDrawerState extends State<AppDrawer> {
                       alignment: Alignment.centerRight,
                       child: InkWell(
                         onTap: () {
-                          final adminInfo = Hive.box('adminInfo').toMap().cast<String, dynamic>();
+                          Provider.of<OrderProvider>(context, listen: false)
+                              .updateOrderStage(OrderStages.admin);
+                          final adminInfo = Hive.box('adminInfo')
+                              .toMap()
+                              .cast<String, dynamic>();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) {
                                 return EditUserScreen(
-                                    selfAdmin: true,
-                                    adminInfo: adminInfo,
+                                  selfAdmin: true,
+                                  adminInfo: adminInfo,
                                 );
                               },
                             ),
@@ -187,12 +193,13 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Orders',
                     onTap: () {
-                      Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.order);
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .updateOrderStage(OrderStages.order);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const OrderRoutineReport(
-                              title: 'Orders',
+                            title: 'Orders',
                           ),
                         ),
                       );
@@ -205,12 +212,12 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Processing',
                     onTap: () {
-                      Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.processing);
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .updateOrderStage(OrderStages.processing);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const OrderRoutineReport(
-                            title: 'Processing',
+                          builder: (context) => const ProcessingScreen(
                           ),
                         ),
                       );
@@ -223,13 +230,12 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Delivery',
                     onTap: () {
-                      Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.receiving);
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .updateOrderStage(OrderStages.receiving);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const OrderRoutineReport(
-                            title: 'Delivery',
-                          ),
+                          builder: (context) => const DeliveryScreen(),
                         ),
                       );
                     },
@@ -296,42 +302,43 @@ class _AppDrawerState extends State<AppDrawer> {
                     padding: true,
                     title: 'General',
                     onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const GeneralCustomers(),
-                              ),
-                            );
-                          },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const GeneralCustomers(),
+                        ),
+                      );
+                    },
                   ),
                   ReusableTile(
                     onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AgentsPage(),
-                              ),
-                            );
-                            //    }
-                          },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AgentsPage(),
+                        ),
+                      );
+                      //    }
+                    },
                     padding: true,
                     title: 'Agent',
                   ),
                   ReusableTile(
                     onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ArchitectsPage(),
-                              ),
-                            );
-                            //}
-                          },
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ArchitectsPage(),
+                        ),
+                      );
+                      //}
+                    },
                     padding: true,
                     title: 'Architects',
                   ),
                   ReusableTile(
-                    onTap: !isMakeCustomer ? null
+                    onTap: !isMakeCustomer
+                        ? null
                         : () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -502,11 +509,11 @@ class _AppDrawerState extends State<AppDrawer> {
                     icon: Icons.attach_money,
                     title: 'Due',
                     onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const DueScreen(),
-                              ),
-                            ),
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DueScreen(),
+                      ),
+                    ),
                   ),
                   ReusableTile(
                       icon: FontAwesomeIcons.userCog,

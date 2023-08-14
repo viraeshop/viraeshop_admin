@@ -83,6 +83,7 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
                 'email': _preferences.getControllers[2].text,
                 'address': _preferences.getControllers[3].text,
                 'role': dropdownValue,
+                'active': true,
               };
               if (dropdownValue == 'architect' || dropdownValue == 'agents') {
                 userInfo['businessName'] = _preferences.getControllers[5].text;

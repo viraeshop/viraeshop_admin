@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,10 +9,12 @@ import 'package:hive/hive.dart';
 import 'package:blurry_modal_progress_hud/blurry_modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:viraeshop/items/barrel.dart';
 import 'package:viraeshop/orders/barrel.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
+import 'package:viraeshop_admin/extensions/string.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/cylindrical_buttons.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/order_chips.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
@@ -26,15 +29,15 @@ import '../../screens/orders/order_provider.dart';
 class OrderProductCard extends StatefulWidget {
   const OrderProductCard({
     Key? key,
+    required this.orderId,
     required this.product,
     required this.index,
     this.admins,
-    this.onNotOrderStage = true,
   }) : super(key: key);
 
+  final String orderId;
   final Items product;
   final List<AdminModel>? admins;
-  final bool onNotOrderStage;
   final int index;
 
   @override
@@ -44,51 +47,98 @@ class OrderProductCard extends StatefulWidget {
 class _OrderProductCardState extends State<OrderProductCard> {
   int quantity = 0;
   String dropdownValue = 'confirmed';
+  String currentStatus = '';
   bool onLocation = false;
   bool onPhone = false;
   bool onSent = false;
-  int statusIndex = 0;
+  bool onOrderStage = true;
   List<AdminModel> admins = [];
   bool onEdit = false;
   bool isLoading = false, onDelete = false;
   final jWTToken = Hive.box('adminInfo').get('token');
+  List<String> status = [];
+  int statusIndex = 0;
+  OrderStages? currentStage;
   @override
   void initState() {
-    // TODO: implement initState
+    currentStage =
+        Provider.of<OrderProvider>(context, listen: false).currentStage;
+    if (currentStage == OrderStages.receiving) {
+      currentStatus = widget.product.receiveStatus;
+    }
+    onOrderStage = currentStage == OrderStages.order;
     quantity = widget.product.quantity;
     admins = widget.admins ?? [];
-    if (widget.onNotOrderStage && admins.isNotEmpty) {
-      dropdownValue = admins[0].name;
+    if ((!onOrderStage && currentStage != OrderStages.admin) &&
+        admins.isNotEmpty) {
+      dropdownValue = admins[0].adminId;
     }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<OrdersBloc, OrderState>(
-      listener: (context, state) {
-        if (state is RequestFinishedOrderItemState) {
-          setState(() {
-            isLoading = false;
-            onEdit = false;
-          });
-          if(onDelete){
-            Provider.of<OrderProvider>(context, listen: false).deleteProduct(widget.index);
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<OrderItemsBloc, OrderItemState>(
+            listener: (context, state) {
+          if (state is RequestFinishedOrderItemState) {
             setState(() {
-              onDelete = false;
+              if (!(currentStage == OrderStages.admin &&
+                      dropdownValue == 'failed') ||
+                  !(currentStage == OrderStages.receiving &&
+                      status[statusIndex] == 'Failed')) isLoading = false;
+              onEdit = false;
             });
+            if (onDelete) {
+              Provider.of<OrderProvider>(context, listen: false)
+                  .deleteProduct(widget.index);
+              setState(() {
+                onDelete = false;
+              });
+            }
+            if (currentStage == OrderStages.admin &&
+                dropdownValue == 'failed') {
+              orderUpdate(
+                context: context,
+                data: const {'processingStatus': 'canceled'},
+                orderId: widget.orderId,
+                token: jWTToken,
+              );
+            }
+            if (currentStage == OrderStages.receiving &&
+                status[statusIndex] == 'Failed') {
+              orderUpdate(
+                context: context,
+                data: const {'receiveStatus': 'failed'},
+                orderId: widget.orderId,
+              );
+            }
+          } else if (state is OnErrorOrderItemState) {
+            setState(() {
+              isLoading = false;
+            });
+            snackBar(
+                text: state.message,
+                context: context,
+                color: kRedColor,
+                duration: 500);
           }
-        } else if (state is OnErrorOrderItemState) {
-          setState(() {
-            isLoading = false;
-          });
-          snackBar(
-              text: state.message,
-              context: context,
-              color: kRedColor,
-              duration: 500);
-        }
-      },
+        }),
+        BlocListener<OrdersBloc, OrderState>(
+          listener: (context, state) {
+            if (state is RequestFinishedOrderState) {
+              setState(() {
+                isLoading = false;
+              });
+            } else if (state is OnErrorOrderState) {
+              setState(() {
+                isLoading = false;
+              });
+            }
+          },
+        ),
+      ],
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 15.0),
         child: Column(
@@ -125,50 +175,66 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       OpaqueButton(
-                        onTap: () {
-                          if (onEdit) {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            productUpdate(
-                              context: context,
-                              data: {
-                                'id': widget.product.id,
-                                'itemInfo': {
-                                  'quantity': quantity,
+                        onTap: onOrderStage
+                            ? () {
+                                if (onEdit) {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  productUpdate(
+                                    context: context,
+                                    data: {
+                                      'id': widget.product.id,
+                                      'itemInfo': {
+                                        'quantity': quantity,
+                                      }
+                                    },
+                                  );
+                                } else {
+                                  setState(() {
+                                    onEdit = true;
+                                  });
                                 }
-                              },
-                            );
-                          } else {
-                            setState(() {
-                              onEdit = true;
-                            });
-                          }
-                        },
-                        color: kRedColor,
+                              }
+                            : null,
+                        color: onOrderStage ? kRedColor : Colors.grey,
                         icon: !onEdit ? Icons.edit : Icons.done,
                       ),
                       CylindricalButton(
+                        deleteColor: onOrderStage ? kRedColor : Colors.grey,
                         quantity: quantity.toString(),
-                        onDelete: () {
-                          setState(() {
-                            isLoading = true;
-                            onDelete = true;
-                          });
-                          final orderBloc = BlocProvider.of<OrdersBloc>(context);
-                          orderBloc.add(DeleteOrderItemEvent(
-                              orderId: widget.product.id.toString(), token: jWTToken));
-                        },
-                        onAdd: onEdit ? () {
-                          setState(() {
-                            ++quantity;
-                          });
-                        } : null,
-                        onReduce: onEdit ? () {
-                          setState(() {
-                            --quantity;
-                          });
-                        } : null,
+                        onDelete: onOrderStage
+                            ? () {
+                                setState(
+                                  () {
+                                    isLoading = true;
+                                    onDelete = true;
+                                  },
+                                );
+                                final orderBloc =
+                                    BlocProvider.of<OrderItemsBloc>(context);
+                                orderBloc.add(
+                                  DeleteOrderItemEvent(
+                                    orderId: widget.product.id.toString(),
+                                    token: jWTToken,
+                                  ),
+                                );
+                              }
+                            : null,
+                        onAdd: onEdit
+                            ? () {
+                                setState(() {
+                                  ++quantity;
+                                });
+                              }
+                            : null,
+                        onReduce: onEdit
+                            ? () {
+                                setState(() {
+                                  --quantity;
+                                });
+                              }
+                            : null,
                       ),
                     ],
                   ),
@@ -215,25 +281,36 @@ class _OrderProductCardState extends State<OrderProductCard> {
             ),
             Row(
               //crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: currentStage == OrderStages.order
+                  ? MainAxisAlignment.start
+                  : MainAxisAlignment.spaceEvenly,
               children: [
                 DropdownButton(
                   underline: const SizedBox(),
                   borderRadius: BorderRadius.circular(10.0),
                   dropdownColor: Colors.white,
                   iconEnabledColor: kSubMainColor,
-                  items: itemsGen(widget.onNotOrderStage, admins),
+                  items: generateItems(admins, context),
                   value: dropdownValue,
                   onChanged: (String? value) {
+                    bool onOrderOrAdminStage =
+                        currentStage == OrderStages.order ||
+                            currentStage == OrderStages.admin;
                     setState(() {
                       dropdownValue = value ?? '';
-                      isLoading = true;
+                      if (onOrderOrAdminStage) isLoading = true;
                     });
-                    if (!widget.onNotOrderStage) {
+                    if (onOrderOrAdminStage) {
                       productUpdate(
                         context: context,
                         data: {
                           'id': widget.product.id,
-                          'orderInfo': {'availability': value == 'confirmed'},
+                          'itemInfo': {
+                            if (onOrderStage)
+                              'availability': value == 'confirmed',
+                            if (currentStage == OrderStages.admin)
+                              'processingStatus': value,
+                          },
                         },
                       );
                     }
@@ -242,26 +319,30 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 const SizedBox(
                   width: 10.0,
                 ),
-                OutlinedIconWidget(
-                  onTap: () async {
-                    setState(() {
-                      onPhone = !onPhone;
-                      if (onLocation) onLocation = false;
-                    });
-                    if (onPhone) {
-                      String mobile = widget.product.productSupplier.mobile;
-                      final url = Uri.parse('tel:$mobile');
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url);
-                      }
-                    }
-                  },
-                  iconData: Icons.call,
-                ),
+                if (onOrderStage)
+                  OutlinedIconWidget(
+                    onTap: onOrderStage
+                        ? () async {
+                            setState(() {
+                              onPhone = !onPhone;
+                              if (onLocation) onLocation = false;
+                            });
+                            if (onPhone) {
+                              String mobile =
+                                  widget.product.productSupplier.mobile;
+                              final url = Uri.parse('tel:$mobile');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              }
+                            }
+                          }
+                        : null,
+                    iconData: Icons.call,
+                  ),
                 const SizedBox(
                   width: 10.0,
                 ),
-                if (onPhone)
+                if (onPhone && onOrderStage)
                   Expanded(
                     child: Text(
                       widget.product.productSupplier.mobile,
@@ -273,19 +354,22 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 const SizedBox(
                   width: 10.0,
                 ),
-                OutlinedIconWidget(
-                  onTap: () {
-                    setState(() {
-                      onLocation = !onLocation;
-                      if (onPhone) onPhone = false;
-                    });
-                  },
-                  iconData: Icons.location_pin,
-                ),
+                if (onOrderStage)
+                  OutlinedIconWidget(
+                    onTap: onOrderStage
+                        ? () {
+                            setState(() {
+                              onLocation = !onLocation;
+                              if (onPhone) onPhone = false;
+                            });
+                          }
+                        : null,
+                    iconData: Icons.location_pin,
+                  ),
                 const SizedBox(
                   width: 10.0,
                 ),
-                if (onLocation && !widget.onNotOrderStage)
+                if (onLocation && onOrderStage)
                   Expanded(
                     child: Text(
                       widget.product.productSupplier.address,
@@ -294,11 +378,12 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       maxLines: 3,
                     ),
                   ),
-                if (widget.onNotOrderStage)
+                if (!onOrderStage && currentStage != OrderStages.admin)
                   Consumer<OrderProvider>(builder: (context, provider, any) {
-                    List<String> status = [];
+                    int counter =
+                        provider.currentStage == OrderStages.receiving ? 2 : 1;
                     if (provider.currentStage == OrderStages.receiving) {
-                      status = ['Confirmed', 'Pending'];
+                      status = ['Pending', 'Confirmed', 'Failed'];
                     } else if (provider.currentStage ==
                         OrderStages.processing) {
                       status = ['Pending', 'Sent'];
@@ -306,41 +391,47 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       status = ['Success'];
                     }
                     return OrderChips(
-                      title: status[statusIndex],
+                      title: provider.currentStage == OrderStages.receiving &&
+                              currentStatus.isNotEmpty
+                          ? currentStatus.capitalize()
+                          : status[statusIndex],
                       onTap: () {
                         setState(() {
-                          if (status.length > 1) {
-                            if (status.length - statusIndex == 1) {
+                          if (status.length > counter) {
+                            if (status.length - statusIndex == counter) {
                               statusIndex = 0;
-                            }
-                            if (statusIndex < status.length) {
+                            } else if (statusIndex < status.length) {
                               statusIndex += 1;
                             }
                           }
                         });
-                        if (status[statusIndex] != 'Success' ||
-                            status[statusIndex] != 'Pending') {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          productUpdate(
-                            context: context,
-                            data: {
-                              'id': widget.product.id,
-                              'orderInfo': {
-                                if ((provider.currentStage ==
-                                        OrderStages.processing) &&
-                                    status[statusIndex] == 'Send')
-                                  'adminId': dropdownValue,
-                                if (provider.currentStage ==
-                                    OrderStages.receiving)
-                                  'receivingStatus': status[statusIndex],
+                        if(currentStatus.isEmpty){
+                          if (status[statusIndex] != 'Pending' ||
+                              status[statusIndex] != 'Success') {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            productUpdate(
+                              context: context,
+                              data: {
+                                'id': widget.product.id,
+                                'itemInfo': {
+                                  if ((provider.currentStage ==
+                                      OrderStages.processing) &&
+                                      status[statusIndex] == 'Sent')
+                                    'adminId': dropdownValue,
+                                  if (provider.currentStage ==
+                                      OrderStages.receiving)
+                                    'receiveStatus':
+                                    status[statusIndex].toLowerCase(),
+                                },
                               },
-                            },
-                          );
+                            );
+                          }
                         }
                       },
-                      isSelected: onSent,
+                      isSelected: status[statusIndex] == 'Pending' &&
+                          currentStatus != 'confirmed',
                     );
                   }),
               ],
@@ -435,10 +526,11 @@ class DropDownMenuWidget extends StatelessWidget {
   }
 }
 
-List<DropdownMenuItem<String>> itemsGen(
-    bool onOrderStage, List<AdminModel> suppliers) {
+List<DropdownMenuItem<String>> generateItems(
+    List<AdminModel> admins, BuildContext context) {
   List<DropdownMenuItem<String>> items = [];
-  if (onOrderStage) {
+  OrderStages currentStage = Provider.of<OrderProvider>(context).currentStage;
+  if (currentStage == OrderStages.order || currentStage == OrderStages.admin) {
     List<String> titles = ['Confirmed', 'Failed'];
     items = titles.map((e) {
       return DropdownMenuItem(
@@ -455,7 +547,7 @@ List<DropdownMenuItem<String>> itemsGen(
       );
     }).toList();
   } else {
-    items = suppliers.map((e) {
+    items = admins.map((e) {
       return DropdownMenuItem(
         value: e.adminId,
         child: Text(
@@ -476,11 +568,26 @@ List<DropdownMenuItem<String>> itemsGen(
 void productUpdate(
     {required BuildContext context, required Map<String, dynamic> data}) {
   final jWTToken = Hive.box('adminInfo').get('token');
-  final ordersBloc = BlocProvider.of<OrdersBloc>(context);
+  final ordersBloc = BlocProvider.of<OrderItemsBloc>(context);
   ordersBloc.add(
     UpdateOrderItemEvent(
       orderModel: data,
       token: jWTToken,
+    ),
+  );
+}
+
+void orderUpdate(
+    {required BuildContext context,
+    required Map<String, dynamic> data,
+    required String orderId,
+    token}) {
+  final orderBloc = BlocProvider.of<OrdersBloc>(context);
+  orderBloc.add(
+    UpdateOrderEvent(
+      orderId: orderId,
+      orderModel: data,
+      token: token,
     ),
   );
 }

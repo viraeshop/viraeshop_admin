@@ -55,6 +55,7 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
   int offset = 0;
   final jWTToken = Hive.box('adminInfo').get('token');
   final ScrollController _scrollController = ScrollController();
+  bool isProductEnd = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -77,40 +78,10 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
     final orderBloc = BlocProvider.of<OrdersBloc>(context);
     orderBloc.add(GetOrderDetailsEvent(token: jWTToken, data: data));
     _scrollController.addListener(() {
-      setState(() {
-        isLoading = true;
-        currentEvent = Event.updateCustomerTotalOrdersInfoList;
-        offset += 20;
-      });
-      Map<String, dynamic> filters = {
-        if (onDateSelected)
-          'date': {
-            'startDate': beginDate.toIso8601String(),
-            'endDate': endDate.toIso8601String(),
-          },
-        if (orderStatus != 'all') 'status': orderStatus,
-        if (role != 'all') 'role': role,
-      };
-      if (kDebugMode) {
-        print(filters.length);
+      if (_scrollController.position.atEdge &&
+          _scrollController.position.pixels != 0 && !isProductEnd) {
+        _fetchMoreProducts();
       }
-      bool filterActive =
-          onDateSelected || orderStatus != 'all' || role != 'all';
-      final orderBloc = BlocProvider.of<OrdersBloc>(context);
-      orderBloc.add(GetCustomersTotalOrdersInfoEvent(
-        token: jWTToken,
-        data: {
-          'filter': {
-            'active': filterActive,
-            if (filterActive)
-              'filterInfo': {
-                'filterLength': filters.length,
-                'filters': filters,
-              },
-          },
-          'offSet': offset,
-        },
-      ));
     });
     super.initState();
   }
@@ -120,6 +91,39 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
     // TODO: implement dispose
     _scrollController.dispose();
     super.dispose();
+  }
+
+  _fetchMoreProducts() {
+    setState(() {
+      isLoading = true;
+      currentEvent = Event.updateCustomerTotalOrdersInfoList;
+      offset += 20;
+    });
+    Map<String, dynamic> filters = {
+      if (onDateSelected)
+        'date': {
+          'startDate': beginDate.toIso8601String(),
+          'endDate': endDate.toIso8601String(),
+        },
+      if (orderStatus != 'all') 'status': orderStatus,
+      if (role != 'all') 'role': role,
+    };
+    bool filterActive = onDateSelected || orderStatus != 'all' || role != 'all';
+    final orderBloc = BlocProvider.of<OrdersBloc>(context);
+    orderBloc.add(GetCustomersTotalOrdersInfoEvent(
+      token: jWTToken,
+      data: {
+        'filter': {
+          'active': filterActive,
+          if (filterActive)
+            'filterInfo': {
+              'filterLength': filters.length,
+              'filters': filters,
+            },
+        },
+        'offset': offset,
+      },
+    ));
   }
 
   @override
@@ -160,13 +164,18 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
           } else if (state is FetchedCustomersTotalOrdersInfoState) {
             setState(() {
               isLoading = false;
-              if (kDebugMode) {
-                print(state.customersTotalOrdersInfo);
-              }
+              // if (kDebugMode) {
+              //   print(state.customersTotalOrdersInfo);
+              // }
               if (currentEvent == Event.customerTotalOrdersInfo) {
                 customersTotalOrdersInfo = state.customersTotalOrdersInfo;
               } else {
-                customersTotalOrdersInfo.addAll(state.customersTotalOrdersInfo);
+                if (state.customersTotalOrdersInfo.isNotEmpty) {
+                  customersTotalOrdersInfo
+                      .addAll(state.customersTotalOrdersInfo);
+                } else {
+                  isProductEnd = true;
+                }
               }
             });
           } else if (state is OnErrorOrderState) {
@@ -225,59 +234,72 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
                               width: 2.0,
                             ),
                             OrderDateWidget(
-                              color: !onDateSelected ? kNewMainColor.withOpacity(0.2) : kNewMainColor,
+                              color: !onDateSelected
+                                  ? kNewMainColor.withOpacity(0.2)
+                                  : kNewMainColor,
                               date: beginDate.toString().split(' ')[0],
-                              onTap: !onDateSelected ? null : () async {
-                                final result = await myDatePicker(context);
-                                setState(() {
-                                  beginDate = result;
-                                });
-                              },
+                              onTap: !onDateSelected
+                                  ? null
+                                  : () async {
+                                      final result =
+                                          await myDatePicker(context);
+                                      setState(() {
+                                        beginDate = result;
+                                      });
+                                    },
                             ),
                             OrderDateWidget(
-                              color: !onDateSelected ? kNewMainColor.withOpacity(0.2) : kNewMainColor,
+                              color: !onDateSelected
+                                  ? kNewMainColor.withOpacity(0.2)
+                                  : kNewMainColor,
                               date: endDate.toString().split(' ')[0],
-                              onTap: !onDateSelected ? null :  () async {
-                                final result = await myDatePicker(context);
-                                setState(() {
-                                  endDate = result;
-                                  isLoading = true;
-                                  offset = 0;
-                                  currentEvent = Event.customerTotalOrdersInfo;
-                                });
-                                Map<String, dynamic> filters = {
-                                  if (onDateSelected)
-                                    'date': {
-                                      'startDate': beginDate.toIso8601String(),
-                                      'endDate': endDate.toIso8601String(),
-                                    },
-                                  if (orderStatus != 'all')
-                                    'status': orderStatus,
-                                  if (role != 'all') 'role': role,
-                                };
-                                if (kDebugMode) {
-                                  print(filters.length);
-                                }
-                                bool filterActive = onDateSelected ||
-                                    orderStatus != 'all' ||
-                                    role != 'all';
-                                // ignore: use_build_context_synchronously
-                                getCustomersTotalOrdersInfo(
-                                  context: context,
-                                  token: jWTToken,
-                                  data: {
-                                    'filter': {
-                                      'active': filterActive,
-                                      if (filterActive)
-                                        'filterInfo': {
-                                          'filterLength': filters.length,
-                                          'filters': filters,
+                              onTap: !onDateSelected
+                                  ? null
+                                  : () async {
+                                      final result =
+                                          await myDatePicker(context);
+                                      setState(() {
+                                        endDate = result;
+                                        isLoading = true;
+                                        offset = 0;
+                                        currentEvent =
+                                            Event.customerTotalOrdersInfo;
+                                      });
+                                      Map<String, dynamic> filters = {
+                                        if (onDateSelected)
+                                          'date': {
+                                            'startDate':
+                                                beginDate.toIso8601String(),
+                                            'endDate':
+                                                endDate.toIso8601String(),
+                                          },
+                                        if (orderStatus != 'all')
+                                          'status': orderStatus,
+                                        if (role != 'all') 'role': role,
+                                      };
+                                      if (kDebugMode) {
+                                        print(filters.length);
+                                      }
+                                      bool filterActive = onDateSelected ||
+                                          orderStatus != 'all' ||
+                                          role != 'all';
+                                      // ignore: use_build_context_synchronously
+                                      getCustomersTotalOrdersInfo(
+                                        context: context,
+                                        token: jWTToken,
+                                        data: {
+                                          'filter': {
+                                            'active': filterActive,
+                                            if (filterActive)
+                                              'filterInfo': {
+                                                'filterLength': filters.length,
+                                                'filters': filters,
+                                              },
+                                          },
+                                          'offSet': offset,
                                         },
+                                      );
                                     },
-                                    'offSet': offset,
-                                  },
-                                );
-                              },
                             ),
                             OrderDropdown(
                               value: orderStatus,
@@ -328,202 +350,163 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
                         ),
                         Consumer<OrderProvider>(
                             builder: (context, provider, any) {
-                          if (provider.currentStage == OrderStages.order ||
-                              provider.currentStage == OrderStages.processing) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                OrderChips(
-                                  width: 100.0,
-                                  title: 'All',
-                                  isSelected: role == 'all',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'all';
-                                      isLoading = true;
-                                      currentEvent =
-                                          Event.customerTotalOrdersInfo;
-                                      offset = 0;
-                                      orderStatus = 'all';
-                                      onDateSelected = false;
-                                    });
-                                    // ignore: use_build_context_synchronously
-                                    getCustomersTotalOrdersInfo(
-                                      context: context,
-                                      token: jWTToken,
-                                      data: {
-                                        'filter': {
-                                          'active': false,
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              OrderChips(
+                                width: 100.0,
+                                title: 'All',
+                                isSelected: role == 'all',
+                                onTap: () {
+                                  setState(() {
+                                    role = 'all';
+                                    isLoading = true;
+                                    currentEvent =
+                                        Event.customerTotalOrdersInfo;
+                                    offset = 0;
+                                    orderStatus = 'all';
+                                    onDateSelected = false;
+                                  });
+                                  // ignore: use_build_context_synchronously
+                                  getCustomersTotalOrdersInfo(
+                                    context: context,
+                                    token: jWTToken,
+                                    data: {
+                                      'filter': {
+                                        'active': false,
+                                      },
+                                    },
+                                  );
+                                },
+                              ),
+                              OrderChips(
+                                width: 100.0,
+                                title: 'General',
+                                isSelected: role == 'general',
+                                onTap: () {
+                                  setState(() {
+                                    role = 'general';
+                                    isLoading = true;
+                                    offset = 0;
+                                    currentEvent =
+                                        Event.customerTotalOrdersInfo;
+                                  });
+                                  Map<String, dynamic> filters = {
+                                    if (onDateSelected)
+                                      'date': {
+                                        'startDate':
+                                            beginDate.toIso8601String(),
+                                        'endDate': endDate.toIso8601String(),
+                                      },
+                                    if (orderStatus != 'all')
+                                      'status': orderStatus,
+                                    if (role != 'all') 'role': role,
+                                  };
+                                  if (kDebugMode) {
+                                    print(filters.length);
+                                  }
+                                  // ignore: use_build_context_synchronously
+                                  getCustomersTotalOrdersInfo(
+                                    context: context,
+                                    token: jWTToken,
+                                    data: {
+                                      'filter': {
+                                        'active': true,
+                                        'filterInfo': {
+                                          'filterLength': filters.length,
+                                          'filters': filters,
                                         },
                                       },
-                                    );
-                                  },
-                                ),
-                                OrderChips(
-                                  width: 100.0,
-                                  title: 'General',
-                                  isSelected: role == 'general',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'general';
-                                      isLoading = true;
-                                      offset = 0;
-                                      currentEvent =
-                                          Event.customerTotalOrdersInfo;
-                                    });
-                                    Map<String, dynamic> filters = {
-                                      if (onDateSelected)
-                                        'date': {
-                                          'startDate':
-                                              beginDate.toIso8601String(),
-                                          'endDate': endDate.toIso8601String(),
-                                        },
-                                      if (orderStatus != 'all')
-                                        'status': orderStatus,
-                                      if (role != 'all') 'role': role,
-                                    };
-                                    if (kDebugMode) {
-                                      print(filters.length);
-                                    }
-                                    // ignore: use_build_context_synchronously
-                                    getCustomersTotalOrdersInfo(
-                                      context: context,
-                                      token: jWTToken,
-                                      data: {
-                                        'filter': {
-                                          'active': true,
-                                          'filterInfo': {
-                                            'filterLength': filters.length,
-                                            'filters': filters,
-                                          },
+                                    },
+                                  );
+                                },
+                              ),
+                              OrderChips(
+                                width: 100.0,
+                                title: 'Agents',
+                                isSelected: role == 'agents',
+                                onTap: () {
+                                  setState(() {
+                                    role = 'agents';
+                                    isLoading = true;
+                                    currentEvent =
+                                        Event.customerTotalOrdersInfo;
+                                    offset = 0;
+                                  });
+                                  Map<String, dynamic> filters = {
+                                    if (onDateSelected)
+                                      'date': {
+                                        'startDate':
+                                            beginDate.toIso8601String(),
+                                        'endDate': endDate.toIso8601String(),
+                                      },
+                                    if (orderStatus != 'all')
+                                      'status': orderStatus,
+                                    if (role != 'all') 'role': role,
+                                  };
+                                  if (kDebugMode) {
+                                    print(filters.length);
+                                  }
+                                  // ignore: use_build_context_synchronously
+                                  getCustomersTotalOrdersInfo(
+                                    context: context,
+                                    token: jWTToken,
+                                    data: {
+                                      'filter': {
+                                        'active': true,
+                                        'filterInfo': {
+                                          'filterLength': filters.length,
+                                          'filters': filters,
                                         },
                                       },
-                                    );
-                                  },
-                                ),
-                                OrderChips(
-                                  width: 100.0,
-                                  title: 'Agents',
-                                  isSelected: role == 'agents',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'agents';
-                                      isLoading = true;
-                                      currentEvent =
-                                          Event.customerTotalOrdersInfo;
-                                      offset = 0;
-                                    });
-                                    Map<String, dynamic> filters = {
-                                      if (onDateSelected)
-                                        'date': {
-                                          'startDate':
-                                              beginDate.toIso8601String(),
-                                          'endDate': endDate.toIso8601String(),
-                                        },
-                                      if (orderStatus != 'all')
-                                        'status': orderStatus,
-                                      if (role != 'all') 'role': role,
-                                    };
-                                    if (kDebugMode) {
-                                      print(filters.length);
-                                    }
-                                    // ignore: use_build_context_synchronously
-                                    getCustomersTotalOrdersInfo(
-                                      context: context,
-                                      token: jWTToken,
-                                      data: {
-                                        'filter': {
-                                          'active': true,
-                                          'filterInfo': {
-                                            'filterLength': filters.length,
-                                            'filters': filters,
-                                          },
+                                    },
+                                  );
+                                },
+                              ),
+                              OrderChips(
+                                width: 100.0,
+                                title: 'Architect',
+                                isSelected: role == 'architect',
+                                onTap: () {
+                                  setState(() {
+                                    role = 'architect';
+                                    isLoading = true;
+                                    currentEvent =
+                                        Event.customerTotalOrdersInfo;
+                                    offset = 0;
+                                  });
+                                  Map<String, dynamic> filters = {
+                                    if (onDateSelected)
+                                      'date': {
+                                        'startDate':
+                                            beginDate.toIso8601String(),
+                                        'endDate': endDate.toIso8601String(),
+                                      },
+                                    if (orderStatus != 'all')
+                                      'status': orderStatus,
+                                    if (role != 'all') 'role': role,
+                                  };
+                                  if (kDebugMode) {
+                                    print(filters.length);
+                                  }
+                                  // ignore: use_build_context_synchronously
+                                  getCustomersTotalOrdersInfo(
+                                    context: context,
+                                    token: jWTToken,
+                                    data: {
+                                      'filter': {
+                                        'active': true,
+                                        'filterInfo': {
+                                          'filterLength': filters.length,
+                                          'filters': filters,
                                         },
                                       },
-                                    );
-                                  },
-                                ),
-                                OrderChips(
-                                  width: 100.0,
-                                  title: 'Architect',
-                                  isSelected: role == 'architect',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'architect';
-                                      isLoading = true;
-                                      currentEvent =
-                                          Event.customerTotalOrdersInfo;
-                                      offset = 0;
-                                    });
-                                    Map<String, dynamic> filters = {
-                                      if (onDateSelected)
-                                        'date': {
-                                          'startDate':
-                                              beginDate.toIso8601String(),
-                                          'endDate': endDate.toIso8601String(),
-                                        },
-                                      if (orderStatus != 'all')
-                                        'status': orderStatus,
-                                      if (role != 'all') 'role': role,
-                                    };
-                                    if (kDebugMode) {
-                                      print(filters.length);
-                                    }
-                                    // ignore: use_build_context_synchronously
-                                    getCustomersTotalOrdersInfo(
-                                      context: context,
-                                      token: jWTToken,
-                                      data: {
-                                        'filter': {
-                                          'active': true,
-                                          'filterInfo': {
-                                            'filterLength': filters.length,
-                                            'filters': filters,
-                                          },
-                                        },
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          } else {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                OrderChips(
-                                  width: 140.0,
-                                  title: 'Pending',
-                                  isSelected: role == 'pending',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'pending';
-                                    });
-                                  },
-                                ),
-                                OrderChips(
-                                  width: 140.0,
-                                  title: 'Completed',
-                                  isSelected: role == 'completed',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'completed';
-                                    });
-                                  },
-                                ),
-                                OrderChips(
-                                  width: 140.0,
-                                  title: 'Failed',
-                                  isSelected: role == 'failed',
-                                  onTap: () {
-                                    setState(() {
-                                      role = 'failed';
-                                    });
-                                  },
-                                ),
-                              ],
-                            );
-                          }
+                                    },
+                                  );
+                                },
+                              ),
+                            ],
+                          );
                         }),
                         const SizedBox(
                           height: 20.0,
@@ -609,8 +592,6 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
     );
   }
 }
-
-
 
 void getCustomersTotalOrdersInfo(
     {required BuildContext context,

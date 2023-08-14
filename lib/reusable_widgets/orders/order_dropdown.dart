@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/extensions/string.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 
 import '../../components/styles/colors.dart';
@@ -55,6 +56,7 @@ List<DropdownMenuItem<String>>? dropdownItemsGenerator(OrderStages stages) {
     return dropdownItems;
   } else if (stages == OrderStages.processing) {
     List<String> itemsTitle = [
+      'All',
       'Pending',
       'Completed',
       'Canceled',
@@ -71,14 +73,14 @@ List<DropdownMenuItem<String>>? dropdownItemsGenerator(OrderStages stages) {
     return dropdownItems;
   } else {
     List<String> itemsTitle = [
-      'Received',
-      'Delivery',
+      'receiveStatus',
+      'deliveryStatus',
     ];
     List<DropdownMenuItem<String>>? dropdownItems = itemsTitle.map((e) {
       return DropdownMenuItem(
-        value: e.toLowerCase(),
+        value: e,
         child: Text(
-          e,
+          e.split('S')[0].capitalize(),
           style: kSansTextStyleWhite1,
         ),
       );
@@ -86,3 +88,4 @@ List<DropdownMenuItem<String>>? dropdownItemsGenerator(OrderStages stages) {
     return dropdownItems;
   }
 }
+

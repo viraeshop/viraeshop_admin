@@ -12,15 +12,15 @@ enum OrderStages {
   order,
   processing,
   receiving,
-  delivery
+  delivery,
+  admin
 }
 
 class OrderProvider extends ChangeNotifier {
-  bool onStatusFilter = false;
-  String currentOrderStatus = 'all';
   List<bool> isChangeQuantity = [];
   List<Items> orderProducts = [];
   Map<String, dynamic> orderInfo = {};
+  Map<String, dynamic> filterInfo = {};
   OrderStages currentStage = OrderStages.order;
   num due = 0,
       advance = 0,
@@ -68,7 +68,10 @@ class OrderProvider extends ChangeNotifier {
       advance = values['advance'];
       due = values['due'];
     } else if (updatingValue ==  Values.discount){
-
+      discount = values['discount'];
+      total = values['total'];
+      subTotal = values['subTotal'];
+      //due = values['due'];
     }
     notifyListeners();
   }
@@ -78,9 +81,8 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateOnStatusFilter (bool value, status){
-    onStatusFilter = value;
-    currentOrderStatus = status;
+  void updateFilterInfo (Map<String, dynamic> filterInfo){
+    this.filterInfo = filterInfo;
     notifyListeners();
   }
 }

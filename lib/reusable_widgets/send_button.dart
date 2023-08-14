@@ -8,11 +8,13 @@ class SendButton extends StatelessWidget {
   final String title;
   final double? width;
   final Color? color;
+  final TextStyle textStyle;
   const SendButton({
     required this.onTap,
     required this.title,
     this.width = double.infinity,
     this.color = kNewTextColor,
+    this.textStyle = kTableHeadingStyle,
     Key? key,
   }) : super(key: key);
 
@@ -30,7 +32,7 @@ class SendButton extends StatelessWidget {
         child: Center(
           child: Text(
             title,
-            style: kTableHeadingStyle,
+            style: textStyle,
           ),
         ),
       ),

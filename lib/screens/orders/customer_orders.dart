@@ -15,6 +15,7 @@ import '../../components/styles/colors.dart';
 import '../../components/styles/text_styles.dart';
 import '../../reusable_widgets/loading_widget.dart';
 import '../../reusable_widgets/on_error_widget.dart';
+import '../../reusable_widgets/orders/functions.dart';
 import '../../reusable_widgets/orders/order_chips.dart';
 import 'orderRoutineReport.dart';
 
@@ -49,7 +50,7 @@ class _CustomerOrdersState extends State<CustomerOrders> {
     'Success'
   ];
   bool onError = false;
-  bool isLoading = false;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -77,33 +78,40 @@ class _CustomerOrdersState extends State<CustomerOrders> {
         ),
         centerTitle: true,
       ),
-      body: MultiBlocListener(
-        listeners: [
-          BlocListener<CustomersBloc, CustomerState>(
-              listener: (context, state) {
-            if (state is FetchedCustomerState) {
-              setState(() {
-                customerInfo = state.customer.result.toJson();
-              });
-            } else if (state is OnErrorCustomerState) {
-              setState(() {
-                onError = true;
-                isLoading = false;
-              });
-            }
-          }),
-          // BlocListener<OrdersBloc, OrderState>(listener: (context, state) {
-          //   if (state is FetchedOrdersState) {
-          //     setState(() {
-          //       orderList = state.orderList;
-          //     });
-          //   }
-          // }),
-        ],
-        child: customerInfo.isEmpty
+      body: BlocListener<CustomersBloc, CustomerState>(
+        listener: (context, state) {
+          if (state is FetchedCustomerState) {
+            setState(() {
+              isLoading = false;
+              customerInfo = state.customer.result.toJson();
+            });
+          } else if (state is OnErrorCustomerState) {
+            setState(() {
+              onError = true;
+              isLoading = false;
+              errorMessage = state.message;
+            });
+          }
+        },
+        child: isLoading
             ? const LoadingWidget()
             : onError && currentEvent == Events.getCustomer
-                ? OnErrorWidget(message: errorMessage)
+                ? Center(
+                    child: OnErrorWidget(
+                      onRefresh: () {
+                        setState(() {
+                          isLoading = true;
+                          onError = false;
+                        });
+                        final customerBloc =
+                            BlocProvider.of<CustomersBloc>(context);
+                        customerBloc.add(GetCustomerEvent(
+                            customerId: widget.info['customerId'],
+                            token: jWTToken));
+                      },
+                      message: errorMessage,
+                    ),
+                  )
                 : Container(
                     padding: const EdgeInsets.all(10.0),
                     height: screenSize.height,
@@ -131,35 +139,37 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                                   status = allStatus[index];
                                 });
                                 if (status == 'All') {
+                                  Map<String, dynamic> filterInfo = {
+                                    'filterType': 'default',
+                                    'filterData': {
+                                      'customerId':
+                                      customerInfo['customerId'],
+                                    }
+                                  };
                                   getOrders(
-                                    data: {
-                                      'filterType': 'default',
-                                      'filterData': {
-                                        'customerId':
-                                            customerInfo['customerId'],
-                                      }
-                                    },
+                                    data: filterInfo,
                                     context: context,
                                   );
                                   Provider.of<OrderProvider>(context,
                                           listen: false)
-                                      .updateOnStatusFilter(false, status.toLowerCase());
+                                      .updateFilterInfo(filterInfo);
                                 } else {
+                                  Map<String, dynamic> filterInfo = {
+                                    'filterType': 'orderStatus',
+                                    'filterData': {
+                                      'customerId':
+                                      customerInfo['customerId'],
+                                      'status':
+                                      allStatus[index].toLowerCase(),
+                                    }
+                                  };
                                   getOrders(
-                                    data: {
-                                      'filterType': 'orderStatus',
-                                      'filterData': {
-                                        'customerId':
-                                            customerInfo['customerId'],
-                                        'orderStatus':
-                                            allStatus[index].toLowerCase(),
-                                      }
-                                    },
+                                    data: filterInfo,
                                     context: context,
                                   );
                                   Provider.of<OrderProvider>(context,
                                           listen: false)
-                                      .updateOnStatusFilter(true, status.toLowerCase());
+                                      .updateFilterInfo(filterInfo);
                                 }
                               },
                             );
@@ -175,26 +185,28 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                             return OrderChips(
                               width: 140.0,
                               title:
-                                  '${allStatus[index]} ${valueReturner(allStatus[index], widget.info)}',
-                              isSelected: status == allStatus[index],
+                                  '${allStatus.sublist(3)[index]} ${valueReturner(allStatus.sublist(3)[index], widget.info)}',
+                              isSelected: status == allStatus.sublist(3)[index],
                               onTap: () {
                                 setState(() {
-                                  status = allStatus[index];
+                                  status = allStatus.sublist(3)[index];
                                 });
+                                Map<String, dynamic> filterInfo = {
+                                  'filterType': 'orderStatus',
+                                  'filterData': {
+                                    'customerId': customerInfo['customerId'],
+                                    'status': allStatus
+                                        .sublist(3)[index]
+                                        .toLowerCase(),
+                                  }
+                                };
                                 getOrders(
-                                  data: {
-                                    'filterType': 'orderStatus',
-                                    'filterData': {
-                                      'customerId': customerInfo['customerId'],
-                                      'orderStatus':
-                                          allStatus[index].toLowerCase(),
-                                    }
-                                  },
+                                  data: filterInfo,
                                   context: context,
                                 );
                                 Provider.of<OrderProvider>(context,
                                         listen: false)
-                                    .updateOnStatusFilter(true, status.toLowerCase());
+                                    .updateFilterInfo(filterInfo);
                               },
                             );
                           }),

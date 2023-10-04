@@ -43,7 +43,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
     OrderStages currentStage =
         Provider.of<OrderProvider>(context, listen: false).currentStage;
     if (currentStage == OrderStages.delivery) {
-      buttonTitles = ['Completed', 'Pending', 'Failed'];
+      buttonTitles = ['Deliver', 'Delay', 'Failed'];
     }
     addressController.text = widget.customerInfo['address'];
     discountController.text = widget.orderInfo['discount'].toString();
@@ -231,13 +231,13 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                 subTitle: provider.total.toString(),
                               ),
                               TextRow(
+                                title: 'Discount',
+                                controller: discountController,
+                              ),
+                              TextRow(
                                 title: 'Sub-total',
                                 isEditable: false,
                                 subTitle: provider.subTotal.toString(),
-                              ),
-                              TextRow(
-                                title: 'Discount',
-                                controller: discountController,
                               ),
                               TextRow(
                                 title: 'Advance',
@@ -267,7 +267,9 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                           children: [
                             Consumer<OrderProvider>(
                                 builder: (context, provider, any) {
-                              if (provider.currentStage == OrderStages.order) {
+                              if (provider.currentStage == OrderStages.order ||
+                                  provider.currentStage ==
+                                      OrderStages.delivery) {
                                 return OrderChips(
                                   width: 120,
                                   height: 50,
@@ -321,6 +323,9 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                       });
                                       if (currentStage == OrderStages.order) {
                                         Map<String, dynamic> orderInfo = {
+                                          'orderStage': 'order',
+                                          'notificationType': 'admin2Customer',
+                                          'seen': true,
                                           'orderStatus':
                                               buttonTitles[index].toLowerCase(),
                                           if (buttonTitles[index]
@@ -343,11 +348,23 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                             orderId: widget.orderInfo['orderId']
                                                 .toString(),
                                             orderModel: {
-                                              'deliveryStatus':
-                                                  buttonTitles[index]
-                                                      .toLowerCase(),
-                                              if(buttonTitles[index] == 'Completed')'orderStatus': 'success',
-                                              if(buttonTitles[index] == 'Failed')'orderStatus': 'failed',
+                                              'orderStage': 'delivery',
+                                              'notificationType':
+                                                  'admin2Customer',
+                                              if (buttonTitles[index] ==
+                                                  'Failed')
+                                                'deliveryStatus':
+                                                    buttonTitles[index]
+                                                        .toLowerCase(),
+                                              if (buttonTitles[index] ==
+                                                  'Failed')
+                                                'orderStatus': 'failed',
+                                              if (buttonTitles[index] ==
+                                                  'Deliver')
+                                                'onDelivery': true,
+                                              if (buttonTitles[index] ==
+                                                  'Delay')
+                                                'delayDelivery': true,
                                             },
                                             token: jWTToken,
                                           ),

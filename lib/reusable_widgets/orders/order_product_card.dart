@@ -65,6 +65,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
         Provider.of<OrderProvider>(context, listen: false).currentStage;
     if (currentStage == OrderStages.receiving) {
       currentStatus = widget.product.receiveStatus;
+    } else if (currentStage == OrderStages.processing) {
+      currentStatus = widget.product.processingStatus;
     }
     onOrderStage = currentStage == OrderStages.order;
     quantity = widget.product.quantity;
@@ -87,7 +89,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
               if (!(currentStage == OrderStages.admin &&
                       dropdownValue == 'failed') ||
                   !(currentStage == OrderStages.receiving &&
-                      status[statusIndex] == 'Failed')) isLoading = false;
+                      status[statusIndex] == 'Failed') ||
+                  currentStage == OrderStages.processing) isLoading = false;
               onEdit = false;
             });
             if (onDelete) {
@@ -101,7 +104,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 dropdownValue == 'failed') {
               orderUpdate(
                 context: context,
-                data: const {'processingStatus': 'canceled'},
+                data: const {
+                  'processingStatus': 'canceled',
+                  'notificationType': 'employee2Admin',
+                  'orderStage': 'admin',
+                },
                 orderId: widget.orderId,
                 token: jWTToken,
               );
@@ -110,8 +117,24 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 status[statusIndex] == 'Failed') {
               orderUpdate(
                 context: context,
-                data: const {'receiveStatus': 'failed'},
+                data: const {
+                  'receiveStatus': 'failed',
+                  'notificationType': 'employee2Admin',
+                  'orderStage': 'receiving',
+                },
                 orderId: widget.orderId,
+                token: jWTToken,
+              );
+            }
+            if (currentStage == OrderStages.processing) {
+              orderUpdate(
+                context: context,
+                data: {
+                  'adminId': dropdownValue,
+                  'notificationType': 'admin2Employee',
+                },
+                orderId: widget.orderId,
+                token: jWTToken,
               );
             }
           } else if (state is OnErrorOrderItemState) {
@@ -122,7 +145,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 text: state.message,
                 context: context,
                 color: kRedColor,
-                duration: 500);
+                duration: 500,
+            );
           }
         }),
         BlocListener<OrdersBloc, OrderState>(
@@ -135,6 +159,12 @@ class _OrderProductCardState extends State<OrderProductCard> {
               setState(() {
                 isLoading = false;
               });
+              snackBar(
+                text: state.message,
+                context: context,
+                duration: 500,
+                color: kRedColor,
+              );
             }
           },
         ),
@@ -329,7 +359,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             });
                             if (onPhone) {
                               String mobile =
-                                  widget.product.productSupplier.mobile;
+                                  '+880${widget.product.productSupplier.mobile}';
                               final url = Uri.parse('tel:$mobile');
                               if (await canLaunchUrl(url)) {
                                 await launchUrl(url);
@@ -345,7 +375,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 if (onPhone && onOrderStage)
                   Expanded(
                     child: Text(
-                      widget.product.productSupplier.mobile,
+                      '+880${widget.product.productSupplier.mobile}',
                       overflow: TextOverflow.ellipsis,
                       style: kProductNameStylePro,
                       maxLines: 3,
@@ -386,7 +416,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       status = ['Pending', 'Confirmed', 'Failed'];
                     } else if (provider.currentStage ==
                         OrderStages.processing) {
-                      status = ['Pending', 'Sent'];
+                      status = ['Send', 'Pending'];
                     } else {
                       status = ['Success'];
                     }
@@ -396,17 +426,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                           ? currentStatus.capitalize()
                           : status[statusIndex],
                       onTap: () {
-                        setState(() {
-                          if (status.length > counter) {
-                            if (status.length - statusIndex == counter) {
-                              statusIndex = 0;
-                            } else if (statusIndex < status.length) {
-                              statusIndex += 1;
-                            }
-                          }
-                        });
-                        if(currentStatus.isEmpty){
-                          if (status[statusIndex] != 'Pending' ||
+                        if (currentStatus.isEmpty) {
+                          if (status[statusIndex] != 'Pending' &&
                               status[statusIndex] != 'Success') {
                             setState(() {
                               isLoading = true;
@@ -417,17 +438,26 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                 'id': widget.product.id,
                                 'itemInfo': {
                                   if ((provider.currentStage ==
-                                      OrderStages.processing) &&
+                                          OrderStages.processing) &&
                                       status[statusIndex] == 'Sent')
                                     'adminId': dropdownValue,
                                   if (provider.currentStage ==
                                       OrderStages.receiving)
                                     'receiveStatus':
-                                    status[statusIndex].toLowerCase(),
+                                        status[statusIndex].toLowerCase(),
                                 },
                               },
                             );
                           }
+                          setState(() {
+                            if (status.length > counter) {
+                              if (status.length - statusIndex == counter) {
+                                statusIndex = 0;
+                              } else if (statusIndex < status.length) {
+                                statusIndex += 1;
+                              }
+                            }
+                          });
                         }
                       },
                       isSelected: status[statusIndex] == 'Pending' &&

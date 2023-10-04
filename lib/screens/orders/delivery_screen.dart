@@ -302,7 +302,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           height: 20.0,
                         ),
                         LimitedBox(
-                          maxHeight: screenSize.height * 0.49,
+                          maxHeight: screenSize.height * 0.45,
                           child: const OrdersTab(),
                         ),
                       ],

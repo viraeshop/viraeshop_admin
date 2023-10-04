@@ -80,136 +80,143 @@ class _MessageState extends State<Message> {
         ),
         body: Container(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              StreamBuilder<QuerySnapshot>(
-                  stream: _generalCrud.getChatMessages(widget.userId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: Text(
-                          'Fetching messages',
-                          style: kProductNameStylePro,
-                        ),
-                      );
-                    } else if (snapshot.hasError) {
-                      return const Center(
-                        child: Text(
-                          'Failed to Fetch messages',
-                          style: kProductNameStylePro,
-                        ),
-                      );
-                    } else {
-                      final messages = snapshot.data!.docs;
-                      return messages.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No messages yet!',
-                                style: kProductNameStylePro,
-                              ),
-                            )
-                          : ListView.builder(
-                              reverse: true,
-                              itemCount: messages.length,
-                              itemBuilder: (BuildContext context, int i) {
-                                return Container(
-                                  // padding: EdgeInsets.all(0),
-                                  child: messages[i].get('sender') ==
-                                          loggedIn.email
-                                      ? BubbleSpecialThree(
-                                          text: messages[i].get('message'),
-                                          color: kNewTextColor,
-                                          tail: false,
-                                          isSender: true,
-                                          textStyle: const TextStyle(
-                                            fontFamily: 'SourceSans',
-                                            fontSize: 15.0,
-                                            color: kBackgroundColor,
-                                            // fontWeight: FontWeight.w700,
+              FractionallySizedBox(
+                alignment: Alignment.topCenter,
+                heightFactor: 0.9,
+                child: StreamBuilder<QuerySnapshot>(
+                    stream: _generalCrud.getChatMessages(widget.userId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: Text(
+                            'Fetching messages',
+                            style: kProductNameStylePro,
+                          ),
+                        );
+                      } else if (snapshot.hasError) {
+                        return const Center(
+                          child: Text(
+                            'Failed to Fetch messages',
+                            style: kProductNameStylePro,
+                          ),
+                        );
+                      } else {
+                        final messages = snapshot.data!.docs;
+                        return messages.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No messages yet!',
+                                  style: kProductNameStylePro,
+                                ),
+                              )
+                            : ListView.builder(
+                                reverse: true,
+                                itemCount: messages.length,
+                                itemBuilder: (BuildContext context, int i) {
+                                  return Container(
+                                    // padding: EdgeInsets.all(0),
+                                    child: messages[i].get('sender') ==
+                                            loggedIn.email
+                                        ? BubbleSpecialThree(
+                                            text: messages[i].get('message'),
+                                            color: kNewTextColor,
+                                            tail: false,
+                                            isSender: true,
+                                            textStyle: const TextStyle(
+                                              fontFamily: 'SourceSans',
+                                              fontSize: 15.0,
+                                              color: kBackgroundColor,
+                                              // fontWeight: FontWeight.w700,
+                                            ),
+                                          )
+                                        : BubbleSpecialThree(
+                                            text: messages[i].get('message'),
+                                            color: kProductCardColor,
+                                            tail: false,
+                                            isSender: false,
+                                            textStyle: const TextStyle(
+                                              fontFamily: 'SourceSans',
+                                              fontSize: 15.0,
+                                              color: kBackgroundColor,
+                                              // fontWeight: FontWeight.w700,
+                                            ),
                                           ),
-                                        )
-                                      : BubbleSpecialThree(
-                                          text: messages[i].get('message'),
-                                          color: kProductCardColor,
-                                          tail: false,
-                                          isSender: false,
-                                          textStyle: const TextStyle(
-                                            fontFamily: 'SourceSans',
-                                            fontSize: 15.0,
-                                            color: kBackgroundColor,
-                                            // fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                );
-                              },
-                              shrinkWrap: true,
-                            );
-                    }
-                  }),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
+                                  );
+                                },
+                                shrinkWrap: true,
+                              );
+                      }
+                    }),
+              ),
+              FractionallySizedBox(
+                alignment: Alignment.bottomCenter,
+                heightFactor: 0.1,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.all(5.0),
+                        decoration: BoxDecoration(
+                          color: kBackgroundColor,
+                          border: Border.all(color: kSubMainColor),
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                        child: TextField(
+                          controller: messageController,
+                          style: kProductNameStylePro,
+                          decoration: kMessageTextFieldDecoration,
+                        ),
+                      ),
+                    ),
+                    Container(
                       margin: const EdgeInsets.all(5.0),
+                      height: 50.0,
+                      width: 50.0,
                       decoration: BoxDecoration(
-                        color: kBackgroundColor,
-                        border: Border.all(color: kSubMainColor),
-                        borderRadius: BorderRadius.circular(30.0),
+                        borderRadius: BorderRadius.circular(
+                          100.0,
+                        ),
+                        color: kNewTextColor,
                       ),
-                      child: TextField(
-                        controller: messageController,
-                        style: kProductNameStylePro,
-                        decoration: kMessageTextFieldDecoration,
+                      child: Center(
+                        child: IconButton(
+                            onPressed: () async{
+                              String message = messageController.text;
+                              messageController.clear();
+                              FirebaseFirestore.instance
+                                .collection('messages')
+                                .doc(widget.userId)
+                                .collection('messages')
+                                .add({
+                              'message': message,
+                              'sender': loggedIn.email,
+                              'date': Timestamp.now(),
+                              'isFromCustomer': false,
+                              'tokens': widget.customerToken,
+                              'isInitialMessage': false,
+                            });
+                              try{
+                                await MessageCalls().sendNotificationFromAdmin({
+                                  'tokenId': widget.customerToken,
+                                  'message': message,
+                                }, jWTToken);
+                              } catch(e) {
+                                debugPrint(e.toString());
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.send,
+                              color: kBackgroundColor,
+                              size: 18.0,
+                            )),
                       ),
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.all(5.0),
-                    height: 50.0,
-                    width: 50.0,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(
-                        100.0,
-                      ),
-                      color: kNewTextColor,
-                    ),
-                    child: Center(
-                      child: IconButton(
-                          onPressed: () async{
-                            String message = messageController.text;
-                            messageController.clear();
-                            FirebaseFirestore.instance
-                              .collection('messages')
-                              .doc(widget.userId)
-                              .collection('messages')
-                              .add({
-                            'message': message,
-                            'sender': loggedIn.email,
-                            'date': Timestamp.now(),
-                            'isFromCustomer': true,
-                            'tokens': widget.customerToken,
-                            'isInitialMessage': false,
-                          });
-                            try{
-                              await MessageCalls().sendNotificationFromAdmin({
-                                'tokenId': widget.customerToken,
-                                'message': message,
-                              }, jWTToken);
-                            } catch(e) {
-                              debugPrint(e.toString());
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.send,
-                            color: kBackgroundColor,
-                            size: 18.0,
-                          )),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

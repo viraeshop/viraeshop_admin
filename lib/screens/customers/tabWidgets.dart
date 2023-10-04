@@ -496,10 +496,10 @@ class _OrdersTabState extends State<OrdersTab> {
       'filterType': orderFilter(currentStage),
       'filterData': {
         if (currentStage == OrderStages.order) 'customerId': widget.userId,
-        if(currentStage == OrderStages.admin) 'adminId': widget.userId,
+        if (currentStage == OrderStages.admin) 'adminId': widget.userId,
         if (currentStage == OrderStages.processing) 'isAll': true,
-        if(currentStage == OrderStages.receiving)'status': 'pending',
-        if(currentStage == OrderStages.delivery)'status': 'pending',
+        if (currentStage == OrderStages.receiving) 'status': 'pending',
+        if (currentStage == OrderStages.delivery) 'status': 'pending',
       }
     };
     getOrders(
@@ -511,8 +511,9 @@ class _OrdersTabState extends State<OrdersTab> {
           .updateFilterInfo(filterInfo);
     });
     _scrollController.addListener(() {
-      if(_scrollController.position.atEdge &&
-          _scrollController.position.pixels != 0 && !isProductEnd){
+      if (_scrollController.position.atEdge &&
+          _scrollController.position.pixels != 0 &&
+          !isProductEnd) {
         setState(() {
           isLoading = true;
           offset += 20;
@@ -570,9 +571,9 @@ class _OrdersTabState extends State<OrdersTab> {
     }, builder: (context, state) {
       if (state is FetchedOrdersState) {
         if (onUpdate) {
-          if(state.orderList.isNotEmpty){
+          if (state.orderList.isNotEmpty) {
             orders.addAll(state.orderList.toList());
-          } else{
+          } else {
             isProductEnd = true;
           }
           isLoading = false;
@@ -585,6 +586,8 @@ class _OrdersTabState extends State<OrdersTab> {
           shrinkWrap: true,
           controller: _scrollController,
           itemBuilder: (BuildContext context, int i) {
+            OrderStages currentStage =
+                Provider.of<OrderProvider>(context, listen: false).currentStage;
             List<Items> items = orders[i].items;
             String description = '';
             for (var element in items) {
@@ -597,9 +600,6 @@ class _OrdersTabState extends State<OrdersTab> {
             }
             return OrderTranzCard(
               onTap: () {
-                OrderStages currentStage =
-                    Provider.of<OrderProvider>(context, listen: false)
-                        .currentStage;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -617,8 +617,21 @@ class _OrdersTabState extends State<OrdersTab> {
               price: orders[i].price.toString(),
               employeeName: 'Riyadh',
               customerName: orders[i].customer.name,
+              isTransaction: false,
               desc: description,
               id: orders[i].orderId,
+              status: orders[i].delayDelivery &&
+                      currentStage == OrderStages.delivery
+                  ? Icons.pending
+                  : orders[i].onDelivery && currentStage == OrderStages.delivery
+                      ? Icons.local_shipping
+                      : null,
+              statusColor: orders[i].delayDelivery &&
+                      currentStage == OrderStages.delivery
+                  ? kRedColor
+                  : orders[i].onDelivery && currentStage == OrderStages.delivery
+                      ? kNewBrownColor
+                      : null,
             );
           },
         );

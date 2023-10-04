@@ -4,7 +4,9 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class OrderTranzCard extends StatelessWidget {
   final String price, employeeName, date, desc, customerName;
-  final String? id, status;
+  final String? id;
+  final IconData? status;
+  final Color? statusColor;
   final bool isTransaction;
   final Function()? onTap;
   const OrderTranzCard(
@@ -14,12 +16,12 @@ class OrderTranzCard extends StatelessWidget {
       required this.date,
       required this.customerName,
       required this.onTap,
-        this.isTransaction = true,
+      this.isTransaction = true,
       this.id,
-        this.status = '',
-      Key? key
-      }
-  ) : super(key: key);
+      this.status,
+      this.statusColor,
+      Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,24 @@ class OrderTranzCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!isTransaction)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ///TODO: TO ADD COLOR HERE BASE ON STATUS
+                  Icon(
+                    status,
+                    color: statusColor,
+                  ),
+                  // Text(status!, style: const TextStyle(
+                  //   color: kBlackColor,
+                  //   fontFamily: 'Montserrat',
+                  //   fontSize: 15,
+                  //   letterSpacing: 1.3,
+                  //   fontWeight: FontWeight.bold,
+                  // ),)
+                ],
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -96,8 +116,8 @@ class OrderTranzCard extends StatelessWidget {
             Row(
               children: [
                 const SizedBox(
-              width: 10.0,
-            ),
+                  width: 10.0,
+                ),
                 Expanded(
                   child: Text(
                     desc,
@@ -109,7 +129,7 @@ class OrderTranzCard extends StatelessWidget {
               ],
             ),
             const SizedBox(
-             height: 10.0,
+              height: 10.0,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -148,19 +168,6 @@ class OrderTranzCard extends StatelessWidget {
                 ),
               ],
             ),
-           if(!isTransaction) Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ///TODO: TO ADD COLOR HERE BASE ON STATUS
-                Text(status!, style: const TextStyle(
-                  color: kBlackColor,
-                  fontFamily: 'Montserrat',
-                  fontSize: 15,
-                  letterSpacing: 1.3,
-                  fontWeight: FontWeight.bold,
-                ),)
-              ],
-            )
           ],
         ),
       ),

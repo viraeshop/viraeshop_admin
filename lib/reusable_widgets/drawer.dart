@@ -9,6 +9,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/desktop_orders.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
+import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/screens/orders/processing.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
 import 'package:viraeshop_admin/screens/customers/all_customers.dart';
@@ -70,6 +71,7 @@ class _AppDrawerState extends State<AppDrawer> {
       isManageDue = true;
   String name = '', email = '';
   String newMessages = '';
+  String newOrders = '';
   @override
   void initState() {
     // TODO: implement initState
@@ -82,6 +84,7 @@ class _AppDrawerState extends State<AppDrawer> {
     isTransactions = Hive.box('adminInfo').get('isTransactions');
     isManageDue = Hive.box('adminInfo').get('isManageDue');
     newMessages = widget.totalMessages;
+    newOrders = widget.newOrders;
     super.initState();
   }
 
@@ -186,24 +189,28 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.pop(context);
                     },
                   ),
-                  ReusableTile(
-                    ticker: widget.newOrders != '0'
-                        ? NotificationTicker(value: widget.newOrders)
-                        : const SizedBox(),
-                    icon: FontAwesomeIcons.shoppingBag,
-                    title: 'Orders',
-                    onTap: () {
-                      Provider.of<OrderProvider>(context, listen: false)
-                          .updateOrderStage(OrderStages.order);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const OrderRoutineReport(
-                            title: 'Orders',
-                          ),
-                        ),
+                  Consumer<GeneralProvider>(
+                    builder: (context, item, any) {
+                      return ReusableTile(
+                        ticker: item.newOrders != '0'
+                            ? NotificationTicker(value: item.newOrders)
+                            : const SizedBox(),
+                        icon: FontAwesomeIcons.shoppingBag,
+                        title: 'Orders',
+                        onTap: () {
+                          Provider.of<OrderProvider>(context, listen: false)
+                              .updateOrderStage(OrderStages.order);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const OrderRoutineReport(
+                                title: 'Orders',
+                              ),
+                            ),
+                          );
+                        },
                       );
-                    },
+                    }
                   ),
                   ReusableTile(
                     // ticker: widget.newOrders != '0'

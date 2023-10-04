@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 class GeneralProvider extends ChangeNotifier {
+  String newOrders = '';
   List advertSelected = [];
   List suppliers = [];
   List deletedAdverts = [];
@@ -9,6 +10,12 @@ class GeneralProvider extends ChangeNotifier {
   List<bool> addedToCart = List.generate(10, (index) => false);
   bool isStarted = false;
   bool isEditUser = false;
+
+  void updateNewOrder (String value){
+    newOrders = value;
+    notifyListeners();
+  }
+
   void onUserEdit(bool value) {
     isEditUser = value;
     notifyListeners();

@@ -186,6 +186,8 @@ class _OrderProductsState extends State<OrderProducts> {
                                                       .orderInfo['orderId']
                                                       .toString(),
                                                   orderModel: {
+                                                    'notificationType': 'employee2Admin',
+                                                    'orderStage': provider.currentStage.name,
                                                     if(provider.currentStage == OrderStages.receiving)'receiveStatus': 'completed',
                                                     if(provider.currentStage == OrderStages.receiving)'deliveryStatus': 'pending',
                                                     if(provider.currentStage == OrderStages.admin)'processingStatus': 'confirmed',
@@ -195,9 +197,9 @@ class _OrderProductsState extends State<OrderProducts> {
                                               ),
                                               );
                                             },
-                                            title: provider.currentStage == OrderStages.admin ? 'Processed' : 'Received',
+                                            title: provider.currentStage == OrderStages.admin ? 'Send To Delivery Hub' : 'Received',
                                             textStyle: kTotalSalesStyle,
-                                            width: 150.0,
+                                            width: 250.0,
                                             color: kBackgroundColor,
                                           ),
                                         );

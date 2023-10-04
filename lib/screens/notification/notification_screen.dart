@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop/notifications/notifications_bloc.dart';
 import 'package:viraeshop/notifications/notifications_event.dart';
 import 'package:viraeshop/notifications/notifications_state.dart';
@@ -32,6 +33,7 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen>
     with AutomaticKeepAliveClientMixin {
   List items = [];
+  bool isLoading = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -39,6 +41,7 @@ class _NotificationScreenState extends State<NotificationScreen>
     notificationBloc.add(GetNotificationsEvent());
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -46,133 +49,143 @@ class _NotificationScreenState extends State<NotificationScreen>
       onTap: () {
         FocusScope.of(context).unfocus();
       },
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: kNewMainColor,
-          elevation: null,
-          // shape: RoundedRectangleBorder(),
-          leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(FontAwesomeIcons.chevronLeft),
-            color: kBackgroundColor,
-            iconSize: 20.0,
-          ),
+      child: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        progressIndicator: const CircularProgressIndicator(
+          color: kNewMainColor,
         ),
-        body: Container(
-          color: kBackgroundColor,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Container(
-                height: size.height,
-                width: size.width,
-                color: kBackgroundColor,
-                child: Stack(children: [
-                  FractionallySizedBox(
-                    alignment: Alignment.topCenter,
-                    heightFactor: 0.7,
-                    widthFactor: 1,
-                    child: ClipPath(
-                      clipper: MyClipper(),
-                      child: Container(
-                        color: kNewMainColor,
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
-              FractionallySizedBox(
-                alignment: Alignment.topCenter,
-                heightFactor: 0.8,
-                widthFactor: 0.9,
-                child: Container(
-                  padding: const EdgeInsets.all(10.0),
-                  margin: const EdgeInsets.all(10.0),
-                  decoration: BoxDecoration(
-                    boxShadow: const [
-                      BoxShadow(
-                        offset: Offset(0, 3),
-                        color: Colors.black26,
-                        blurRadius: 3.0,
-                      )
-                    ],
-                    borderRadius: BorderRadius.circular(10.0),
-                    color: kBackgroundColor,
-                  ),
-                  child: BlocConsumer<NotificationsBloc, NotificationsState>(
-                      listenWhen: (context, state) {
-                    if (state is AddedNotificationState ||
-                        state is OnAddedErrorNotificationState) {
-                      return true;
-                    } else {
-                      return false;
-                    }
-                  }, listener: (context, state) {
-                    if (state is AddedNotificationState) {
-                      setState(() {
-                        items.add(state.response.result);
-                      });
-                    } else if (state is OnAddedErrorNotificationState) {
-                      snackBar(
-                        text: state.message,
-                        context: context,
-                        duration: 500,
-                        color: kRedColor,
-                      );
-                    }
-                  }, buildWhen: (context, state) {
-                    if (state is FetchedNotificationsState ||
-                        state is OnErrorNotificationState) {
-                      return true;
-                    } else {
-                      return false;
-                    }
-                  }, builder: (context, state) {
-                    if (state is OnErrorNotificationState) {
-                      return Text(
-                        state.message,
-                        style: const TextStyle(
-                          color: kRedColor,
-                          fontFamily: 'Montserrat',
-                          fontSize: 15.0,
-                          letterSpacing: 1.3,
-                        ),
-                      );
-                    } else if (state is FetchedNotificationsState) {
-                      items.clear();
-                      final data = state.notifications;
-                      if (data.isNotEmpty) {
-                        for (var element in data) {
-                          items.add(element.toJson());
-                        }
-                      }
-                      return ListView.builder(
-                        itemCount: items.length,
-                        itemBuilder: (context, index) {
-                          return NotificationCard(
-                            image: items[index]['image'],
-                            title: items[index]['title'],
-                            subTitle: items[index]['subTitle'],
-                            body: items[index]['body'],
-                          );
-                        },
-                      );
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(
+        child: Scaffold(
+          appBar: AppBar(
+            backgroundColor: kNewMainColor,
+            elevation: null,
+            // shape: RoundedRectangleBorder(),
+            leading: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(FontAwesomeIcons.chevronLeft),
+              color: kBackgroundColor,
+              iconSize: 20.0,
+            ),
+          ),
+          body: Container(
+            color: kBackgroundColor,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Container(
+                  height: size.height,
+                  width: size.width,
+                  color: kBackgroundColor,
+                  child: Stack(children: [
+                    FractionallySizedBox(
+                      alignment: Alignment.topCenter,
+                      heightFactor: 0.7,
+                      widthFactor: 1,
+                      child: ClipPath(
+                        clipper: MyClipper(),
+                        child: Container(
                           color: kNewMainColor,
                         ),
-                      );
-                    }
-                  }),
+                      ),
+                    ),
+                  ]),
                 ),
-              ),
-              const FractionallySizedBox(
-                heightFactor: 0.2,
-                alignment: Alignment.bottomCenter,
-                child: NotificationMaker(),
-              ),
-            ],
+                FractionallySizedBox(
+                  alignment: Alignment.topCenter,
+                  heightFactor: 0.8,
+                  widthFactor: 0.9,
+                  child: Container(
+                    padding: const EdgeInsets.all(10.0),
+                    margin: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      boxShadow: const [
+                        BoxShadow(
+                          offset: Offset(0, 3),
+                          color: Colors.black26,
+                          blurRadius: 3.0,
+                        )
+                      ],
+                      borderRadius: BorderRadius.circular(10.0),
+                      color: kBackgroundColor,
+                    ),
+                    child: BlocConsumer<NotificationsBloc, NotificationsState>(
+                        listener: (context, state) {
+                          if (state is AddedNotificationState) {
+                            setState(() {
+                              isLoading = false;
+                              items.add(state.response.result);
+                            });
+                          } else if (state is OnAddedErrorNotificationState) {
+                            snackBar(
+                              text: state.message,
+                              context: context,
+                              duration: 500,
+                              color: kRedColor,
+                            );
+                          }
+                        },
+                    // }, buildWhen: (context, state) {
+                    //   if (state is FetchedNotificationsState ||
+                    //       state is OnErrorNotificationState) {
+                    //     return true;
+                    //   } else {
+                    //     return false;
+                    //   }
+                    // },
+                    builder: (context, state) {
+                      if (state is OnErrorNotificationState) {
+                        return Text(
+                          state.message,
+                          style: const TextStyle(
+                            color: kRedColor,
+                            fontFamily: 'Montserrat',
+                            fontSize: 15.0,
+                            letterSpacing: 1.3,
+                          ),
+                        );
+                      } else if (state is LoadingNotificationState) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: kNewMainColor,
+                          ),
+                        );
+                      } else {
+                        if (state is FetchedNotificationsState) {
+                          items.clear();
+                          final data = state.notifications;
+                          if (data.isNotEmpty) {
+                            for (var element in data) {
+                              items.add(element.toJson());
+                            }
+                          }
+                        }
+                        return ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return NotificationCard(
+                              image: items[index]['image'],
+                              title: items[index]['title'],
+                              subTitle: items[index]['subTitle'],
+                              body: items[index]['body'],
+                            );
+                          },
+                        );
+                      }
+                    }),
+                  ),
+                ),
+                FractionallySizedBox(
+                  heightFactor: 0.2,
+                  alignment: Alignment.bottomCenter,
+                  child: NotificationMaker(
+                    onSend: (){
+                      setState(() {
+                        isLoading = true;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -185,8 +198,8 @@ class _NotificationScreenState extends State<NotificationScreen>
 }
 
 class NotificationMaker extends StatefulWidget {
-  const NotificationMaker({Key? key}) : super(key: key);
-
+  const NotificationMaker({Key? key, required this.onSend}) : super(key: key);
+  final void Function() onSend;
   @override
   State<NotificationMaker> createState() => _NotificationMakerState();
 }
@@ -207,163 +220,157 @@ class _NotificationMakerState extends State<NotificationMaker> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return BlocProvider(
-      create: (context) =>
-          NotificationsBloc(notificationCalls: NotificationCalls()),
-      child: BlocListener<NotificationsBloc, NotificationsState>(
-        listenWhen: (context, state) {
-          if (state is AddedNotificationState) {
-            return true;
-          } else {
-            return false;
-          }
-        },
-        listener: (context, state) {
-          if (state is AddedNotificationState) {
-            setState(() {
-              titleController.clear();
-              subTitleController.clear();
-              bodyController.clear();
-              imageBytes.clear();
-              imageLinkData.clear();
-            });
-          }
-        },
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.all(10),
-                    //height: 150.0,
-                    width: size.width * 0.7,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      color: kTextBoxColor,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10.0),
-                          width: size.width * 0.4,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomTextStyle(
-                                hintText: 'Title',
-                                title1Controller: titleController,
-                                textStyle: const TextStyle(
-                                  color: kSubMainColor,
-                                  fontSize: 15.0,
-                                  fontFamily: 'Montserrat',
-                                ),
-                              ),
-                              const SizedBox(),
-                              CustomTextStyle(
-                                hintText: 'Sub-title',
-                                title1Controller: subTitleController,
-                                textStyle: const TextStyle(
-                                  color: kSubMainColor,
-                                  fontSize: 15.0,
-                                  fontFamily: 'Montserrat',
-                                ),
-                              ),
-                              const SizedBox(),
-                              CustomTextStyle(
-                                lines: 3,
-                                width: size.width * 0.4,
-                                height: 70.0,
-                                hintText: 'Description',
-                                title1Controller: bodyController,
-                                textStyle: const TextStyle(
-                                  color: kSubMainColor,
-                                  fontSize: 15.0,
-                                  fontFamily: 'Montserrat',
-                                ),
-                              ),
-                              //SizedBox(),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10.0,
-                        ),
-                        InkWell(
-                          onTap: () {
-                            if (kIsWeb) {
-                              // getImageWeb('notifications').then((value) {
-                              //   setState(() {
-                              //     imageBytes = value.item1!;
-                              //     imageLink = value.item2!;
-                              //   });
-                              // });
-                            } else {
-                              getImageNative('notifications').then((value) {
-                                setState(() {
-                                  imagePath = value['path'];
-                                  imageLinkData = value['imageData'];
-                                });
-                              });
-                            }
-                          },
-                          child: Container(
-                            width: size.width * 0.2,
-                            height: 120.0,
-                            margin: const EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: kNewYellowColor,
-                              image: imageBG(imageBytes, imagePath),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: Center(
-                              child: imageBytes.isEmpty
-                                  ? const Icon(
-                                      Icons.add_a_photo,
-                                      size: 30.0,
-                                      color: kBackgroundColor,
-                                    )
-                                  : const SizedBox(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+    return BlocListener<NotificationsBloc, NotificationsState>(
+      listener: (context, state) {
+        if (state is AddedNotificationState) {
+          setState(() {
+            titleController.clear();
+            subTitleController.clear();
+            bodyController.clear();
+            imageBytes = Uint8List(0);
+            imageLinkData.clear();
+          });
+        }
+      },
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  margin: const EdgeInsets.all(10),
+                  //height: 150.0,
+                  width: size.width * 0.7,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: kTextBoxColor,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: sendButton(
-                        color: kNewMainColor,
-                        width: 70.0,
-                        title: 'Send',
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10.0),
+                        width: size.width * 0.43,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomTextStyle(
+                              hintText: 'Title',
+                              width: size.width * 0.4,
+                              title1Controller: titleController,
+                              textStyle: const TextStyle(
+                                color: kSubMainColor,
+                                fontSize: 15.0,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            const SizedBox(),
+                            CustomTextStyle(
+                              height: 40,
+                              width: size.width * 0.4,
+                              hintText: 'Sub-title',
+                              title1Controller: subTitleController,
+                              textStyle: const TextStyle(
+                                color: kSubMainColor,
+                                fontSize: 15.0,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            const SizedBox(),
+                            CustomTextStyle(
+                              lines: 3,
+                              width: size.width * 0.4,
+                              height: 70.0,
+                              hintText: 'Description',
+                              title1Controller: bodyController,
+                              textStyle: const TextStyle(
+                                color: kSubMainColor,
+                                fontSize: 15.0,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            //SizedBox(),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10.0,
+                      ),
+                      InkWell(
                         onTap: () {
-                          if (titleController.text.isNotEmpty &&
-                              subTitleController.text.isNotEmpty &&
-                              bodyController.text.isNotEmpty) {
-                            final notificationBloc =
-                                BlocProvider.of<NotificationsBloc>(context);
-                            final notification = {
-                              'title': titleController.text,
-                              'subTitle': subTitleController.text,
-                              'body': bodyController.text,
-                              'image': imageLinkData['url'],
-                              'imageKey': imageLinkData['key'],
-                            };
-                            notificationBloc.add(AddNotificationEvent(
-                              token: jWTToken,
-                                notificationModel: notification),
-                            );
+                          if (kIsWeb) {
+                            // getImageWeb('notifications').then((value) {
+                            //   setState(() {
+                            //     imageBytes = value.item1!;
+                            //     imageLink = value.item2!;
+                            //   });
+                            // });
+                          } else {
+                            getImageNative('notifications').then((value) {
+                              setState(() {
+                                imagePath = value['path'];
+                                imageLinkData = value['imageData'];
+                              });
+                            });
                           }
-                        }),
-                  )
-                ],
-              ),
-            ],
-          ),
+                        },
+                        child: Container(
+                          width: size.width * 0.2,
+                          height: 120.0,
+                          margin: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: kNewYellowColor,
+                            image: imageBG(imageBytes, imagePath),
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Center(
+                            child: imageBytes.isEmpty
+                                ? const Icon(
+                                    Icons.add_a_photo,
+                                    size: 30.0,
+                                    color: kBackgroundColor,
+                                  )
+                                : const SizedBox(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: sendButton(
+                      color: kNewMainColor,
+                      width: 70.0,
+                      title: 'Send',
+                      onTap: () {
+                        if (titleController.text.isNotEmpty &&
+                            subTitleController.text.isNotEmpty &&
+                            bodyController.text.isNotEmpty) {
+                          final notificationBloc =
+                              BlocProvider.of<NotificationsBloc>(context);
+                          final notification = {
+                            'title': titleController.text,
+                            'subTitle': subTitleController.text,
+                            'body': bodyController.text,
+                            'image': imageLinkData['url'],
+                            'imageKey': imageLinkData['key'],
+                          };
+                          notificationBloc.add(
+                            AddNotificationEvent(
+                                token: jWTToken,
+                                notificationModel: notification),
+                          );
+                          widget.onSend();
+                        }
+                      }),
+                )
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -375,7 +382,9 @@ class NotificationCard extends StatelessWidget {
       {required this.title,
       required this.body,
       required this.image,
-      required this.subTitle, Key? key}): super(key: key);
+      required this.subTitle,
+      Key? key})
+      : super(key: key);
   final String title;
   final String subTitle;
   final String body;

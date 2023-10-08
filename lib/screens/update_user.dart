@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -111,8 +112,10 @@ class _UpdateUserState extends State<UpdateUser> {
     _emailController.text = widget.userInfo['email'];
     phoneController.text = widget.userInfo['mobile'];
     walletController.text = widget.userInfo['wallet'].toString() ?? '';
-    Provider.of<CustomerProvider>(context, listen: false)
-        .updateWallet(widget.userInfo['wallet'] ?? 0);
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      Provider.of<CustomerProvider>(context, listen: false)
+          .updateWallet(widget.userInfo['wallet'] ?? 0);
+    });
     default_role = widget.userInfo['role'];
     selected_role = widget.userInfo['role'];
   }
@@ -286,17 +289,16 @@ class _UpdateUserState extends State<UpdateUser> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Consumer<CustomerProvider>(
-                        builder: (context, customer, any) {
-                          return Text(
-                            '${customer.wallet.toString()}৳',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 70,
-                              color: kSelectedTileColor,
-                            ),
-                          );
-                        }
-                      ),
+                          builder: (context, customer, any) {
+                        return Text(
+                          '${customer.wallet.toString()}৳',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 70,
+                            color: kSelectedTileColor,
+                          ),
+                        );
+                      }),
                     ],
                   ),
                   InkWell(
@@ -325,51 +327,50 @@ class _UpdateUserState extends State<UpdateUser> {
                                     ),
                                     const SizedBox(height: 20),
                                     Consumer<CustomerProvider>(
-                                      builder: (context, customer, any) {
-                                        return InkWell(
-                                          child: Container(
-                                            width:
-                                                MediaQuery.of(context).size.width,
-                                            height: 58,
-                                            decoration: BoxDecoration(
-                                                color:
-                                                    kSelectedTileColor, //Theme.of(context).accentColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(15)),
-                                            child: const Center(
-                                              child: Text(
-                                                "Add",
-                                                style: TextStyle(
-                                                    fontSize: 20,
-                                                    color: Colors.white),
-                                              ),
+                                        builder: (context, customer, any) {
+                                      return InkWell(
+                                        child: Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          height: 58,
+                                          decoration: BoxDecoration(
+                                              color:
+                                                  kSelectedTileColor, //Theme.of(context).accentColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(15)),
+                                          child: const Center(
+                                            child: Text(
+                                              "Add",
+                                              style: TextStyle(
+                                                  fontSize: 20,
+                                                  color: Colors.white),
                                             ),
                                           ),
-                                          onTap: () {
-                                            num newBalance = customer.wallet +
-                                                num.parse(walletController.text);
-                                            Navigator.pop(context);
-                                            setState(() {
-                                              currentOperation = Operation.update;
-                                              isLoading = true;
-                                            });
-                                            final customerBloc =
-                                                BlocProvider.of<CustomersBloc>(
-                                              context,
-                                            );
-                                            customerBloc.add(
-                                              UpdateCustomerEvent(
-                                                customerId: widget.userId,
-                                                customerModel: {
-                                                  'wallet': newBalance,
-                                                },
-                                                token: jWTToken,
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      }
-                                    ),
+                                        ),
+                                        onTap: () {
+                                          num newBalance = customer.wallet +
+                                              num.parse(walletController.text);
+                                          Navigator.pop(context);
+                                          setState(() {
+                                            currentOperation = Operation.update;
+                                            isLoading = true;
+                                          });
+                                          final customerBloc =
+                                              BlocProvider.of<CustomersBloc>(
+                                            context,
+                                          );
+                                          customerBloc.add(
+                                            UpdateCustomerEvent(
+                                              customerId: widget.userId,
+                                              customerModel: {
+                                                'wallet': newBalance,
+                                              },
+                                              token: jWTToken,
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }),
                                   ],
                                 ),
                               ),
@@ -693,7 +694,6 @@ class _UpdateUserState extends State<UpdateUser> {
                                 });
                               } else {
                                 // Not agent, Set, another
-
                               }
                               // Update Here
                               adminCrud

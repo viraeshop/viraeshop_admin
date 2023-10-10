@@ -246,6 +246,7 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
                                       setState(() {
                                         beginDate = result;
                                       });
+                                      debugPrint(result.toIso8601String());
                                     },
                             ),
                             OrderDateWidget(
@@ -259,7 +260,12 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
                                       final result =
                                           await myDatePicker(context);
                                       setState(() {
-                                        endDate = result;
+                                        if(result == beginDate){
+                                          endDate = DateTime(beginDate.year, beginDate.month, beginDate.day, 24);
+                                          debugPrint(endDate.toIso8601String());
+                                        }else{
+                                          endDate = result;
+                                        }
                                         isLoading = true;
                                         offset = 0;
                                         currentEvent =

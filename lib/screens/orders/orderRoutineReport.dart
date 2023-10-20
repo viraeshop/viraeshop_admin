@@ -268,8 +268,7 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
                                         }
                                         isLoading = true;
                                         offset = 0;
-                                        currentEvent =
-                                            Event.customerTotalOrdersInfo;
+                                        currentEvent = Event.customerTotalOrdersInfo;
                                       });
                                       Map<String, dynamic> filters = {
                                         if (onDateSelected)

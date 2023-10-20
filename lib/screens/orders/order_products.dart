@@ -17,13 +17,16 @@ import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
 import 'package:viraeshop_admin/screens/orders/details.dart';
 import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
 import 'package:viraeshop_admin/screens/orders/order_screen.dart';
+import 'package:viraeshop_api/apiCalls/orders.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 
 import '../../components/styles/colors.dart';
 import '../../components/styles/text_styles.dart';
 import '../../configs/boxes.dart';
+import '../../filters/orderFilters.dart';
 import '../../reusable_widgets/loading_widget.dart';
+import '../../reusable_widgets/orders/functions.dart';
 import '../../reusable_widgets/orders/order_product_card.dart';
 import '../../reusable_widgets/send_button.dart';
 import 'order_provider.dart';
@@ -33,11 +36,13 @@ class OrderProducts extends StatefulWidget {
       {Key? key,
       required this.customerInfo,
       required this.orderInfo,
+        required this.userId,
       this.onGetAdmins = false})
       : super(key: key);
   final Map<String, dynamic> customerInfo;
   final Map<String, dynamic> orderInfo;
   final bool onGetAdmins;
+  final String userId;
 
   @override
   State<OrderProducts> createState() => _OrderProductsState();
@@ -53,7 +58,8 @@ class _OrderProductsState extends State<OrderProducts> {
   @override
   void initState() {
     // TODO: implement initState
-    currentStage =  Provider.of<OrderProvider>(context, listen: false).currentStage;
+    currentStage =
+        Provider.of<OrderProvider>(context, listen: false).currentStage;
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       Provider.of<OrderProvider>(context, listen: false)
           .onUpdateProducts(widget.orderInfo['items'] ?? []);
@@ -61,6 +67,20 @@ class _OrderProductsState extends State<OrderProducts> {
     if (widget.onGetAdmins) {
       final adminBloc = BlocProvider.of<AdminBloc>(context);
       adminBloc.add(GetAdminsEvent(token: jWTToken));
+      isLoading = true;
+    }
+    if (!widget.orderInfo['seen'] && currentStage == OrderStages.order) {
+      isLoading = true;
+      final orderBloc = BlocProvider.of<OrdersBloc>(context);
+      orderBloc.add(
+        UpdateOrderEvent(
+          orderId: widget.orderInfo['orderId'].toString(),
+          orderModel: const {
+            'seen': true,
+          },
+          token: jWTToken,
+        ),
+      );
     }
     super.initState();
   }
@@ -77,7 +97,23 @@ class _OrderProductsState extends State<OrderProducts> {
         appBar: AppBar(
           backgroundColor: kBackgroundColor,
           leading: IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Map<String, dynamic> filterInfo = {
+                'filterType': orderFilter(currentStage!),
+                'filterData': {
+                  if (currentStage == OrderStages.order) 'customerId': widget.userId,
+                  if (currentStage == OrderStages.admin) 'adminId': widget.userId,
+                  if (currentStage == OrderStages.processing) 'isAll': true,
+                  if (currentStage == OrderStages.receiving) 'status': 'pending',
+                  if (currentStage == OrderStages.delivery) 'status': 'pending',
+                }
+              };
+              getOrders(
+                data: filterInfo,
+                context: context,
+              );
+              Navigator.pop(context);
+              },
             icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kBlackColor,
           ),
@@ -144,7 +180,9 @@ class _OrderProductsState extends State<OrderProducts> {
                                   itemCount: provider.orderProducts.length,
                                   itemBuilder: (context, i) {
                                     return OrderProductCard(
-                                      orderId: widget.orderInfo['orderId'].toString(),
+                                      orderId: widget.orderInfo['orderId']
+                                          .toString(),
+                                      orderInfo: widget.orderInfo,
                                       product: provider.orderProducts[i],
                                       admins: provider.currentStage ==
                                               OrderStages.processing
@@ -162,7 +200,11 @@ class _OrderProductsState extends State<OrderProducts> {
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Container(
-                                  height: currentStage == OrderStages.receiving || currentStage == OrderStages.admin ? 80.0 : 120.0,
+                                  height:
+                                      currentStage == OrderStages.receiving ||
+                                              currentStage == OrderStages.admin
+                                          ? 80.0
+                                          : 120.0,
                                   padding: const EdgeInsets.all(10.0),
                                   width: double.infinity,
                                   decoration: BoxDecoration(
@@ -171,7 +213,9 @@ class _OrderProductsState extends State<OrderProducts> {
                                   ),
                                   child: Consumer<OrderProvider>(
                                     builder: (context, provider, any) {
-                                      if (provider.currentStage == OrderStages.receiving || currentStage == OrderStages.admin) {
+                                      if (provider.currentStage ==
+                                              OrderStages.receiving ||
+                                          currentStage == OrderStages.admin) {
                                         return Center(
                                           child: SendButton(
                                             onTap: () {
@@ -181,23 +225,41 @@ class _OrderProductsState extends State<OrderProducts> {
                                               final orderBloc =
                                                   BlocProvider.of<OrdersBloc>(
                                                       context);
-                                              orderBloc.add(UpdateOrderEvent(
+                                              orderBloc.add(
+                                                UpdateOrderEvent(
                                                   orderId: widget
                                                       .orderInfo['orderId']
                                                       .toString(),
                                                   orderModel: {
-                                                    'notificationType': 'employee2Admin',
-                                                    'orderStage': provider.currentStage.name,
-                                                    if(provider.currentStage == OrderStages.receiving)'receiveStatus': 'completed',
-                                                    if(provider.currentStage == OrderStages.receiving)'deliveryStatus': 'pending',
-                                                    if(provider.currentStage == OrderStages.admin)'processingStatus': 'confirmed',
-                                                    if(provider.currentStage == OrderStages.admin)'receiveStatus': 'pending',
+                                                    'notificationType':
+                                                        'employee2Admin',
+                                                    'orderStage': provider
+                                                        .currentStage.name,
+                                                    if (provider.currentStage ==
+                                                        OrderStages.receiving)
+                                                      'receiveStatus':
+                                                          'completed',
+                                                    if (provider.currentStage ==
+                                                        OrderStages.receiving)
+                                                      'deliveryStatus':
+                                                          'pending',
+                                                    if (provider.currentStage ==
+                                                        OrderStages.admin)
+                                                      'processingStatus':
+                                                          'confirmed',
+                                                    if (provider.currentStage ==
+                                                        OrderStages.admin)
+                                                      'receiveStatus':
+                                                          'pending',
                                                   },
                                                   token: jWTToken,
-                                              ),
+                                                ),
                                               );
                                             },
-                                            title: provider.currentStage == OrderStages.admin ? 'Send To Delivery Hub' : 'Received',
+                                            title: provider.currentStage ==
+                                                    OrderStages.admin
+                                                ? 'Send To Delivery Hub'
+                                                : 'Received',
                                             textStyle: kTotalSalesStyle,
                                             width: 250.0,
                                             color: kBackgroundColor,

@@ -1,10 +1,7 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:blurry_modal_progress_hud/blurry_modal_progress_hud.dart';
 import 'package:provider/provider.dart';
@@ -18,13 +15,10 @@ import 'package:viraeshop_admin/extensions/string.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/cylindrical_buttons.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/order_chips.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
-import 'package:viraeshop_admin/screens/orders/order_screen.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_api/models/items/items.dart';
-import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 
 import '../../components/styles/colors.dart';
-import '../../screens/orders/order_provider.dart';
 
 class OrderProductCard extends StatefulWidget {
   const OrderProductCard({
@@ -32,6 +26,7 @@ class OrderProductCard extends StatefulWidget {
     required this.orderId,
     required this.product,
     required this.index,
+    required this.orderInfo,
     this.admins,
   }) : super(key: key);
 
@@ -39,6 +34,7 @@ class OrderProductCard extends StatefulWidget {
   final Items product;
   final List<AdminModel>? admins;
   final int index;
+  final Map<String, dynamic> orderInfo;
 
   @override
   State<OrderProductCard> createState() => _OrderProductCardState();
@@ -46,6 +42,9 @@ class OrderProductCard extends StatefulWidget {
 
 class _OrderProductCardState extends State<OrderProductCard> {
   int quantity = 0;
+  num originalPrice = 0;
+  num discountedPrice = 0;
+  num discount = 0;
   String dropdownValue = 'confirmed';
   String currentStatus = '';
   bool onLocation = false;
@@ -61,6 +60,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
   OrderStages? currentStage;
   @override
   void initState() {
+    print(quantity);
     currentStage =
         Provider.of<OrderProvider>(context, listen: false).currentStage;
     if (currentStage == OrderStages.receiving) {
@@ -69,12 +69,19 @@ class _OrderProductCardState extends State<OrderProductCard> {
       currentStatus = widget.product.processingStatus;
     }
     onOrderStage = currentStage == OrderStages.order;
-    quantity = widget.product.quantity;
     admins = widget.admins ?? [];
-    if ((!onOrderStage && currentStage != OrderStages.admin) &&
-        admins.isNotEmpty) {
-      dropdownValue = admins[0].adminId;
-    }
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {
+        quantity = widget.product.quantity;
+        originalPrice = widget.product.originalPrice;
+        discountedPrice = widget.product.productPrice;
+        discount = widget.product.discount;
+        if ((!onOrderStage && currentStage != OrderStages.admin) &&
+            admins.isNotEmpty) {
+          dropdownValue = admins[0].adminId;
+        }
+      });
+    });
     super.initState();
   }
 
@@ -132,6 +139,25 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 data: {
                   'adminId': dropdownValue,
                   'notificationType': 'admin2Employee',
+                },
+                orderId: widget.orderId,
+                token: jWTToken,
+              );
+            }
+            if(currentStage == OrderStages.order){
+              num newQuantity  = (widget.orderInfo['quantity'] - widget.product.quantity) + quantity;
+              num newTotalPrice = (widget.orderInfo['totalPrice'] - widget.product.originalPrice) + originalPrice;
+              num newDiscount = (widget.orderInfo['discount'] - widget.product.discount) + discount;
+              num newSubTotal = (widget.orderInfo['subTotal'] - widget.product.productPrice) + discountedPrice;
+
+              orderUpdate(
+                context: context,
+                data: {
+                  'totalPrice': newTotalPrice,
+                  'subTotal': newSubTotal,
+                  'quantity': newQuantity,
+                  'price': newSubTotal,
+                  'discount': newDiscount,
                 },
                 orderId: widget.orderId,
                 token: jWTToken,
@@ -204,31 +230,44 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      OpaqueButton(
-                        onTap: onOrderStage
-                            ? () {
-                                if (onEdit) {
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-                                  productUpdate(
-                                    context: context,
-                                    data: {
-                                      'id': widget.product.id,
-                                      'itemInfo': {
-                                        'quantity': quantity,
-                                      }
-                                    },
-                                  );
-                                } else {
-                                  setState(() {
-                                    onEdit = true;
-                                  });
-                                }
-                              }
-                            : null,
-                        color: onOrderStage ? kRedColor : Colors.grey,
-                        icon: !onEdit ? Icons.edit : Icons.done,
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          OpaqueButton(
+                            onTap: onOrderStage
+                                ? () {
+                                    if (onEdit) {
+                                      setState(() {
+                                        isLoading = true;
+                                      });
+                                      productUpdate(
+                                        context: context,
+                                        data: {
+                                          'id': widget.product.id,
+                                          'itemInfo': {
+                                            'quantity': quantity,
+                                            'productPrice': discountedPrice,
+                                            'discount': discount,
+                                            'originalPrice': originalPrice,
+                                          }
+                                        },
+                                      );
+                                    } else {
+                                      setState(() {
+                                        onEdit = true;
+                                      });
+                                    }
+                                  }
+                                : null,
+                            color: onOrderStage ? kRedColor : Colors.grey,
+                            icon: !onEdit ? Icons.edit : Icons.done,
+                          ),
+                          Text(
+                            '${widget.product.unitPrice}$bdtSign/unit',
+                            style: kSansTextStyleSmallBlack,
+                          ),
+                        ],
                       ),
                       CylindricalButton(
                         deleteColor: onOrderStage ? kRedColor : Colors.grey,
@@ -255,6 +294,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ? () {
                                 setState(() {
                                   ++quantity;
+                                  num originalUnitPrice = widget.product.originalPrice / widget.product.quantity;
+                                  num discountAmount = widget.product.discount / widget.product.quantity;
+                                  originalPrice += originalUnitPrice;
+                                  discountedPrice += widget.product.unitPrice;
+                                  discount += discountAmount;
                                 });
                               }
                             : null,
@@ -262,6 +306,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ? () {
                                 setState(() {
                                   --quantity;
+                                  num originalUnitPrice = widget.product.originalPrice / widget.product.quantity;
+                                  num discountAmount = widget.product.discount / widget.product.quantity;
+                                  originalPrice -= originalUnitPrice;
+                                  discountedPrice -= widget.product.unitPrice;
+                                  discount -= discountAmount;
                                 });
                               }
                             : null,
@@ -289,7 +338,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                   //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${widget.product.originalPrice}$bdtSign',
+                      '$originalPrice$bdtSign',
                       style: const TextStyle(
                         color: kBlackColor,
                         fontFamily: 'SourceSans',
@@ -302,7 +351,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       width: 10.0,
                     ),
                     Text(
-                      '${widget.product.productPrice}$bdtSign',
+                      '$discountedPrice$bdtSign',
                       style: kSansTextStyleBigBlack,
                     ),
                   ],

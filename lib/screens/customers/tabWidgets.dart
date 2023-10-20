@@ -17,6 +17,7 @@ import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/orders/order_products.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
+import 'package:viraeshop_api/apiCalls/orders.dart';
 import 'package:viraeshop_api/models/items/items.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
 import 'package:viraeshop_api/utils/utils.dart';
@@ -539,120 +540,128 @@ class _OrdersTabState extends State<OrdersTab> {
   Widget build(BuildContext context) {
     return BlocConsumer<OrdersBloc, OrderState>(
         buildWhen: (prevState, currentState) {
-      if (currentState is FetchedOrdersState) {
-        return true;
-      } else if (currentState is OnErrorOrderState && !onUpdate) {
-        return true;
-      } else if (currentState is LoadingOrderState && !onUpdate) {
-        return true;
-      } else {
-        return false;
-      }
-    }, listenWhen: (prevState, state) {
-      if (state is OnErrorOrderState && onUpdate) {
-        return true;
-      } else {
-        return false;
-      }
-    }, listener: (context, state) {
-      if (state is OnErrorOrderState) {
-        setState(() {
-          onError = true;
-          isLoading = false;
-          errorMessage = state.message;
-        });
-      }
-      // } else if (state is FetchedOrdersState) {
-      //   setState(() {
-      //     isLoading = false;
-      //     orders.addAll(state.orderList);
-      //   });
-      // }
-    }, builder: (context, state) {
-      if (state is FetchedOrdersState) {
-        if (onUpdate) {
-          if (state.orderList.isNotEmpty) {
-            orders.addAll(state.orderList.toList());
+          if (currentState is FetchedOrdersState) {
+            return true;
+          } else if (currentState is OnErrorOrderState && !onUpdate) {
+            return true;
+          } else if (currentState is LoadingOrderState && !onUpdate) {
+            return true;
           } else {
-            isProductEnd = true;
+            return false;
           }
-          isLoading = false;
-          onUpdate = false;
-        } else {
-          orders = state.orderList.toList();
-        }
-        return ListView.builder(
-          itemCount: onUpdate ? orders.length + 1 : orders.length,
-          shrinkWrap: true,
-          controller: _scrollController,
-          itemBuilder: (BuildContext context, int i) {
-            OrderStages currentStage =
-                Provider.of<OrderProvider>(context, listen: false).currentStage;
-            List<Items> items = orders[i].items;
-            String description = '';
-            for (var element in items) {
-              description += '${element.quantity}x ${element.productName} ';
+        },
+        listenWhen: (prevState, state) {
+          if (state is OnErrorOrderState && onUpdate) {
+            return true;
+          } else {
+            return false;
+          }
+        },
+        listener: (context, state) {
+          if (state is OnErrorOrderState) {
+            setState(() {
+              onError = true;
+              isLoading = false;
+              errorMessage = state.message;
+            });
+          }
+          // } else if (state is FetchedOrdersState) {
+          //   setState(() {
+          //     isLoading = false;
+          //     orders.addAll(state.orderList);
+          //   });
+          // }
+        },
+        builder: (context, state) {
+          if (state is FetchedOrdersState) {
+            if (onUpdate) {
+              if (state.orderList.isNotEmpty) {
+                orders.addAll(state.orderList.toList());
+              } else {
+                isProductEnd = true;
+              }
+              isLoading = false;
+              onUpdate = false;
+            } else {
+              orders = state.orderList.toList();
             }
-            Timestamp timestamp = dateFromJson(orders[i].createdAt);
-            String date = DateFormat.yMMMd().format(timestamp.toDate());
-            if (onUpdate && i == orders.length) {
-              return const FetchingMoreLoadingIndicator();
-            }
-            return OrderTranzCard(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return OrderProducts(
-                        customerInfo: orders[i].customer.toJson(),
-                        orderInfo: orders[i].toJson(),
-                        onGetAdmins: currentStage == OrderStages.processing,
-                      );
-                    },
-                  ),
+            return ListView.builder(
+              itemCount: onUpdate ? orders.length + 1 : orders.length,
+              shrinkWrap: true,
+              controller: _scrollController,
+              itemBuilder: (BuildContext context, int i) {
+                OrderStages currentStage =
+                    Provider.of<OrderProvider>(context, listen: false)
+                        .currentStage;
+                List<Items> items = orders[i].items;
+                String description = '';
+                for (var element in items) {
+                  description += '${element.quantity}x ${element.productName} ';
+                }
+                Timestamp timestamp = dateFromJson(orders[i].createdAt);
+                String date = DateFormat.yMMMd().format(timestamp.toDate());
+                if (onUpdate && i == orders.length) {
+                  return const FetchingMoreLoadingIndicator();
+                }
+                return OrderTranzCard(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return OrderProducts(
+                            userId: widget.userId,
+                            customerInfo: orders[i].customer.toJson(),
+                            orderInfo: orders[i].toJson(),
+                            onGetAdmins: currentStage == OrderStages.processing,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  date: date,
+                  price: orders[i].price.toString(),
+                  employeeName: 'Riyadh',
+                  customerName: orders[i].customer.name,
+                  isTransaction: false,
+                  desc: description,
+                  id: orders[i].orderId,
+                  status: orders[i].delayDelivery &&
+                          currentStage == OrderStages.delivery
+                      ? Icons.pending
+                      : orders[i].onDelivery &&
+                              currentStage == OrderStages.delivery
+                          ? Icons.local_shipping
+                          : null,
+                  statusColor: orders[i].delayDelivery &&
+                          currentStage == OrderStages.delivery
+                      ? kRedColor
+                      : orders[i].onDelivery &&
+                              currentStage == OrderStages.delivery
+                          ? kNewBrownColor
+                          : null,
                 );
               },
-              date: date,
-              price: orders[i].price.toString(),
-              employeeName: 'Riyadh',
-              customerName: orders[i].customer.name,
-              isTransaction: false,
-              desc: description,
-              id: orders[i].orderId,
-              status: orders[i].delayDelivery &&
-                      currentStage == OrderStages.delivery
-                  ? Icons.pending
-                  : orders[i].onDelivery && currentStage == OrderStages.delivery
-                      ? Icons.local_shipping
-                      : null,
-              statusColor: orders[i].delayDelivery &&
-                      currentStage == OrderStages.delivery
-                  ? kRedColor
-                  : orders[i].onDelivery && currentStage == OrderStages.delivery
-                      ? kNewBrownColor
-                      : null,
             );
-          },
-        );
-      } else if (state is OnErrorOrderState) {
-        return OnErrorWidget(
-          onRefresh: () {
-            Map<String, dynamic> filterInfo =
-                Provider.of<OrderProvider>(context, listen: false).filterInfo;
-            setState(() {
-              isLoading = true;
-            });
-            getOrders(
-              data: filterInfo,
-              context: context,
+          } else if (state is OnErrorOrderState) {
+            return OnErrorWidget(
+              onRefresh: () {
+                Map<String, dynamic> filterInfo =
+                    Provider.of<OrderProvider>(context, listen: false)
+                        .filterInfo;
+                setState(() {
+                  isLoading = true;
+                });
+                getOrders(
+                  data: filterInfo,
+                  context: context,
+                );
+              },
+              message: state.message,
             );
-          },
-          message: state.message,
-        );
-      }
-      return const LoadingWidget();
-    });
+          }
+          return const LoadingWidget();
+        });
   }
 }
 

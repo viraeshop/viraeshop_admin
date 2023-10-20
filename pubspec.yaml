@@ -60,19 +60,19 @@ dependencies:
   flutter_bloc: ^8.0.0
   blurry_modal_progress_hud: ^1.1.0
   viraeshop_api:
-#    git:
-#      url: https://github.com/viraeshop/viraeshop-api.git
-    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
+    git:
+      url: https://github.com/viraeshop/viraeshop-api.git
+#    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
   viraeshop:
-#    git:
-#      url: https://github.com/viraeshop/viraeshop-bloc.git
-    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc
+    git:
+      url: https://github.com/viraeshop/viraeshop-bloc.git
+#    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc
 dependency_overrides:
   xml: ^6.0.1
   firebase_core_platform_interface: ^4.5.1
   intl: ^0.17.0
-  viraeshop_api:
-    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
+#  viraeshop_api:
+#    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
 
 dev_dependencies:
   flutter_test:

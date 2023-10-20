@@ -325,7 +325,6 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                         Map<String, dynamic> orderInfo = {
                                           'orderStage': 'order',
                                           'notificationType': 'admin2Customer',
-                                          'seen': true,
                                           'orderStatus':
                                               buttonTitles[index].toLowerCase(),
                                           if (buttonTitles[index]

@@ -12,7 +12,6 @@ import 'package:viraeshop_admin/configs/share_invoice.dart';
 import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
 
 import '../components/ui_components/delete_popup.dart';
-import '../printer/printer.dart';
 import '../utils/network_utilities.dart';
 
 class ReceiptScreen extends StatefulWidget {

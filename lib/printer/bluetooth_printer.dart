@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:bluetooth_thermal_printer/bluetooth_thermal_printer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:esc_pos_utils/esc_pos_utils.dart';
+// import 'package:esc_pos_utils/esc_pos_utils.dart';
+import 'package:flutter_esc_pos_utils/flutter_esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -388,7 +388,7 @@ class _BluetoothPrinterState extends State<BluetoothPrinter> {
                       onTap: () {
                         setConnect(availableBluetoothDevices[index]);
                       },
-                      title: Text(availableBluetoothDevices[index].name),
+                      title: Text(availableBluetoothDevices[index].name ?? ''),
                       subtitle: Text(
                         // For now we will just use the variable 'connected'
                         // in other to change the status message

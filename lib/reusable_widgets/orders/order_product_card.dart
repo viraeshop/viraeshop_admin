@@ -27,10 +27,12 @@ class OrderProductCard extends StatefulWidget {
     required this.product,
     required this.index,
     required this.orderInfo,
+    required this.adminId,
     this.admins,
   }) : super(key: key);
 
   final String orderId;
+  final String adminId;
   final Items product;
   final List<AdminModel>? admins;
   final int index;
@@ -70,16 +72,16 @@ class _OrderProductCardState extends State<OrderProductCard> {
     }
     onOrderStage = currentStage == OrderStages.order;
     admins = widget.admins ?? [];
+    if ((!onOrderStage && currentStage != OrderStages.admin) &&
+        admins.isNotEmpty) {
+      dropdownValue = widget.adminId;
+    }
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {
         quantity = widget.product.quantity;
         originalPrice = widget.product.originalPrice;
         discountedPrice = widget.product.productPrice;
         discount = widget.product.discount;
-        if ((!onOrderStage && currentStage != OrderStages.admin) &&
-            admins.isNotEmpty) {
-          dropdownValue = admins[0].adminId;
-        }
       });
     });
     super.initState();
@@ -137,18 +139,31 @@ class _OrderProductCardState extends State<OrderProductCard> {
               orderUpdate(
                 context: context,
                 data: {
+                  /// All the "adminId" field in this class are not referring to
+                  /// super Admin, they are referring to employees
+                  /// which they can be replaceable at any moment
+                  /// work will be done later on employee replacement
                   'adminId': dropdownValue,
+                  //'replacedAdminId': widget.product.adminModel.adminId,
                   'notificationType': 'admin2Employee',
                 },
                 orderId: widget.orderId,
                 token: jWTToken,
               );
             }
-            if(currentStage == OrderStages.order){
-              num newQuantity  = (widget.orderInfo['quantity'] - widget.product.quantity) + quantity;
-              num newTotalPrice = (widget.orderInfo['totalPrice'] - widget.product.originalPrice) + originalPrice;
-              num newDiscount = (widget.orderInfo['discount'] - widget.product.discount) + discount;
-              num newSubTotal = (widget.orderInfo['subTotal'] - widget.product.productPrice) + discountedPrice;
+            if (currentStage == OrderStages.order) {
+              num newQuantity =
+                  (widget.orderInfo['quantity'] - widget.product.quantity) +
+                      quantity;
+              num newTotalPrice = (widget.orderInfo['totalPrice'] -
+                      widget.product.originalPrice) +
+                  originalPrice;
+              num newDiscount =
+                  (widget.orderInfo['discount'] - widget.product.discount) +
+                      discount;
+              num newSubTotal =
+                  (widget.orderInfo['subTotal'] - widget.product.productPrice) +
+                      discountedPrice;
 
               orderUpdate(
                 context: context,
@@ -168,10 +183,10 @@ class _OrderProductCardState extends State<OrderProductCard> {
               isLoading = false;
             });
             snackBar(
-                text: state.message,
-                context: context,
-                color: kRedColor,
-                duration: 500,
+              text: state.message,
+              context: context,
+              color: kRedColor,
+              duration: 500,
             );
           }
         }),
@@ -294,8 +309,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ? () {
                                 setState(() {
                                   ++quantity;
-                                  num originalUnitPrice = widget.product.originalPrice / widget.product.quantity;
-                                  num discountAmount = widget.product.discount / widget.product.quantity;
+                                  num originalUnitPrice =
+                                      widget.product.originalPrice /
+                                          widget.product.quantity;
+                                  num discountAmount = widget.product.discount /
+                                      widget.product.quantity;
                                   originalPrice += originalUnitPrice;
                                   discountedPrice += widget.product.unitPrice;
                                   discount += discountAmount;
@@ -306,8 +324,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ? () {
                                 setState(() {
                                   --quantity;
-                                  num originalUnitPrice = widget.product.originalPrice / widget.product.quantity;
-                                  num discountAmount = widget.product.discount / widget.product.quantity;
+                                  num originalUnitPrice =
+                                      widget.product.originalPrice /
+                                          widget.product.quantity;
+                                  num discountAmount = widget.product.discount /
+                                      widget.product.quantity;
                                   originalPrice -= originalUnitPrice;
                                   discountedPrice -= widget.product.unitPrice;
                                   discount -= discountAmount;
@@ -486,9 +507,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                               data: {
                                 'id': widget.product.id,
                                 'itemInfo': {
-                                  if ((provider.currentStage ==
-                                          OrderStages.processing) &&
-                                      status[statusIndex] == 'Sent')
+                                  if (provider.currentStage ==
+                                      OrderStages.processing)
                                     'adminId': dropdownValue,
                                   if (provider.currentStage ==
                                       OrderStages.receiving)
@@ -647,8 +667,8 @@ List<DropdownMenuItem<String>> generateItems(
 void productUpdate(
     {required BuildContext context, required Map<String, dynamic> data}) {
   final jWTToken = Hive.box('adminInfo').get('token');
-  final ordersBloc = BlocProvider.of<OrderItemsBloc>(context);
-  ordersBloc.add(
+  final ordersItemBloc = BlocProvider.of<OrderItemsBloc>(context);
+  ordersItemBloc.add(
     UpdateOrderItemEvent(
       orderModel: data,
       token: jWTToken,

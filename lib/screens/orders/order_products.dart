@@ -158,6 +158,7 @@ class _OrderProductsState extends State<OrderProducts> {
               listener: (context, state) {
                 if (state is FetchedAdminsState) {
                   setState(() {
+                    isLoading = false;
                     admins = state.adminList ?? [];
                   });
                 } else if (state is OnErrorSupplierState) {
@@ -184,12 +185,12 @@ class _OrderProductsState extends State<OrderProducts> {
                                           .toString(),
                                       orderInfo: widget.orderInfo,
                                       product: provider.orderProducts[i],
+                                      adminId: provider.orderProducts[i].adminModel.adminId,
                                       admins: provider.currentStage ==
                                               OrderStages.processing
                                           ? admins
                                           : [
-                                              provider
-                                                  .orderProducts[i].adminModel
+                                              provider.orderProducts[i].adminModel
                                             ],
                                       index: i,
                                     );

@@ -5,9 +5,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:tuple/tuple.dart';
-import 'package:viraeshop/transactions/transactions_bloc.dart';
-import 'package:viraeshop/transactions/transactions_event.dart';
-import 'package:viraeshop/transactions/transactions_state.dart';
+import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
+import 'package:viraeshop_bloc/transactions/transactions_event.dart';
+import 'package:viraeshop_bloc/transactions/transactions_state.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
@@ -24,12 +24,18 @@ import 'package:viraeshop_api/utils/utils.dart';
 import 'customer_transactions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 class UserTransactionScreen extends StatefulWidget {
   final String name;
   final String queryType;
   final String userID;
-  const UserTransactionScreen({Key? key, required this.name, required this.queryType, required this.userID}) : super(key: key);
+  final bool isFromEmployee;
+  const UserTransactionScreen(
+      {Key? key,
+        this.isFromEmployee = true,
+      required this.name,
+      required this.queryType,
+      required this.userID})
+      : super(key: key);
 
   @override
   _UserTransactionScreenState createState() => _UserTransactionScreenState();
@@ -64,21 +70,21 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
     if (value.isEmpty) {
       setState(
         () {
-          transactionData = backupTransactionData;
+          transactionData = backupTransactionData.toList();
         },
       );
     }
-      List items = backupTransactionData.where((element) {
-        final nameLower = element['name'].toLowerCase();
-        final businessNameLower = element['businessName'].toLowerCase();
-        final valueLower = value.toLowerCase();
-        return nameLower.contains(valueLower) || businessNameLower.contains(valueLower);
-      }).toList();
-      setState(() {
-        transactionData = items;
-      });
-    }
-
+    List items = backupTransactionData.where((element) {
+      final nameLower = element['name'].toLowerCase();
+      final businessNameLower = element['businessName'].toLowerCase();
+      final valueLower = value.toLowerCase();
+      return nameLower.contains(valueLower) ||
+          businessNameLower.contains(valueLower);
+    }).toList();
+    setState(() {
+      transactionData = items.toList();
+    });
+  }
 
   /// this is the list of customer id's used as keys of map
   bool showPaid = false;
@@ -87,22 +93,34 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return BlocListener<TransactionsBloc, TransactionState>(
-      listener: (context, state){
+      listenWhen: (prev, current){
+        if(prev is RequestFinishedTransactionState && current is OnErrorTransactionState){
+          return false;
+        } else{
+          return true;
+        }
+      },
+      listener: (context, state) {
         if (state is OnErrorTransactionState) {
           setState(() {
             isLoading = false;
           });
         } else if (state is RequestFinishedTransactionState) {
-          final data = state.response.result;
+          final Map<String, dynamic>? data = state.response.result;
+          if (kDebugMode) {
+            print(data);
+          }
           setState(() {
             isLoading = false;
-            totalBalance =
-                Tuple3(data!['totalPaid'] ?? 0, data['totalDue'] ?? 0, data['totalAmount'] ?? 0);
-            totalBalanceTemp = totalBalance;
-            transactionData = data['invoices'].toList();
-            backupTransactionData = data['invoices'].toList();
+            if(data!.isNotEmpty){
+              totalBalance = Tuple3(data['totalPaid'] ?? 0,
+                  data['totalDue'] ?? 0, data['totalAmount'] ?? 0);
+              totalBalanceTemp = totalBalance;
+              transactionData = data['invoices'].toList() ?? [];
+              backupTransactionData = data['invoices'].toList() ?? [];
+            }
           });
-        }else if (state is LoadingTransactionState){
+        } else if (state is LoadingTransactionState) {
           setState(() {
             isLoading = true;
           });
@@ -126,6 +144,14 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
             ),
             leading: IconButton(
               onPressed: () {
+                final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                transactionBloc.add(
+                  GetTransactionDetailsEvent(
+                    queryType: widget.isFromEmployee ? 'employees' : 'customers',
+                    isFilter: false,
+                    token: jWTToken,
+                  ),
+                );
                 Navigator.pop(context);
               },
               icon: const Icon(
@@ -140,7 +166,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                   setState(() {
                     isLoading = true;
                   });
-                  final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                  final transactionBloc =
+                      BlocProvider.of<TransactionsBloc>(context);
                   transactionBloc.add(
                     GetTransactionDetailsEvent(
                       queryType: widget.queryType,
@@ -222,23 +249,31 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                       setState(() {
                                         isLoading = true;
                                       });
-                                      final beginFormat = DateTime(begin.year, begin.month, begin.day);
-                                      final endFormat = DateTime(end.year, end.month, end.day);
-                                      if(beginFormat == endFormat){
+                                      final beginFormat = DateTime(
+                                          begin.year, begin.month, begin.day);
+                                      final endFormat = DateTime(
+                                          end.year, end.month, end.day);
+                                      if (beginFormat == endFormat) {
                                         int day = begin.day;
                                         int month = begin.month;
                                         int year = begin.year;
-                                        if(lastDayOfMonth(begin.day, begin.month) == LastDay.lastDay){
-                                          end = DateTime(begin.year, month++, 1);
-                                        }else if(lastDayOfMonth(begin.day, begin.month) == LastDay.endingYear){
+                                        if (lastDayOfMonth(
+                                                begin.day, begin.month) ==
+                                            LastDay.lastDay) {
+                                          end =
+                                              DateTime(begin.year, month++, 1);
+                                        } else if (lastDayOfMonth(
+                                                begin.day, begin.month) ==
+                                            LastDay.endingYear) {
                                           end = DateTime(year++, 1, 1);
-                                        }else{
-                                          begin = DateTime(begin.year, begin.month, day++);
+                                        } else {
+                                          begin = DateTime(
+                                              begin.year, begin.month, day++);
                                         }
                                       }
                                       final transactionBloc =
-                                      BlocProvider.of<TransactionsBloc>(
-                                          context);
+                                          BlocProvider.of<TransactionsBloc>(
+                                              context);
                                       transactionBloc.add(
                                         GetTransactionDetailsEvent(
                                           queryType: widget.queryType,
@@ -290,13 +325,16 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                               onSort: (i, value) {
                                 setState(() {
                                   showPaid = !showPaid;
-                                  if(showDue){
+                                  if (showDue) {
                                     showDue = false;
                                   }
                                   if (showPaid) {
-                                    transactionData = backupTransactionData.where((element) => element['totalPaid'] != 0).toList();
+                                    transactionData = backupTransactionData
+                                        .where((element) =>
+                                            element['totalPaid'] != 0)
+                                        .toList();
                                   } else {
-                                    transactionData = backupTransactionData;
+                                    transactionData = backupTransactionData.toList();
                                   }
                                 });
                               },
@@ -309,13 +347,16 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                               onSort: (i, value) {
                                 setState(() {
                                   showDue = !showDue;
-                                  if(showPaid){
+                                  if (showPaid) {
                                     showPaid = false;
                                   }
                                   if (showDue) {
-                                    transactionData = backupTransactionData.where((element) => element['totalDue'] != 0).toList();
+                                    transactionData = backupTransactionData
+                                        .where((element) =>
+                                            element['totalDue'] != 0)
+                                        .toList();
                                   } else {
-                                    transactionData = backupTransactionData;
+                                    transactionData = backupTransactionData.toList();
                                   }
                                 });
                               },
@@ -343,7 +384,10 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                 ),
                                 DataCell(
                                   Text(
-                                    transactionData[index]['businessName'] != '' ? transactionData[index]['businessName'] ?? '' : transactionData[index]['name'],
+                                    transactionData[index]['businessName'] !=
+                                                null && transactionData[index]['businessName'] != ''
+                                        ? transactionData[index]['businessName'] ?? ''
+                                        : transactionData[index]['name'] ?? '',
                                     style: kCustomerCellStyle,
                                   ),
                                   onTap: () {
@@ -352,9 +396,12 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                       MaterialPageRoute(
                                         builder: (context) {
                                           return CustomerTransactionScreen(
-
-                                              userID: transactionData[index]['customerId'],
-                                              name: transactionData[index]['businessName'] != '' ? transactionData[index]['businessName'] : transactionData[index]['name'],
+                                            userID: transactionData[index]
+                                                ['customerId'],
+                                            name: transactionData[index]['businessName'] !=
+                                                null && transactionData[index]['businessName'] != ''
+                                                ? transactionData[index]['businessName'] ?? ''
+                                                : transactionData[index]['name'] ?? '',
                                             queryType: widget.queryType,
                                             adminId: widget.userID,
                                           );
@@ -365,21 +412,24 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                 ),
                                 DataCell(
                                   Text(
-                                    transactionData[index]['totalPaid']?.toString() ??
+                                    transactionData[index]['totalPaid']
+                                            ?.toString() ??
                                         '0',
                                     style: kTotalTextStyle,
                                   ),
                                 ),
                                 DataCell(
                                   Text(
-                                    transactionData[index]['totalDue']?.toString() ??
+                                    transactionData[index]['totalDue']
+                                            ?.toString() ??
                                         '0',
                                     style: kDueCellStyle,
                                   ),
                                 ),
                                 DataCell(
                                   Text(
-                                    transactionData[index]['totalAmount']?.toString() ??
+                                    transactionData[index]['totalAmount']
+                                            ?.toString() ??
                                         '0',
                                     style: kTotalTextStyle,
                                   ),
@@ -447,7 +497,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                     begin: begin,
                                     end: end,
                                     name: widget.name ?? '',
-                                    totalAmount: totalBalanceTemp.item3.toString(),
+                                    totalAmount:
+                                        totalBalanceTemp.item3.toString(),
                                     totalDue: totalBalanceTemp.item2.toString(),
                                     totalPay: totalBalanceTemp.item1.toString(),
                                     isSave: true,
@@ -471,7 +522,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                   begin: begin,
                                   end: end,
                                   name: widget.name ?? '',
-                                  totalAmount: totalBalanceTemp.item3.toString(),
+                                  totalAmount:
+                                      totalBalanceTemp.item3.toString(),
                                   totalDue: totalBalanceTemp.item2.toString(),
                                   totalPay: totalBalanceTemp.item1.toString(),
                                 );
@@ -485,7 +537,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                     begin: begin,
                                     end: end,
                                     name: widget.name ?? '',
-                                    totalAmount: totalBalanceTemp.item3.toString(),
+                                    totalAmount:
+                                        totalBalanceTemp.item3.toString(),
                                     totalDue: totalBalanceTemp.item2.toString(),
                                     totalPay: totalBalanceTemp.item1.toString(),
                                     isPrint: true,
@@ -541,7 +594,7 @@ Tuple3<num, num, num> tuple(List items) {
   num sale = 0, due = 0, paid = 0;
   for (var element in items) {
     paid += element['paid'];
-    if(element['paid'] == 0){
+    if (element['paid'] == 0) {
       paid += element['advance'];
     }
     sale += element['price'];
@@ -565,7 +618,7 @@ Tuple3<num, num, num> dateTuple(List items, DateTime begin, DateTime end) {
             begin.isAtSameMomentAs(dateFormatted)) &&
         (end.isBefore(dateFormatted) || end.isAtSameMomentAs(dateFormatted))) {
       paid += element['paid'];
-      if(element['paid'] == 0 && element['advance'] != 0){
+      if (element['paid'] == 0 && element['advance'] != 0) {
         paid += element['advance'];
       }
       sale += element['price'];

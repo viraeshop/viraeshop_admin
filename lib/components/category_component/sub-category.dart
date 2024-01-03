@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop/category/category_bloc.dart';
-import 'package:viraeshop/category/category_state.dart';
+import 'package:viraeshop_bloc/category/category_bloc.dart';
+import 'package:viraeshop_bloc/category/category_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../screens/products/add_category.dart';

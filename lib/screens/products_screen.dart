@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:tuple/tuple.dart';
-import 'package:viraeshop/products/barrel.dart';
+import 'package:viraeshop_bloc/products/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
@@ -30,7 +30,11 @@ class _ProductsState extends State<Products> {
   void initState() {
     // TODO: implement initState
     final productBloc = BlocProvider.of<ProductsBloc>(context);
-    productBloc.add(GetProductsEvent());
+    productBloc.add(GetProductsEvent(
+        queryParameters: const {
+          'queryType': 'admin',
+        },
+    ));
     super.initState();
   }
 

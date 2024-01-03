@@ -4,15 +4,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop/return/return_event.dart';
-import 'package:viraeshop/return/return_state.dart';
+import 'package:viraeshop_bloc/return/return_event.dart';
+import 'package:viraeshop_bloc/return/return_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop/return/return_bloc.dart';
+import 'package:viraeshop_bloc/return/return_bloc.dart';
 import 'package:viraeshop_api/models/return/return.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 

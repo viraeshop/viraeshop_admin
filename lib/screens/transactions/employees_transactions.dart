@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/transactions/barrel.dart';
-import 'package:viraeshop/transactions/transactions_bloc.dart';
-import 'package:viraeshop/transactions/transactions_event.dart';
+import 'package:viraeshop_bloc/transactions/barrel.dart';
+import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
+import 'package:viraeshop_bloc/transactions/transactions_event.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
@@ -73,14 +74,16 @@ class _EmployeesState extends State<Employees> {
   Widget build(BuildContext context) {
     return BlocListener<TransactionsBloc, TransactionState>(
       listener: (context, state) {
-        print(state);
+        if (kDebugMode) {
+          print(state);
+        }
         if (state is OnErrorTransactionState) {
           setState(() {
             isLoading = false;
             message = state.message;
           });
         } else if (state is RequestFinishedTransactionState) {
-          final data = state.response.result ?? {};
+          final Map<String, dynamic> data = state.response.result ?? {};
           final invoices = data['details'] ?? [];
           setState(() {
             isLoading = false;
@@ -171,13 +174,13 @@ class _EmployeesState extends State<Employees> {
                                 textWidget: rowWidget(
                                     transactionData[i]['totalSales'].toString(),
                                     transactionData[i]['totalDue'].toString()),
-                                title: transactionData[i]['name'],
+                                title: transactionData[i]['adminInfo.name'],
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) {
                                       return UserTransactionScreen(
-                                        name: transactionData[i]['name'],
+                                        name: transactionData[i]['adminInfo.name'],
                                         userID: transactionData[i]['adminId'],
                                         queryType: 'adminInvoices',
                                       );

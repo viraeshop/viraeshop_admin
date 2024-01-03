@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/transactions/barrel.dart';
+import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
@@ -80,13 +80,15 @@ class _GroupTransactionsState extends State<GroupTransactions> {
           final data = state.response.result;
           setState(() {
             isLoading = false;
-            totalBalance =
-                Tuple2(data!['totalSales'] ?? 0, data['totalDue'] ?? 0);
-            totalBalanceTemp = totalBalance;
-            transactionData = data['details'].where((element){
-              String role = element['role'] ?? '';
-              return role.isNotEmpty;
-            }).toList();
+            if(data!.isNotEmpty){
+              totalBalance =
+                  Tuple2(data['totalSales'] ?? 0, data['totalDue'] ?? 0);
+              totalBalanceTemp = totalBalance;
+              transactionData = data['details'].where((element){
+                String role = element['role'] ?? '';
+                return role.isNotEmpty;
+              }).toList();
+            }
           });
         }
       },
@@ -167,6 +169,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
                                 return UserTransactionScreen(
                                   userID: transactionData[i]['role'],
                                   queryType: 'roleInvoices',
+                                  isFromEmployee: false,
                                   name: transactionData[i]['role'].toUpperCase(),
                                 );
                               }),

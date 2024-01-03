@@ -9,8 +9,8 @@
 // import 'package:random_string/random_string.dart';
 // import 'package:tuple/tuple.dart';
 // import 'package:url_launcher/url_launcher.dart';
-// import 'package:viraeshop/orders/barrel.dart';
-// import 'package:viraeshop/transactions/barrel.dart';
+// import 'package:viraeshop_bloc/orders/barrel.dart';
+// import 'package:viraeshop_bloc/transactions/barrel.dart';
 //
 // import 'package:viraeshop_admin/components/styles/colors.dart';
 // import 'package:viraeshop_admin/components/styles/text_styles.dart';

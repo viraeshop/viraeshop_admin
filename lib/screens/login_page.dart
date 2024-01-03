@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/admin/admin_bloc.dart';
-import 'package:viraeshop/admin/admin_event.dart';
-import 'package:viraeshop/admin/admin_state.dart';
+import 'package:viraeshop_bloc/admin/admin_bloc.dart';
+import 'package:viraeshop_bloc/admin/admin_event.dart';
+import 'package:viraeshop_bloc/admin/admin_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/decoration.dart';
@@ -168,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                                 email: _emailController.text,
                                 password: _passwordController.text,
                               );
-                              token = await _userCredential.user!.getIdToken();
+                              token = (await _userCredential.user!.getIdToken())!;
                               adminBloc.add(GetAdminEvent(
                                   adminId: _userCredential.user!.uid,
                                   token: token));

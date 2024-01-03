@@ -10,10 +10,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:tuple/tuple.dart';
-import 'package:viraeshop/supplier_invoice/supplier_invoice_event.dart';
-import 'package:viraeshop/supplier_invoice/supplier_invoice_state.dart';
-import 'package:viraeshop/suppliers/suppliers_bloc.dart';
-import 'package:viraeshop/suppliers/suppliers_event.dart';
+import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_event.dart';
+import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_state.dart';
+import 'package:viraeshop_bloc/suppliers/suppliers_bloc.dart';
+import 'package:viraeshop_bloc/suppliers/suppliers_event.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
@@ -26,7 +26,7 @@ import '../components/styles/text_styles.dart';
 import '../configs/configs.dart';
 import 'transactions/non_inventory_transaction_info.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop/supplier_invoice/supplier_invoice_bloc.dart';
+import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_bloc.dart';
 
 class SupplierPay extends StatefulWidget {
   const SupplierPay({Key? key}) : super(key: key);

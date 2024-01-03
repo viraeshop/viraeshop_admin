@@ -1,7 +1,7 @@
 name: viraeshop_admin
 description: Admin IOS and Android App for Viraeshop
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.2.5+49
+version: 1.2.5+54
 environment:
   sdk: ">=2.12.0 <3.3.10"
 dependencies:
@@ -18,7 +18,7 @@ dependencies:
   shared_preferences: ^2.0.7
   intl:
   jiffy:
-  cached_network_image: ^3.1.0
+  cached_network_image: ^3.2.3
   provider: ^6.0.1
   responsive_framework: ^0.2.0
   flutter_progress_hud: ^2.0.0
@@ -29,8 +29,8 @@ dependencies:
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   numeric_keyboard: ^1.1.0
-  syncfusion_flutter_pdf: ^20.4.51
-  syncfusion_flutter_charts: ^20.4.51
+  syncfusion_flutter_pdf: ^23.1.44
+  syncfusion_flutter_charts: ^23.1.44
   currency_text_input_formatter: ^2.1.5
   url_launcher: ^6.0.17
 #  esc_pos_printer: ^4.1.0
@@ -65,7 +65,7 @@ dependencies:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-api.git
     path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
-  viraeshop:
+  viraeshop_bloc:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-bloc.git
     path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc

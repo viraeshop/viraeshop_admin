@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/return/return_event.dart';
-import 'package:viraeshop/return/return_state.dart';
+import 'package:viraeshop_bloc/return/return_event.dart';
+import 'package:viraeshop_bloc/return/return_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -18,7 +18,7 @@ import '../configs/configs.dart';
 import 'customers/preferences.dart';
 import 'supplier/shops.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop/return/return_bloc.dart';
+import 'package:viraeshop_bloc/return/return_bloc.dart';
 
 
 class ReturnProduct extends StatefulWidget {

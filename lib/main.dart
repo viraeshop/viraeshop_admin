@@ -13,19 +13,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:viraeshop/admin/admin_bloc.dart';
-import 'package:viraeshop/adverts/adverts_bloc.dart';
-import 'package:viraeshop/category/category_bloc.dart';
-import 'package:viraeshop/customers/barrel.dart';
-import 'package:viraeshop/expense/expense_bloc.dart';
-import 'package:viraeshop/items/barrel.dart';
-import 'package:viraeshop/orders/barrel.dart';
-import 'package:viraeshop/products/barrel.dart';
-import 'package:viraeshop/return/return_bloc.dart';
-import 'package:viraeshop/shops/barrel.dart';
-import 'package:viraeshop/supplier_invoice/supplier_invoice_bloc.dart';
-import 'package:viraeshop/suppliers/barrel.dart';
-import 'package:viraeshop/transactions/barrel.dart';
+import 'package:viraeshop_bloc/admin/admin_bloc.dart';
+import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
+import 'package:viraeshop_bloc/category/category_bloc.dart';
+import 'package:viraeshop_bloc/customers/barrel.dart';
+import 'package:viraeshop_bloc/expense/expense_bloc.dart';
+import 'package:viraeshop_bloc/items/barrel.dart';
+import 'package:viraeshop_bloc/orders/barrel.dart';
+import 'package:viraeshop_bloc/products/barrel.dart';
+import 'package:viraeshop_bloc/return/return_bloc.dart';
+import 'package:viraeshop_bloc/shops/barrel.dart';
+import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_bloc.dart';
+import 'package:viraeshop_bloc/suppliers/barrel.dart';
+import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_admin/animation_testing.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
@@ -78,9 +78,9 @@ import 'screens/orders/order_configs.dart';
 import 'screens/transaction_screen.dart';
 import 'screens/transactions/user_transaction_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:viraeshop/notifications/notifications_bloc.dart';
+import 'package:viraeshop_bloc/notifications/notifications_bloc.dart';
 import 'package:viraeshop_api/apiCalls/notifications.dart';
-import 'package:viraeshop/tokens/tokens_bloc.dart';
+import 'package:viraeshop_bloc/tokens/tokens_bloc.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'apmplify_configs/amplifyconfiguration.dart';
@@ -226,17 +226,17 @@ void main() async {
         ),
         BlocProvider(
           create: (BuildContext context) => OrderItemsBloc(
-            orderCalls: OrderCalls(),
+            orderCalls: const OrderCalls(),
           ),
         ),
         BlocProvider(
           create: (BuildContext context) => OrdersBloc(
-            orderCalls: OrderCalls(),
+            orderCalls: const OrderCalls(),
           ),
         ),
         BlocProvider(
           create: (BuildContext context) => ProductsBloc(
-            productCalls: ProductCalls(),
+            productCalls: const ProductCalls(),
           ),
         ),
         BlocProvider(
@@ -251,7 +251,7 @@ void main() async {
         ),
         BlocProvider(
           create: (BuildContext context) => TransactionsBloc(
-            transactionCalls: TransactionCalls(),
+            transactionCalls: const TransactionCalls(),
           ),
         ),
         BlocProvider(

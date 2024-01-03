@@ -6,8 +6,8 @@ import 'package:hive/hive.dart';
 import 'package:blurry_modal_progress_hud/blurry_modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:viraeshop/items/barrel.dart';
-import 'package:viraeshop/orders/barrel.dart';
+import 'package:viraeshop_bloc/items/barrel.dart';
+import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
@@ -492,11 +492,22 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     }
                     return OrderChips(
                       title: provider.currentStage == OrderStages.receiving &&
-                              currentStatus.isNotEmpty
+                              currentStatus.isNotEmpty || provider.currentStage == OrderStages.processing &&
+                          currentStatus.isNotEmpty
                           ? currentStatus.capitalize()
                           : status[statusIndex],
-                      onTap: () {
-                        if (currentStatus.isEmpty) {
+                      onTap: onStatusChange() ? () {
+                        setState(() {
+                          if(currentStage == OrderStages.receiving){
+                            if (status.length > counter) {
+                              if (statusIndex == counter) {
+                                statusIndex = 0;
+                              }else if (statusIndex < status.length) {
+                                statusIndex += 1;
+                              }
+                            }
+                          }
+                        });
                           if (status[statusIndex] != 'Pending' &&
                               status[statusIndex] != 'Success') {
                             setState(() {
@@ -510,6 +521,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                   if (provider.currentStage ==
                                       OrderStages.processing)
                                     'adminId': dropdownValue,
+                                    'processingStatus': 'pending',
                                   if (provider.currentStage ==
                                       OrderStages.receiving)
                                     'receiveStatus':
@@ -519,18 +531,18 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             );
                           }
                           setState(() {
-                            if (status.length > counter) {
-                              if (status.length - statusIndex == counter) {
-                                statusIndex = 0;
-                              } else if (statusIndex < status.length) {
-                                statusIndex += 1;
+                            if(currentStage == OrderStages.processing){
+                              if (status.length > counter) {
+                                if (statusIndex == counter) {
+                                  statusIndex = 0;
+                                }else if (statusIndex < status.length) {
+                                  statusIndex += 1;
+                                }
                               }
                             }
                           });
-                        }
-                      },
-                      isSelected: status[statusIndex] == 'Pending' &&
-                          currentStatus != 'confirmed',
+                      } : null,
+                      isSelected: onSelect(),
                     );
                   }),
               ],
@@ -542,6 +554,25 @@ class _OrderProductCardState extends State<OrderProductCard> {
         ),
       ),
     );
+  }
+  // This will change the button's color to green
+  bool onSelect (){
+    if(currentStage == OrderStages.processing){
+      return status[statusIndex] == 'Pending' ||
+          currentStatus == 'pending';
+    } else{
+     return status[statusIndex] == 'Pending' &&
+          currentStatus != 'confirmed';
+    }
+  }
+
+  // This will check if the status is not empty
+  bool onStatusChange (){
+    if(currentStage == OrderStages.receiving){
+      return currentStatus.isEmpty || currentStatus == 'failed';
+    } else {
+      return currentStatus.isEmpty;
+    }
   }
 }
 

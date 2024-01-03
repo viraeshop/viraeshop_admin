@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop/orders/orders_bloc.dart';
-import 'package:viraeshop/orders/orders_event.dart';
+import 'package:viraeshop_bloc/orders/orders_bloc.dart';
+import 'package:viraeshop_bloc/orders/orders_event.dart';
 
 void getOrders(
     {required Map<String, dynamic> data, required BuildContext context}) {

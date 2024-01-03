@@ -5,9 +5,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/transactions/barrel.dart';
-import 'package:viraeshop/transactions/transactions_bloc.dart';
-import 'package:viraeshop/transactions/transactions_event.dart';
+import 'package:viraeshop_bloc/transactions/barrel.dart';
+import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
+import 'package:viraeshop_bloc/transactions/transactions_event.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
@@ -722,9 +722,9 @@ class _DueReceiptState extends State<DueReceipt> {
                   Expanded(
                     flex: 1,
                     child: IconButton(
-                      onPressed: () {
+                      onPressed: () async {
                         try {
-                          shareInvoice(
+                          await shareInvoice(
                             isSave: true,
                             totalItems: items.length.toString(),
                             totalQuantity: quantity,
@@ -758,25 +758,29 @@ class _DueReceiptState extends State<DueReceipt> {
                   Expanded(
                     flex: 1,
                     child: IconButton(
-                      onPressed: () {
-                        shareInvoice(
-                          totalItems: items.length.toString(),
-                          totalQuantity: quantity,
-                          subTotal: subTotal.toString(),
-                          items: items,
-                          mobile: widget.data['customerInfo']['mobile'],
-                          address: widget.data['customerInfo']['address'],
-                          name: role == 'general'
-                              ? widget.data['customerInfo']['name']
-                              : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
-                          advance: widget.data['advance'].toString(),
-                          due: due.toString(),
-                          paid: paid.toString(),
-                          discountAmount: discount.toString(),
-                          invoiceId: widget.data['invoiceNo'],
-                          date: DateFormat.yMMMd().format(date),
-                          payList: payList,
-                        );
+                      onPressed: () async{
+                        try{
+                          await shareInvoice(
+                            totalItems: items.length.toString(),
+                            totalQuantity: quantity,
+                            subTotal: subTotal.toString(),
+                            items: items,
+                            mobile: widget.data['customerInfo']['mobile'],
+                            address: widget.data['customerInfo']['address'],
+                            name: role == 'general'
+                                ? widget.data['customerInfo']['name']
+                                : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
+                            advance: widget.data['advance'].toString(),
+                            due: due.toString(),
+                            paid: paid.toString(),
+                            discountAmount: discount.toString(),
+                            invoiceId: widget.data['invoiceNo'],
+                            date: DateFormat.yMMMd().format(date),
+                            payList: payList,
+                          );
+                        } catch (e){
+                          debugPrint(e.toString());
+                        }
                       },
                       icon: const Icon(Icons.share),
                       color: Colors.white,

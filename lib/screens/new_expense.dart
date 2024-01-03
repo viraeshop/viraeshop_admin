@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:viraeshop/expense/expense_event.dart';
-import 'package:viraeshop/expense/expense_state.dart';
+import 'package:viraeshop_bloc/expense/expense_event.dart';
+import 'package:viraeshop_bloc/expense/expense_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -18,7 +18,7 @@ import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop/expense/expense_bloc.dart';
+import 'package:viraeshop_bloc/expense/expense_bloc.dart';
 
 class NewExpense extends StatefulWidget {
   const NewExpense({Key? key}) : super(key: key);

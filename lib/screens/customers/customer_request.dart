@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop/customers/barrel.dart';
+import 'package:viraeshop_bloc/customers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
@@ -12,7 +12,7 @@ import 'package:viraeshop_admin/screens/customers/new_customer_info.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop/customers/customers_bloc.dart';
+import 'package:viraeshop_bloc/customers/customers_bloc.dart';
 
 class CustomerRequests extends StatefulWidget {
   const CustomerRequests({Key? key}) : super(key: key);

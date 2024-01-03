@@ -7,8 +7,9 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:tuple/tuple.dart';
-import 'package:viraeshop/expense/expense_state.dart';
-import 'package:viraeshop/transactions/barrel.dart';
+import 'package:viraeshop_admin/configs/boxes.dart';
+import 'package:viraeshop_bloc/expense/expense_state.dart';
+import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/transactions/employees_transactions.dart';
@@ -272,7 +273,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
                                 //   text: 'Transactions',
                                 //   textStyle: kTotalSalesStyle,
                                 // ),
-                                legend: Legend(
+                                legend: const Legend(
                                   textStyle: kTotalTextStyle,
                                   isVisible: true,
                                   iconHeight: 20.0,
@@ -683,8 +684,8 @@ class InfoWidget extends StatelessWidget {
   final Widget textWidget;
   final String title;
   final void Function() onTap;
-  InfoWidget(
-      {required this.textWidget, required this.title, required this.onTap});
+  const InfoWidget(
+      {Key? key, required this.textWidget, required this.title, required this.onTap}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
@@ -763,9 +764,11 @@ Widget specialText(String title, value) {
         '$value BDT',
         style: kTotalSalesStyle,
       ),
-      Text(
-        'Total $title',
-        style: kTotalTextStyle,
+      Expanded(
+        child: Text(
+          'Total $title',
+          style: kTotalTextStyle,
+        ),
       ),
     ],
   );
@@ -776,12 +779,12 @@ class SpecialContainer extends StatelessWidget {
   final String title;
   final Color color;
   final double height, width;
-  SpecialContainer(
-      {required this.value,
+  const SpecialContainer(
+      {Key? key, required this.value,
       required this.title,
       required this.color,
       this.height: 130.0,
-      this.width: 100.0});
+      this.width: 100.0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -802,9 +805,11 @@ class SpecialContainer extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text(
-            '$value BDT',
-            style: kTotalSalesStyle,
+          Expanded(
+            child: Text(
+              '$bdtSign$value',
+              style: kTotalSalesStyle,
+            ),
           ),
           const SizedBox(
             height: 20.0,

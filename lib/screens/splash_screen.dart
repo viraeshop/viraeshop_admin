@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop/category/category_bloc.dart';
-import 'package:viraeshop/category/category_event.dart';
-import 'package:viraeshop/category/category_state.dart';
-import 'package:viraeshop/products/barrel.dart';
+import 'package:viraeshop_bloc/category/category_bloc.dart';
+import 'package:viraeshop_bloc/category/category_event.dart';
+import 'package:viraeshop_bloc/category/category_state.dart';
+import 'package:viraeshop_bloc/products/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: MultiBlocListener(
         listeners: [
           BlocListener<CategoryBloc, CategoryState>(
-            listener: (context, state) {
+            listener: (BuildContext blocContext, state) {
               final productBloc = BlocProvider.of<ProductsBloc>(context);
               if (state is FetchedCategoryState) {
                 debugPrint('Fetched and getting ready');
@@ -60,7 +60,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 setState(() {
                   isIndicator = true;
                 });
-                productBloc.add(GetProductsEvent());
+                productBloc.add(GetProductsEvent(
+                  queryParameters: {
+                    'queryType': 'admin',
+                  }
+                ));
               } else if (state is OnErrorCategoryState) {
                 debugPrint('Error on Category: ${state.message}');
                 setState(() {

@@ -323,7 +323,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                           margin: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
                             color: kNewYellowColor,
-                            image: imageBG(imageBytes, imagePath),
+                            image: imageBG(imagePath: imagePath),
                             borderRadius: BorderRadius.circular(10.0),
                           ),
                           child: Center(

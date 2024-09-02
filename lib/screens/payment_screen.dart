@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -261,6 +260,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       if (customerRole == 'agents' && widget.paid == 0) {
                         num wallet = customerBox.get('wallet', defaultValue: 0);
                         num balanceToPay = totalPrice - discount;
+                        print(wallet);
                         if (wallet >= balanceToPay) {
                           num balance = wallet - balanceToPay;
                           customerBox.put('wallet', balance);
@@ -276,11 +276,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             title:
                                 'Sorry customer has insufficient balance in his account',
                           );
+                          setState(() {
+                            isLoading = false;
+                          });
                         }
                       } else {
                         transacBloc.add(
                           AddTransactionEvent(
-                              token: jWTToken, transactionModel: transInfo),
+                            token: jWTToken,
+                            transactionModel: transInfo,
+                          ),
                         );
                       }
                     },

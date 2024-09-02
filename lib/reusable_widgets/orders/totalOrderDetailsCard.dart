@@ -25,7 +25,7 @@ class TotalOrderDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 230.0,
+      height: 240.0,
       width: double.infinity,
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(

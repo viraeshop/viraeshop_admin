@@ -9,12 +9,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
-import 'package:viraeshop_bloc/adverts/adverts_event.dart';
 import 'package:viraeshop_bloc/category/category_bloc.dart';
 import 'package:viraeshop_bloc/category/category_event.dart';
 import 'package:viraeshop_bloc/products/barrel.dart';
-import 'package:viraeshop_bloc/products/products_bloc.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -41,11 +38,7 @@ import '../home_screen.dart';
 import '../image_carousel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-enum Events {
-  onUpdate,
-  onDelete,
-  onCreate
-}
+enum Events { onUpdate, onDelete, onCreate }
 
 class NewProduct extends StatefulWidget {
   static String path = 'newProductPath';
@@ -111,7 +104,6 @@ class _NewProductState extends State<NewProduct>
   final TextEditingController _minimumController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _subCategoryController = TextEditingController();
-  final TextEditingController _adsController = TextEditingController();
   final TextEditingController _generalController = TextEditingController();
   final TextEditingController _agentController = TextEditingController();
   final TextEditingController _architectController = TextEditingController();
@@ -127,9 +119,6 @@ class _NewProductState extends State<NewProduct>
       text: 'Stock',
     ),
   ];
-  List adverts = [];
-  List existingAdverts = [];
-  List deletedAdverts = [];
   Map<String, dynamic> fields = {};
   bool onDelete = false;
   final jWTToken = Hive.box('adminInfo').get('token');
@@ -174,13 +163,11 @@ class _NewProductState extends State<NewProduct>
         'categoryId': widget.info['categoryId'] ?? '',
       });
       Hive.box('images').put('productImages', widget.info['images'] ?? []);
-      Hive.box('suppliers').putAll(widget.info['supplier']);
-      SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-        Provider.of<GeneralProvider>(context, listen: false)
-            .updateAdList(widget.info['adverts'] ?? []);
-        Provider.of<GeneralProvider>(context, listen: false)
-            .updateExistingAdverts(widget.info['adverts'] ?? []);
+      Hive.box('images').put('thumbnailImage', {
+        'thumbnailLink': widget.info['thumbnail'] ?? '',
+        'thumbnailKey': widget.info['thumbnailKey'] ?? '',
       });
+      Hive.box('suppliers').putAll(widget.info['supplier']);
     }
     super.initState();
   }
@@ -193,20 +180,23 @@ class _NewProductState extends State<NewProduct>
   }
 
   DecorationImage _imageBG() {
-    return images == null || images.isEmpty
+    return images.isEmpty
         ? const DecorationImage(
             image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
         : DecorationImage(image: MemoryImage(images[0]), fit: BoxFit.cover);
   }
 
-  Widget imageProduct(List urls) {
+  Widget imageProduct(List images, Map thumbnailImage) {
+    print(thumbnailImage);
     return InkWell(
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ImageCarousel(
             isUpdate: true,
-            images: urls,
+            images: images,
+            thumbnail: thumbnailImage['thumbnailLink'],
+            thumbnailKey: thumbnailImage['thumbnailKey'],
           ),
         ),
       ),
@@ -216,7 +206,8 @@ class _NewProductState extends State<NewProduct>
           height: 150.0,
           width: 150.0,
           fit: BoxFit.cover,
-          imageUrl: urls.isNotEmpty ? urls[0]['imageLink'] : '',
+          imageUrl:
+              thumbnailImage.isNotEmpty ? thumbnailImage['thumbnailLink'] : '',
           errorWidget: (context, url, childs) {
             return Image.asset(
               'assets/default.jpg',
@@ -266,14 +257,11 @@ class _NewProductState extends State<NewProduct>
                 Map supplier = Hive.box('suppliers').toMap();
                 fields['productId'] = widget.info['productId'];
                 fields['supplier'] = supplier;
-                fields['adverts'] = adverts;
                 fields['images'] += img;
                 products[i] = fields;
               }
             }
             Provider.of<GeneralProvider>(context, listen: false).clearLists();
-
-            ///todo: check here
           } else if (currentEvent == Events.onDelete) {
             for (int i = 0; i < products.length; i++) {
               if (widget.info['productId'] == products[i]['productId']) {
@@ -305,8 +293,18 @@ class _NewProductState extends State<NewProduct>
             length: _tabs.length,
             child: Scaffold(
               appBar: AppBar(
-                automaticallyImplyLeading: true,
-                iconTheme: const IconThemeData(color: kSelectedTileColor),
+                //automaticallyImplyLeading: true,
+                leading: IconButton(
+                  onPressed: () {
+                    Hive.box('images').clear();
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  color: kSubMainColor,
+                ),
+                iconTheme: const IconThemeData(
+                  color: kSelectedTileColor,
+                ),
                 elevation: 0.0,
                 backgroundColor: kBackgroundColor,
                 title: Text(
@@ -343,16 +341,20 @@ class _NewProductState extends State<NewProduct>
                                             Hive.box('images').get(
                                                 'productImages',
                                                 defaultValue: []);
+                                        print(productImageUrls);
                                         try {
-                                         if(productImageUrls.isNotEmpty){
-                                           await NetworkUtility
-                                               .deleteProductImages(
-                                               images: productImageUrls);
-                                         }
-                                          productBloc.add(DeleteProductEvent(
+                                          if (productImageUrls.isNotEmpty) {
+                                            await NetworkUtility
+                                                .deleteProductImages(
+                                                    images: productImageUrls);
+                                          }
+                                          productBloc.add(
+                                            DeleteProductEvent(
                                               token: jWTToken,
                                               productId:
-                                                  widget.info['productId']));
+                                                  widget.info['productId'],
+                                            ),
+                                          );
                                         } catch (e) {
                                           if (kDebugMode) {
                                             print(e);
@@ -360,12 +362,14 @@ class _NewProductState extends State<NewProduct>
                                           setState(() {
                                             loading = false;
                                           });
-                                          snackBar(
-                                            text: e.toString(),
-                                            context: context,
-                                            duration: 100,
-                                            color: kRedColor,
-                                          );
+                                          if (context.mounted) {
+                                            snackBar(
+                                              text: e.toString(),
+                                              context: context,
+                                              duration: 100,
+                                              color: kRedColor,
+                                            );
+                                          }
                                         }
                                       },
                                       child: const Text(
@@ -435,14 +439,14 @@ class _NewProductState extends State<NewProduct>
                   ValueListenableBuilder(
                       valueListenable: Hive.box('images').listenable(),
                       builder: (context, Box box, childs) {
-                        List imagesByte =
-                            box.get('imagesBytes', defaultValue: []);
                         List imagesPath =
                             box.get('imagesPath', defaultValue: []);
-                        if (widget.isUpdateProduct && imagesByte.isEmpty) {
-                          List images =
-                              box.get('productImages', defaultValue: []);
-                          return imageProduct(images);
+                        List images =
+                            box.get('productImages', defaultValue: []);
+                        Map thumbnailImage =
+                            box.get('thumbnailImage', defaultValue: {});
+                        if (widget.isUpdateProduct) {
+                          return imageProduct(images, thumbnailImage);
                         } else {
                           return SizedBox(
                             height: 100,
@@ -454,7 +458,17 @@ class _NewProductState extends State<NewProduct>
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => ImageCarousel(),
+                                          builder: (context) => ImageCarousel(
+                                            images: images,
+                                            thumbnail: thumbnailImage.isNotEmpty
+                                                ? thumbnailImage[
+                                                    'thumbnailLink']
+                                                : '',
+                                            thumbnailKey: thumbnailImage
+                                                    .isNotEmpty
+                                                ? thumbnailImage['thumbnailKey']
+                                                : '',
+                                          ),
                                         ),
                                       );
                                     },
@@ -464,45 +478,48 @@ class _NewProductState extends State<NewProduct>
                                 decoration: BoxDecoration(
                                   color: kProductCardColor,
                                   image: imageBG(
-                                    imagesByte.isEmpty
-                                        ? Uint8List(0)
-                                        : imagesByte[0],
-                                    imagesPath.isEmpty ? '' : imagesPath[0],
+                                    imagePath: thumbnailImage.isNotEmpty
+                                        ? thumbnailImage['thumbnailLink']
+                                        : '',
                                   ),
                                   borderRadius: BorderRadius.circular(10.0),
                                 ),
                                 child: Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: Container(
-                                      width: double.infinity,
-                                      decoration: const BoxDecoration(
-                                        color: kSubMainColor,
-                                        borderRadius: BorderRadius.only(
-                                            bottomLeft: Radius.circular(10),
-                                            bottomRight: Radius.circular(10)),
+                                  alignment: Alignment.bottomCenter,
+                                  child: Container(
+                                    width: double.infinity,
+                                    decoration: const BoxDecoration(
+                                      color: kSubMainColor,
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(10),
+                                        bottomRight: Radius.circular(10),
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: ListView(
-                                          shrinkWrap: true,
-                                          children: const [
-                                            Text('Upload Image',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                    color: kBackgroundColor,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
-                                            Text(
-                                              '+',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                color: kBackgroundColor,
-                                              ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: ListView(
+                                        shrinkWrap: true,
+                                        children: const [
+                                          Text(
+                                            'Upload Image',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                          Text(
+                                            '+',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: kBackgroundColor,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    )),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           );
@@ -797,38 +814,6 @@ class _NewProductState extends State<NewProduct>
                         // const SizedBox(
                         //   height: 10,
                         // ),
-                        Consumer<GeneralProvider>(
-                            builder: (context, provider, childs) {
-                          List advert =
-                              Set.from(provider.advertSelected).toList();
-                          if (kDebugMode) {
-                            print('Already advert: $advert');
-                          }
-                          adverts = advert;
-                          existingAdverts = provider.existingAdverts;
-                          deletedAdverts = provider.deletedAdverts;
-                          _adsController.clear();
-                          for (var element in adverts) {
-                            _adsController.text += '$element, ';
-                          }
-                          return TextFieldWidget(
-                            readOnly: true,
-                            controller: _adsController,
-                            labelText: 'Adverts',
-                            onTap: isProducts == false
-                                ? null
-                                : () {
-                                    _formKey.currentState!.validate();
-                                    final advertBloc =
-                                        BlocProvider.of<AdvertsBloc>(context);
-                                    advertBloc.add(GetAdvertsEvent());
-                                    getAdvertsDialog(
-                                      buildContext: context,
-                                      isUpdate: widget.isUpdateProduct,
-                                    );
-                                  },
-                          );
-                        }),
                         TextFieldWidget(
                           labelText: 'Cost',
                           controller: _costController,
@@ -1160,15 +1145,22 @@ class _NewProductState extends State<NewProduct>
                         if (isNotEmpty()) {
                           List imagesList =
                               Hive.box('images').get('productImages') ?? [];
+                          Map thumbnail = Hive.box('images')
+                              .get('thumbnailImage', defaultValue: {});
                           if (imagesList.isNotEmpty) {
                             List newList = [];
                             for (var image in imagesList) {
-                              newList.add({
-                                if (widget.isUpdateProduct)
-                                  'productId': widget.info['productId'],
-                                'imageLink': image['imageLink'],
-                                'imageKey': image['imageKey'],
-                              });
+                              if (widget.isUpdateProduct) {
+                                for (var existingImage
+                                    in widget.info['images']) {
+                                  if (image['imageKey'] !=
+                                      existingImage['imageKey']) {
+                                    newList.add(image);
+                                  }
+                                }
+                              } else {
+                                newList.add(image);
+                              }
                             }
                             imagesList = newList;
                           }
@@ -1184,42 +1176,6 @@ class _NewProductState extends State<NewProduct>
                             }
                             deletedImages = newList;
                           }
-                          List updatedAdverts = adverts.toList();
-                          if (kDebugMode) {
-                            print('AdvertsBeforeFilter: $adverts');
-                          }
-                          if (kDebugMode) {
-                            print(
-                                'UpdatedAdvertsBeforeFilter: $updatedAdverts');
-                          }
-                          if (widget.isUpdateProduct &&
-                              existingAdverts.isNotEmpty) {
-                            for (var advert in existingAdverts) {
-                              if (updatedAdverts.contains(advert)) {
-                                updatedAdverts.remove(advert);
-                              }
-                            }
-                          }
-                          if (updatedAdverts.isNotEmpty) {
-                            List newList = [];
-                            for (var advert in updatedAdverts) {
-                              if (kDebugMode) {
-                                print(advert);
-                              }
-                              newList.add({
-                                'advert': advert,
-                                if (widget.isUpdateProduct)
-                                  'productId': widget.info['productId'],
-                              });
-                            }
-                            updatedAdverts = newList;
-                          }
-                          if (kDebugMode) {
-                            print('AdvertsAfterFilter: $adverts');
-                          }
-                          if (kDebugMode) {
-                            print('UpdatedAdvertsAfterFilter: $updatedAdverts');
-                          }
                           Map supplier = Hive.box('suppliers').toMap();
                           setState(() {
                             fields = {
@@ -1230,11 +1186,17 @@ class _NewProductState extends State<NewProduct>
                               'sellBy': selectedSellBy,
                               'minimum': isInfinity
                                   ? 0
-                                  : num.tryParse(_minimumController.text),
+                                  : num.tryParse(
+                                      _minimumController.text.isNotEmpty
+                                          ? _minimumController.text
+                                          : '0'),
                               'name': _nameController.text,
                               'quantity': isInfinity
                                   ? 0
-                                  : num.parse(_quantityController.text),
+                                  : num.parse(
+                                      _quantityController.text.isNotEmpty
+                                          ? _quantityController.text
+                                          : '0'),
                               'costPrice': _costController.text,
                               'generalPrice': isGeneral
                                   ? num.parse(_generalController.text)
@@ -1265,12 +1227,12 @@ class _NewProductState extends State<NewProduct>
                               'topDiscount': topDiscount,
                               'freeShipping': freeShipping,
                               'comingSoon': comingSoon,
+                              'totalSales': 0,
                               'subCategory': _subCategoryController.text,
+                              'thumbnail': thumbnail['thumbnailLink'],
+                              'thumbnailKey': thumbnail['thumbnailKey'],
                               'subCategoryId':
                                   Hive.box('subCategory').get('subCategoryId'),
-                              'adverts': updatedAdverts,
-                              if (widget.isUpdateProduct)
-                                'deletedAdverts': deletedAdverts,
                               if (widget.isUpdateProduct)
                                 'deletedImages': deletedImages,
                             };

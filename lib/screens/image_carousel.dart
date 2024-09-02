@@ -23,7 +23,15 @@ import 'package:viraeshop_admin/utils/network_utilities.dart';
 class ImageCarousel extends StatefulWidget {
   final bool isUpdate;
   final List? images;
-  ImageCarousel({this.isUpdate = false, this.images});
+  final String thumbnail;
+  final String thumbnailKey;
+  const ImageCarousel(
+      {super.key,
+      this.isUpdate = false,
+      this.images,
+      required this.thumbnail,
+      required this.thumbnailKey,
+      });
 
   @override
   _ImageCarouselState createState() => _ImageCarouselState();
@@ -35,12 +43,18 @@ class _ImageCarouselState extends State<ImageCarousel> {
   List allImages = [];
   List deletedImages = [];
   bool loading = false;
+  String thumbnail = '';
+  String thumbnailKey = '';
+  PlatformFile? thumbnailFile;
   @override
   void initState() {
     // TODO: implement initState
     if (widget.isUpdate) {
       allImages = widget.images!.toList();
-      print(allImages);
+      print(allImages.length);
+      thumbnail = widget.thumbnail;
+      thumbnailKey = widget.thumbnailKey;
+      //print(allImages);
       //   this.productImage = widget.images!;
       //   print('Init State');
       // print('All Images: $allImages');
@@ -90,17 +104,13 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            allImages.isNotEmpty
+                            thumbnail.isNotEmpty || thumbnailFile != null
                                 ? ImageFromUpdate(
-                                    image: allImages[0] is Map<String, dynamic>
-                                        ? allImages[0]['imageLink']
-                                        : allImages[0] is String
-                                            ? allImages[0]
-                                            : '',
+                                    image: thumbnail.isNotEmpty &&
+                                            thumbnailFile == null
+                                        ? thumbnail
+                                        : thumbnailFile!.path!,
                                     isUpdate: widget.isUpdate,
-                                    imageBytes: allImages[0] is Uint8List
-                                        ? allImages[0]
-                                        : Uint8List(0),
                                   )
                                 : const Center(
                                     child: Icon(
@@ -109,26 +119,29 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                     ),
                                   ),
                             topCancelButton(onTap: () async {
-                              if (allImages[0] is Map<String, dynamic>) {
+                              if (thumbnail.contains('http')) {
                                 try {
                                   await NetworkUtility.deleteImage(
-                                      key: allImages[0]['imageKey']);
+                                    key: thumbnailKey,
+                                  );
+                                  setState(() {
+                                    thumbnail = '';
+                                    thumbnailKey = '';
+                                  });
                                 } on FirebaseException catch (e) {
                                   if (kDebugMode) {
                                     print(e);
                                   }
                                 }
-                              } else if (allImages[0] is String) {
-                                filesPath.removeWhere(
-                                    (key, value) => value == allImages[0]);
                               } else {
-                                imagesBytes.removeWhere(
-                                    (key, value) => value == allImages[0]);
+                                setState(() {
+                                  thumbnailFile = null;
+                                });
                               }
-                              setState(() {
-                                deletedImages.add(allImages[0]);
-                                allImages.removeAt(0);
-                              });
+                              // setState(() {
+                              //   deletedImages.add(allImages[0]);
+                              //   allImages.removeAt(0);
+                              // });
                             }),
                           ],
                         )),
@@ -145,7 +158,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           crossAxisSpacing: 10.0,
                           childAspectRatio: 1.0,
                         ),
-                        itemCount: allImages.length,
+                        itemCount: allImages.length + 1,
                         itemBuilder: (context, i) {
                           if (i == 0) {
                             return showImage(
@@ -162,10 +175,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           }
                           return Stack(fit: StackFit.expand, children: [
                             ImageFromUpdate(
-                              image: allImages[i] is Map<String, dynamic>
-                                  ? allImages[i]['imageLink']
-                                  : allImages[i] is String
-                                      ? allImages[i]
+                              image: allImages[i-1] is Map<String, dynamic>
+                                  ? allImages[i-1]['imageLink']
+                                  : allImages[i-1] is String
+                                      ? allImages[i-1]
                                       : '',
                               isUpdate: widget.isUpdate,
                             ),
@@ -173,26 +186,26 @@ class _ImageCarouselState extends State<ImageCarousel> {
                               if (kDebugMode) {
                                 print('initial List: $filesPath');
                               }
-                              if (allImages[i] is Map<String, dynamic>) {
+                              if (allImages[i-1] is Map<String, dynamic>) {
                                 try {
                                   await NetworkUtility.deleteImage(
-                                    key: allImages[i]['imageKey'],
+                                    key: allImages[i-1]['imageKey'],
                                   );
                                 } on FirebaseException catch (e) {
                                   if (kDebugMode) {
                                     print(e);
                                   }
                                 }
-                              } else if (allImages[i] is String) {
+                              } else if (allImages[i-1] is String) {
                                 filesPath.removeWhere(
-                                    (key, value) => value == allImages[i]);
+                                    (key, value) => value == allImages[i-1]);
                               } else {
                                 imagesBytes.removeWhere(
-                                    (key, value) => value == allImages[i]);
+                                    (key, value) => value == allImages[i-1]);
                               }
                               setState(() {
-                                deletedImages.add(allImages[i]);
-                                allImages.removeAt(i);
+                                deletedImages.add(allImages[i-1]);
+                                allImages.removeAt(i-1);
                               });
                               if (kDebugMode) {
                                 print('final List: $filesPath');
@@ -211,52 +224,46 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 child: sendButton(
                     title: 'Save',
                     onTap: () async {
+                      final imageBox = Hive.box('images');
                       List filesNames = filesPath.keys.toList();
                       List filesPaths = filesPath.values.toList();
-                      List productImage = [];
-                      // for (var image in allImages) {
-                      //   if (image is String) {
-                      //     if (image.contains('https')) {
-                      //       productImage.add(image);
-                      //     }
-                      //   }
-                      // }
-                      // print('Thumbnail: $filesPaths');
-                      // print('First Image: ${filesPath[filesNames[0]]}');
+                      List productImage = imageBox.get('productImages', defaultValue: []);
+                      Map<String, dynamic> thumbnailImage = {};
                       try {
                         setState(() {
                           loading = true;
                         });
-                        if (kIsWeb) {
-                          for (int i = 0; i < filesNames.length; i++) {
-                            String imageUrl = await AdminCrud().uploadWebImage(
-                                imagesBytes[filesNames[i]]!,
-                                filesNames[i],
-                                'product_images');
-                            productImage.add(imageUrl);
-                          }
-                        } else {
-                          for (int i = 0; i < filesNames.length; i++) {
-                            Map<String, dynamic> imageUrlData =
-                                await NetworkUtility.uploadImageFromNative(
-                              file: File(filesPath[filesNames[i]]),
-                              fileName: filesNames[i],
-                              folder: 'product_images',
-                            );
-                            print('imageUrl: $imageUrlData');
-                            productImage.add({
-                              'imageLink': imageUrlData['url'],
-                              'imageKey': imageUrlData['key'],
-                            });
-                          }
+                        if (thumbnailFile != null) {
+                          final imageUrlData =
+                              await NetworkUtility.uploadImageFromNative(
+                            file: File(thumbnailFile!.path!),
+                            fileName: thumbnailFile!.name,
+                            folder: 'product_images',
+                          );
+                          thumbnailImage = {
+                            'thumbnailLink': imageUrlData['url'],
+                            'thumbnailKey': imageUrlData['key'],
+                          };
                         }
-                        Hive.box('images')
-                            .put('imagesBytes', imagesBytes.values.toList());
-                        Hive.box('images').put('imagesPath', filesPaths);
-
-                        Hive.box('images').put('productImages', productImage);
-                        Hive.box('images')
-                            .put('deletedImages', deletedImages)
+                        for (int i = 0; i < filesNames.length; i++) {
+                          Map<String, dynamic> imageUrlData =
+                              await NetworkUtility.uploadImageFromNative(
+                            file: File(filesPath[filesNames[i]]),
+                            fileName: filesNames[i],
+                            folder: 'product_images',
+                          );
+                          if (kDebugMode) {
+                            print('imageUrl: $imageUrlData');
+                          }
+                          productImage.add({
+                            'imageLink': imageUrlData['url'],
+                            'imageKey': imageUrlData['key'],
+                          });
+                        }
+                        imageBox.put('imagesPath', filesPaths);
+                        imageBox.put('productImages', productImage);
+                        imageBox.put('thumbnailImage', thumbnailImage);
+                        imageBox.put('deletedImages', deletedImages)
                             .then((value) => Navigator.pop(context));
                         // if (kDebugMode) {
                         //   print(productImages);
@@ -288,64 +295,44 @@ class _ImageCarouselState extends State<ImageCarousel> {
       String? fileName = result.files.first.name;
 
       /// Replacing the first image
-      if (isFirst && allImages.isNotEmpty) {
+      if (isFirst && thumbnail.isNotEmpty) {
         try {
-          if (allImages[0] is Map<String, dynamic>) {
-            await NetworkUtility.deleteImage(key: allImages[0]['imageKey']);
-          }
+          await NetworkUtility.deleteImage(key: thumbnailKey);
         } on FirebaseException catch (e) {
-          snackBar(
-            text: e.message!,
-            context: context,
-            duration: 600,
-          );
+          if (context.mounted) {
+            snackBar(
+              text: e.message!,
+              context: context,
+              duration: 600,
+            );
+          }
           if (kDebugMode) {
             print(e.message);
           }
         }
       }
-
-      /// check if the running platform is web
-      if (kIsWeb) {
-        Uint8List imageBytes = result.files.first.bytes!;
-        setState(() {
-          if (isFirst) {
-            if (allImages.isNotEmpty) {
-              allImages[0] = imageBytes;
-            } else {
-              allImages.add(imageBytes);
-            }
-          } else {
-            allImages.add(imageBytes);
-          }
-          imagesBytes[fileName] = imageBytes;
-        });
-      } else {
-        String filePath = result.paths.first!;
-        setState(() {
-          if (isFirst) {
-            if (allImages.isNotEmpty) {
-              allImages[0] = filePath;
-            } else {
-              allImages.add(filePath);
-            }
-          } else {
-            allImages.add(filePath);
-          }
+      String filePath = result.paths.first!;
+      setState(() {
+        if (isFirst) {
+          thumbnailFile = result.files.first;
+        } else {
+          allImages.add(filePath);
           filesPath[fileName] = filePath;
-        });
+        }
+      });
+      if (kDebugMode) {
         print('total images: $filePath');
-        // print('Replaced: $isReplaced');
       }
     }
   }
 }
 
-Widget showImage(
-    {required void Function() onTap,
-    required Widget child,
-    double height = 100,
-    width}) {
+Widget showImage({
+  required void Function() onTap,
+  required Widget child,
+  double height = 100,
+  width,
+}) {
   return InkWell(
     onTap: onTap,
     child: Container(

@@ -50,12 +50,18 @@ class AppDrawer extends StatefulWidget {
   final bool isBigScreen;
   String totalMessages;
   String newOrders;
+  String processingOrdersCount;
+  String receivedOrdersCount;
+  String assignedProcessingOrderCount;
   AppDrawer({
     Key? key,
     this.info,
     required this.isBigScreen,
     required this.totalMessages,
     required this.newOrders,
+    required this.receivedOrdersCount,
+    required this.processingOrdersCount,
+    required this.assignedProcessingOrderCount,
   });
 
   @override
@@ -70,8 +76,8 @@ class _AppDrawerState extends State<AppDrawer> {
       isMakeAdmin = true,
       isManageDue = true;
   String name = '', email = '';
-  String newMessages = '';
-  String newOrders = '';
+  // String newMessages = '';
+  // String newOrders = '';
   @override
   void initState() {
     // TODO: implement initState
@@ -83,13 +89,14 @@ class _AppDrawerState extends State<AppDrawer> {
     isMakeAdmin = Hive.box('adminInfo').get('isMakeAdmin');
     isTransactions = Hive.box('adminInfo').get('isTransactions');
     isManageDue = Hive.box('adminInfo').get('isManageDue');
-    newMessages = widget.totalMessages;
-    newOrders = widget.newOrders;
+    // newMessages = widget.totalMessages;
+    // newOrders = widget.newOrders;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.receivedOrdersCount);
     return Drawer(
       child: Container(
         width: 10,
@@ -164,11 +171,19 @@ class _AppDrawerState extends State<AppDrawer> {
                           decoration: BoxDecoration(
                               color: kMainColor,
                               borderRadius: BorderRadius.circular(30.0)),
-                          child: const Center(
-                            child: Text(
-                              'Admin',
-                              style: kDrawerTextStyle2,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              const Text(
+                                'Admin',
+                                style: kDrawerTextStyle2,
+                              ),
+                              if (widget.assignedProcessingOrderCount != '0' &&
+                                  widget.assignedProcessingOrderCount.isNotEmpty)
+                                NotificationTicker(
+                                  value: widget.assignedProcessingOrderCount,
+                                ),
+                            ],
                           ),
                         ),
                       ),
@@ -189,33 +204,33 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.pop(context);
                     },
                   ),
-                  Consumer<GeneralProvider>(
-                    builder: (context, item, any) {
-                      return ReusableTile(
-                        ticker: item.newOrders != '0'
-                            ? NotificationTicker(value: item.newOrders)
-                            : const SizedBox(),
-                        icon: FontAwesomeIcons.shoppingBag,
-                        title: 'Orders',
-                        onTap: () {
-                          Provider.of<OrderProvider>(context, listen: false)
-                              .updateOrderStage(OrderStages.order);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const OrderRoutineReport(
-                                title: 'Orders',
-                              ),
+                  Consumer<GeneralProvider>(builder: (context, item, any) {
+                    return ReusableTile(
+                      ticker: item.newOrders != '0'
+                          ? NotificationTicker(value: item.newOrders)
+                          : const SizedBox(),
+                      icon: FontAwesomeIcons.shoppingBag,
+                      title: 'Orders',
+                      onTap: () {
+                        Provider.of<OrderProvider>(context, listen: false)
+                            .updateOrderStage(OrderStages.order);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const OrderRoutineReport(
+                              title: 'Orders',
                             ),
-                          );
-                        },
-                      );
-                    }
-                  ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
                   ReusableTile(
-                    // ticker: widget.newOrders != '0'
-                    //     ? NotificationTicker(value: widget.newOrders)
-                    //     : const SizedBox(),
+                    ticker: widget.processingOrdersCount != '0' &&
+                            widget.processingOrdersCount.isNotEmpty
+                        ? NotificationTicker(
+                            value: widget.processingOrdersCount)
+                        : const SizedBox(),
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Processing',
                     onTap: () {
@@ -224,16 +239,16 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ProcessingScreen(
-                          ),
+                          builder: (context) => const ProcessingScreen(),
                         ),
                       );
                     },
                   ),
                   ReusableTile(
-                    // ticker: widget.newOrders != '0'
-                    //     ? NotificationTicker(value: widget.newOrders)
-                    //     : const SizedBox(),
+                    ticker: widget.receivedOrdersCount != '0' &&
+                            widget.receivedOrdersCount.isNotEmpty
+                        ? NotificationTicker(value: widget.receivedOrdersCount)
+                        : const SizedBox(),
                     icon: FontAwesomeIcons.shoppingBag,
                     title: 'Delivery',
                     onTap: () {
@@ -356,8 +371,9 @@ class _AppDrawerState extends State<AppDrawer> {
                     title: 'Customer Requests',
                   ),
                   ReusableTile(
-                    ticker: newMessages != '0'
-                        ? NotificationTicker(value: newMessages)
+                    ticker: widget.totalMessages != '0' &&
+                            widget.totalMessages.isNotEmpty
+                        ? NotificationTicker(value: widget.totalMessages)
                         : const SizedBox(),
                     icon: Icons.message,
                     title: 'Messages',

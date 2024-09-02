@@ -102,7 +102,6 @@ class _NewExpenseState extends State<NewExpense>{
                       }
                     }
                   },
-                  images: images,
                   imagePath: imagePath,
                 ),
                 const SizedBox(

@@ -61,7 +61,7 @@ Future<void> getSubCategoryDialog({
                 ),
               );
             } else if (state is FetchedCategoryState) {
-              final data = state.categories;
+              final data = state.categories.result;
               List categories = [];
               for (var element in data) {
                 categories.add(element.toJson());

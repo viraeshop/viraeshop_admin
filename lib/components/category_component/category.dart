@@ -59,7 +59,7 @@ Future<void> getCategoryDialog({
             } else if (state is FetchedCategoryState) {
               final data = state.categories;
               List categories = [];
-              for (var element in data) {
+              for (var element in data.result) {
                 categories.add(element.toJson());
               }
               return SingleChildScrollView(

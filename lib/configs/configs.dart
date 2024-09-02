@@ -398,7 +398,7 @@ Future<void> getAdvertsDialog({
               final data = state.advertList;
               List advertList = [];
               for (var element in data) {
-                advertList.add(element.advertsCategory);
+                advertList.add(element.adCategory);
               }
               List adverts = Set.from(advertList).toList();
               return SingleChildScrollView(

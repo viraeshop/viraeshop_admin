@@ -6,13 +6,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ImageFromUpdate extends StatelessWidget {
-  const ImageFromUpdate({Key? key, required this.image, required this.isUpdate, this.imageBytes}) : super(key: key);
+  const ImageFromUpdate({
+    Key? key,
+    required this.image,
+    required this.isUpdate,
+  }) : super(key: key);
   final String image;
   final bool isUpdate;
-  final Uint8List? imageBytes;
+  //final Uint8List? imageBytes;
   @override
   Widget build(BuildContext context) {
-    if(image.contains('http') && isUpdate){
+    if (image.contains('http') && isUpdate) {
       return CachedNetworkImage(
         imageUrl: image,
         fit: BoxFit.cover,
@@ -22,18 +26,11 @@ class ImageFromUpdate extends StatelessWidget {
           );
         },
       );
-    }else{
-      if(kIsWeb){
-        return Image.memory(
-          imageBytes!,
-          fit: BoxFit.cover,
-        );
-      }else{
-        return Image.file(
-          File(image),
-          fit: BoxFit.cover,
-        );
-      }
+    } else {
+      return Image.file(
+        File(image),
+        fit: BoxFit.cover,
+      );
     }
   }
 }

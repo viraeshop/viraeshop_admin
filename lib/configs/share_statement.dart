@@ -157,7 +157,7 @@ Future<void> shareStatement({
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
         index >= 10 ? index.toString() : '0${index.toString()}';
-    row.cells[1].value = element['businessName'] != ''
+    row.cells[1].value = element['businessName'] != '' && element['businessName'] != null
         ? element['businessName']
         : element['name'];
     row.cells[2].value = '${element['totalPaid']}';

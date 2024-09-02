@@ -297,8 +297,8 @@ class _TabWidgetState extends State<TabWidget> {
                       itemCount: productsList.length + 1,
                       itemBuilder: (gridContext, index) {
                         if (index == 0) {
-                          final bool isProduct =
-                              Hive.box('adminInfo').get('isProducts', defaultValue: false);
+                          final bool isProduct = Hive.box('adminInfo')
+                              .get('isProducts', defaultValue: false);
                           return InkWell(
                             onTap: isProduct == false
                                 ? null
@@ -328,10 +328,8 @@ class _TabWidgetState extends State<TabWidget> {
                             ),
                           );
                         }
-                        List productPics =
-                            productsList[index - 1]['images'] ?? [];
-                        List images =
-                            productPics.map((e) => e['imageLink']).toList();
+                        String thumbnailImage =
+                            productsList[index - 1]['thumbnail'];
                         num currentPrice = getCurrentPrice(
                             productsList[index - 1], ads.dropdownValue);
                         Tuple3<num, num, bool> discountData =
@@ -345,6 +343,10 @@ class _TabWidgetState extends State<TabWidget> {
                             }
                             List productPics =
                                 productsList[index - 1]['images'] ?? [];
+                            productPics.insert(0, {
+                              'imageLink': thumbnailImage,
+                              'imageKey': productsList[index - 1]['thumbnailKey'],
+                            });
                             showDialog<void>(
                               context: context,
                               // barrierColor: Colors.transparent,
@@ -370,14 +372,16 @@ class _TabWidgetState extends State<TabWidget> {
                             );
                           },
                           onTap: () {
-                            print('start');
                             if (!ads.isAnimationStarted) {
                               cartAnimation();
                               ads.animationTracker(true);
                               Offset offset = calculateWidgetPosition(
                                   globalKeys[index - 1]);
-                              showOverlay(offset, index - 1,
-                                  '${images.isNotEmpty ? images[0] : ''}');
+                              showOverlay(
+                                offset,
+                                index - 1,
+                                thumbnailImage,
+                              );
                               Future.delayed(const Duration(milliseconds: 20),
                                   () {
                                 cartMotionAnimation(index - 1);
@@ -450,8 +454,10 @@ class _TabWidgetState extends State<TabWidget> {
                                           decoration: BoxDecoration(
                                             image: DecorationImage(
                                               image: FadeInImage(
-                                                image: NetworkImage(
-                                                    '${images.isNotEmpty ? images[0] : ''}'),
+                                                image:
+                                                    CachedNetworkImageProvider(
+                                                  thumbnailImage,
+                                                ),
                                                 placeholder: const AssetImage(
                                                     "assets/default.jpg"),
                                                 imageErrorBuilder: (context,

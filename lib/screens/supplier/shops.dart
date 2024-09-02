@@ -151,9 +151,8 @@ class _ShopsState extends State<Shops> {
                                           widget.data!['profileImage'] ?? ''),
                                     )
                                   : imageBG(
-                                      bundleImage,
-                                      imagePath,
-                                      'assets/images/man.png',
+                                      imagePath: imagePath,
+                                      asset: 'assets/images/man.png',
                                     ),
                               color: kBackgroundColor,
                               borderRadius: BorderRadius.circular(100.0),

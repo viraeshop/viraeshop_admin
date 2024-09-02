@@ -82,7 +82,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         body: BlocBuilder<CategoryBloc, CategoryState>(
         builder: (context, state) {
           if (state is FetchedCategoryState) {
-            List<ProductCategory> myCategories = state.categories;
+            List<ProductCategory> myCategories = state.categories.result;
             List categoryList = [];
             for (var element in myCategories) {
               categoryList.add(element.toJson());

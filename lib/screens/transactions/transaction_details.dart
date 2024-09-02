@@ -783,8 +783,8 @@ class SpecialContainer extends StatelessWidget {
       {Key? key, required this.value,
       required this.title,
       required this.color,
-      this.height: 130.0,
-      this.width: 100.0}) : super(key: key);
+      this.height = 130.0,
+      this.width = 100.0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

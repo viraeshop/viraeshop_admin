@@ -49,56 +49,65 @@ class UserTotalOrderDetailsCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        info['name'],
-                        style: kGreenText,
-                      ),
-                      Text(
-                        'Orders  ${info['total']}',
-                        style: kSansTextStyleSmallBlack,
-                      ),
-                      Text(
-                        'Pending  ${info['pendings']}',
-                        style: kSansTextStyleSmallBlack,
-                      ),
-                      Text(
-                        'Confirmed  ${info['confirmed']}',
-                        style: kSansTextStyleSmallBlack,
-                      ),
-                      Text(
-                        'Canceled  ${info['canceled']}',
-                        style: kSansTextStyleSmallBlack,
-                      ),
-                      Text(
-                        'Failed  ${info['failed']}',
-                        style: kSansTextStyleSmallBlack,
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          '${info['name']}'.toNameCase(),
+                          maxLines: 1,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                          style: kGreenText.copyWith(
+                            fontSize: 17,
+                          ),
+                        ),
+                        Text(
+                          'Orders  ${info['total']}',
+                          style: kSansTextStyleSmallBlack,
+                        ),
+                        Text(
+                          'Pending  ${info['pendings']}',
+                          style: kSansTextStyleSmallBlack,
+                        ),
+                        Text(
+                          'Confirmed  ${info['confirmed']}',
+                          style: kSansTextStyleSmallBlack,
+                        ),
+                        Text(
+                          'Canceled  ${info['canceled']}',
+                          style: kSansTextStyleSmallBlack,
+                        ),
+                        Text(
+                          'Failed  ${info['failed']}',
+                          style: kSansTextStyleSmallBlack,
+                        ),
+                      ],
+                    ),
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        info['role'],
-                        style: kSansTextStyleBigBlack,
-                      ),
-                      const Text(
-                        'New Order',
-                        style: kBigBrownText,
-                      ),
-                      Text(
-                        '${info['newOrders']}',
-                        style: kGreenText,
-                      ),
-                      // Text(
-                      //   'now',
-                      //   style: kSansTextStyleSmallBlack,
-                      // ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          info['role'],
+                          style: kSansTextStyleBigBlack,
+                        ),
+                        const Text(
+                          'New Order',
+                          style: kBigBrownText,
+                        ),
+                        Text(
+                          '${info['newOrders']}',
+                          style: kGreenText,
+                        ),
+                        // Text(
+                        //   'now',
+                        //   style: kSansTextStyleSmallBlack,
+                        // ),
+                      ],
+                    ),
                   )
                 ],
               ),
@@ -114,5 +123,16 @@ class UserTotalOrderDetailsCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+extension NameCase on String {
+  String toNameCase() {
+    if (isEmpty) return this;
+
+    return split(' ').map((word) {
+      if (word.isEmpty) return '';
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 }

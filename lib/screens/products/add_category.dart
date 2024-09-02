@@ -278,7 +278,6 @@ class _AddCategoryState extends State<AddCategory> {
                             });
                           }
                         },
-                        images: images,
                         imagePath: imagePath,
                       ),
                       const SizedBox(

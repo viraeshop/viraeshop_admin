@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:tuple/tuple.dart';
+import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
 import 'package:viraeshop_bloc/transactions/transactions_event.dart';
@@ -30,7 +31,11 @@ class CustomerTransactionScreen extends StatefulWidget {
   final String queryType;
   final String adminId;
   const CustomerTransactionScreen(
-      {required this.userID, required this.name,required this.adminId, Key? key, required this.queryType})
+      {required this.userID,
+      required this.name,
+      required this.adminId,
+      Key? key,
+      required this.queryType})
       : super(key: key);
 
   @override
@@ -63,7 +68,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
   }
 
   initSearch(String value) {
-    if (value.length == 0) {
+    if (value.isEmpty) {
       setState(
         () {
           dataTemp = data;
@@ -125,7 +130,8 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
             ),
             leading: IconButton(
               onPressed: () {
-                final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                final transactionBloc =
+                    BlocProvider.of<TransactionsBloc>(context);
                 transactionBloc.add(
                   GetTransactionDetailsEvent(
                     queryType: widget.queryType,
@@ -223,8 +229,8 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                       isLoading = true;
                                     });
                                     final transactionBloc =
-                                    BlocProvider.of<TransactionsBloc>(
-                                        context);
+                                        BlocProvider.of<TransactionsBloc>(
+                                            context);
                                     transactionBloc.add(
                                       GetTransactionDetailsEvent(
                                         queryType: 'customerInvoice',
@@ -286,8 +292,21 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                         .where(
                                             (element) => element['paid'] != 0)
                                         .toList();
+                                    final totalCalculated = tupleTotal(
+                                      dataTemp,
+                                      DateTime.now(),
+                                      DateTime.now(),
+                                      false,
+                                      false,
+                                    );
+                                    totalsTemp = Tuple3(
+                                      totalCalculated.item1,
+                                      totalCalculated.item2,
+                                      totalCalculated.item3,
+                                    );
                                   } else {
                                     dataTemp = data;
+                                    totalsTemp = totals;
                                   }
                                 });
                               },
@@ -308,8 +327,21 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                     dataTemp = data
                                         .where((element) => element['due'] != 0)
                                         .toList();
+                                    final totalCalculated = tupleTotal(
+                                      dataTemp,
+                                      DateTime.now(),
+                                      DateTime.now(),
+                                      false,
+                                      false,
+                                    );
+                                    totalsTemp = Tuple3(
+                                      totalCalculated.item1,
+                                      totalCalculated.item2,
+                                      totalCalculated.item3,
+                                    );
                                   } else {
                                     dataTemp = data;
+                                    totalsTemp = totals;
                                   }
                                 });
                               },
@@ -440,7 +472,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                     address: dataTemp[0]['customerInfo']
                                         ['address'],
                                     isInventory: true,
-                                    items: data,
+                                    items: dataTemp,
                                     begin: begin,
                                     end: end,
                                     totalAmount: totalsTemp.item3.toString(),
@@ -469,7 +501,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                   address: dataTemp[0]['customerInfo']
                                       ['address'],
                                   isInventory: true,
-                                  items: data,
+                                  items: dataTemp,
                                   begin: begin,
                                   end: end,
                                   totalAmount: totalsTemp.item3.toString(),
@@ -491,7 +523,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                       address: dataTemp[0]['customerInfo']
                                           ['address'],
                                       isInventory: true,
-                                      items: data,
+                                      items: dataTemp,
                                       begin: begin,
                                       end: end,
                                       totalAmount: totalsTemp.item3.toString(),

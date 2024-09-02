@@ -4,6 +4,17 @@ const Color kProductCardColor = Color(0xffB2B1B1);
 const Color kMainColor = Color(0xff1de9b6);
 const Color kSubMainColor = Color(0xff353d4d);
 const Color kBackgroundColor = Color(0xffFFFFFF);
+const Color kLightGreen = Color(0xFF4CE417);
+const blueBlackColor = Color(0xFF0A2433);
+
+Color get gray100 => const Color(0xFFF4F4F4);
+Color get orangeA200 => const Color(0xFFF2994A);
+Color get blueGray300 => const Color(0xFFA1A1BC);
+// Indigo
+Color get indigo50 => const Color(0xFFE0E6F3);
+Color get indigo500 => const Color(0xFF3669C9);
+Color get indigo900 => const Color(0xFF1B1A57);
+
 const Color kTextColor1 = Colors.black87;
 const Color kSelectedTileColor = Color(0xff575e6b);
 const Color kScaffoldBackgroundColor = Color(0xffe6e9ee);

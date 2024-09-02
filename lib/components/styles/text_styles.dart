@@ -90,6 +90,12 @@ const TextStyle kProductNameStylePro = TextStyle(
   fontSize: 15,
   letterSpacing: 1.3,
 );
+TextStyle bodySmall = TextStyle(
+  color: blueGray300,
+  fontSize: 12,
+  fontFamily: 'Montserrat',
+  fontWeight: FontWeight.w400,
+);
 const TextStyle kProductPriceStyle = TextStyle(
   color: kIconColor1,
   fontFamily: 'Montserrat',
@@ -181,7 +187,7 @@ const TextStyle kShadowStyle = TextStyle(
     Shadow(
       color: kNewYellowColor,
       blurRadius: 0.5,
-      offset: Offset(0,3),
+      offset: Offset(0, 3),
     ),
   ],
   color: kBackgroundColor,
@@ -234,7 +240,6 @@ const TextStyle kSansTextStyleBigBlack = TextStyle(
   fontWeight: FontWeight.bold,
 );
 
-
 const TextStyle kGreenText = TextStyle(
   color: kNewMainColor,
   fontFamily: 'SourceSans',
@@ -259,17 +264,15 @@ const TextStyle kAshTenorStyle = TextStyle(
 );
 
 const TextStyle kBlackTenorStyle = TextStyle(
-  color: kBlackColor,
-  fontFamily: 'TenorSans',
-  fontSize: 20,
-  letterSpacing: 1.3,
-  fontWeight: FontWeight.bold
-);
+    color: kBlackColor,
+    fontFamily: 'TenorSans',
+    fontSize: 20,
+    letterSpacing: 1.3,
+    fontWeight: FontWeight.bold);
 
 const TextStyle kColoredNameStyle = TextStyle(
     color: kNewMainColor,
     fontFamily: 'Montserrat',
     fontSize: 15,
     letterSpacing: 1.3,
-    fontWeight: FontWeight.bold
-);
+    fontWeight: FontWeight.bold);

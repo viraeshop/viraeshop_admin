@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +21,8 @@ import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../general_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../home_screen.dart';
 
 class CustomerInfoScreen extends StatefulWidget {
   final Map info;
@@ -105,11 +106,13 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
       ),
       child: BlocListener<CustomersBloc, CustomerState>(
         listener: (context, state) {
+          print(state);
           if (state is RequestFinishedCustomerState && isLoading) {
             setState(() {
               isLoading = false;
             });
             toast(context: context, title: 'Updated');
+            Navigator.popUntil(context, ModalRoute.withName(HomeScreen.path));
           } else if (state is OnErrorCustomerState && isLoading) {
             setState(() {
               isLoading = false;
@@ -142,6 +145,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                                     }
                                   }
                                 : null,
+                            lines: i == 3 ? 3 : 1,
                             readOnly: !user.isEditUser,
                             controller: _preferences.getControllers[i],
                             prefixIcon: Icon(
@@ -256,145 +260,175 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                   const SizedBox(
                     height: 20.0,
                   ),
-                  widget.isNew
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            DialogButton(
-                              onTap: () async {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                Map<String, dynamic> fields = {
-                                  'role': widget.info['role'],
-                                  'businessName': widget.info['businessName'],
-                                  'isNewRequest': false,
-                                };
-                                final customerBloc =
-                                    BlocProvider.of<CustomersBloc>(context);
-                                try {
-                                  if (widget.info['role'] == 'architect') {
-                                    await NetworkUtility.deleteImage(
-                                       key: widget.info['idFrontImageKey']);
-                                    await NetworkUtility.deleteImage(
-                                        key: widget.info['idBackImageKey']);
-                                  } else if (widget.info['role'] == 'agents') {
-                                    await NetworkUtility.deleteImage(
-                                       key: widget.info['tinImageKey']);
-                                    await NetworkUtility.deleteImage(
-                                       key: widget.info['binImageKey']);
-                                  }
-                                  final jWTToken = Hive.box('adminInfo').get('token');
-                                  customerBloc.add(
-                                    UpdateCustomerEvent(
-                                      token: jWTToken,
-                                      customerId: widget.info['customerId'],
-                                      customerModel: fields,
-                                    ),
-                                  );
-                                } on FirebaseException catch (e) {
-                                  if (kDebugMode) {
-                                    print(e.message);
-                                  }
-                                  snackBar(
-                                      text: e.message!,
-                                      context: context,
-                                      color: kRedColor);
-                                } finally {
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                }
-                              },
-                              title: 'Accept',
-                              width: double.infinity,
-                              radius: 10.0,
-                              color: kNewTextColor,
-                            ),
-                            const SizedBox(
-                              height: 15.0,
-                            ),
-                            DialogButton(
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        content: const Text(
-                                          'Are you sure you want to decline this request?',
-                                          style: kProductNameStylePro,
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () async {
-                                              setState(() {
-                                                isLoading = true;
-                                              });
-                                              Navigator.pop(context);
-                                              try {
+                  if (widget.isNew)
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DialogButton(
+                          onTap: () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            Map<String, dynamic> fields = {
+                              'role': widget.info['newRole'],
+                              'isNewRequest': false,
+                              'accepted': true,
+                              'wallet': 10000,
+                            };
+                            final customerBloc =
+                                BlocProvider.of<CustomersBloc>(context);
+                            try {
+                              if (widget.info['role'] == 'architect') {
+                                await NetworkUtility.deleteImage(
+                                    key: widget.info['idFrontImageKey']);
+                                await NetworkUtility.deleteImage(
+                                    key: widget.info['idBackImageKey']);
+                              } else if (widget.info['role'] == 'agents') {
+                                await NetworkUtility.deleteImage(
+                                    key: widget.info['tinImageKey']);
+                                await NetworkUtility.deleteImage(
+                                    key: widget.info['binImageKey']);
+                              }
+                              final jWTToken =
+                                  Hive.box('adminInfo').get('token');
+                              customerBloc.add(
+                                UpdateCustomerEvent(
+                                  token: jWTToken,
+                                  customerId: widget.info['customerId'],
+                                  customerModel: fields,
+                                ),
+                              );
+                            } on FirebaseException catch (e) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              if (kDebugMode) {
+                                print(e.message);
+                              }
+                              if (context.mounted) {
+                                snackBar(
+                                  text: e.message!,
+                                  context: context,
+                                  color: kRedColor,
+                                );
+                              }
+                            }
+                          },
+                          title: 'Accept',
+                          width: double.infinity,
+                          radius: 10.0,
+                          color: kNewTextColor,
+                        ),
+                        const SizedBox(
+                          height: 15.0,
+                        ),
+                        DialogButton(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return StatefulBuilder(
+                                  builder: (context, setNewState) {
+                                    return AlertDialog(
+                                      content: const Text(
+                                        'Are you sure you want to decline this request?',
+                                        style: kProductNameStylePro,
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () async {
+                                            setNewState(() {
+                                              isLoading = true;
+                                            });
+                                            Map<String, dynamic> fields = {
+                                              'isNewRequest': false,
+                                              'accepted': false,
+                                            };
+                                            final customerBloc =
+                                                BlocProvider.of<CustomersBloc>(
+                                                    context);
+                                            Navigator.pop(context);
+                                            try {
+                                              if (widget.info['role'] ==
+                                                  'architect') {
                                                 await NetworkUtility
-                                                    .deleteCustomerRequest(
-                                                        widget.info['userId']);
-                                                if (widget.info['role'] ==
-                                                    'architect') {
-                                                  await NetworkUtility
-                                                      .deleteImage(key: widget.info[
-                                                          'idFrontImageKey']);
-                                                  await NetworkUtility
-                                                      .deleteImage( key: widget
-                                                          .info['idBackImageKey']);
-                                                } else if (widget
-                                                        .info['role'] ==
-                                                    'agents') {
-                                                  await NetworkUtility
-                                                      .deleteImage(key: widget
-                                                          .info['tinImageKey']);
-                                                  await NetworkUtility
-                                                      .deleteImage(key: widget
-                                                          .info['binImageKey']);
-                                                }
-                                              } on FirebaseException catch (e) {
-                                                if (kDebugMode) {
-                                                  print(e.message);
-                                                }
-                                                snackBar(
-                                                    text: e.message!,
-                                                    context: context,
-                                                    color: kRedColor);
-                                              } finally {
-                                                setState(() {
-                                                  isLoading = false;
-                                                });
+                                                    .deleteImage(
+                                                        key: widget.info[
+                                                            'idFrontImageKey']);
+                                                await NetworkUtility
+                                                    .deleteImage(
+                                                        key: widget.info[
+                                                            'idBackImageKey']);
+                                              } else if (widget.info['role'] ==
+                                                  'agents') {
+                                                await NetworkUtility
+                                                    .deleteImage(
+                                                        key: widget.info[
+                                                            'tinImageKey']);
+                                                await NetworkUtility
+                                                    .deleteImage(
+                                                        key: widget.info[
+                                                            'binImageKey']);
                                               }
-                                            },
-                                            child: const Text(
-                                              'Yes',
-                                              style: kProductNameStylePro,
-                                            ),
+                                              final jWTToken =
+                                                  Hive.box('adminInfo')
+                                                      .get('token');
+                                              customerBloc.add(
+                                                UpdateCustomerEvent(
+                                                  token: jWTToken,
+                                                  customerId:
+                                                      widget.info['customerId'],
+                                                  customerModel: fields,
+                                                ),
+                                              );
+                                            } on FirebaseException catch (e) {
+                                              setState(() {
+                                                isLoading = false;
+                                              });
+                                              if (kDebugMode) {
+                                                print(e.message);
+                                              }
+                                              if (context.mounted) {
+                                                snackBar(
+                                                  text: e.message!,
+                                                  context: context,
+                                                  color: kRedColor,
+                                                );
+                                              }
+                                            }
+                                          },
+                                          child: const Text(
+                                            'Yes',
+                                            style: kProductNameStylePro,
                                           ),
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'No',
-                                              style: kProductNameStylePro,
-                                            ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text(
+                                            'No',
+                                            style: kProductNameStylePro,
                                           ),
-                                        ],
-                                      );
-                                    });
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                               },
-                              title: 'Decline',
-                              width: double.infinity,
-                              radius: 10.0,
-                              color: kBackgroundColor,
-                              isBorder: true,
-                              borderColor: kNewTextColor,
-                            ),
-                          ],
-                        )
-                      : const SizedBox(),
+                            );
+                          },
+                          title: 'Decline',
+                          width: double.infinity,
+                          radius: 10.0,
+                          color: kBackgroundColor,
+                          isBorder: true,
+                          borderColor: kNewTextColor,
+                        ),
+                      ],
+                    )
+                  else
+                    const SizedBox(),
                   !widget.isNew && user.isEditUser
                       ? DialogButton(
                           onTap: () {
@@ -416,7 +450,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                             final jWTToken = Hive.box('adminInfo').get('token');
                             customerBloc.add(
                               UpdateCustomerEvent(
-                                token: jWTToken,
+                                  token: jWTToken,
                                   customerId: widget.info['customerId'],
                                   customerModel: fields),
                             );

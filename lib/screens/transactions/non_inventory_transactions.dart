@@ -579,7 +579,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
 Tuple4<num, num, num, num> tupleTotal(
     List items, DateTime begin, DateTime end, bool isDate, bool isSupplierPay) {
   num sale = 0, due = 0, paid = 0, buy = 0;
-  if (isDate == true) {
+  if (isDate) {
     for (var element in items) {
       Timestamp timestamp = dateFromJson(element['createdAt']);
       DateTime date = timestamp.toDate();
@@ -592,8 +592,8 @@ Tuple4<num, num, num, num> tupleTotal(
               end.isAtSameMomentAs(dateFormatted))) {
         paid += element['paid'];
         due += element['due'];
-        buy += element['buyPrice'];
-        if (!isSupplierPay) {
+        buy += element['price'];
+        if (isSupplierPay) {
           sale += element['price'];
         }
       }
@@ -602,7 +602,7 @@ Tuple4<num, num, num, num> tupleTotal(
     for (var element in items) {
       paid += element['paid'];
       due += element['due'];
-      buy += element['buyPrice'];
+      buy += element['price'] ?? 0;
       if (!isSupplierPay) {
         sale += element['price'];
       }

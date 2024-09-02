@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -24,10 +21,10 @@ import 'ads_card.dart';
 import 'ads_provider.dart';
 
 class AdsCarousel extends StatefulWidget {
-  final String adsId;
+  final String advertsCategoryName;
   const AdsCarousel({
     Key? key,
-    required this.adsId,
+    required this.advertsCategoryName,
   }) : super(key: key);
 
   @override
@@ -61,7 +58,8 @@ class _AdsCarouselState extends State<AdsCarousel> {
                 'image': '',
                 'imagePath': '',
                 'adId': details['adId'].toString(),
-                'adsCategory': widget.adsId,
+                'adsCategory': widget.advertsCategoryName,
+                'adCategoryId': details['adCategoryId'],
                 'isEdit': false,
                 'imageBytes': null,
               });
@@ -99,16 +97,14 @@ class _AdsCarouselState extends State<AdsCarousel> {
         },
         child: Consumer<AdsProvider>(builder: (context, childs, widgets) {
           List ads = childs.adCards.where((element) {
-            return element['adsCategory'] == widget.adsId;
+            return element['adsCategory'] == widget.advertsCategoryName;
           }).toList();
+          int? adCategoryId = ads.isNotEmpty ? ads.first['adCategoryId'] : null;
           if (kDebugMode) {
             print('Ads list: $ads');
           }
           Map<String, Map<String, TextEditingController>> controllers =
               childs.controllers;
-          if (kDebugMode) {
-            print('Controllers: $controllers');
-          }
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -128,7 +124,8 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         );
                         AdvertsModel advert = AdvertsModel(
                           image: '',
-                          advertsCategory: widget.adsId,
+                          adCategoryId: adCategoryId,
+                          advertsCategory: widget.advertsCategoryName,
                           title1: 'title1',
                           title2: 'title2',
                           title3: 'title3',
@@ -179,22 +176,13 @@ class _AdsCarouselState extends State<AdsCarousel> {
                       if (imageKey.isNotEmpty) {
                         try {
                           await NetworkUtility.deleteImage(key: ads[itemIndex]['imageKey']);
-                        } on FirebaseException catch (e) {
+                        }  catch (e) {
                           if (kDebugMode) {
                             print(e);
                           }
                         }
                       }
-                      if (kIsWeb) {
-                        // getImageWeb('ads_banners').then((value) {
-                        //   Provider.of<AdsProvider>(context, listen: false)
-                        //       .saveImages(
-                        //           adId: ads[itemIndex]['adId'],
-                        //           image: value.item2,
-                        //           imagesBytes: value.item1!);
-                        // });
-                      } else {
-                        getImageNative('ads_banners').then((value) {
+                      getImageNative('ads_banners').then((value) {
                           Provider.of<AdsProvider>(context, listen: false)
                               .saveImages(
                             adId: ads[itemIndex]['adId'],
@@ -203,7 +191,6 @@ class _AdsCarouselState extends State<AdsCarousel> {
                             imagePath: value['path'],
                           );
                         });
-                      }
                     },
                     onEditDone: () {
                       final advertBloc = BlocProvider.of<AdvertsBloc>(context);
@@ -256,12 +243,14 @@ class _AdsCarouselState extends State<AdsCarousel> {
                           print(e);
                         }
                         debugPrint('On delete image error');
-                        snackBar(
-                          text: e.toString(),
-                          context: context,
-                          color: kRedColor,
-                          duration: 300,
-                        );
+                       if(context.mounted){
+                         snackBar(
+                           text: e.toString(),
+                           context: context,
+                           color: kRedColor,
+                           duration: 300,
+                         );
+                       }
                       }
                     },
                   );

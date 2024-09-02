@@ -105,7 +105,6 @@ class _ReturnProductState extends State<ReturnProduct> {
                         }
                       }
                     },
-                    images: images,
                     imagePath: imagePath,
                   ),
                   const SizedBox(

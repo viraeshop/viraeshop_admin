@@ -2,26 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:viraeshop_api/models/adverts/advert_categories.dart';
 import 'package:viraeshop_bloc/adverts/adverts_event.dart';
 import 'package:viraeshop_bloc/adverts/adverts_state.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
-import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/category/categories.dart';
-import 'package:viraeshop_admin/reusable_widgets/drawer.dart';
 import 'package:viraeshop_admin/screens/advert/ads_carousel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
-import 'package:viraeshop_api/apiCalls/adverts.dart';
 import 'package:viraeshop_api/models/adverts/adverts.dart';
-
-import '../../components/styles/colors.dart';
-import '../customers/preferences.dart';
-import '../messages_screen/users_screen.dart';
-import '../notification/notification_screen.dart';
 import 'ads_provider.dart';
 
 class AdvertScreen extends StatefulWidget {
@@ -49,14 +41,15 @@ class _AdvertScreenState extends State<AdvertScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ValueListenableBuilder(
-              valueListenable: Hive.box(productsBox).listenable(),
-              builder: (context, Box box, widgets) {
-                List catgs = box.get(catKey);
-                return Categories(
-                  catLength: catgs.length + 1,
-                  categories: catgs,
-                );
-              }),
+            valueListenable: Hive.box(productsBox).listenable(),
+            builder: (context, Box box, widgets) {
+              List catgs = box.get(catKey);
+              return Categories(
+                catLength: catgs.length + 1,
+                categories: catgs,
+              );
+            },
+          ),
           LimitedBox(
             maxHeight: size.height * 0.68,
             child: Stack(
@@ -67,20 +60,22 @@ class _AdvertScreenState extends State<AdvertScreen> {
                   heightFactor: 1,
                   child: LimitedBox(
                     //maxHeight: size.height * 0.58,
-                    child:
-                        Consumer<AdsProvider>(builder: (context, ads, childs) {
-                      return Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: ads.currentCatg == 'All'
-                            ? const AdvertListWidget()
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AdsCarousel(adsId: ads.currentCatg),
-                                ],
-                              ),
-                      );
-                    }),
+                    child: Consumer<AdsProvider>(
+                      builder: (context, ads, childs) {
+                        return Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: ads.currentCatg == 'All'
+                              ? const AdvertListWidget()
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AdsCarousel(
+                                        advertsCategoryName: ads.currentCatg),
+                                  ],
+                                ),
+                        );
+                      },
+                    ),
                   ),
                 ),
                 // FractionallySizedBox(
@@ -185,8 +180,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AdvertsBloc, AdvertState>(
-        buildWhen: (context, state) {
+    return BlocBuilder<AdvertsBloc, AdvertState>(buildWhen: (context, state) {
       if (state is FetchedAdvertsState || state is OnGetAdvertsErrorState) {
         return true;
       } else {
@@ -205,40 +199,52 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
             textAlign: TextAlign.center,
           ),
         );
-      }
-      else if (state is FetchedAdvertsState) {
-        List<AdvertsModel> data = state.advertList;
+      } else if (state is FetchedAdvertsState) {
+        List<AdvertCategories> data = state.advertList;
         if (kDebugMode) {
           print('Adverts from Database: $data');
         }
+
+        ///TODO: This will be refactored to the current API standard that is
+        ///TODO: IT WILL BE BASED ON INDIVIDUAL ADVERT CATEGORIES
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-          for (var element in data) {
-            if (kDebugMode) {
-              print('yeah');
+          for (var ad in data) {
+            for (var element in ad.adverts!) {
+              Map advert = {
+                'title1': element.title1,
+                'title2': element.title2,
+                'title3': element.title3,
+                'image': element.image,
+                'adId': element.adId,
+                'adsCategory': element.advertsCategory,
+                'adCategoryId': element.adCategoryId,
+                'isEdit': false,
+                'imageBytes': null,
+              };
+              Provider.of<AdsProvider>(context, listen: false)
+                  .addAdCard(element.adId ?? '', advert);
+              Provider.of<AdsProvider>(context, listen: false)
+                  .addController(element.adId ?? '', {
+                'title1': TextEditingController(text: element.title1),
+                'title2': TextEditingController(text: element.title2),
+                'title3': TextEditingController(text: element.title3),
+              });
             }
-            Map advert = {
-              'title1': element.title1,
-              'title2': element.title2,
-              'title3': element.title3,
-              'image': element.image,
-              'adId': element.adId,
-              'adsCategory': element.advertsCategory,
-              'isEdit': false,
-              'imageBytes': null,
-            };
-            Provider.of<AdsProvider>(context, listen: false)
-                .addAdCard(element.adId ?? '', advert);
-            Provider.of<AdsProvider>(context, listen: false)
-                .addController(element.adId ?? '', {
-              'title1': TextEditingController(text: element.title1),
-              'title2': TextEditingController(text: element.title2),
-              'title3': TextEditingController(text: element.title3),
-            });
           }
         });
         return ListView(
           // crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
+            Text(
+              'App Bar Banners',
+              style: kTableCellStyle,
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            AdsCarousel(
+              advertsCategoryName: 'App Bar Banners',
+            ),
             Text(
               'Top Discount',
               style: kTableCellStyle,
@@ -247,7 +253,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
               height: 10.0,
             ),
             AdsCarousel(
-              adsId: 'Top Discount',
+              advertsCategoryName: 'Top Discount',
             ),
             SizedBox(
               height: 10.0,
@@ -260,7 +266,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
               height: 10.0,
             ),
             AdsCarousel(
-              adsId: 'Top Sales',
+              advertsCategoryName: 'Top Sales',
             ),
             SizedBox(
               height: 10.0,
@@ -273,7 +279,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
               height: 10.0,
             ),
             AdsCarousel(
-              adsId: 'New Arrivals',
+              advertsCategoryName: 'New Arrivals',
             ),
             SizedBox(
               height: 10.0,
@@ -286,7 +292,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
               height: 10.0,
             ),
             AdsCarousel(
-              adsId: 'Vira Shop',
+              advertsCategoryName: 'Vira Shop',
             ),
             SizedBox(
               height: 10.0,
@@ -294,14 +300,14 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
           ],
         );
       }
-      return Column(
+      return const Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
+              children: [
                 Shimmers(),
                 Shimmers(),
                 Shimmers(),
@@ -312,7 +318,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
+              children: [
                 Shimmers(),
                 Shimmers(),
                 Shimmers(),
@@ -323,7 +329,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
+              children: [
                 Shimmers(),
                 Shimmers(),
                 Shimmers(),

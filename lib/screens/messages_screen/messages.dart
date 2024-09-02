@@ -1,16 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get_time_ago/get_time_ago.dart';
 import 'package:hive/hive.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/decoration.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/screens/messages_screen/widgets/chat_image_preview.dart';
+import 'package:viraeshop_admin/screens/messages_screen/widgets/guest_chat_bubble.dart';
+import 'package:viraeshop_admin/screens/messages_screen/widgets/image_bubble.dart';
+import 'package:viraeshop_admin/screens/messages_screen/widgets/me_chat_bubble.dart';
+import 'package:viraeshop_admin/screens/messages_screen/widgets/message_text_field.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:viraeshop_api/apiCalls/messages.dart';
 
-class Message extends StatefulWidget {  
+import '../../configs/image_picker.dart';
+
+class Message extends StatefulWidget {
   final String name;
   final String userId;
   final num totalUnreadMessages;
@@ -29,22 +39,16 @@ class Message extends StatefulWidget {
 class _MessageState extends State<Message> {
   final GeneralCrud _generalCrud = GeneralCrud();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  late User loggedIn;
-  void getCurrentUser() {
-    final user = _auth.currentUser!;
-    try {
-      loggedIn = user;
-      debugPrint(loggedIn.email);
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
+  final TextEditingController _controller = TextEditingController();
+  late User userAuthInfo;
+  Map adminInfo = Hive.box('adminInfo').toMap();
+  final String placeholderImage =
+      'https://www.clipartmax.com/png/small/150-1509532_say-hi-to-us-avatar-support.png';
   @override
   void initState() {
     // TODO: implement initState
     updateRead(widget.userId, widget.totalUnreadMessages);
-    getCurrentUser();
+    userAuthInfo = _auth.currentUser!;
     super.initState();
   }
 
@@ -53,177 +57,191 @@ class _MessageState extends State<Message> {
   final jWTToken = Hive.box('adminInfo').get('token');
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).requestFocus(FocusNode());
-      },
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      appBar: AppBar(
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
+        elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        appBar: AppBar(
-          iconTheme: const IconThemeData(color: kSelectedTileColor),
-          elevation: 0.0,
-          backgroundColor: kBackgroundColor,
-          title: Text(
-            widget.name ?? '',
-            style: kAppBarTitleTextStyle,
-          ),
-          centerTitle: true,
-          titleTextStyle: kTextStyle1,
-          // bottom: TabBar(
-          //   tabs: tabs,
-          // ),
-          actions: const [
-            Padding(
-              padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-            )
-          ],
+        title: Text(
+          widget.name ?? '',
+          style: kAppBarTitleTextStyle,
         ),
-        body: Container(
-          padding: const EdgeInsets.all(8.0),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              FractionallySizedBox(
-                alignment: Alignment.topCenter,
-                heightFactor: 0.9,
+        centerTitle: true,
+        titleTextStyle: kTextStyle1,
+        // bottom: TabBar(
+        //   tabs: tabs,
+        // ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+          )
+        ],
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          color: kBackgroundColor,
+        ),
+        child: Stack(
+          children: [
+            FractionallySizedBox(
+              heightFactor: 0.9,
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: StreamBuilder<QuerySnapshot>(
-                    stream: _generalCrud.getChatMessages(widget.userId),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: Text(
-                            'Fetching messages',
-                            style: kProductNameStylePro,
-                          ),
-                        );
-                      } else if (snapshot.hasError) {
-                        return const Center(
-                          child: Text(
-                            'Failed to Fetch messages',
-                            style: kProductNameStylePro,
-                          ),
+                  stream: _generalCrud.getChatMessages(widget.userId),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      if (kDebugMode) {
+                        print(snapshot.error);
+                      }
+                      return const Center(
+                        child: Text(
+                          'Failed to Fetch messages',
+                          style: kBigErrorTextStyle,
+                        ),
+                      );
+                    } else if (snapshot.connectionState ==
+                        ConnectionState.active) {
+                      final messages = snapshot.data?.docs ?? [];
+                      if (messages.isNotEmpty) {
+                        return ListView.builder(
+                          itemCount: messages.length,
+                          //shrinkWrap: true,
+                          reverse: true,
+                          itemBuilder: (context, i) {
+                            Timestamp timestamp = messages[i].get('date');
+                            String time = GetTimeAgo.parse(timestamp.toDate());
+                            Map<String, dynamic> data =
+                                messages[i].data() as Map<String, dynamic>;
+                            bool isImage = data['isImage'] ?? false;
+                            if (messages[i].get('sender') == userAuthInfo.uid) {
+                              if (isImage) {
+                                return ChatImageWidget(
+                                  profileImage: adminInfo['profileImage'] ??
+                                      placeholderImage,
+                                  isGuest: false,
+                                  url: data['imageLink'],
+                                  time: time,
+                                );
+                              } else {
+                                return MeChatBubble(
+                                  profileImage: adminInfo['profileImage'] ??
+                                      placeholderImage,
+                                  message: messages[i].get('message') ?? '',
+                                  time: time,
+                                );
+                              }
+                            } else {
+                              if (isImage) {
+                                return ChatImageWidget(
+                                  isGuest: true,
+                                  url: data['imageLink'],
+                                  time: time,
+                                  profileImage:
+                                      data['profileImage'] ?? placeholderImage,
+                                );
+                              } else {
+                                return GuestMessage(
+                                  profileImage:
+                                      data['profileImage'] ?? placeholderImage,
+                                  message: messages[i].get('message'),
+                                  time: time,
+                                  customerName: widget.name,
+                                );
+                              }
+                            }
+                          },
                         );
                       } else {
-                        final messages = snapshot.data!.docs;
-                        return messages.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  'No messages yet!',
-                                  style: kProductNameStylePro,
-                                ),
-                              )
-                            : ListView.builder(
-                                reverse: true,
-                                itemCount: messages.length,
-                                itemBuilder: (BuildContext context, int i) {
-                                  return Container(
-                                    // padding: EdgeInsets.all(0),
-                                    child: messages[i].get('sender') ==
-                                            loggedIn.email
-                                        ? BubbleSpecialThree(
-                                            text: messages[i].get('message'),
-                                            color: kNewTextColor,
-                                            tail: false,
-                                            isSender: true,
-                                            textStyle: const TextStyle(
-                                              fontFamily: 'SourceSans',
-                                              fontSize: 15.0,
-                                              color: kBackgroundColor,
-                                              // fontWeight: FontWeight.w700,
-                                            ),
-                                          )
-                                        : BubbleSpecialThree(
-                                            text: messages[i].get('message'),
-                                            color: kProductCardColor,
-                                            tail: false,
-                                            isSender: false,
-                                            textStyle: const TextStyle(
-                                              fontFamily: 'SourceSans',
-                                              fontSize: 15.0,
-                                              color: kBackgroundColor,
-                                              // fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                  );
-                                },
-                                shrinkWrap: true,
-                              );
+                        return const Center(
+                          child: Text(
+                            'No messages yet',
+                            style: kProductNameStylePro,
+                          ),
+                        );
                       }
-                    }),
-              ),
-              FractionallySizedBox(
-                alignment: Alignment.bottomCenter,
-                heightFactor: 0.1,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.all(5.0),
-                        decoration: BoxDecoration(
-                          color: kBackgroundColor,
-                          border: Border.all(color: kSubMainColor),
-                          borderRadius: BorderRadius.circular(30.0),
+                    } else {
+                      return Center(
+                        child: LoadingAnimationWidget.bouncingBall(
+                          color: kNewMainColor,
+                          size: 40,
                         ),
-                        child: TextField(
-                          controller: messageController,
-                          style: kProductNameStylePro,
-                          decoration: kMessageTextFieldDecoration,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(5.0),
-                      height: 50.0,
-                      width: 50.0,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                          100.0,
-                        ),
-                        color: kNewTextColor,
-                      ),
-                      child: Center(
-                        child: IconButton(
-                            onPressed: () async{
-                              String message = messageController.text;
-                              messageController.clear();
-                              FirebaseFirestore.instance
-                                .collection('messages')
-                                .doc(widget.userId)
-                                .collection('messages')
-                                .add({
-                              'message': message,
-                              'sender': loggedIn.email,
-                              'date': Timestamp.now(),
-                              'isFromCustomer': false,
-                              'tokens': widget.customerToken,
-                              'isInitialMessage': false,
-                            });
-                              try{
-                                await MessageCalls().sendNotificationFromAdmin({
-                                  'tokenId': widget.customerToken,
-                                  'message': message,
-                                }, jWTToken);
-                              } catch(e) {
-                                debugPrint(e.toString());
-                              }
-                            },
-                            icon: const Icon(
-                              Icons.send,
-                              color: kBackgroundColor,
-                              size: 18.0,
-                            )),
-                      ),
-                    ),
-                  ],
+                      );
+                    }
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: MessageBar(
+                sendButtonColor: kNewMainColor,
+                onTextChanged: null,
+                onSend: (_) async {
+                  String message = _;
+                  await FirebaseFirestore.instance
+                      .collection('messages')
+                      .doc(widget.userId)
+                      .collection('messages')
+                      .add({
+                    'message': message,
+                    'sender': userAuthInfo.uid,
+                    'date': Timestamp.now(),
+                    'isFromCustomer': false,
+                    'isInitialMessage': false,
+                    'tokens': widget.customerToken,
+                    'adminName': adminInfo['name'],
+                    'profileImage':
+                        adminInfo['profileImage'] ?? placeholderImage,
+                  });
+                  try {
+                    await MessageCalls().sendNotificationFromCustomer({
+                      'message': message,
+                    });
+                  } catch (e) {
+                    debugPrint(e.toString());
+                  }
+                },
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8, right: 8),
+                    child: InkWell(
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: kNewMainColor,
+                        size: 24,
+                      ),
+                      onTap: () {
+                        pickFile().then((image) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return ChatImagePreview(
+                                  image: image!,
+                                  customerId: widget.userId,
+                                );
+                              },
+                            ),
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
       ),
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => false;
 }
 
 Future<void> updateRead(String docId, num readMessages) async {

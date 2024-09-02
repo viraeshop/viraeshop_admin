@@ -226,12 +226,12 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                       totalPrice + price,
                     );
                     box.put('isAdded', true);
-                    int id = random.nextInt(100);
+                    String id = '${random.nextInt(100)}NIV';
                     cart.put(
                       id,
                       Cart(
                         productName: descControl.text,
-                        productId: id.toString(),
+                        productId: id,
                         price: num.parse(_controller.text),
                         quantity: 1,
                         unitPrice: num.parse(_controller.text),
@@ -239,7 +239,6 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                         supplierId: shopBox.get('supplierId').toString(),
                       ),
                     );
-
                     shop
                         .put(
                       id,

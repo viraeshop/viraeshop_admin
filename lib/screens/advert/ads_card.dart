@@ -146,8 +146,7 @@ class AdsCard extends StatelessWidget {
                   ? imagePickerWidget(
                       width: 100.0,
                       onTap: isEdit! ? getImage : null,
-                      images: imageBytes,
-                      imagePath: imagePath,
+                      imagePath: imagePath ?? '',
                       showBottomCard: false,
                       backgroundColor: kNewYellowColor,
                     )

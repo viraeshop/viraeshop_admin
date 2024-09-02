@@ -7,21 +7,31 @@ import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/screens/photoslide_show.dart';
 import 'iconWidget.dart';
 
-
 class PopWidget extends StatefulWidget {
-  const PopWidget({Key? key, required this.image, required this.info, required this.price, required this.description,
-  required this.isDiscount, required this.category, required this.discountPrice, required this.productName, required this.quantity, required this.routeName,
-    required this.sellBy, required this.productCode,
+  const PopWidget({
+    Key? key,
+    required this.image,
+    required this.info,
+    required this.price,
+    required this.description,
+    required this.isDiscount,
+    required this.category,
+    required this.discountPrice,
+    required this.productName,
+    required this.quantity,
+    required this.routeName,
+    required this.sellBy,
+    required this.productCode,
   }) : super(key: key);
   final List image;
   final String productName,
-  quantity,
-  category,
-  price,
-  description,
-  routeName,
-  sellBy,
-  productCode;
+      quantity,
+      category,
+      price,
+      description,
+      routeName,
+      sellBy,
+      productCode;
   final Map<String, dynamic> info;
   final bool isDiscount;
   final num discountPrice;
@@ -71,7 +81,8 @@ class _PopWidgetState extends State<PopWidget> {
                         topRight: Radius.circular(10.0),
                       ),
                       child: CachedNetworkImage(
-                        imageUrl: widget.image.isNotEmpty ? widget.image[0] : '',
+                        imageUrl:
+                            widget.image.isNotEmpty ? widget.image[0] : '',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -118,25 +129,29 @@ class _PopWidgetState extends State<PopWidget> {
                         height: 10.0,
                       ),
                       Text(
-                        widget.isDiscount ? '${widget.price}৳' : '${widget.price}৳/ ${widget.sellBy}',
+                        widget.isDiscount
+                            ? '${widget.price}৳'
+                            : '${widget.price}৳/ ${widget.sellBy}',
                         style: TextStyle(
                           decoration: widget.isDiscount
                               ? TextDecoration.lineThrough
                               : TextDecoration.none,
-                          color: widget.isDiscount ? kIconColor2 : Colors.teal[100],
+                          color: widget.isDiscount
+                              ? kIconColor2
+                              : Colors.teal[100],
                           fontSize: 12.0,
                           fontFamily: 'Montserrat',
                         ),
                       ),
                       widget.isDiscount
                           ? Text(
-                        '${widget.discountPrice.toString()}৳/ ${widget.sellBy}',
-                        style: TextStyle(
-                          color: Colors.teal[100],
-                          fontSize: 20.0,
-                          fontFamily: 'Montserrat',
-                        ),
-                      )
+                              '${widget.discountPrice.toString()}৳/ ${widget.sellBy}',
+                              style: TextStyle(
+                                color: Colors.teal[100],
+                                fontSize: 20.0,
+                                fontFamily: 'Montserrat',
+                              ),
+                            )
                           : const SizedBox(),
                       const SizedBox(
                         height: 10.0,
@@ -156,9 +171,12 @@ class _PopWidgetState extends State<PopWidget> {
                         },
                         isAnimate: isAnimate,
                         address: widget.info['supplier']['address'] ?? '',
-                        optionalMobile: widget.info['supplier']['optionalPhone'] ?? '',
-                        businessName: widget.info['supplier']['businessName'] ?? '',
-                        supplierName: widget.info['supplier']['supplierName'] ?? '',
+                        optionalMobile:
+                            widget.info['supplier']['optionalPhone'] ?? '',
+                        businessName:
+                            widget.info['supplier']['businessName'] ?? '',
+                        supplierName:
+                            widget.info['supplier']['supplierName'] ?? '',
                         mobile: widget.info['supplier']['mobile'] ?? '',
                       ),
                     ],
@@ -179,10 +197,10 @@ class _PopWidgetState extends State<PopWidget> {
               context,
               MaterialPageRoute(
                   builder: (context) => NewProduct(
-                    info: widget.info,
-                    routeName: widget.routeName,
-                    isUpdateProduct: true,
-                  )),
+                        info: widget.info,
+                        routeName: widget.routeName,
+                        isUpdateProduct: true,
+                      )),
             );
           },
           child: IconWidget(icon: Icons.edit_outlined),

@@ -197,8 +197,7 @@ class _SupplierPayState extends State<SupplierPay> {
                           ),
                         )
                       : imagePickerWidget(
-                          imagePath: imageFilePath,
-                          images: imageBytes,
+                          imagePath: imageFilePath ?? '',
                           onTap: () async {
                             if(!kIsWeb){
                               getImageNative('returns').then((value){

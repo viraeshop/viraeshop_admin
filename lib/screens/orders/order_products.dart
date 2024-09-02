@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,7 +36,7 @@ class OrderProducts extends StatefulWidget {
       {Key? key,
       required this.customerInfo,
       required this.orderInfo,
-        required this.userId,
+      required this.userId,
       this.onGetAdmins = false})
       : super(key: key);
   final Map<String, dynamic> customerInfo;
@@ -54,6 +55,7 @@ class _OrderProductsState extends State<OrderProducts> {
   bool isLoading = false;
   String errorMessage = '';
   OrderStages? currentStage;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -62,6 +64,14 @@ class _OrderProductsState extends State<OrderProducts> {
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       Provider.of<OrderProvider>(context, listen: false)
           .onUpdateProducts(widget.orderInfo['items'] ?? []);
+        Provider.of<OrderProvider>(context, listen: false).updateOrderValues(
+          due: widget.orderInfo['due'],
+          advance: widget.orderInfo['advance'],
+          discount: widget.orderInfo['discount'],
+          deliveryFee: widget.orderInfo['deliveryFee'],
+          subTotal: widget.orderInfo['subTotal'],
+          total: widget.orderInfo['total'],
+        );
     });
     if (widget.onGetAdmins) {
       final adminBloc = BlocProvider.of<AdminBloc>(context);
@@ -70,16 +80,41 @@ class _OrderProductsState extends State<OrderProducts> {
     }
     if (!widget.orderInfo['seen'] && currentStage == OrderStages.order) {
       isLoading = true;
-      final orderBloc = BlocProvider.of<OrdersBloc>(context);
-      orderBloc.add(
-        UpdateOrderEvent(
-          orderId: widget.orderInfo['orderId'].toString(),
-          orderModel: const {
-            'seen': true,
-          },
-          token: jWTToken,
-        ),
-      );
+      Map<String, dynamic> info = {
+        'seen': true,
+      };
+      updateOrderRead(
+          info, context, widget.orderInfo['orderId'].toString(), jWTToken);
+    } else if (currentStage == OrderStages.processing && !widget.orderInfo['processed']) {
+      isLoading = true;
+      Map<String, dynamic> info = {
+        'decrementProcessingCount': true,
+        'processed': true,
+      };
+      updateOrderRead(
+          info, context, widget.orderInfo['orderId'].toString(), jWTToken);
+    } else if (currentStage == OrderStages.receiving && !widget.orderInfo['received']) {
+      isLoading = true;
+      Map<String, dynamic> info = {
+        'decrementReceiveCount': true,
+        'received': true,
+      };
+      updateOrderRead(
+          info, context, widget.orderInfo['orderId'].toString(), jWTToken);
+    } else if (currentStage == OrderStages.admin) {
+      if (kDebugMode) {
+        print(widget.orderInfo);
+      }
+      bool seen = widget.orderInfo['Admins'][0]['OrderProcessors']['seen'] ?? true;
+      if (!seen) {
+        isLoading = true;
+        Map<String, dynamic> info = {
+          'adminProcessingCount': true,
+          'adminId': widget.userId,
+        };
+        updateOrderRead(
+            info, context, widget.orderInfo['orderId'].toString(), jWTToken);
+      }
     }
     super.initState();
   }
@@ -100,10 +135,13 @@ class _OrderProductsState extends State<OrderProducts> {
               Map<String, dynamic> filterInfo = {
                 'filterType': orderFilter(currentStage!),
                 'filterData': {
-                  if (currentStage == OrderStages.order) 'customerId': widget.userId,
-                  if (currentStage == OrderStages.admin) 'adminId': widget.userId,
+                  if (currentStage == OrderStages.order)
+                    'customerId': widget.userId,
+                  if (currentStage == OrderStages.admin)
+                    'adminId': widget.userId,
                   if (currentStage == OrderStages.processing) 'isAll': true,
-                  if (currentStage == OrderStages.receiving) 'status': 'pending',
+                  if (currentStage == OrderStages.receiving)
+                    'status': 'pending',
                   if (currentStage == OrderStages.delivery) 'status': 'pending',
                 }
               };
@@ -112,7 +150,7 @@ class _OrderProductsState extends State<OrderProducts> {
                 context: context,
               );
               Navigator.pop(context);
-              },
+            },
             icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kBlackColor,
           ),
@@ -184,12 +222,14 @@ class _OrderProductsState extends State<OrderProducts> {
                                           .toString(),
                                       orderInfo: widget.orderInfo,
                                       product: provider.orderProducts[i],
-                                      adminId: provider.orderProducts[i].adminModel.adminId,
+                                      adminId: provider
+                                          .orderProducts[i].adminModel.adminId,
                                       admins: provider.currentStage ==
                                               OrderStages.processing
                                           ? admins
                                           : [
-                                              provider.orderProducts[i].adminModel
+                                              provider
+                                                  .orderProducts[i].adminModel
                                             ],
                                       index: i,
                                     );
@@ -204,7 +244,7 @@ class _OrderProductsState extends State<OrderProducts> {
                                       currentStage == OrderStages.receiving ||
                                               currentStage == OrderStages.admin
                                           ? 80.0
-                                          : 120.0,
+                                          : 130.0,
                                   padding: const EdgeInsets.all(10.0),
                                   width: double.infinity,
                                   decoration: BoxDecoration(
@@ -247,6 +287,10 @@ class _OrderProductsState extends State<OrderProducts> {
                                                         OrderStages.admin)
                                                       'processingStatus':
                                                           'confirmed',
+                                                    if (provider.currentStage ==
+                                                        OrderStages.admin)
+                                                      'incrementReceiveCount':
+                                                          true,
                                                     if (provider.currentStage ==
                                                         OrderStages.admin)
                                                       'receiveStatus':
@@ -294,32 +338,36 @@ class _OrderProductsState extends State<OrderProducts> {
                                                   widget.customerInfo['role'],
                                                   style: kSansTextStyleWhite1,
                                                 ),
-                                                Row(
-                                                  //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    ///TODO: Add product discount here..
-                                                    Text(
-                                                      '${widget.orderInfo['price']}$bdtSign',
-                                                      style: const TextStyle(
-                                                        color: kBackgroundColor,
-                                                        fontFamily:
-                                                            'SourceSans',
-                                                        fontSize: 15,
-                                                        letterSpacing: 1.3,
-                                                        decoration:
-                                                            TextDecoration
-                                                                .lineThrough,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 10.0,
-                                                    ),
-                                                    Text(
-                                                      '${widget.orderInfo['price']}$bdtSign',
-                                                      style:
-                                                          kSansTextStyleWhite,
-                                                    ),
-                                                  ],
+                                                Consumer<OrderProvider>(
+                                                  builder: (context, order, any) {
+                                                    return Row(
+                                                      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: [
+                                                        ///TODO: Add product discount here..
+                                                        Text(
+                                                          '${order.total}$bdtSign',
+                                                          style: const TextStyle(
+                                                            color: kBackgroundColor,
+                                                            fontFamily:
+                                                                'SourceSans',
+                                                            fontSize: 15,
+                                                            letterSpacing: 1.3,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .lineThrough,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10.0,
+                                                        ),
+                                                        Text(
+                                                          '${order.subTotal}$bdtSign',
+                                                          style:
+                                                              kSansTextStyleWhite,
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }
                                                 ),
                                               ],
                                             ),
@@ -413,4 +461,16 @@ class BigButton extends StatelessWidget {
       ),
     );
   }
+}
+
+void updateOrderRead(Map<String, dynamic> info, BuildContext context,
+    String orderId, String token) {
+  final orderBloc = BlocProvider.of<OrdersBloc>(context);
+  orderBloc.add(
+    UpdateOrderEvent(
+      orderId: orderId,
+      orderModel: info,
+      token: token,
+    ),
+  );
 }

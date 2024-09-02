@@ -160,7 +160,6 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                               }
                             }
                           },
-                          images: image,
                           imagePath: imagePath,
                         )
                       : GestureDetector(

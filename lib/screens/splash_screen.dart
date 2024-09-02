@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
               final productBloc = BlocProvider.of<ProductsBloc>(context);
               if (state is FetchedCategoryState) {
                 debugPrint('Fetched and getting ready');
-                List<ProductCategory> data = state.categories;
+                List<ProductCategory> data = state.categories.result;
                 List categories = [];
                 for (var element in data) {
                   categories.add(element.toJson());

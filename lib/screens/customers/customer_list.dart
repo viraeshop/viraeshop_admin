@@ -98,7 +98,9 @@ class _CustomersState extends State<Customers> {
   @override
   void dispose() {
     // TODO: implement dispose
-    print('Im getting disposed ${widget.role}');
+    if (kDebugMode) {
+      print('Im getting disposed ${widget.role}');
+    }
     // final customerBloc = BlocProvider.of<CustomersBloc>(context);
     // customerBloc.close();
     super.dispose();
@@ -139,7 +141,9 @@ class _CustomersState extends State<Customers> {
                             onTap: () {
                               if (widget.isSelectCustomer) {
                                 onSelectCustomer(
-                                    context, customersList[i].toJson());
+                                  context,
+                                  customersList[i].toJson(),
+                                );
                               } else {
                                 onCustomerTap(
                                   context,
@@ -223,10 +227,9 @@ class _CustomersState extends State<Customers> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          RegisterCustomer(
-                                            mobile: controller.text,
-                                          ),
+                                      builder: (context) => RegisterCustomer(
+                                        mobile: controller.text,
+                                      ),
                                     ),
                                   );
                                 },
@@ -334,12 +337,18 @@ void onCustomerTap(BuildContext context, Map customersList, String role) {
   }
   if (customersList['role'] == 'agents') {
     userInfo['wallet'] = customersList['wallet'];
+    userInfo['creditBalance'] = customersList['creditBalance'];
+    userInfo['alertLimit'] = customersList['alertLimit'];
+    userInfo['accountLimit'] = customersList['accountLimit'];
   }
   Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => UpdateUser(
-          userInfo: userInfo, userId: userInfo['customerId'], role: role),
+        userInfo: userInfo,
+        userId: userInfo['customerId'],
+        role: role,
+      ),
     ),
   );
 }
@@ -357,6 +366,10 @@ void onSelectCustomer(BuildContext context, Map customersList) {
   };
   if (customersList['role'] == 'agents') {
     info['wallet'] = customersList['wallet'];
+    info['wallet'] = customersList['wallet'];
+    info['creditBalance'] = customersList['creditBalance'];
+    info['alertBalance'] = customersList['alertLimit'];
+    info['accountBalance'] = customersList['accountLimit'];
   }
   Hive.box('customer').putAll(info);
   Navigator.pop(context);

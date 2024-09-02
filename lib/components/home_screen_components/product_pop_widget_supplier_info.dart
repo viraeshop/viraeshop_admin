@@ -76,27 +76,27 @@ class SupplierInfo extends StatelessWidget {
                   ),
                   title: TextButton(
                     onPressed: () async{
-                      final url = Uri.parse('tel:$mobile');
+                      final url = Uri.parse('tel:+880$mobile');
                       if (await canLaunchUrl(url)) {
                       await launchUrl(url);
                       }
                     },
                     child: Text(
-                      mobile,
+                      '+880$mobile',
                       style: kProductNameStylePro,
                     ),
                   ),
                   subtitle: TextButton(
                     onPressed: () async{
                       if(optionalMobile.isNotEmpty){
-                        final url = Uri.parse('tel:$mobile');
+                        final url = Uri.parse('tel:+880$optionalMobile');
                         if (await canLaunchUrl(url)) {
                           await launchUrl(url);
                         }
                       }
                     },
                     child: Text(
-                      optionalMobile,
+                      '+880$optionalMobile',
                       style: kProductNameStylePro,
                     ),
                   ),

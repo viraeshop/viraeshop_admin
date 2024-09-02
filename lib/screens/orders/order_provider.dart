@@ -49,7 +49,7 @@ class OrderProvider extends ChangeNotifier {
   }
 
   void updateOrderValues({
-     required num due, advance, discount, deliveryFee, subTotal, total}) {
+     required num advance, discount, deliveryFee, subTotal, total, due}) {
     this.total = total;
     this.deliveryFee = deliveryFee;
     this.subTotal = subTotal;

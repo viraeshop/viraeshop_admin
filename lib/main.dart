@@ -4,11 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
 import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
-import 'package:viraeshop_admin/screens/orders/details.dart';
-import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
-import 'package:viraeshop_admin/screens/orders/order_products.dart';
+import 'package:viraeshop_admin/screens/messages_screen/users_screen.dart';
 import 'package:viraeshop_admin/screens/products/product_provider.dart';
-import 'package:viraeshop_admin/tests/testing.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -26,36 +23,25 @@ import 'package:viraeshop_bloc/shops/barrel.dart';
 import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_bloc.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
-import 'package:viraeshop_admin/animation_testing.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
-import 'package:viraeshop_admin/screens/about_us_page.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
-import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
 import 'package:viraeshop_admin/screens/agent_products.dart';
 import 'package:viraeshop_admin/screens/admins/allusers.dart';
 import 'package:viraeshop_admin/screens/architect_products.dart';
-import 'package:viraeshop_admin/screens/bloc/product_bloc.dart';
-import 'package:viraeshop_admin/screens/customers/customer_request.dart';
 import 'package:viraeshop_admin/screens/general_products.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
-import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
-import 'package:viraeshop_admin/screens/non_inventory_product.dart';
 import 'package:viraeshop_admin/screens/notification/notification_screen.dart';
-import 'package:viraeshop_admin/screens/orders/order_info.dart';
 import 'package:viraeshop_admin/screens/products_screen.dart';
-import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_admin/screens/splash_screen.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_api/apiCalls/admins.dart';
 import 'package:viraeshop_api/apiCalls/adverts.dart';
 import 'package:viraeshop_api/apiCalls/category.dart';
 import 'package:viraeshop_api/apiCalls/customers.dart';
 import 'package:viraeshop_api/apiCalls/expense.dart';
-import 'package:viraeshop_api/apiCalls/items.dart';
 import 'package:viraeshop_api/apiCalls/orders.dart';
 import 'package:viraeshop_api/apiCalls/products.dart';
 import 'package:viraeshop_api/apiCalls/return.dart';
@@ -67,16 +53,11 @@ import 'package:viraeshop_api/apiCalls/transactions.dart';
 import 'components/styles/colors.dart';
 import 'components/styles/text_styles.dart';
 import 'reusable_widgets/hive/cart_model.dart';
-import 'reusable_widgets/non_inventory_items.dart';
-import 'screens/done_screen.dart';
 import 'screens/general_provider.dart';
 import 'screens/home_screen.dart';
-import 'package:provider/provider.dart';
 import 'configs/configs.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/orders/order_configs.dart';
-import 'screens/transaction_screen.dart';
-import 'screens/transactions/user_transaction_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:viraeshop_bloc/notifications/notifications_bloc.dart';
 import 'package:viraeshop_api/apiCalls/notifications.dart';
@@ -84,8 +65,6 @@ import 'package:viraeshop_bloc/tokens/tokens_bloc.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'apmplify_configs/amplifyconfiguration.dart';
-
-import 'tests/test_api.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -315,7 +294,6 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       theme: ThemeData.light().copyWith(
-        backgroundColor: kBackgroundColor,
         appBarTheme: const AppBarTheme(
           color: kBackgroundColor,
           elevation: 0.0,
@@ -327,6 +305,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         SplashScreen.path: (context) => const SplashScreen(),
         HomeScreen.path: (context) => const HomeScreen(),
+        UsersMessagesScreen.path: (context) => UsersMessagesScreen(),
         GeneralProducts.path: (context) => const GeneralProducts(),
         AgentProducts.agentProducts: (context) => const AgentProducts(),
         ArchitectProducts.architectProducts: (context) =>

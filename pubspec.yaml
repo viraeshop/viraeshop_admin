@@ -1,9 +1,9 @@
 name: viraeshop_admin
 description: Admin IOS and Android App for Viraeshop
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.2.5+54
+version: 1.2.6+63
 environment:
-  sdk: ">=2.12.0 <3.3.10"
+  sdk: '>=3.4.0 <4.0.0'
 dependencies:
   flutter:
     sdk: flutter
@@ -31,7 +31,7 @@ dependencies:
   numeric_keyboard: ^1.1.0
   syncfusion_flutter_pdf: ^23.1.44
   syncfusion_flutter_charts: ^23.1.44
-  currency_text_input_formatter: ^2.1.5
+  currency_text_input_formatter: ^2.2.3
   url_launcher: ^6.0.17
 #  esc_pos_printer: ^4.1.0
 #  esc_pos_utils: ^1.1.0
@@ -48,19 +48,22 @@ dependencies:
 #  flutter_bluetooth_serial: ^0.4.0
   shimmer: ^2.0.0
   #esc_pos_bluetooth: ^0.4.1
-  flutter_linkify: ^5.0.2
+  flutter_linkify: ^6.0.0
 #  bluetooth_thermal_printer: ^0.0.6
   flutter_styled_toast: ^2.0.0
   amplify_flutter: ^0.6.0
   amplify_auth_cognito: ^0.6.0
   amplify_storage_s3: ^0.6.0
-  flutter_pos_printer_platform: ^1.1.0
-  flutter_esc_pos_utils: ^1.0.0
+  flutter_pos_printer_platform_image_3: ^1.2.0
+  flutter_esc_pos_utils: ^1.0.1
   image: ^4.1.3
   file_saver: ^0.1.1
   dart_date: ^1.2.1
   flutter_bloc: ^8.0.0
   blurry_modal_progress_hud: ^1.1.0
+  loading_animation_widget: ^1.2.0+4
+  get_time_ago: ^1.3.1
+  flutter_svg: ^2.0.7
   viraeshop_api:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-api.git
@@ -69,10 +72,12 @@ dependencies:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-bloc.git
     path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc
+  badges: ^3.1.2
 dependency_overrides:
 #  xml: ^6.2.2
   firebase_core_platform_interface: ^4.5.1
   intl: ^0.17.0
+  network_info_plus: ^6.0.0
 #  viraeshop_api:
 #    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
 

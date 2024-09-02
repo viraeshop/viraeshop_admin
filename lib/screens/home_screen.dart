@@ -1,25 +1,6 @@
-import 'dart:convert';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
-import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:viraeshop_admin/screens/add_user.dart';
-import 'package:viraeshop_admin/reusable_widgets/drawer.dart';
-import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
-import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
-import 'package:viraeshop_admin/screens/product_info.dart';
-import 'package:viraeshop_admin/screens/products_screen.dart';
-import 'package:viraeshop_admin/screens/user_list.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:viraeshop_admin/settings/login_preferences.dart';
 import 'layout_screen/modal_view.dart';
-import 'layout_screen/standard_view.dart';
 
 class HomeScreen extends StatefulWidget {
   static String path = '/homescreen';
@@ -31,9 +12,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   AdminCrud adminCrud = AdminCrud();
-  @override
-  bool _selected = true;
-  bool _unSelected = false;
+  final bool _selected = true;
+  final bool _unSelected = false;
   bool? isSelected;
   bool onTile() {
     if (isSelected == null) {
@@ -45,14 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: LayoutBuilder(builder: (context, constraints) {
-        if (constraints.maxWidth > 768) {
-          return StandardView();
-        } else {
-          return ModalWidget();
-        }
-      }),
+    return const SafeArea(
+      child: ModalWidget(),
     );
   }
 

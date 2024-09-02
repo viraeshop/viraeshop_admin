@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
@@ -10,7 +11,8 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 class DiscountScreen extends StatefulWidget {
   final bool isItems;
   final String keyStore;
-  const DiscountScreen({this.isItems = false, this.keyStore = '', Key? key}): super(key: key);
+  const DiscountScreen({this.isItems = false, this.keyStore = '', Key? key})
+      : super(key: key);
 
   @override
   _DiscountScreenState createState() => _DiscountScreenState();
@@ -43,7 +45,8 @@ class _DiscountScreenState extends State<DiscountScreen> {
       originalTotalPrice = box.get('totalPrice', defaultValue: 0.0);
       currentTotalPrice = originalTotalPrice;
       cashHint = box.get('discountAmount', defaultValue: 0.0).toString();
-      percentHint = box.get('discountPercent', defaultValue: 0.0).round().toString();
+      percentHint =
+          box.get('discountPercent', defaultValue: 0.0).round().toString();
     }
     super.initState();
   }
@@ -107,7 +110,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 style: kProductNameStyle,
                                 textAlign: TextAlign.center,
                                 inputFormatters: [
-                                  CurrencyTextInputFormatter(symbol: '৳')
+                                  CurrencyTextInputFormatter(
+                                    NumberFormat.currency(symbol: '৳'),
+                                  ),
                                 ],
                                 keyboardType: TextInputType.number,
                                 controller: _controller,
@@ -118,8 +123,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                         BorderSide(color: kSubMainColor),
                                   ),
                                   focusedBorder: const UnderlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: kMainColor),
+                                    borderSide: BorderSide(color: kMainColor),
                                   ),
                                   enabledBorder: const UnderlineInputBorder(
                                     borderSide: BorderSide(
@@ -171,9 +175,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                 textAlign: TextAlign.center,
                                 inputFormatters: [
                                   CurrencyTextInputFormatter(
-                                    symbol: '',
-                                    decimalDigits: 3,
-                                  ),
+                                      NumberFormat.currency(decimalDigits: 3)),
                                 ],
                                 keyboardType: TextInputType.number,
                                 controller: _percentController,
@@ -276,14 +278,17 @@ class _DiscountScreenState extends State<DiscountScreen> {
                             onTap: () {
                               // num newDiscountAmount = box.get('discountAmount', defaultValue: 0);
                               // num newDiscountPercent = box.get('discountPercent', defaultValue: 0);
-                              if (widget.isItems){
-                                Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
+                              if (widget.isItems) {
+                                Cart? item =
+                                    Hive.box<Cart>('cart').get(widget.keyStore);
                                 item!.price = currentTotalPrice;
                                 item.discountPercent = discountPercent;
                                 item.discountValue = discountAmount;
-                                Hive.box<Cart>('cart').put(widget.keyStore, item);
-                                box.put('totalPrice', totalPrice + currentTotalPrice);
-                              }else{
+                                Hive.box<Cart>('cart')
+                                    .put(widget.keyStore, item);
+                                box.put('totalPrice',
+                                    totalPrice + currentTotalPrice);
+                              } else {
                                 box.put('discountAmount', discountAmount);
                                 box.put('discountPercent', discountPercent);
                               }

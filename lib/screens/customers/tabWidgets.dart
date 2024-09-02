@@ -82,10 +82,6 @@ class _SalesTabState extends State<SalesTab> {
             message = state.message;
           });
         } else if (state is FetchedTransactionsState) {
-          //if (onFilter == false) {
-          if (kDebugMode) {
-            print('Yeah i got here');
-          }
           setState(() {
             isLoading = false;
             transactions.clear();
@@ -104,7 +100,6 @@ class _SalesTabState extends State<SalesTab> {
             transactions = transactionsListTemp.toList();
             transactionBackup = transactionsListTemp.toList();
           });
-          // }
         }
       },
       child: isLoading

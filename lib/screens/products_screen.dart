@@ -224,7 +224,7 @@ class _ProductsState extends State<Products> {
                                       productPrice: currentPrice.toString(),
                                       productCategory: productsList[i]
                                           ['category'],
-                                      image: productsList[i]['image'][0],
+                                      image: productsList[i]['thumbnail'],
                                       onTap: !isProduct
                                           ? null
                                           : () {
@@ -249,7 +249,6 @@ class _ProductsState extends State<Products> {
                                   itemCount: products.length,
                                   itemBuilder: (BuildContext context, int i) {
                                     num currentPrice = 0;
-                                    List images = productsList[i]['image'];
                                     Tuple3<num, num, bool> discountData =
                                         const Tuple3<num, num, bool>(
                                             0, 0, false);
@@ -317,7 +316,7 @@ class _ProductsState extends State<Products> {
                                       productPrice: currentPrice.toString(),
                                       productCategory: productsList[i]
                                           ['category'],
-                                      image: images.isNotEmpty ? images[0] : '',
+                                      image: productsList[i]['thumbnail'],
                                       onTap: !isProduct
                                           ? null
                                           : () {

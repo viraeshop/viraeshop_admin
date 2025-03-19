@@ -113,7 +113,7 @@ Future<Map<String, dynamic>> getImageNative(String folder) async {
     path = result.paths.first;
     String fileName = result.files.first.name;
     productImageLink = await NetworkUtility.uploadImageFromNative(
-      file: File(path!),
+      file: result.files.first,
       fileName: fileName,
       folder: folder,
     );
@@ -140,7 +140,7 @@ Future<FilePickerResult?> pickFile() async {
 }
 
 Future<Map<String, dynamic>> uploadFile(
-    {required File file,
+    {required PlatformFile file,
     required String fileName,
     required String folder}) async {
   return await NetworkUtility.uploadImageFromNative(

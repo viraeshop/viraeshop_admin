@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:amplify_flutter/amplify_flutter.dart' hide QuerySnapshot;
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -14,7 +16,7 @@ class NetworkUtility {
   static final FirebaseStorage _storage = FirebaseStorage.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static firebase_storage.SettableMetadata metadata =
-  firebase_storage.SettableMetadata(
+      firebase_storage.SettableMetadata(
     contentType: 'image/jpeg',
   );
   static Future<QuerySnapshot> getCustomerTransactionInvoices(List customerId) {
@@ -93,31 +95,58 @@ class NetworkUtility {
     return user.docs.isNotEmpty;
   }
 
+  // static Future<Map<String, dynamic>> uploadImageFromNative(
+  //     {required File file,
+  //       required String fileName,
+  //       required String folder}) async {
+  //   try {
+  //     final StorageUploadFileResult result = await Amplify.Storage.uploadFile(
+  //       localFile: file,
+  //       key: '$folder/$fileName',
+  //       onProgress: (progress) {
+  //         safePrint('Fraction completed: ${progress.getFractionCompleted()}');
+  //       },
+  //       options: UploadFileOptions(
+  //           accessLevel: StorageAccessLevel.guest
+  //       ), path: null,
+  //     );
+  //     safePrint('Successfully uploaded file: ${result.key}');
+  //     Map<String, dynamic> image = {
+  //       'url': 'https://ik.imagekit.io/vira1212/${result.key}',
+  //       'key': '$folder/$fileName',
+  //     };
+  //     return image;
+  //   } on StorageException catch (e) {
+  //     safePrint('Error uploading file: $e');
+  //     throw StorageException(e.message);
+  //   }
+  // }
+
   static Future<Map<String, dynamic>> uploadImageFromNative(
-      {required File file,
-        required String fileName,
-        required String folder}) async {
+      {required PlatformFile file,
+      required String fileName,
+      required String folder}) async {
+    Map<String, dynamic> image = {};
     try {
-      final UploadFileResult result = await Amplify.Storage.uploadFile(
-        local: file,
-        key: '$folder/$fileName',
-        onProgress: (progress) {
-          safePrint('Fraction completed: ${progress.getFractionCompleted()}');
-        },
-        options: UploadFileOptions(
-            accessLevel: StorageAccessLevel.guest
+      final result = await Amplify.Storage.uploadFile(
+        localFile: AWSFile.fromStream(file.readStream!, size: file.size),
+        path: StoragePath.fromString(
+          'public/$folder/$fileName',
         ),
-      );
-      safePrint('Successfully uploaded file: ${result.key}');
-      Map<String, dynamic> image = {
-        'url': 'https://ik.imagekit.io/vira1212/${result.key}',
+        onProgress: (progress) {
+          safePrint('Fraction completed: ${progress.fractionCompleted}');
+        },
+      ).result;
+      safePrint('Successfully uploaded file: ${result.uploadedItem.path}');
+      image = {
+        'url': 'https://ik.imagekit.io/vira1212/$folder/$fileName',
         'key': '$folder/$fileName',
       };
-      return image;
     } on StorageException catch (e) {
       safePrint('Error uploading file: $e');
-      throw StorageException(e.message);
+      //throw StorageException(e.message);
     }
+    return image;
   }
 
   static Future<void> saveAdminInfo(String userId, data) async {
@@ -130,8 +159,10 @@ class NetworkUtility {
 
   static Future deleteImage({required String key}) async {
     try {
-      final result = await Amplify.Storage.remove(key: key);
-      safePrint('Removed file: ${result.key}');
+      final result = await Amplify.Storage.remove(
+        path: StoragePath.fromString('public/$key'),
+      ).result;
+      safePrint('Removed file: ${result.removedItem.path}');
     } on StorageException catch (e) {
       safePrint('Error deleting file: $e');
     }

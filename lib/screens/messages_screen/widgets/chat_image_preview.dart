@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 
@@ -70,7 +71,7 @@ class _ChatImagePreviewState extends State<ChatImagePreview> {
                   isLoading = true;
                 });
                 final uploadedImage = await uploadFile(
-                  file: File(widget.image.files.single.path!),
+                  file: widget.image.files.single,
                   fileName: widget.image.files.single.name,
                   folder: 'messageImages/${widget.customerId}',
                 );
@@ -95,6 +96,7 @@ class _ChatImagePreviewState extends State<ChatImagePreview> {
                   isLoading = false;
                 });
                 debugPrint(e.toString());
+                showToast(e.toString());
               }
             },
             shape:

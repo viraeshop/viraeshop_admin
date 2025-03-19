@@ -40,6 +40,7 @@ class ImageCarousel extends StatefulWidget {
 class _ImageCarouselState extends State<ImageCarousel> {
   Map<String, Uint8List> imagesBytes = {};
   Map filesPath = {};
+  Map platformFiles = {};
   List allImages = [];
   List deletedImages = [];
   bool loading = false;
@@ -183,9 +184,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
                               isUpdate: widget.isUpdate,
                             ),
                             topCancelButton(onTap: () async {
-                              if (kDebugMode) {
-                                print('initial List: $filesPath');
-                              }
                               if (allImages[i-1] is Map<String, dynamic>) {
                                 try {
                                   await NetworkUtility.deleteImage(
@@ -199,6 +197,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
                               } else if (allImages[i-1] is String) {
                                 filesPath.removeWhere(
                                     (key, value) => value == allImages[i-1]);
+                                platformFiles.removeWhere(
+                                    (key, value) => key == allImages[i-1]);
                               } else {
                                 imagesBytes.removeWhere(
                                     (key, value) => value == allImages[i-1]);
@@ -207,9 +207,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
                                 deletedImages.add(allImages[i-1]);
                                 allImages.removeAt(i-1);
                               });
-                              if (kDebugMode) {
-                                print('final List: $filesPath');
-                              }
                             }),
                           ]);
                         },
@@ -236,7 +233,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         if (thumbnailFile != null) {
                           final imageUrlData =
                               await NetworkUtility.uploadImageFromNative(
-                            file: File(thumbnailFile!.path!),
+                            file: thumbnailFile!,
                             fileName: thumbnailFile!.name,
                             folder: 'product_images',
                           );
@@ -248,7 +245,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         for (int i = 0; i < filesNames.length; i++) {
                           Map<String, dynamic> imageUrlData =
                               await NetworkUtility.uploadImageFromNative(
-                            file: File(filesPath[filesNames[i]]),
+                            file: platformFiles[filesNames[i]],
                             fileName: filesNames[i],
                             folder: 'product_images',
                           );
@@ -318,6 +315,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
         } else {
           allImages.add(filePath);
           filesPath[fileName] = filePath;
+          platformFiles[filePath] = result.files.first;
         }
       });
       if (kDebugMode) {

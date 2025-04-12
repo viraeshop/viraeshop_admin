@@ -91,7 +91,7 @@ class UserTotalOrderDetailsCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Text(
-                          info['role'],
+                          info['role'] ?? '',
                           style: kSansTextStyleBigBlack,
                         ),
                         const Text(

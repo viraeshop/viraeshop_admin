@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,6 +25,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../components/ui_components/delete_popup.dart';
 import '../../configs/boxes.dart';
 import '../transactions/non_inventory_transaction_info.dart';
+import 'package:printing/printing.dart';
 
 class DueReceipt extends StatefulWidget {
   final Map data;
@@ -146,6 +148,7 @@ class _DueReceiptState extends State<DueReceipt> {
           color: kNewMainColor,
         ),
         child: Scaffold(
+          backgroundColor: kBackgroundColor,
           appBar: AppBar(
             leading: IconButton(
                 onPressed: () {
@@ -230,9 +233,9 @@ class _DueReceiptState extends State<DueReceipt> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: 100.0,
-                      width: 100.0,
-                      child: Image.asset('assets/images/DONE.png'),
+                      height: 150.0,
+                      width: double.infinity,
+                      child: Image.asset('assets/invoice_logo.png'),
                     ),
                     const Text(
                       'Call 01710735425 01324430921',
@@ -373,7 +376,8 @@ class _DueReceiptState extends State<DueReceipt> {
                                             } else {
                                               onEditItems[index] = items[i];
                                             }
-                                            editedInvoice['editedItems'] = onEditItems;
+                                            editedInvoice['editedItems'] =
+                                                onEditItems;
                                           }
                                           editedInvoice['due'] = due;
                                           editedInvoice['price'] = subTotal;
@@ -729,6 +733,7 @@ class _DueReceiptState extends State<DueReceipt> {
                             totalItems: items.length.toString(),
                             totalQuantity: quantity,
                             subTotal: subTotal.toString(),
+                            total: total,
                             items: items,
                             mobile: widget.data['customerInfo']['mobile'],
                             address: widget.data['customerInfo']['address'],
@@ -739,7 +744,7 @@ class _DueReceiptState extends State<DueReceipt> {
                             due: due.toString(),
                             paid: paid.toString(),
                             discountAmount: discount.toString(),
-                            invoiceId: widget.data['invoiceNo'],
+                            invoiceId: widget.data['invoiceNo'].toString(),
                             date: DateFormat.yMMMd().format(date),
                             payList: payList,
                           );
@@ -758,12 +763,13 @@ class _DueReceiptState extends State<DueReceipt> {
                   Expanded(
                     flex: 1,
                     child: IconButton(
-                      onPressed: () async{
-                        try{
+                      onPressed: () async {
+                        try {
                           await shareInvoice(
                             totalItems: items.length.toString(),
                             totalQuantity: quantity,
                             subTotal: subTotal.toString(),
+                            total: total,
                             items: items,
                             mobile: widget.data['customerInfo']['mobile'],
                             address: widget.data['customerInfo']['address'],
@@ -774,11 +780,12 @@ class _DueReceiptState extends State<DueReceipt> {
                             due: due.toString(),
                             paid: paid.toString(),
                             discountAmount: discount.toString(),
-                            invoiceId: widget.data['invoiceNo'],
+                            invoiceId: widget.data['invoiceNo'].toString(),
                             date: DateFormat.yMMMd().format(date),
                             payList: payList,
                           );
-                        } catch (e){
+
+                        } catch (e) {
                           debugPrint(e.toString());
                         }
                       },

@@ -212,6 +212,7 @@ Future<void> printCustomerStatement({
   List<int> bytes = await document.save();
   //Dispose the document
   await Printing.layoutPdf(
-      onLayout: (pdf.PdfPageFormat format) => Uint8List.fromList(bytes));
+      onLayout: (pdf.PdfPageFormat format) => Uint8List.fromList(bytes),
+  );
     document.dispose();
 }

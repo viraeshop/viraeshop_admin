@@ -1,430 +1,394 @@
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:pdf/pdf.dart' show PdfPageFormat;
-import 'package:printing/printing.dart';
-import 'package:random_string/random_string.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart';
-import 'dart:async';
 import 'package:file_saver/file_saver.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
+import 'dart:typed_data';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:viraeshop_api/utils/utils.dart';
 
 Future<void> shareInvoice({
-  required String totalItems,
-  totalPrice,
-  discountAmount,
-  required subTotal,
+  required String invoiceId,
+  required dynamic date,
   required List items,
-  required String mobile,
-  required String date,
-  List payList = const [],
+  required dynamic totalItems,
+  required dynamic totalQuantity,
+  required dynamic subTotal,
+  required dynamic total,
+  required dynamic discountAmount,
+  required dynamic advance,
+  required dynamic due,
+  required dynamic paid,
+  String? mobile,
+  String? address,
+  String? name,
+  List? payList,
   bool isSave = false,
-  address,
-  name,
-  advance,
-  due,
-  paid,
-  totalQuantity,
-  invoiceId,
 }) async {
-  //Create a new PDF document
-  Uint8List imageBytes =
-      (await rootBundle.load('assets/images/DONE.png')).buffer.asUint8List();
-  PdfDocument document = PdfDocument();
-  document.pageSettings.orientation = PdfPageOrientation.portrait;
-  document.pageSettings.size = PdfPageSize.a4;
-  document.pageSettings.margins.all = 0.5 * PdfPageFormat.inch;
-  const double margin = 50;
-  PdfPage page = document.pages.add();
-  double maxContentHeight = page.graphics.clientSize.height - 2 * margin;
-  double yPos = margin;
-  double xPos = page.graphics.clientSize.width;
-  PdfGraphics graphics = page.graphics;
-  PdfSolidBrush brushColor = PdfSolidBrush(PdfColor(55, 63, 74));
-  PdfColor color = PdfColor(55, 63, 74);
-  PdfFont timesRoman = PdfStandardFont(PdfFontFamily.timesRoman, 14,
-      style: PdfFontStyle.regular);
-  PdfTextElement element;
-  late PdfLayoutResult result;
-  PdfLayoutFormat layoutFormat =
-      PdfLayoutFormat(layoutType: PdfLayoutType.paginate);
-  List contents = [
-    PdfBitmap(imageBytes),
-    'Tel: 01710735425 01324430921',
-    'Email: viraeshop@gmail.com',
-    'H-65, New Airport, Amtoli, Mohakhali,',
-    'Dhaka-1212, Bangladesh.',
-    'Date: $date',
-    'Invoice No. $invoiceId',
-    name,
-    mobile,
-    address,
-    '$totalItems Items (QTY $totalQuantity)',
-    items,
-    'VAT %',
-    'Discount $discountAmount BDT',
-    'Sub Total $subTotal  BDT',
-    'Advance $advance BDT',
-    payList,
-    'Due $due BDT',
-    'Paid $paid BDT',
-  ];
-  List<int> contentOnRight = [5, 6, 12, 13, 14, 15, 16, 17, 18];
-  for (int i = 0; i < contents.length; i++) {
-    if (yPos > page.graphics.clientSize.height - margin) {
-      // If not enough space, add a new page
-      page = document.pages.add();
-      // Reset yPos for the new page
-      yPos = margin;
-    }
+  // Load logo image
+  final ByteData logoData = await rootBundle.load('assets/invoice_logo.png');
+  final Uint8List logoBytes = logoData.buffer.asUint8List();
+  final pdfLogo = pw.MemoryImage(logoBytes);
 
-    if (contents[i] is PdfBitmap) {
-      page.graphics.drawImage(
-        contents[i],
-        const Rect.fromLTWH(margin, 15, 100, 100),
-      );
-      yPos += 100;
-    } else if (contents[i] is String) {
-      // This will check if the content is to be placed on right side
-      Size textSize = timesRoman.measureString(contents[i]);
-      if (contentOnRight.contains(i)) {
-        element = PdfTextElement(text: contents[i], font: timesRoman);
-        element.brush = brushColor;
-        result = element.draw(
-          page: result.page,
-          bounds: Rect.fromLTWH(xPos - textSize.width,
-              i > 6 ? result.bounds.bottom : yPos, 0, 0),
-          format: layoutFormat,
-        )!;
-      } else {
-        element = PdfTextElement(text: contents[i], font: timesRoman);
-        element.brush = brushColor;
-        result = element.draw(
-          page: i == 1 ? page : result.page,
-          bounds: Rect.fromLTWH(margin, yPos, 0, 0),
-          format: layoutFormat,
-        )!;
-      }
-      if (i == 7) {
-        yPos -= textSize.height * 2;
-      } else {
-        yPos += textSize.height;
-        if (i == 9) {
-          yPos += textSize.height;
-        }
-      }
-      //debugPrint(textSize.height.toString());
-    } else {
-      if (contentOnRight.contains(i)) {
-        for (var content in contents[i]) {
-          Timestamp timestamp = dateFromJson(content['createdAt']);
-          final formatter = DateFormat('MM/dd/yyyy');
-          String dateTime = formatter.format(
-            timestamp.toDate(),
-          );
-          String paidText = '$dateTime  Pay ${content['paid']} BDT';
-          Size textSize = timesRoman.measureString(paidText);
-          element = PdfTextElement(text: paidText, font: timesRoman);
-          element.brush = brushColor;
-          result = element.draw(
-            page: result.page,
-            bounds: Rect.fromLTWH(xPos - textSize.width,
-                result.bounds.bottom + textSize.height, 0, 0),
-            format: layoutFormat,
-          )!;
-          yPos += textSize.height;
-        }
-      } else {
-        PdfGrid grid = drawTable(items, color);
-        result = grid.draw(
-          page: result.page,
-          bounds: Rect.fromLTWH(margin, yPos, 0, 0),
-          format: layoutFormat,
-        )!;
-        //yPos += result.bounds.size.height;
-        // debugPrint('Height${result.bounds.size.height.toString()}');
-        // debugPrint('Page Height${(graphics.clientSize.height - 100).toString()}');
-      }
-    }
-    // yPos += i == 0 ? 100 : result.bounds.height;
-  }
+  // Generate PDF
+  final pdf = await _generateInvoicePdf(
+    invoiceId: invoiceId,
+    date: date,
+    items: items,
+    totalItems: totalItems,
+    totalQuantity: totalQuantity,
+    subTotal: subTotal,
+    total: total,
+    discountAmount: discountAmount,
+    advance: advance,
+    due: due,
+    paid: paid,
+    mobile: mobile,
+    address: address,
+    name: name,
+    payList: payList,
+    logo: pdfLogo,
+    showPaidWatermark: paid == subTotal, // Show watermark if paid
+  );
 
-  /// Logo
-  //
-  // /// Mobile no.
-  // PdfTextElement element =
-  //     PdfTextElement(text: , font: timesRoman);
-  // element.brush = brushColor;
-  // PdfLayoutResult result =
-  //     element.draw(page: page, bounds: const Rect.fromLTWH(10, 120, 0, 0))!;
-  //
-  // /// email address
-  // element =
-  //     PdfTextElement(text: , font: timesRoman);
-  // element.brush = brushColor;
-  // result =
-  //     element.draw(page: page, bounds: const Rect.fromLTWH(10, 135, 0, 0))!;
-  //
-  // /// Address
-  // element = PdfTextElement(
-  //     text:  font: timesRoman);
-  // element.brush = brushColor;
-  // result =
-  //     element.draw(page: page, bounds: const Rect.fromLTWH(10, 155, 0, 0))!;
-  // element = PdfTextElement(text: , font: timesRoman);
-  // element.brush = brushColor;
-  // result = element.draw(
-  //   page: page,
-  //   bounds: const Rect.fromLTWH(10, 170, 0, 0),
-  // )!;
-  //
-  // /// date
-  // String currentDate = ;
-  // // Measures the width of the text to place it in the correct location
-  // Size size = timesRoman.measureString(currentDate);
-  // element = PdfTextElement(text: currentDate, font: timesRoman);
-  // element.brush = brushColor;
-  // result = element.draw(
-  //     page: page,
-  //     bounds:
-  //         Rect.fromLTWH(graphics.clientSize.width - size.width, 175, 0, 0))!;
-  //
-  // /// Invoice Number
-  // Size textSize = timesRoman.measureString('Invoice No. $invoiceId');
-  // element = PdfTextElement(text:  font: timesRoman);
-  // element.brush = brushColor;
-  // result = element.draw(
-  //   page: page,
-  //   bounds:
-  //       Rect.fromLTWH(graphics.clientSize.width - textSize.width, 195, 0, 0),
-  // )!;
-  //
-  // /// Customer name
-  // element = PdfTextElement(
-  //   text: ,
-  //   font: PdfStandardFont(
-  //     PdfFontFamily.timesRoman,
-  //     16,
-  //     style: PdfFontStyle.bold,
-  //   ),
-  // );
-  // element.brush = brushColor;
-  // result = element.draw(
-  //   page: page,
-  //   bounds: const Rect.fromLTWH(10, 195, 0, 0),
-  // )!;
-
-  /// customer mobile
-  // element = PdfTextElement(
-  //   text: ,
-  //   font: timesRoman,
-  // );
-  // element.brush = brushColor;
-  // result = element.draw(
-  //   page: page,
-  //   bounds: const Rect.fromLTWH(10, 215, 0, 0),
-  // )!;
-
-  // /// customer address
-  // element = PdfTextElement(text: address, font: timesRoman);
-  // element.brush = brushColor;
-  // result = element.draw(
-  //   page: page,
-  //   bounds: const Rect.fromLTWH(10, 230, 0, 0),
-  // )!;
-  //
-  // /// items
-  // element = PdfTextElement(
-  //     text: , font: timesRoman);
-  // element.brush = PdfSolidBrush(PdfColor(12, 187, 139));
-  // result =
-  //     element.draw(page: page, bounds: const Rect.fromLTWH(10, 250, 0, 0))!;
-
-  /// Horizontal Line
-  // graphics.drawLine(
-  //     PdfPen(color, width: 1),
-  //     Offset(0, result.bounds.bottom + 10),
-  //     Offset(graphics.clientSize.width, result.bounds.bottom + 10));
-  ///TODO: This will be added inside the loop
-
-//Draws the grid to the PDF page
-
-  // vat
-  // String vat = ;
-  // Size vatSize = timesRoman.measureString(vat);
-  // PdfTextElement(
-  //   text: vat,
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(color),
-  // ).draw(
-  //   format: layoutFormat,
-  //   page: gridResult.page,
-  //   bounds: Rect.fromLTWH(
-  //     graphics.clientSize.width - vatSize.width,
-  //     gridResult.bounds.bottom + 30,
-  //     0,
-  //     0,
-  //   ),
-  // );
-
-  ///to add Discount
-  // Size textSize1 = timesRoman.measureString();
-  // PdfTextElement(
-  //   text: 'Discount $discountAmount BDT',
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(PdfColor(215, 44, 67)),
-  // ).draw(
-  //     format: layoutFormat,
-  //     page: gridResult.page,
-  //     bounds: Rect.fromLTWH(graphics.clientSize.width - textSize1.width,
-  //         gridResult.bounds.bottom + 50, 0, 0));
-
-  // sub total
-  // String subTotals = ;
-  // Size subTotalSize = timesRoman.measureString(subTotals);
-  // PdfTextElement(
-  //   text: subTotals,
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(color),
-  // ).draw(
-  //   format: layoutFormat,
-  //   page: gridResult.page,
-  //   bounds: Rect.fromLTWH(
-  //     graphics.clientSize.width - subTotalSize.width,
-  //     gridResult.bounds.bottom + 70,
-  //     0,
-  //     0,
-  //   ),
-  // );
-
-  /// advance
-  // String advanceText = ;
-  // Size textSize2 = timesRoman.measureString(advanceText);
-  // PdfTextElement(
-  //   text: advanceText,
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(color),
-  // ).draw(
-  //   format: layoutFormat,
-  //   page: gridResult.page,
-  //   bounds: Rect.fromLTWH(
-  //     graphics.clientSize.width - textSize2.width,
-  //     gridResult.bounds.bottom + 90,
-  //     0,
-  //     0,
-  //   ),
-  // );
-  ///Todo: This will also be part of the loop
-  ///pay list
-
-  /// Due
-  // String dueText = ;
-  // Size dueSize = timesRoman.measureString(dueText);
-  // PdfTextElement(
-  //   text: dueText,
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(color),
-  // ).draw(
-  //   format: layoutFormat,
-  //   page: gridResult.page,
-  //   bounds: Rect.fromLTWH(
-  //     graphics.clientSize.width - dueSize.width,
-  //     gridResult.bounds.bottom + spacing,
-  //     0,
-  //     0,
-  //   ),
-  // );
-
-  // /// paid
-  // String paidText = ;
-  // Size paidSize = timesRoman.measureString(paidText);
-  // PdfTextElement(
-  //   text: paidText,
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(color),
-  // ).draw(
-  //     page: gridResult.page,
-  //     format: layoutFormat,
-  //     bounds: Rect.fromLTWH(graphics.clientSize.width - paidSize.width,
-  //         gridResult.bounds.bottom + spacing + 20, 0, 0));
-  //
-  // /// total amount
-  // String amountText = ;
-  // Size amountSize = timesRoman.measureString(amountText);
-  // PdfTextElement(
-  //   text: amountText,
-  //   font: timesRoman,
-  //   brush: PdfSolidBrush(color),
-  // ).draw(
-  //   page: gridResult.page,
-  //   format: layoutFormat,
-  //   bounds: Rect.fromLTWH(graphics.clientSize.width - amountSize.width,
-  //       gridResult.bounds.bottom + spacing + 40, 0, 0),
-  // );
-  //Save the document
-  List<int> bytes = await document.save();
+  // Save or share
   if (isSave) {
-    try {
-      await FileSaver.instance.saveAs(
-        'viraeshop_invoice$invoiceId.pdf',
-        Uint8List.fromList(bytes),
-        'PDF',
-        MimeType.PDF,
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
+    await FileSaver.instance.saveFile(
+      name: '$invoiceId invoice.pdf',
+      bytes: await pdf.save(),
+      mimeType: MimeType.pdf,
+    );
   } else {
     await Printing.sharePdf(
-        bytes: Uint8List.fromList(bytes),
-        filename: 'viraeshop_invoice$invoiceId.pdf');
+      bytes: await pdf.save(),
+      filename: 'Viraeshop_$invoiceId.pdf',
+    );
   }
-  document.dispose();
 }
 
-PdfGrid drawTable(List items, PdfColor color) {
-  PdfGrid grid = PdfGrid();
-  grid.columns.add(count: 4);
-  PdfGridRow headerRow = grid.rows.add();
-  headerRow.cells[0].value = 'Quantity';
-  headerRow.cells[1].value = 'Name';
-  headerRow.cells[2].value = 'Price(BDT)';
-  headerRow.cells[3].value = 'Amount(BDT)';
-  for (var element in items) {
-    PdfGridRow row = grid.rows.add();
-    row.cells[0].value = '${element['quantity']} X';
-    row.cells[1].value = '${element['productName']}(${element['productId']})';
-    row.cells[2].value = '${element['unitPrice']}';
-    row.cells[3].value = '${element['productPrice']}';
+Future<pw.Document> _generateInvoicePdf({
+  required String invoiceId,
+  required dynamic date,
+  required List items,
+  required dynamic totalItems,
+  required dynamic totalQuantity,
+  required dynamic subTotal,
+  required dynamic total,
+  required dynamic discountAmount,
+  required dynamic advance,
+  required dynamic due,
+  required dynamic paid,
+  required pw.MemoryImage logo,
+  bool showPaidWatermark = false,
+  String? mobile,
+  String? address,
+  String? name,
+  List? payList,
+}) async {
+  final pdf = pw.Document();
+
+  pdf.addPage(
+    pw.MultiPage(
+      pageTheme: pw.PageTheme(
+        pageFormat: PdfPageFormat.a4,
+        // margin: const pw.EdgeInsets.symmetric(
+        //   horizontal: 1.5 * PdfPageFormat.cm, // Equal left/right margins
+        //   vertical: 1.5 * PdfPageFormat.cm, // Equal top/bottom margins
+        // ),
+        buildBackground: (context) {
+          if (showPaidWatermark) {
+            return pw.Watermark(
+              angle: 45, // Degrees (converted to radians internally)
+              child: pw.Opacity(
+                opacity: 0.1,
+                child: pw.Text(
+                  'PAID',
+                  style: pw.TextStyle(
+                    fontSize: 100,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.blue,
+                  ),
+                ),
+              ),
+            );
+          }
+          return pw.Container(); // Empty when no watermark
+        },
+      ),
+      build: (context) {
+        return [
+          pw.Container(
+            alignment: pw.Alignment.center,
+            child: pw.ConstrainedBox(
+              constraints: const pw.BoxConstraints(
+                maxWidth: 16 * PdfPageFormat.cm,
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Header with Logo
+                  pw.Container(
+                    width: 1100,
+                    height: 200,
+                    child: pw.Image(logo),
+                  ),
+                  pw.SizedBox(height: 20),
+                  pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text('H-65, New Airport, Amtoli, Mohakhali',
+                              style: const pw.TextStyle(fontSize: 10)),
+                          pw.Text('Dhaka-1212, Bangladesh',
+                              style: const pw.TextStyle(fontSize: 10)),
+                          pw.SizedBox(height: 8),
+                          pw.Text(
+                              'Tel: 01710735425 | 01324430921 | +8801729396990',
+                              style: const pw.TextStyle(fontSize: 9)),
+                          pw.Text('Email: viraeshop@gmail.com',
+                              style: const pw.TextStyle(fontSize: 9)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 20),
+                  // Invoice Info
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('INVOICE #$invoiceId',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text('Date: ${_formatDate(date)}'),
+                    ],
+                  ),
+                  pw.Divider(thickness: 1),
+                  pw.SizedBox(height: 10),
+                  // Customer Info
+                  if (name != null || mobile != null || address != null) ...[
+                    pw.Text('Customer: ${name ?? '-'}',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    if (address != null) pw.Text('Address: $address'),
+                    if (mobile != null) pw.Text('Phone: $mobile'),
+                    pw.SizedBox(height: 10),
+                  ],
+
+                  // Items Summary
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('Total Qty: ${totalQuantity.toString()}'),
+                      pw.Text('${totalItems.toString()} Items',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                  pw.SizedBox(height: 10),
+
+                  // Product Table
+                  pw.Table(
+                    border: pw.TableBorder.all(
+                        color: PdfColors.grey300, width: 0.5),
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(1.5),
+                      1: const pw.FlexColumnWidth(3),
+                      2: const pw.FlexColumnWidth(1.5),
+                      3: const pw.FlexColumnWidth(1.5),
+                    },
+                    children: [
+                      // Header Row
+                      pw.TableRow(
+                        children: [
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(4),
+                            child: pw.Text('Qty',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(4),
+                            child: pw.Text('Product',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(4),
+                            child: pw.Text('Unit Price',
+                                textAlign: pw.TextAlign.center,
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                          ),
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(4),
+                            child: pw.Text('Amount',
+                                textAlign: pw.TextAlign.center,
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                      // Product Rows
+                      ...items.map((item) => pw.TableRow(
+                            children: [
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(4),
+                                child: pw.Text('${item['quantity']} x'),
+                              ),
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(4),
+                                child: pw.Column(
+                                  crossAxisAlignment:
+                                      pw.CrossAxisAlignment.start,
+                                  children: [
+                                    pw.Text(
+                                      item['productName'].toString(),
+                                      style: pw.TextStyle(
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
+                                    ),
+                                    pw.Text(
+                                      item['productId'].toString(),
+                                      style: const pw.TextStyle(
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(4),
+                                child: pw.Text(
+                                  _formatCurrency(
+                                    item['unitPrice'],
+                                  ),
+                                  textAlign: pw.TextAlign.right,
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(4),
+                                child: pw.Text(
+                                  _formatCurrency(
+                                    item['productPrice'],
+                                  ),
+                                  textAlign: pw.TextAlign.right,
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )),
+                    ],
+                  ),
+                  pw.SizedBox(height: 20),
+
+                  // Payment Summary
+                  pw.Align(
+                    alignment: pw.Alignment.centerRight,
+                    child: pw.Container(
+                      width: 250,
+                      padding: const pw.EdgeInsets.all(12),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(color: PdfColors.grey),
+                        borderRadius: pw.BorderRadius.circular(4),
+                      ),
+                      child: pw.Column(
+                        children: [
+                          _buildSummaryRow('VAT%', _formatCurrency(0)),
+                          _buildSummaryRow('Total', _formatCurrency(total)),
+                          _buildSummaryRow(
+                              'Discount', _formatCurrency(discountAmount)),
+                          _buildSummaryRow(
+                              'Sub Total', _formatCurrency(subTotal)),
+                          if (advance != '0')
+                            _buildSummaryRow(
+                                'Advance', _formatCurrency(advance)),
+                          if (payList != null && payList.isNotEmpty) ...[
+                            pw.SizedBox(height: 8),
+                            pw.Text('Payment History:',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold)),
+                            ...payList
+                                .map((payment) => pw.Padding(
+                                      padding: const pw.EdgeInsets.symmetric(
+                                          vertical: 2),
+                                      child: pw.Row(
+                                        mainAxisAlignment:
+                                            pw.MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          pw.Text(
+                                              _formatDate(payment['createdAt']),
+                                              style: const pw.TextStyle(
+                                                  fontSize: 9)),
+                                          pw.Text(
+                                              _formatCurrency(payment['paid']),
+                                              style: const pw.TextStyle(
+                                                  fontSize: 9)),
+                                        ],
+                                      ),
+                                    ))
+                                .toList(),
+                            pw.SizedBox(height: 8),
+                          ],
+                          _buildSummaryRow('Paid', _formatCurrency(paid)),
+                          pw.Divider(thickness: 0.5),
+                          _buildSummaryRow('TOTAL DUE', _formatCurrency(due),
+                              isTotal: true),
+                        ],
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(height: 20),
+
+                  // Footer
+                  pw.Center(
+                    child: pw.Text('Thank you for your business!',
+                        style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ];
+      },
+    ),
+  );
+
+  return pdf;
+}
+
+// Helper functions remain the same as previous version
+String _formatCurrency(dynamic value) {
+  if (value == null) return 'BDT 0.00';
+  final number =
+      value is String ? double.tryParse(value) ?? 0 : value.toDouble();
+  return 'BDT ${NumberFormat('#,##0.00').format(number)}';
+}
+
+String _formatDate(dynamic date) {
+  try {
+    if (date is String) return date;
+    if (date is DateTime) return DateFormat('dd/MM/yyyy').format(date);
+    if (date is Timestamp)
+      return DateFormat('dd/MM/yyyy').format(date.toDate());
+    return date.toString();
+  } catch (e) {
+    return date.toString();
   }
-  //Set padding for grid cells
-  grid.style.cellPadding = PdfPaddings(left: 2, right: 2, top: 2, bottom: 2);
-//Creates the grid cell styles
-  PdfGridCellStyle cellStyle = PdfGridCellStyle();
-  cellStyle.borders.all = PdfPens.white;
-  cellStyle.borders.bottom = PdfPens.white;
-  cellStyle.font = PdfStandardFont(PdfFontFamily.timesRoman, 14);
-  cellStyle.textBrush = PdfSolidBrush(color);
-//Adds cell customizations
-  for (int i = 0; i < grid.rows.count; i++) {
-    PdfGridRow row = grid.rows[i];
-    for (int j = 0; j < row.cells.count; j++) {
-      row.cells[j].style = cellStyle;
-      if (j == 0 || j == 1) {
-        row.cells[j].stringFormat = PdfStringFormat(
-            alignment: PdfTextAlignment.left,
-            lineAlignment: PdfVerticalAlignment.middle);
-      } else {
-        row.cells[j].stringFormat = PdfStringFormat(
-            alignment: PdfTextAlignment.right,
-            lineAlignment: PdfVerticalAlignment.middle);
-      }
-    }
-  }
-  return grid;
+}
+
+pw.Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
+  return pw.Padding(
+    padding: const pw.EdgeInsets.symmetric(vertical: 4),
+    child: pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Text(label),
+        pw.Text(value,
+            style: isTotal
+                ? pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14)
+                : null),
+      ],
+    ),
+  );
 }

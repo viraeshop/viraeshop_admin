@@ -7,6 +7,7 @@ class CategoryCard extends StatelessWidget {
     required this.imageUrl,
     required this.title,
     this.onTap,
+    this.onLongPress,
     required this.isSelected,
     this.isAssetImage = false,
     this.isSubCategory = false,
@@ -17,11 +18,13 @@ class CategoryCard extends StatelessWidget {
   final bool isAssetImage;
   final bool isSubCategory;
   final void Function()? onTap;
+  final void Function()? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Column(
         children: [
           Container(

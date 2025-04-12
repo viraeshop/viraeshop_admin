@@ -157,9 +157,10 @@ Future<void> shareStatement({
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
         index >= 10 ? index.toString() : '0${index.toString()}';
-    row.cells[1].value = element['businessName'] != '' && element['businessName'] != null
-        ? element['businessName']
-        : element['name'];
+    row.cells[1].value =
+        element['businessName'] != '' && element['businessName'] != null
+            ? element['businessName']
+            : element['name'];
     row.cells[2].value = '${element['totalPaid']}';
     row.cells[3].value = '${element['totalDue']}';
     row.cells[4].value = '${element['totalAmount']}';
@@ -269,9 +270,10 @@ Future<void> shareStatement({
   if (isSave) {
     try {
       await FileSaver.instance.saveFile(
-          '$name Transaction statement$invoiceId.pdf',
-          Uint8List.fromList(bytes),
-          'PDF');
+        name: '$name Transaction statement$invoiceId',
+        bytes: Uint8List.fromList(bytes),
+        mimeType: MimeType.pdf,
+      );
     } catch (e) {
       if (kDebugMode) {
         print(e);

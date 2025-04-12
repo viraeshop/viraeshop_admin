@@ -1,13 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:blurry_modal_progress_hud/blurry_modal_progress_hud.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:viraeshop_bloc/admin/admin_bloc.dart';
+import 'package:viraeshop_bloc/admin/admin_event.dart';
+import 'package:viraeshop_bloc/admin/admin_state.dart';
 import 'package:viraeshop_bloc/items/barrel.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -31,11 +32,13 @@ class OrderProductCard extends StatefulWidget {
     required this.orderInfo,
     required this.adminId,
     this.admins,
+    this.onGetAdmins = false,
   }) : super(key: key);
 
   final String orderId;
   final String adminId;
   final Items product;
+  final bool onGetAdmins;
   final List<AdminModel>? admins;
   final int index;
   final Map<String, dynamic> orderInfo;
@@ -45,22 +48,17 @@ class OrderProductCard extends StatefulWidget {
 }
 
 class _OrderProductCardState extends State<OrderProductCard> {
-  int quantity = 0;
-  num originalPrice = 0;
-  num discountedPrice = 0;
-  num discount = 0;
   num newQuantity = 0;
   num newTotalPrice = 0;
   num newDiscount = 0;
   num newSubTotal = 0;
   num newDueBalance = 0;
-  String dropdownValue = 'confirmed';
+  String? dropdownValue;
   String currentStatus = '';
   bool onLocation = false;
   bool onPhone = false;
   bool onSent = false;
   bool onOrderStage = true;
-  List<AdminModel> admins = [];
   bool onEdit = false;
   bool isLoading = false, onDelete = false;
   final jWTToken = Hive.box('adminInfo').get('token');
@@ -68,34 +66,63 @@ class _OrderProductCardState extends State<OrderProductCard> {
   int statusIndex = 0;
   OrderStages? currentStage;
   bool disable = false;
+  bool isAdminsLoading = false;
+  bool onAdminsError = false;
+
   @override
   void initState() {
     currentStage =
         Provider.of<OrderProvider>(context, listen: false).currentStage;
-    disable = !widget.product.availability;
+    if (widget.product.availability != null) {
+      disable = !widget.product.availability!;
+    }
     if (currentStage == OrderStages.receiving) {
       currentStatus = widget.product.receiveStatus;
     } else if (currentStage == OrderStages.processing) {
       currentStatus = widget.product.processingStatus;
     }
     onOrderStage = currentStage == OrderStages.order;
-    if (onOrderStage) {
-      dropdownValue = widget.product.availability ? 'confirmed' : 'failed';
+    if (onOrderStage && widget.product.availability != null) {
+      dropdownValue = widget.product.availability! ? 'confirmed' : 'failed';
     }
-    admins = widget.admins ?? [];
     if ((!onOrderStage && currentStage != OrderStages.admin) &&
-        admins.isNotEmpty) {
+        widget.product.supplyAdmins.isNotEmpty) {
       dropdownValue = widget.adminId;
     }
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      setState(() {
-        quantity = widget.product.quantity;
-        originalPrice = widget.product.originalPrice;
-        discountedPrice = widget.product.productPrice;
-        discount = widget.product.discount;
-      });
-    });
     super.initState();
+  }
+
+  // @override
+  // void deactivate() {
+  //   // TODO: implement deactivate
+  //   super.deactivate();
+  // }
+  //
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    // Reset all state variables
+    newQuantity = 0;
+    newTotalPrice = 0;
+    newDiscount = 0;
+    newSubTotal = 0;
+    newDueBalance = 0;
+    dropdownValue = null;
+    currentStatus = '';
+    onLocation = false;
+    onPhone = false;
+    onSent = false;
+    onOrderStage = true;
+    onEdit = false;
+    isLoading = false;
+    onDelete = false;
+    status = [];
+    statusIndex = 0;
+    currentStage = null;
+    disable = false;
+    isAdminsLoading = false;
+    onAdminsError = false;
+    super.dispose();
   }
 
   @override
@@ -164,6 +191,12 @@ class _OrderProductCardState extends State<OrderProductCard> {
               );
             }
             if (currentStage == OrderStages.order) {
+              if(dropdownValue == 'confirmed' || dropdownValue == 'failed'){
+                Provider.of<OrderProvider>(context, listen: false).updateItemAvailability(
+                  dropdownValue == 'confirmed' ? true : false,
+                  widget.index,
+                );
+              }
               if (onDelete || dropdownValue == 'failed') {
                 setState(() {
                   newQuantity =
@@ -198,20 +231,20 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 setState(() {
                   newQuantity =
                       (widget.orderInfo['quantity'] - widget.product.quantity) +
-                          quantity;
+                          widget.product.editableQuantity;
                   newTotalPrice = (widget.orderInfo['total'] -
                           widget.product.originalPrice) +
-                      originalPrice;
+                      widget.product.editableOriginalPrice;
                   newDiscount =
                       (widget.orderInfo['discount'] - widget.product.discount) +
-                          discount;
+                          widget.product.editableDiscount;
                   newSubTotal = (widget.orderInfo['subTotal'] -
                           widget.product.productPrice) +
-                      discountedPrice;
+                      widget.product.editableProductPrice;
                   if (widget.orderInfo['due'] != 0) {
                     newDueBalance = (widget.orderInfo['due'] -
                             widget.product.productPrice) +
-                        discountedPrice;
+                        widget.product.editableProductPrice;
                   }
                 });
                 orderUpdate(
@@ -225,7 +258,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     if (widget.orderInfo['due'] != 0)
                       'due': (widget.orderInfo['due'] -
                               widget.product.productPrice) +
-                          discountedPrice,
+                          widget.product.editableProductPrice,
                   },
                   orderId: widget.orderId,
                   token: jWTToken,
@@ -245,6 +278,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
           }
         }),
         BlocListener<OrdersBloc, OrderState>(
+          listenWhen: (prev, curr){
+            return isLoading;
+          },
           listener: (context, state) {
             if (state is RequestFinishedOrderState) {
               if (currentStage == OrderStages.order) {
@@ -262,6 +298,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     subTotal: newSubTotal,
                     total: newTotalPrice,
                   );
+                    print('I am working even after my context is over');
                 } else {
                   Provider.of<OrderProvider>(context, listen: false)
                       .updateOrderValues(
@@ -272,6 +309,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     subTotal: newSubTotal,
                     total: newTotalPrice,
                   );
+                  print('I am working even after my context is over');
                 }
               }
               setState(() {
@@ -279,6 +317,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 if (onEdit) onEdit = false;
                 if (onDelete) onDelete = false;
                 if (dropdownValue == 'failed') disable = true;
+                if(dropdownValue == 'confirmed') disable = false;
               });
             } else if (state is OnErrorOrderState) {
               setState(() {
@@ -294,8 +333,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
           },
         ),
       ],
-      child: Container(
-        height: 350,
+      child: SizedBox(
+        height: 370,
         width: double.infinity,
         child: Stack(
           //fit: StackFit.,
@@ -360,12 +399,16 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                   data: {
                                                     'id': widget.product.id,
                                                     'itemInfo': {
-                                                      'quantity': quantity,
-                                                      'productPrice':
-                                                          discountedPrice,
-                                                      'discount': discount,
-                                                      'originalPrice':
-                                                          originalPrice,
+                                                      'quantity': widget.product
+                                                          .editableQuantity,
+                                                      'productPrice': widget
+                                                          .product
+                                                          .editableProductPrice,
+                                                      'discount': widget.product
+                                                          .editableDiscount,
+                                                      'originalPrice': widget
+                                                          .product
+                                                          .editableOriginalPrice,
                                                     }
                                                   },
                                                 );
@@ -391,7 +434,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                   deleteColor: onOrderStage && !disable
                                       ? kRedColor
                                       : Colors.grey,
-                                  quantity: quantity.toString(),
+                                  quantity: widget.product.editableQuantity
+                                      .toString(),
                                   onDelete: onOrderStage && !disable
                                       ? () {
                                           setState(
@@ -414,35 +458,57 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                       : null,
                                   onAdd: onEdit
                                       ? () {
-                                          setState(() {
-                                            ++quantity;
-                                            num originalUnitPrice =
-                                                widget.product.originalPrice /
-                                                    widget.product.quantity;
-                                            num discountAmount =
-                                                widget.product.discount /
-                                                    widget.product.quantity;
-                                            originalPrice += originalUnitPrice;
-                                            discountedPrice +=
-                                                widget.product.unitPrice;
-                                            discount += discountAmount;
+                                          num originalUnitPrice =
+                                              widget.product.originalPrice /
+                                                  widget.product.quantity;
+                                          num discountAmount =
+                                              widget.product.discount /
+                                                  widget.product.quantity;
+                                          Provider.of<OrderProvider>(context,
+                                                  listen: false)
+                                              .updateEditableProductsFields(
+                                                  widget.index,
+                                                  EditingOperation.all, {
+                                            'quantity': widget
+                                                    .product.editableQuantity +
+                                                1,
+                                            'originalPrice': widget.product
+                                                    .editableOriginalPrice +
+                                                originalUnitPrice,
+                                            'discountedPrice': widget.product
+                                                    .editableProductPrice +
+                                                widget.product.unitPrice,
+                                            'discount': widget
+                                                    .product.editableDiscount +
+                                                discountAmount,
                                           });
                                         }
                                       : null,
                                   onReduce: onEdit
                                       ? () {
-                                          setState(() {
-                                            --quantity;
-                                            num originalUnitPrice =
-                                                widget.product.originalPrice /
-                                                    widget.product.quantity;
-                                            num discountAmount =
-                                                widget.product.discount /
-                                                    widget.product.quantity;
-                                            originalPrice -= originalUnitPrice;
-                                            discountedPrice -=
-                                                widget.product.unitPrice;
-                                            discount -= discountAmount;
+                                          num originalUnitPrice =
+                                              widget.product.originalPrice /
+                                                  widget.product.quantity;
+                                          num discountAmount =
+                                              widget.product.discount /
+                                                  widget.product.quantity;
+                                          Provider.of<OrderProvider>(context,
+                                                  listen: false)
+                                              .updateEditableProductsFields(
+                                                  widget.index,
+                                                  EditingOperation.all, {
+                                            'quantity': widget
+                                                    .product.editableQuantity -
+                                                1,
+                                            'originalPrice': widget.product
+                                                    .editableOriginalPrice -
+                                                originalUnitPrice,
+                                            'discountedPrice': widget.product
+                                                    .editableProductPrice -
+                                                widget.product.unitPrice,
+                                            'discount': widget
+                                                    .product.editableDiscount -
+                                                discountAmount,
                                           });
                                         }
                                       : null,
@@ -470,7 +536,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '$originalPrice$bdtSign',
+                                '${widget.product.editableOriginalPrice}$bdtSign',
                                 style: const TextStyle(
                                   color: kBlackColor,
                                   fontFamily: 'SourceSans',
@@ -483,7 +549,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                 width: 10.0,
                               ),
                               Text(
-                                '$discountedPrice$bdtSign',
+                                '${widget.product.editableProductPrice}$bdtSign',
                                 style: kSansTextStyleBigBlack,
                               ),
                             ],
@@ -496,40 +562,53 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ? MainAxisAlignment.start
                             : MainAxisAlignment.spaceEvenly,
                         children: [
-                          DropdownButton(
-                            underline: const SizedBox(),
-                            borderRadius: BorderRadius.circular(10.0),
-                            dropdownColor: Colors.white,
-                            iconEnabledColor: kSubMainColor,
-                            items: generateItems(admins, context),
-                            value: dropdownValue,
-                            onChanged: disable
-                                ? null
-                                : (String? value) {
-                                    bool onOrderOrAdminStage =
-                                        currentStage == OrderStages.order ||
-                                            currentStage == OrderStages.admin;
-                                    setState(() {
-                                      dropdownValue = value ?? '';
-                                      if (onOrderOrAdminStage) isLoading = true;
-                                    });
-                                    if (onOrderOrAdminStage) {
-                                      productUpdate(
-                                        context: context,
-                                        data: {
-                                          'id': widget.product.id,
-                                          'itemInfo': {
-                                            if (onOrderStage)
-                                              'availability':
-                                                  value == 'confirmed',
-                                            if (currentStage ==
-                                                OrderStages.admin)
-                                              'processingStatus': value,
-                                          },
-                                        },
-                                      );
-                                    }
-                                  },
+                          Expanded(
+                            child: SizedBox(
+                              width: 100,
+                              child: DropdownButtonFormField(
+                                //underline: const SizedBox(),
+                                decoration: const InputDecoration(
+                                  hintText: 'Select',
+                                  border: InputBorder.none,
+                                ),
+                                borderRadius: BorderRadius.circular(10.0),
+                                dropdownColor: Colors.white,
+                                iconEnabledColor: kSubMainColor,
+                                items: generateItems(
+                                    widget.product.productSupplier.admins,
+                                    context),
+                                value: dropdownValue,
+                                onChanged: (dynamic value) {
+                                        bool onOrderOrAdminStage =
+                                            currentStage == OrderStages.order ||
+                                                currentStage ==
+                                                    OrderStages.admin;
+                                        setState(() {
+                                          dropdownValue =
+                                              (value ?? '') as String?;
+                                          if (onOrderOrAdminStage) {
+                                            isLoading = true;
+                                          }
+                                        });
+                                        if (onOrderOrAdminStage) {
+                                          productUpdate(
+                                            context: context,
+                                            data: {
+                                              'id': widget.product.id,
+                                              'itemInfo': {
+                                                if (onOrderStage)
+                                                  'availability':
+                                                      value == 'confirmed',
+                                                if (currentStage ==
+                                                    OrderStages.admin)
+                                                  'processingStatus': value,
+                                              },
+                                            },
+                                          );
+                                        }
+                                      },
+                              ),
+                            ),
                           ),
                           const SizedBox(
                             width: 10.0,
@@ -685,8 +764,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 ),
               ),
             ),
-            if (!disable && (widget.product.processingStatus == 'pending' &&
-                currentStage == OrderStages.receiving))
+            if (!disable &&
+                (widget.product.processingStatus == 'pending' &&
+                    currentStage == OrderStages.receiving))
               Align(
                 alignment: Alignment.center,
                 child: Column(
@@ -811,9 +891,8 @@ class DropDownMenuWidget extends StatelessWidget {
   }
 }
 
-List<DropdownMenuItem<String>> generateItems(
-    List<AdminModel> admins, BuildContext context) {
-  List<DropdownMenuItem<String>> items = [];
+List<DropdownMenuItem> generateItems(List admins, BuildContext context) {
+  List<DropdownMenuItem> items = [];
   OrderStages currentStage = Provider.of<OrderProvider>(context).currentStage;
   if (currentStage == OrderStages.order || currentStage == OrderStages.admin) {
     List<String> titles = ['Confirmed', 'Failed'];
@@ -834,9 +913,9 @@ List<DropdownMenuItem<String>> generateItems(
   } else {
     items = admins.map((e) {
       return DropdownMenuItem(
-        value: e.adminId,
+        value: e['adminId'],
         child: Text(
-          e.name,
+          e['name'],
           style: const TextStyle(
             color: kNewMainColor,
             fontSize: 20.0,

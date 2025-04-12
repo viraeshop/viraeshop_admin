@@ -53,7 +53,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
     if (currentStage == OrderStages.delivery) {
       buttonTitles = ['Deliver', 'Delay', 'Failed'];
     }
-    addressController.text = widget.orderInfo['customer'].address;
+    addressController.text = widget.orderInfo['shippingAddress'];
     discountController.text = widget.orderInfo['discount'].toString();
     deliveryFeeController.text = widget.orderInfo['deliveryFee'].toString();
     advanceController.text = widget.orderInfo['advance'].toString();
@@ -176,7 +176,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                               !onEditCustomerInfo;
                                         });
                                         if (onEditCustomerInfo &&
-                                            widget.customerInfo['address'] !=
+                                            widget.orderInfo['shippingAddress'] !=
                                                 addressController.text) {
                                           Provider.of<OrderProvider>(context)
                                               .updateOrderInfo(
@@ -437,55 +437,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                             ],
                           )
                         else
-                          SendButton(
-                            color: kNewMainColor,
-                            onTap: () {
-                              List<Map<String, dynamic>> items = [];
-                              for (var element in orderItems) {
-                                final product = {
-                                  'productId': element.productId,
-                                  'buyPrice': element.buyPrice,
-                                  'isInventory': false,
-                                  'productName': element.productName,
-                                  'productPrice': element.productPrice,
-                                  'unitPrice': element.unitPrice,
-                                  'quantity': element.quantity,
-                                  'productCode': element.productCode,
-                                  'originalPrice': element.originalPrice,
-                                  'productImage': element.productImage,
-                                  'discount': element.discount,
-                                  'discountPercent': element.discountPercent,
-                                };
-                                items.add(product);
-                              }
-                              final transactionInfo = {
-                                'price': widget.orderInfo['subTotal'],
-                                'quantity': widget.orderInfo['quantity'],
-                                'adminId': adminId,
-                                'items': items,
-                                'isWithNonInventory': false,
-                                'customerId': widget.orderInfo['customerId'],
-                                'role': widget.customerInfo['role'],
-                                'paid': widget.orderInfo['subTotal'],
-                                'due': 0,
-                                'advance': 0,
-                                'discount': widget.orderInfo['discount'],
-                                'profit': widget.orderInfo['profit'],
-                              };
-                              setState(() {
-                                isLoading = true;
-                              });
-                              final transactionBloc =
-                                  BlocProvider.of<TransactionsBloc>(context);
-                              transactionBloc.add(
-                                AddTransactionEvent(
-                                  token: jWTToken,
-                                  transactionModel: transactionInfo,
-                                ),
-                              );
-                            },
-                            title: 'Approve',
-                          ),
+                          const Text('Order Delivered Successfully..', style: kProductNameStylePro,),
                       ],
                     ),
                   ),
@@ -665,3 +617,53 @@ class DeliveryOptions extends StatelessWidget {
     );
   }
 }
+
+//SendButton(
+//                             color: kNewMainColor,
+//                             onTap: () {
+//                               List<Map<String, dynamic>> items = [];
+//                               for (var element in orderItems) {
+//                                 final product = {
+//                                   'productId': element.productId,
+//                                   'buyPrice': element.buyPrice,
+//                                   'isInventory': false,
+//                                   'productName': element.productName,
+//                                   'productPrice': element.productPrice,
+//                                   'unitPrice': element.unitPrice,
+//                                   'quantity': element.quantity,
+//                                   'productCode': element.productCode,
+//                                   'originalPrice': element.originalPrice,
+//                                   'productImage': element.productImage,
+//                                   'discount': element.discount,
+//                                   'discountPercent': element.discountPercent,
+//                                 };
+//                                 items.add(product);
+//                               }
+//                               final transactionInfo = {
+//                                 'price': widget.orderInfo['subTotal'],
+//                                 'quantity': widget.orderInfo['quantity'],
+//                                 'adminId': adminId,
+//                                 'items': items,
+//                                 'isWithNonInventory': false,
+//                                 'customerId': widget.orderInfo['customerId'],
+//                                 'role': widget.customerInfo['role'],
+//                                 'paid': widget.orderInfo['subTotal'],
+//                                 'due': 0,
+//                                 'advance': 0,
+//                                 'discount': widget.orderInfo['discount'],
+//                                 'profit': widget.orderInfo['profit'],
+//                               };
+//                               setState(() {
+//                                 isLoading = true;
+//                               });
+//                               final transactionBloc =
+//                                   BlocProvider.of<TransactionsBloc>(context);
+//                               transactionBloc.add(
+//                                 AddTransactionEvent(
+//                                   token: jWTToken,
+//                                   transactionModel: transactionInfo,
+//                                 ),
+//                               );
+//                             },
+//                             title: 'Approve',
+//                           )

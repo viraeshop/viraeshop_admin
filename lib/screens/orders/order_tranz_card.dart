@@ -5,23 +5,27 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 class OrderTranzCard extends StatelessWidget {
   final String price, employeeName, date, desc, customerName;
   final String? id;
+  final String processingStatus;
   final IconData? status;
   final Color? statusColor;
   final bool isTransaction;
+  final bool isAdmin;
   final Function()? onTap;
-  const OrderTranzCard(
-      {required this.price,
-      required this.employeeName,
-      required this.desc,
-      required this.date,
-      required this.customerName,
-      required this.onTap,
-      this.isTransaction = true,
-      this.id,
-      this.status,
-      this.statusColor,
-      Key? key})
-      : super(key: key);
+  const OrderTranzCard({
+    required this.price,
+    required this.employeeName,
+    required this.desc,
+    required this.date,
+    required this.customerName,
+    required this.onTap,
+    this.isTransaction = true,
+    this.isAdmin = false,
+    this.processingStatus = '',
+    this.id,
+    this.status,
+    this.statusColor,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +51,21 @@ class OrderTranzCard extends StatelessWidget {
                     status,
                     color: statusColor,
                   ),
-                  // Text(status!, style: const TextStyle(
-                  //   color: kBlackColor,
-                  //   fontFamily: 'Montserrat',
-                  //   fontSize: 15,
-                  //   letterSpacing: 1.3,
-                  //   fontWeight: FontWeight.bold,
-                  // ),)
+                  if (isAdmin)
+                    Text(
+                      processingStatus,
+                      style: TextStyle(
+                        color: processingStatus == 'New'
+                            ? kLightGreen
+                            : processingStatus == 'Confirmed'
+                                ? kNewMainColor
+                                : processingStatus == 'failed' ? kRedColor : kBrownColorAccent,
+                        fontFamily: 'Montserrat',
+                        fontSize: 15,
+                        letterSpacing: 1.3,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
                 ],
               ),
             Row(

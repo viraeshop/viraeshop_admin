@@ -245,9 +245,10 @@ Future<void> shareCustomerStatement({
   if (isSave) {
     try {
       await FileSaver.instance.saveFile(
-          '$name Transaction statement.pdf',
-          Uint8List.fromList(bytes),
-          'PDF');
+          name: '$name Transaction statement',
+          bytes: Uint8List.fromList(bytes),
+          mimeType: MimeType.pdf,
+      );
     } catch (e) {
       if (kDebugMode) {
         print(e);

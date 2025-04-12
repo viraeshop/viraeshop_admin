@@ -24,18 +24,18 @@ class ReceiptScreen extends StatefulWidget {
 
 class _ReceiptScreenState extends State<ReceiptScreen> {
   DateTime date = DateTime.now();
-  List items = [];
+  List<Map<String, dynamic>> items = [];
   String quantity = '0';
   String role = '';
   @override
   void initState() {
     // TODO: implement initState
-    List item = widget.data['items'];
+    List<Map<String, dynamic>> item = widget.data['items'];
     Timestamp timestamp = widget.data['date'];
     num totalQuantity = 0;
-    item.forEach((element) {
+    for (var element in item) {
       totalQuantity += element['quantity'];
-    });
+    }
     setState(() {
       date = timestamp.toDate();
       items = item;
@@ -363,7 +363,9 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                       shareInvoice(
                         date: DateFormat.yMMMd().format(date),
                         totalItems: quantity,
+                        total: widget.data['data'].toString() ?? '0',
                         subTotal: widget.data['price'].toString(),
+                        totalQuantity: quantity,
                         items: items,
                         mobile: widget.isFromOrder
                             ? '${widget.data['customer_info']['mobile']}'

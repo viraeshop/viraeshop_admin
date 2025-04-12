@@ -37,12 +37,14 @@ class OrderProducts extends StatefulWidget {
       required this.customerInfo,
       required this.orderInfo,
       required this.userId,
+        this.processorSeen = false,
       this.onGetAdmins = false})
       : super(key: key);
   final Map<String, dynamic> customerInfo;
   final Map<String, dynamic> orderInfo;
   final bool onGetAdmins;
   final String userId;
+  final bool processorSeen;
 
   @override
   State<OrderProducts> createState() => _OrderProductsState();
@@ -73,11 +75,11 @@ class _OrderProductsState extends State<OrderProducts> {
           total: widget.orderInfo['total'],
         );
     });
-    if (widget.onGetAdmins) {
-      final adminBloc = BlocProvider.of<AdminBloc>(context);
-      adminBloc.add(GetAdminsEvent(token: jWTToken));
-      isLoading = true;
-    }
+    // if (widget.onGetAdmins) {
+    //   final adminBloc = BlocProvider.of<AdminBloc>(context);
+    //   adminBloc.add(GetAdminsEvent(token: jWTToken));
+    //   isLoading = true;
+    // }/
     if (!widget.orderInfo['seen'] && currentStage == OrderStages.order) {
       isLoading = true;
       Map<String, dynamic> info = {
@@ -102,11 +104,7 @@ class _OrderProductsState extends State<OrderProducts> {
       updateOrderRead(
           info, context, widget.orderInfo['orderId'].toString(), jWTToken);
     } else if (currentStage == OrderStages.admin) {
-      if (kDebugMode) {
-        print(widget.orderInfo);
-      }
-      bool seen = widget.orderInfo['Admins'][0]['OrderProcessors']['seen'] ?? true;
-      if (!seen) {
+      if (!widget.processorSeen) {
         isLoading = true;
         Map<String, dynamic> info = {
           'adminProcessingCount': true,
@@ -117,6 +115,29 @@ class _OrderProductsState extends State<OrderProducts> {
       }
     }
     super.initState();
+  }
+
+  @override
+  void deactivate() {
+    // TODO: implement deactivate
+   // Provider.of<OrderProvider>(context, listen: false).resetValues();
+    super.deactivate();
+  }
+
+  OrderProvider? _orderProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Save a reference to the OrderProvider
+    _orderProvider = Provider.of<OrderProvider>(context, listen: false);
+  }
+
+  @override
+  void dispose() {
+    // Safely reset values using the saved reference
+    _orderProvider?.resetValues();
+    super.dispose();
   }
 
   @override
@@ -191,240 +212,223 @@ class _OrderProductsState extends State<OrderProducts> {
             height: screenSize.height,
             width: screenSize.width,
             color: Colors.white10.withOpacity(0.1),
-            child: BlocListener<AdminBloc, AdminState>(
-              listener: (context, state) {
-                if (state is FetchedAdminsState) {
-                  setState(() {
-                    isLoading = false;
-                    admins = state.adminList ?? [];
-                  });
-                } else if (state is OnErrorSupplierState) {
-                  setState(() {
-                    onError = true;
-                  });
-                }
-              },
-              child: widget.onGetAdmins && admins.isEmpty
-                  ? const LoadingWidget()
-                  : onError
-                      ? OnErrorWidget(message: errorMessage)
-                      : Stack(
-                          children: [
-                            FractionallySizedBox(
-                              heightFactor: 0.84,
-                              child: Consumer<OrderProvider>(
-                                  builder: (context, provider, any) {
-                                return ListView.builder(
-                                  itemCount: provider.orderProducts.length,
-                                  itemBuilder: (context, i) {
-                                    return OrderProductCard(
-                                      orderId: widget.orderInfo['orderId']
-                                          .toString(),
-                                      orderInfo: widget.orderInfo,
-                                      product: provider.orderProducts[i],
-                                      adminId: provider
-                                          .orderProducts[i].adminModel.adminId,
-                                      admins: provider.currentStage ==
-                                              OrderStages.processing
-                                          ? admins
-                                          : [
-                                              provider
-                                                  .orderProducts[i].adminModel
-                                            ],
-                                      index: i,
-                                    );
-                                  },
-                                );
-                              }),
-                            ),
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Container(
-                                  height:
-                                      currentStage == OrderStages.receiving ||
-                                              currentStage == OrderStages.admin
-                                          ? 80.0
-                                          : 130.0,
-                                  padding: const EdgeInsets.all(10.0),
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: kNewMainColor,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  child: Consumer<OrderProvider>(
-                                    builder: (context, provider, any) {
-                                      if (provider.currentStage ==
-                                              OrderStages.receiving ||
-                                          currentStage == OrderStages.admin) {
-                                        return Center(
-                                          child: SendButton(
-                                            onTap: () {
-                                              setState(() {
-                                                isLoading = true;
-                                              });
-                                              final orderBloc =
-                                                  BlocProvider.of<OrdersBloc>(
-                                                      context);
-                                              orderBloc.add(
-                                                UpdateOrderEvent(
-                                                  orderId: widget
-                                                      .orderInfo['orderId']
-                                                      .toString(),
-                                                  orderModel: {
-                                                    'notificationType':
-                                                        'employee2Admin',
-                                                    'orderStage': provider
-                                                        .currentStage.name,
-                                                    if (provider.currentStage ==
-                                                        OrderStages.receiving)
-                                                      'receiveStatus':
-                                                          'completed',
-                                                    if (provider.currentStage ==
-                                                        OrderStages.receiving)
-                                                      'deliveryStatus':
-                                                          'pending',
-                                                    if (provider.currentStage ==
-                                                        OrderStages.admin)
-                                                      'processingStatus':
-                                                          'confirmed',
-                                                    if (provider.currentStage ==
-                                                        OrderStages.admin)
-                                                      'incrementReceiveCount':
-                                                          true,
-                                                    if (provider.currentStage ==
-                                                        OrderStages.admin)
-                                                      'receiveStatus':
-                                                          'pending',
-                                                  },
-                                                  token: jWTToken,
-                                                ),
-                                              );
-                                            },
-                                            title: provider.currentStage ==
-                                                    OrderStages.admin
-                                                ? 'Send To Delivery Hub'
-                                                : 'Received',
-                                            textStyle: kTotalSalesStyle,
-                                            width: 250.0,
-                                            color: kBackgroundColor,
-                                          ),
-                                        );
-                                      } else {
-                                        return Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  widget.customerInfo['name'],
-                                                  style: kSansTextStyleWhite,
-                                                ),
-                                                const Text(
-                                                  'Sub-Total',
-                                                  style: kSansTextStyleWhite1,
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  widget.customerInfo['role'],
-                                                  style: kSansTextStyleWhite1,
-                                                ),
-                                                Consumer<OrderProvider>(
-                                                  builder: (context, order, any) {
-                                                    return Row(
-                                                      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        ///TODO: Add product discount here..
-                                                        Text(
-                                                          '${order.total}$bdtSign',
-                                                          style: const TextStyle(
-                                                            color: kBackgroundColor,
-                                                            fontFamily:
-                                                                'SourceSans',
-                                                            fontSize: 15,
-                                                            letterSpacing: 1.3,
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .lineThrough,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 10.0,
-                                                        ),
-                                                        Text(
-                                                          '${order.subTotal}$bdtSign',
-                                                          style:
-                                                              kSansTextStyleWhite,
-                                                        ),
-                                                      ],
-                                                    );
-                                                  }
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                OutlinedIconWidget(
-                                                  onTap: () async {
-                                                    String mobile = widget
-                                                        .customerInfo['mobile'];
-                                                    final url = Uri.parse(
-                                                        'tel:$mobile');
-                                                    if (await canLaunchUrl(
-                                                        url)) {
-                                                      await launchUrl(url);
-                                                    }
-                                                  },
-                                                  iconData: Icons.call,
-                                                  height: 40.0,
-                                                  width: 40.0,
-                                                  color: kBackgroundColor,
-                                                  borderWidth: 3.0,
-                                                ),
-                                                InkWell(
-                                                  onTap: provider
-                                                              .currentStage ==
-                                                          OrderStages.processing
-                                                      ? null
-                                                      : () {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  OrdersDetails(
-                                                                customerInfo: widget
-                                                                    .customerInfo,
-                                                                orderInfo: widget
-                                                                    .orderInfo,
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                  child: const BigButton(),
-                                                )
-                                              ],
-                                            ),
+            child: Stack(
+                        children: [
+                          FractionallySizedBox(
+                            heightFactor: 0.84,
+                            child: Consumer<OrderProvider>(
+                                builder: (context, provider, any) {
+                                  final products = provider.orderProducts;
+                              return ListView.builder(
+                                itemCount: products.length,
+                                itemBuilder: (context, i) {
+                                  return OrderProductCard(
+                                    orderId: widget.orderInfo['orderId']
+                                        .toString(),
+                                    orderInfo: widget.orderInfo,
+                                    product: provider.orderProducts[i],
+                                    onGetAdmins: widget.onGetAdmins,
+                                    adminId: provider
+                                        .orderProducts[i].adminModel.adminId,
+                                    admins: provider.currentStage ==
+                                            OrderStages.processing
+                                        ? admins
+                                        : [
+                                            provider
+                                                .orderProducts[i].adminModel
                                           ],
-                                        );
-                                      }
-                                    },
-                                  )),
-                            ),
-                          ],
-                        ),
-            ),
+                                    index: i,
+                                  );
+                                },
+                              );
+                            }),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                                height:
+                                    currentStage == OrderStages.receiving ||
+                                            currentStage == OrderStages.admin
+                                        ? 80.0
+                                        : 130.0,
+                                padding: const EdgeInsets.all(10.0),
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: kNewMainColor,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Consumer<OrderProvider>(
+                                  builder: (context, order, any) {
+                                    if (order.currentStage ==
+                                            OrderStages.receiving ||
+                                        currentStage == OrderStages.admin) {
+                                      return Center(
+                                        child: SendButton(
+                                          onTap: () {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                            final orderBloc =
+                                                BlocProvider.of<OrdersBloc>(
+                                                    context);
+                                            orderBloc.add(
+                                              UpdateOrderEvent(
+                                                orderId: widget
+                                                    .orderInfo['orderId']
+                                                    .toString(),
+                                                orderModel: {
+                                                  'notificationType':
+                                                      'employee2Admin',
+                                                  'orderStage': order
+                                                      .currentStage.name,
+                                                  if (order.currentStage ==
+                                                      OrderStages.receiving)
+                                                    'receiveStatus':
+                                                        'completed',
+                                                  if (order.currentStage ==
+                                                      OrderStages.receiving)
+                                                    'deliveryStatus':
+                                                        'pending',
+                                                  if (order.currentStage ==
+                                                      OrderStages.admin)
+                                                    'processingStatus':
+                                                        'confirmed',
+                                                  if (order.currentStage ==
+                                                      OrderStages.admin)
+                                                    'incrementReceiveCount':
+                                                        true,
+                                                  if (order.currentStage ==
+                                                      OrderStages.admin)
+                                                    'receiveStatus':
+                                                        'pending',
+                                                },
+                                                token: jWTToken,
+                                              ),
+                                            );
+                                          },
+                                          title: order.currentStage ==
+                                                  OrderStages.admin
+                                              ? 'Send To Delivery Hub'
+                                              : 'Received',
+                                          textStyle: kTotalSalesStyle,
+                                          width: 250.0,
+                                          color: kBackgroundColor,
+                                        ),
+                                      );
+                                    } else {
+                                      bool orderItemsConfirmed = order.
+                                          orderProducts.every((element) =>
+                                              element.availability ?? false);
+                                      return Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                            children: [
+                                              Text(
+                                                widget.customerInfo['name'],
+                                                style: kSansTextStyleWhite,
+                                              ),
+                                              const Text(
+                                                'Sub-Total',
+                                                style: kSansTextStyleWhite1,
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                            children: [
+                                              Text(
+                                                widget.customerInfo['role'],
+                                                style: kSansTextStyleWhite1,
+                                              ),
+                                              Row(
+                                                //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  ///TODO: Add product discount here..
+                                                  Text(
+                                                    '${orderItemsConfirmed ? order.total : 0.00}$bdtSign',
+                                                    style: const TextStyle(
+                                                      color: kBackgroundColor,
+                                                      fontFamily:
+                                                      'SourceSans',
+                                                      fontSize: 15,
+                                                      letterSpacing: 1.3,
+                                                      decoration:
+                                                      TextDecoration
+                                                          .lineThrough,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 10.0,
+                                                  ),
+                                                  Text(
+                                                    '${orderItemsConfirmed ? order.subTotal : 0.00}$bdtSign',
+                                                    style:
+                                                    kSansTextStyleWhite,
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                            children: [
+                                              OutlinedIconWidget(
+                                                onTap: () async {
+                                                  String mobile = widget
+                                                      .customerInfo['mobile'];
+                                                  final url = Uri.parse(
+                                                      'tel:$mobile');
+                                                  if (await canLaunchUrl(
+                                                      url)) {
+                                                    await launchUrl(url);
+                                                  }
+                                                },
+                                                iconData: Icons.call,
+                                                height: 40.0,
+                                                width: 40.0,
+                                                color: kBackgroundColor,
+                                                borderWidth: 3.0,
+                                              ),
+                                              InkWell(
+                                                onTap: order
+                                                            .currentStage ==
+                                                        OrderStages.processing || (order.currentStage == OrderStages.order && !orderItemsConfirmed)
+                                                    ? null
+                                                    : () {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                OrdersDetails(
+                                                              customerInfo: widget
+                                                                  .customerInfo,
+                                                              orderInfo: widget
+                                                                  .orderInfo,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                child: const BigButton(),
+                                              )
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    }
+                                  },
+                                )),
+                          ),
+                        ],
+                      ),
           ),
         ),
       ),

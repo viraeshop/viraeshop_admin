@@ -16,6 +16,11 @@ enum OrderStages {
   admin
 }
 
+enum EditingOperation {
+  all,
+  supplyAdmins
+}
+
 class OrderProvider extends ChangeNotifier {
   List<bool> isChangeQuantity = [];
   List<Items> orderProducts = [];
@@ -33,13 +38,47 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateItemAvailability (bool availability, int index){
+    orderProducts[index].availability = availability;
+    notifyListeners();
+  }
+
   void updateOrderInfo(String key,dynamic value){
     orderInfo[key] = value;
     notifyListeners();
   }
 
   void onUpdateProducts(List<Items> value) {
-    orderProducts = value;
+    orderProducts = value.toList();
+    for (var e in orderProducts) {
+      e.editableQuantity = e.quantity;
+      e.editableProductPrice = e.productPrice;
+      e.editableOriginalPrice = e.originalPrice;
+      e.editableDiscount = e.discount;
+    }
+    notifyListeners();
+  }
+
+  void updateEditableProductsFields (int index, EditingOperation op, Map<String, dynamic> data) {
+    if(op == EditingOperation.all){
+      orderProducts[index].editableQuantity = data['quantity'];
+      orderProducts[index].editableProductPrice = data['discountedPrice'];
+      orderProducts[index].editableOriginalPrice = data['originalPrice'];
+      orderProducts[index].editableDiscount = data['discount'];
+    } else if (op == EditingOperation.supplyAdmins){
+      orderProducts[index].supplyAdmins = data['supplyAdmins'];
+    }
+    notifyListeners();
+  }
+
+  void resetValues (){
+    orderProducts.clear();
+    total = 0;
+    deliveryFee = 0;
+    subTotal = 0;
+    discount = 0;
+    advance =  0;
+    due = 0;
     notifyListeners();
   }
 

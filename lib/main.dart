@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/screens/admins/admin_provider.dart';
 import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
 import 'package:viraeshop_admin/screens/messages_screen/users_screen.dart';
+import 'package:viraeshop_admin/screens/products/bulk_edit_provider.dart';
 import 'package:viraeshop_admin/screens/products/product_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -165,6 +166,9 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => ProductProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => BulkEditProvider(),
         ),
       ],
       child: MultiBlocProvider(providers: [

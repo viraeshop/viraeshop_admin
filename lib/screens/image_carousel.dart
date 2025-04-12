@@ -222,7 +222,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
                     title: 'Save',
                     onTap: () async {
                       final imageBox = Hive.box('images');
-                      List filesNames = filesPath.keys.toList();
                       List filesPaths = filesPath.values.toList();
                       List productImage = imageBox.get('productImages', defaultValue: []);
                       Map<String, dynamic> thumbnailImage = {};
@@ -234,7 +233,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           final imageUrlData =
                               await NetworkUtility.uploadImageFromNative(
                             file: thumbnailFile!,
-                            fileName: thumbnailFile!.name,
                             folder: 'product_images',
                           );
                           thumbnailImage = {
@@ -242,11 +240,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
                             'thumbnailKey': imageUrlData['key'],
                           };
                         }
-                        for (int i = 0; i < filesNames.length; i++) {
+                        for (int i = 0; i < filesPaths.length; i++) {
                           Map<String, dynamic> imageUrlData =
                               await NetworkUtility.uploadImageFromNative(
-                            file: platformFiles[filesNames[i]],
-                            fileName: filesNames[i],
+                            file: platformFiles[filesPaths[i]],
                             folder: 'product_images',
                           );
                           if (kDebugMode) {
@@ -265,9 +262,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
                         // if (kDebugMode) {
                         //   print(productImages);
                         // }
-                      } catch (e) {
+                      } catch (e, tr) {
                         if (kDebugMode) {
                           print(e);
+                          print(tr);
                         }
                       } finally {
                         setState(() {

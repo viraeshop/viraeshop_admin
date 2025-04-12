@@ -1,4 +1,4 @@
-package com.viraeshop.admin.viraeshop_admin
+package com.viraeshop.admin
 
 import io.flutter.embedding.android.FlutterActivity
 

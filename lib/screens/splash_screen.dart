@@ -60,8 +60,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 setState(() {
                   isIndicator = true;
                 });
+                print('Fetching products');
                 productBloc.add(GetProductsEvent(
-                  queryParameters: {
+                  queryParameters:  {
                     'queryType': 'admin',
                   }
                 ));

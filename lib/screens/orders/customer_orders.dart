@@ -215,7 +215,7 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                           height: 20.0,
                         ),
                         LimitedBox(
-                          maxHeight: screenSize.height * 0.47,
+                          maxHeight: screenSize.height * 0.46,
                           child: OrdersTab(userId: customerInfo['customerId']),
                         )
                       ],

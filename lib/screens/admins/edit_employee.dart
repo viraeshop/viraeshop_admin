@@ -7,6 +7,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
+import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 import 'package:viraeshop_bloc/admin/admin_bloc.dart';
 import 'package:viraeshop_bloc/admin/admin_event.dart';
 import 'package:viraeshop_bloc/admin/admin_state.dart';
@@ -20,6 +22,7 @@ import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viraeshop_bloc/suppliers/barrel.dart';
 
 import '../customers/tabWidgets.dart';
 
@@ -86,6 +89,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
         child: DefaultTabController(
           length: tabs.length,
           child: Scaffold(
+            backgroundColor: kBackgroundColor,
             appBar: AppBar(
               backgroundColor: kBackgroundColor,
               leading: IconButton(
@@ -184,7 +188,10 @@ class _EditUserScreenState extends State<EditUserScreen> {
                   email: widget.adminInfo['email'],
                   name: widget.adminInfo['name'],
                   isActive: widget.adminInfo['active'],
+                  isAdmin: widget.adminInfo['isAdmin'],
                   isSelf: widget.selfAdmin,
+                  adminId: widget.adminInfo['adminId'],
+                  supplier: widget.adminInfo['Suppliers'] ?? [],
                 ),
                 OrdersTab(
                   userId: widget.adminInfo['adminId'],
@@ -206,27 +213,51 @@ class _EditUserScreenState extends State<EditUserScreen> {
 class InfoTab extends StatefulWidget {
   final String name;
   final String email;
+  final String adminId;
   final bool isActive;
+  final bool isAdmin;
   final bool isSelf;
-  const InfoTab(
-      {required this.name,
-      required this.email,
-      required this.isActive,
-        required this.isSelf,
-      Key? key})
-      : super(key: key);
+  final List supplier;
+  const InfoTab({
+    required this.name,
+    required this.adminId,
+    required this.email,
+    required this.isActive,
+    required this.isAdmin,
+    required this.isSelf,
+    required this.supplier,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<InfoTab> createState() => _InfoTabState();
 }
 
 class _InfoTabState extends State<InfoTab> {
+  final ScrollController _scrollController = ScrollController();
   late TextEditingController nameController;
   late TextEditingController emailController;
   bool isActive = true;
+  List<Suppliers> suppliers = [];
+  List<String?> supplierId = [];
+  bool onErrorSupplier = false;
+  bool isLoading = false;
   @override
   void initState() {
     // TODO: implement initState
+
+    final supplierBloc = BlocProvider.of<SuppliersBloc>(context);
+    final token = Hive.box('adminInfo').get('token');
+    supplierBloc.add(
+      GetSuppliersEvent(
+        token: token,
+      ),
+    );
+    if (widget.supplier.isNotEmpty) {
+      supplierId = widget.supplier
+          .map((supplier) => supplier['supplierId']?.toString())
+          .toList();
+    }
     nameController = TextEditingController(text: widget.name);
     emailController = TextEditingController(text: widget.email);
     isActive = widget.isActive;
@@ -245,75 +276,250 @@ class _InfoTabState extends State<InfoTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(10.0),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        // width: MediaQuery.of(context).size.width * 0.45,
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 10),
-                  TextField(
-                    style: kProductNameStylePro,
-                    cursorColor: kSubMainColor,
-                    controller: nameController,
-                    readOnly: widget.isSelf,
-                    decoration: const InputDecoration(
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: kSubMainColor,
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AdminBloc, AdminState>(
+          listener: (context, state) {
+            if (state is RequestFinishedAdminState &&
+                state.requestType == 'update') {
+              setState(() {
+                isLoading = false;
+              });
+              final adminBloc = BlocProvider.of<AdminBloc>(context);
+              final jWTToken = Hive.box('adminInfo').get('token');
+              adminBloc.add(GetAdminsEvent(token: jWTToken));
+            } else if (state is OnErrorAdminState) {
+              setState(() {
+                isLoading = false;
+              });
+              snackBar(
+                text: state.message,
+                context: context,
+                color: kRedColor,
+              );
+            } else if (state is RequestFinishedAdminState &&
+                state.requestType == 'update') {
+              setState(() {
+                isLoading = false;
+              });
+              snackBar(
+                text: state.response.message,
+                context: context,
+                duration: 600,
+              );
+            }
+          },
+        ),
+        BlocListener<SuppliersBloc, SupplierState>(
+          listener: (context, state) {
+            if (state is FetchedSuppliersState) {
+              if (kDebugMode) {
+                print(state.supplierList.length);
+              }
+              setState(() {
+                onErrorSupplier = false;
+                suppliers = state.supplierList;
+              });
+            } else if (state is OnErrorSupplierState) {
+              setState(() {
+                onErrorSupplier = true;
+              });
+              snackBar(
+                text: state.message,
+                context: context,
+                color: kRedColor,
+              );
+            }
+          },
+        ),
+      ],
+      child: ModalProgressHUD(
+        inAsyncCall: isLoading,
+        progressIndicator: const CircularProgressIndicator(
+          color: kNewMainColor,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(15.0),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height,
+            // width: MediaQuery.of(context).size.width * 0.45,
+            child: Column(
+              //mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                TextField(
+                  style: kProductNameStylePro,
+                  cursorColor: kSubMainColor,
+                  controller: nameController,
+                  readOnly: widget.isSelf,
+                  decoration: const InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: kSubMainColor,
+                      ),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: kMainColor,
+                      ),
+                    ),
+                    labelText: "Full Name",
+                    labelStyle: kProductNameStylePro,
+                  ),
+                  onChanged: (value) {
+                    Provider.of<AdminProvider>(context, listen: false)
+                        .updateName(value);
+                  },
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextField(
+                  style: kProductNameStylePro,
+                  controller: emailController,
+                  readOnly: widget.isSelf,
+                  decoration: const InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: kSubMainColor,
+                      ),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: kMainColor,
+                      ),
+                    ),
+                    labelText: "Email",
+                    labelStyle: kProductNameStylePro,
+                  ),
+                  onChanged: (value) {
+                    Provider.of<AdminProvider>(context, listen: false)
+                        .updateEmail(value);
+                  },
+                ),
+                const SizedBox(
+                  height: 40,
+                ),
+                if (suppliers.isNotEmpty && widget.isAdmin && !widget.isSelf)
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: suppliers.map((supplier) {
+                            return CheckboxListTile(
+                              isThreeLine: true,
+                              title: Text(
+                                supplier.businessName,
+                                style: kProductNameStylePro.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              subtitle: Text(
+                                supplier.address,
+                                style: kProductNameStylePro,
+                              ),
+                              value: supplierId.contains(supplier.supplierId),
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  if (value == true) {
+                                    supplierId.add(supplier.supplierId);
+                                  } else {
+                                    supplierId.remove(supplier.supplierId);
+                                  }
+                                  isLoading = true;
+                                });
+                                if (value == true) {
+                                  final adminBloc =
+                                      BlocProvider.of<AdminBloc>(context);
+                                  final token =
+                                      Hive.box('adminInfo').get('token');
+                                  adminBloc.add(
+                                    AddSupplierStaff(
+                                      admin: {
+                                        'adminId': widget.adminId,
+                                        'supplierId': supplier.supplierId,
+                                      },
+                                      token: token,
+                                    ),
+                                  );
+                                } else {
+                                  final adminBloc =
+                                      BlocProvider.of<AdminBloc>(context);
+                                  final token =
+                                      Hive.box('adminInfo').get('token');
+                                  adminBloc.add(
+                                    RemoveSupplierStaff(
+                                      admin: {
+                                        'adminId': widget.adminId,
+                                        'supplierId': supplier.supplierId,
+                                      },
+                                      token: token,
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          }).toList(),
                         ),
                       ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
+                    ),
+                  )
+                else if (suppliers.isEmpty && onErrorSupplier && widget.isAdmin &&
+                    !widget.isSelf)
+                  Row(
+                    children: [
+                      const Text(
+                        'Failed to fetch suppliers, please try again',
+                        style: kProductNameStylePro,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          final supplierBloc =
+                              BlocProvider.of<SuppliersBloc>(context);
+                          final token =
+                              Hive.box('adminInfo').get('token');
+                          supplierBloc.add(
+                            GetSuppliersEvent(
+                              token: token,
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.refresh,
                           color: kMainColor,
                         ),
                       ),
-                      labelText: "Full Name",
-                      labelStyle: kProductNameStylePro,
-                    ),
-                    onChanged: (value) {
-                      Provider.of<AdminProvider>(context, listen: false)
-                          .updateName(value);
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextField(
-                    style: kProductNameStylePro,
-                    controller: emailController,
-                    readOnly: widget.isSelf,
-                    decoration: const InputDecoration(
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: kSubMainColor,
-                        ),
+                    ],
+                  )
+                else if (widget.isAdmin && !widget.isSelf)
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        color: kNewMainColor,
                       ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: kMainColor,
-                        ),
-                      ),
-                      labelText: "Email",
-                      labelStyle: kProductNameStylePro,
-                    ),
-                    onChanged: (value) {
-                      Provider.of<AdminProvider>(context, listen: false)
-                          .updateEmail(value);
-                    },
+                    ],
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                if(!widget.isSelf)  SwitchListTile(
+                const SizedBox(
+                  height: 15,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                if (!widget.isSelf)
+                  SwitchListTile(
                       value: isActive,
-                      title: const Text('Activate Admin', style: kProductNameStylePro,),
+                      title: const Text(
+                        'Activate Admin',
+                        style: kProductNameStylePro,
+                      ),
                       activeColor: kNewMainColor,
                       onChanged: (bool value) {
                         setState(() {
@@ -322,10 +528,9 @@ class _InfoTabState extends State<InfoTab> {
                         Provider.of<AdminProvider>(context, listen: false)
                             .updateActive(value);
                       })
-                ],
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -572,7 +777,8 @@ class _PermissionTabState extends State<PermissionTab> {
                 trailing: Switch(
                   activeColor: kMainColor,
                   value: isManageDue,
-                  onChanged: isAdmin ? null
+                  onChanged: isAdmin
+                      ? null
                       : (status) {
                           setState(() {
                             isManageDue = status;

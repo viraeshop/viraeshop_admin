@@ -124,14 +124,13 @@ class NetworkUtility {
 
   static Future<Map<String, dynamic>> uploadImageFromNative(
       {required PlatformFile file,
-      required String fileName,
       required String folder}) async {
     Map<String, dynamic> image = {};
     try {
       final result = await Amplify.Storage.uploadFile(
-        localFile: AWSFile.fromStream(file.readStream!, size: file.size),
+        localFile: AWSFile.fromPath(file.path!, name: file.name),
         path: StoragePath.fromString(
-          'public/$folder/$fileName',
+          'public/$folder/${file.name}',
         ),
         onProgress: (progress) {
           safePrint('Fraction completed: ${progress.fractionCompleted}');
@@ -139,8 +138,8 @@ class NetworkUtility {
       ).result;
       safePrint('Successfully uploaded file: ${result.uploadedItem.path}');
       image = {
-        'url': 'https://ik.imagekit.io/vira1212/$folder/$fileName',
-        'key': '$folder/$fileName',
+        'url': 'https://ik.imagekit.io/vira1212/$folder/${file.name}',
+        'key': '$folder/${file.name}',
       };
     } on StorageException catch (e) {
       safePrint('Error uploading file: $e');

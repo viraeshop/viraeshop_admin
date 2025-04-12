@@ -120,13 +120,13 @@ Widget architect() {
                             style: kProductNameStylePro,
                           ),
                           subtitle: Text(
-                            '${users[i].email}',
+                            users[i].email,
                             style: kProductNameStylePro,
                           ),
-                          trailing: Column(
+                          trailing: const Column(
                             mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Text(
                                 'Admin',
                                 style: kProductNameStylePro,

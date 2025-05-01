@@ -1197,7 +1197,7 @@ class _NewProductState extends State<NewProduct>
                                       _quantityController.text.isNotEmpty
                                           ? _quantityController.text
                                           : '0'),
-                              'costPrice': _costController.text,
+                              'costPrice': _costController.text.isNotEmpty ? num.parse(_costController.text) : 0,
                               'generalPrice': isGeneral
                                   ? num.parse(_generalController.text)
                                   : 0,

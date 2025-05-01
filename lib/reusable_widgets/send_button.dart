@@ -4,13 +4,13 @@ import '../components/styles/colors.dart';
 import '../components/styles/text_styles.dart';
 
 class SendButton extends StatelessWidget {
-  final void Function() onTap;
+  final void Function()? onTap;
   final String title;
   final double? width;
   final Color? color;
   final TextStyle textStyle;
   const SendButton({
-    required this.onTap,
+    this.onTap,
     required this.title,
     this.width = double.infinity,
     this.color = kNewTextColor,

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -91,6 +93,18 @@ class _BulkEditProductState extends State<BulkEditProduct> {
     super.initState();
   }
 
+  @override
+  dispose() {
+    general.dispose();
+    agent.dispose();
+    architect.dispose();
+    agentDiscount.dispose();
+    agentDiscount.dispose();
+    architectDiscount.dispose();
+    cost.dispose();
+    super.dispose();
+  }
+
   List<ProductEntity> getProductEntities(List<Products> products) {
     List<ProductEntity> entities = [];
     for (var element in products) {
@@ -113,6 +127,7 @@ class _BulkEditProductState extends State<BulkEditProduct> {
   bool isLoading = false;
   bool isProductsLoading = true;
   bool isProductsLoadingError = false;
+  List<Map<String, dynamic>> editedProducts = [];
   final _key = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -148,6 +163,11 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                 setState(() {
                   isLoading = false;
                 });
+                if (editedProducts.isNotEmpty) {
+                  context
+                      .read<BulkEditProvider>()
+                      .updateProduct(editedProducts);
+                }
                 if (isLoading) {
                   snackBar(
                     text: state.response.message,
@@ -257,12 +277,6 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                       general: generalDiscount,
                                       agent: agentDiscount,
                                       architect: architectDiscount,
-                                      // validator: (value){
-                                      //   if(value == null || value.isEmpty){
-                                      //     return 'Please enter val';
-                                      //   }
-                                      //   return null;
-                                      // },
                                       onSelected: (value) {
                                         setState(() {
                                           discountSelectedIcon = value['icon'];
@@ -329,106 +343,94 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                                 .read<BulkEditProvider>();
                                             if (bulk.bulkEdit.isNotEmpty) {
                                               //&& _key.currentState!.validate()
+                                              print(bulk.bulkEdit);
                                               final token =
                                                   Hive.box('adminInfo')
                                                       .get('token');
-                                              List<Map<String, dynamic>>
-                                                  editedProducts = bulk.bulkEdit
-                                                      .map((pr) => {
-                                                            'id': pr.keys.first,
-                                                            if (agentDiscount
-                                                                .text
-                                                                .isNotEmpty)
-                                                              "agentsDiscount":
-                                                                  handleMathOperation(
-                                                                value: num.parse(
-                                                                    agentDiscount
-                                                                        .text),
-                                                                amount: pr[pr
-                                                                        .keys
-                                                                        .first][
-                                                                    'agentsDiscount'],
-                                                                operation:
-                                                                    discountOperation,
-                                                              ),
-                                                            if (architectDiscount
-                                                                .text
-                                                                .isNotEmpty)
-                                                              "architectDiscount":
-                                                                  handleMathOperation(
-                                                                value: num.parse(
-                                                                    architectDiscount
-                                                                        .text),
-                                                                amount: pr[pr
-                                                                        .keys
-                                                                        .first][
-                                                                    'architectDiscount'],
-                                                                operation:
-                                                                    discountOperation,
-                                                              ),
-                                                            if (generalDiscount
-                                                                .text
-                                                                .isNotEmpty)
-                                                              "generalDiscount":
-                                                                  handleMathOperation(
-                                                                value: num.parse(
-                                                                    generalDiscount
-                                                                        .text),
-                                                                amount: pr[pr
-                                                                        .keys
-                                                                        .first][
-                                                                    'generalDiscount'],
-                                                                operation:
-                                                                    discountOperation,
-                                                              ),
-                                                            if (agent.text
-                                                                .isNotEmpty)
-                                                              "agentsPrice":
-                                                                  handleMathOperation(
-                                                                value: num
-                                                                    .parse(agent
-                                                                        .text),
-                                                                amount: pr[pr
-                                                                        .keys
-                                                                        .first][
-                                                                    'agentsPrice'],
-                                                                operation:
-                                                                    operation,
-                                                              ),
-                                                            if (architect.text
-                                                                .isNotEmpty)
-                                                              "architectPrice":
-                                                                  handleMathOperation(
-                                                                value: num.parse(
-                                                                    architect
-                                                                        .text),
-                                                                amount: pr[pr
-                                                                        .keys
-                                                                        .first][
-                                                                    'architectPrice'],
-                                                                operation:
-                                                                    operation,
-                                                              ),
-                                                            if (general.text
-                                                                .isNotEmpty)
-                                                              "generalPrice":
-                                                                  handleMathOperation(
-                                                                value: num.parse(
-                                                                    general
-                                                                        .text),
-                                                                amount: pr[pr
-                                                                        .keys
-                                                                        .first][
-                                                                    'generalPrice'],
-                                                                operation:
-                                                                    operation,
-                                                              ),
-                                                            if (cost.text
-                                                                .isNotEmpty)
-                                                              'cost': num.parse(
-                                                                  cost.text),
-                                                          })
-                                                      .toList();
+                                              editedProducts = bulk.bulkEdit
+                                                  .map((pr) => {
+                                                        'id': pr.keys.first,
+                                                        if (agentDiscount
+                                                            .text.isNotEmpty)
+                                                          "agentsDiscount":
+                                                              handleMathOperation(
+                                                            value: num.parse(
+                                                                agentDiscount
+                                                                    .text),
+                                                            amount: pr[pr.keys
+                                                                    .first][
+                                                                'agentsDiscount'],
+                                                            operation:
+                                                                discountOperation,
+                                                          ),
+                                                        if (architectDiscount
+                                                            .text.isNotEmpty)
+                                                          "architectDiscount":
+                                                              handleMathOperation(
+                                                            value: num.parse(
+                                                                architectDiscount
+                                                                    .text),
+                                                            amount: pr[pr.keys
+                                                                    .first][
+                                                                'architectDiscount'],
+                                                            operation:
+                                                                discountOperation,
+                                                          ),
+                                                        if (generalDiscount
+                                                            .text.isNotEmpty)
+                                                          "generalDiscount":
+                                                              handleMathOperation(
+                                                            value: num.parse(
+                                                                generalDiscount
+                                                                    .text),
+                                                            amount: pr[pr.keys
+                                                                    .first][
+                                                                'generalDiscount'],
+                                                            operation:
+                                                                discountOperation,
+                                                          ),
+                                                        if (agent
+                                                            .text.isNotEmpty)
+                                                          "agentsPrice":
+                                                              handleMathOperation(
+                                                            value: num.parse(
+                                                                agent.text),
+                                                            amount: pr[pr
+                                                                    .keys.first]
+                                                                ['agentsPrice'],
+                                                            operation:
+                                                                operation,
+                                                          ),
+                                                        if (architect
+                                                            .text.isNotEmpty)
+                                                          "architectPrice":
+                                                              handleMathOperation(
+                                                            value: num.parse(
+                                                                architect.text),
+                                                            amount: pr[pr.keys
+                                                                    .first][
+                                                                'architectPrice'],
+                                                            operation:
+                                                                operation,
+                                                          ),
+                                                        if (general
+                                                            .text.isNotEmpty)
+                                                          "generalPrice":
+                                                              handleMathOperation(
+                                                            value: num.parse(
+                                                                general.text),
+                                                            amount: pr[pr.keys
+                                                                    .first][
+                                                                'generalPrice'],
+                                                            operation:
+                                                                operation,
+                                                          ),
+                                                        if (cost
+                                                            .text.isNotEmpty)
+                                                          'cost': num.parse(
+                                                              cost.text),
+                                                      })
+                                                  .toList();
                                               if (kDebugMode) {
                                                 print(editedProducts);
                                               }
@@ -521,20 +523,8 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                                   (bool? selected) {
                                                 bulk.selectProduct(
                                                     product.productId);
-                                                // setState(() {
-                                                //   product.isSelected = selected ?? false;
-                                                // });
-                                                //print(selected);
                                               },
                                               cells: [
-                                                // DataCell(Checkbox(
-                                                //   value: product.isSelected,
-                                                //   onChanged: (bool? value) {
-                                                //     setState(() {
-                                                //       product.isSelected = value ?? false;
-                                                //     });
-                                                //   },
-                                                // )),
                                                 DataCell(
                                                   Text(
                                                     product.productId
@@ -619,13 +609,13 @@ class ProductEntity {
   final String productId;
   final String name;
   final String productCode;
-  final num agentsDiscount;
-  final num architectDiscount;
-  final num generalDiscount;
-  final num agentsPrice;
-  final num architectPrice;
-  final num generalPrice;
-  final num cost;
+  num agentsDiscount;
+  num architectDiscount;
+  num generalDiscount;
+  num agentsPrice;
+  num architectPrice;
+  num generalPrice;
+  num cost;
   bool isSelected;
 
   ProductEntity({
@@ -802,6 +792,7 @@ num handleMathOperation({
   required num amount,
   required PriceEditOperation operation,
 }) {
+  print('$operation: $amount');
   switch (operation) {
     case PriceEditOperation.percent:
       return (value * (amount / 100)) + amount;

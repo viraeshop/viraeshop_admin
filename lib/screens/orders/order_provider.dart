@@ -40,6 +40,16 @@ class OrderProvider extends ChangeNotifier {
 
   void updateItemAvailability (bool availability, int index){
     orderProducts[index].availability = availability;
+    if(availability) {
+      subTotal += orderProducts[index].editableProductPrice;
+      total += orderProducts[index].editableOriginalPrice;
+      discount += orderProducts[index].editableDiscount;
+    }
+    notifyListeners();
+  }
+
+  void updateProcessingStatus (String status, int index){
+    orderProducts[index].processingStatus = status;
     notifyListeners();
   }
 

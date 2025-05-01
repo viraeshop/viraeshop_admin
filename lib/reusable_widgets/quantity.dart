@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
@@ -10,14 +11,14 @@ import 'hive/cart_model.dart';
 import 'hive/shops_model.dart';
 
 class QuantityScreen extends StatefulWidget {
-  var keyStore;
-  QuantityScreen({required this.keyStore});
+  final dynamic keyStore;
+  const QuantityScreen({super.key, required this.keyStore});
   @override
   _QuantityScreenState createState() => _QuantityScreenState();
 }
 
 class _QuantityScreenState extends State<QuantityScreen> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
   List<String> nums = [];
   String hint = '';
   @override
@@ -100,7 +101,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
                             Hive.box<Cart>('cart').get(widget.keyStore);
                         num totalPrice =
                             Hive.box('cartDetails').get('totalPrice');
-                        totalPrice -= item!.price;
+                        totalPrice -= item!.productPrice;
                         totalItems -= item.quantity;
                         Hive.box('cartDetails').put('totalPrice', totalPrice);
                         Hive.box('cartDetails').put('totalItems', totalItems);
@@ -137,7 +138,7 @@ class _QuantityScreenState extends State<QuantityScreen> {
           const SizedBox(
             height: 50.0,
           ),
-          Container(
+          SizedBox(
             width: MediaQuery.of(context).size.width,
             child: NumericKeyboard(
               textColor: kSubMainColor,
@@ -167,11 +168,13 @@ class _QuantityScreenState extends State<QuantityScreen> {
                 num totalPrice = box.get('totalPrice', defaultValue: 0.0);
                 Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
                 totalItems -= item!.quantity;
-                totalPrice -= item.price;
+                totalPrice -= item.productPrice;
                 item.quantity = quantity;
-                item.price = item.unitPrice * quantity;
-                print(item.price);
-                box.put('totalPrice', totalPrice + item.price);
+                item.productPrice = item.unitPrice * quantity;
+                if (kDebugMode) {
+                  print(item.productPrice);
+                }
+                box.put('totalPrice', totalPrice + item.productPrice);
                 box.put('totalItems', totalItems + quantity);
                 Hive.box<Cart>('cart').put(widget.keyStore, item);
                 Navigator.pop(context);

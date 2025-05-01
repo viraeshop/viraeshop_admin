@@ -330,11 +330,11 @@ class _TabWidgetState extends State<TabWidget> {
                         }
                         String thumbnailImage =
                             productsList[index - 1]['thumbnail'];
-                        num currentPrice = getCurrentPrice(
+                        num originalPrice = getCurrentPrice(
                             productsList[index - 1], ads.dropdownValue);
                         Tuple3<num, num, bool> discountData =
                             computeDiscountData(productsList[index - 1],
-                                ads.dropdownValue, currentPrice);
+                                ads.dropdownValue, originalPrice);
                         return InkWell(
                           key: globalKeys[index - 1],
                           onLongPress: () {
@@ -345,7 +345,8 @@ class _TabWidgetState extends State<TabWidget> {
                                 productsList[index - 1]['images'] ?? [];
                             productPics.insert(0, {
                               'imageLink': thumbnailImage,
-                              'imageKey': productsList[index - 1]['thumbnailKey'],
+                              'imageKey': productsList[index - 1]
+                                  ['thumbnailKey'],
                             });
                             showDialog<void>(
                               context: context,
@@ -357,7 +358,7 @@ class _TabWidgetState extends State<TabWidget> {
                                 productName: productsList[index - 1]['name'],
                                 productCode: productsList[index - 1]
                                     ['productCode'],
-                                price: currentPrice.toString(),
+                                price: originalPrice.toString(),
                                 description: productsList[index - 1]
                                     ['description'],
                                 category: productsList[index - 1]['category'],
@@ -390,7 +391,7 @@ class _TabWidgetState extends State<TabWidget> {
                             Box cartDetailsBox = Hive.box('cartDetails');
                             num price = discountData.item3
                                 ? discountData.item1
-                                : currentPrice;
+                                : originalPrice;
                             int totalItems = cartDetailsBox.get('totalItems',
                                 defaultValue: 0);
                             num totalPrice = cartDetailsBox.get('totalPrice',
@@ -410,7 +411,7 @@ class _TabWidgetState extends State<TabWidget> {
                               Cart? item = Hive.box<Cart>('cart')
                                   .get(productsList[index - 1]['productId']);
                               item!.quantity += 1;
-                              item.price += price;
+                              item.productPrice += price;
                               Hive.box<Cart>('cart').put(
                                   productsList[index - 1]['productId'], item);
                             } else {
@@ -420,14 +421,25 @@ class _TabWidgetState extends State<TabWidget> {
                                 Cart(
                                   productName: productsList[index - 1]['name'],
                                   productId: productsList[index - 1]
-                                          ['productCode']
-                                      .toString(),
-                                  price: price,
+                                      ['productId'],
+                                  productCode: productsList[index - 1]
+                                      ['productCode'],
+                                  productPrice: price,
                                   quantity: 1,
                                   unitPrice: price,
-                                  buyPrice: productsList[index - 1]
-                                          ['costPrice'] ??
-                                      '0',
+                                  buyPrice: productsList[index - 1]['costPrice']
+                                              .runtimeType ==
+                                          String
+                                      ? num.parse(productsList[index - 1]
+                                              ['costPrice'] ??
+                                          '0')
+                                      : productsList[index - 1]['costPrice'],
+                                  productImage: productsList[index - 1]
+                                      ['thumbnail'],
+                                  originalPrice: originalPrice,
+                                  discount: discountData.item3 ? originalPrice - discountData.item1 : 0,
+                                  discountPercent: discountData.item2,
+                                  supplierId: productsList[index - 1]['supplier']['supplierId'],
                                 ),
                               );
                             }
@@ -518,8 +530,8 @@ class _TabWidgetState extends State<TabWidget> {
                                                   children: [
                                                     Text(
                                                       discountData.item3
-                                                          ? '${currentPrice.toString()}৳'
-                                                          : '${currentPrice.toString()}৳/${productsList[index - 1]['sellBy']}',
+                                                          ? '${originalPrice.toString()}৳'
+                                                          : '${originalPrice.toString()}৳/${productsList[index - 1]['sellBy']}',
                                                       style: TextStyle(
                                                         decoration:
                                                             discountData.item3

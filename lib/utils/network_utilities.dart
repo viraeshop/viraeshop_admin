@@ -200,22 +200,22 @@ class NetworkUtility {
     await _firestore.collection('transaction').doc(docId).set(transInfo);
   }
 
-  static Future<void> updateProducts(List cartItems,
-      [bool isReturn = false]) async {
-    for (var element in cartItems) {
-      if (element is Cart) {
-        if (element.isInventory!) {
-          await updateProductInventory(
-              element.productId, element.quantity, isReturn);
-        }
-      } else {
-        if (element['isInventory']) {
-          await updateProductInventory(
-              element['productId'], element['quantity'], isReturn);
-        }
-      }
-    }
-  }
+  // static Future<void> updateProducts(List cartItems,
+  //     [bool isReturn = false]) async {
+  //   for (var element in cartItems) {
+  //     if (element is Cart) {
+  //       if (element.isInventory!) {
+  //         await updateProductInventory(
+  //             element.productId, element.quantity, isReturn);
+  //       }
+  //     } else {
+  //       if (element['isInventory']) {
+  //         await updateProductInventory(
+  //             element['productId'], element['quantity'], isReturn);
+  //       }
+  //     }
+  //   }
+  // }
 
   static Future<void> updateWallet(String userId, data) async {
     await _firestore.collection('customers').doc(userId).update(data);

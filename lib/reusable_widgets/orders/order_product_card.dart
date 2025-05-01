@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -89,6 +90,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
         widget.product.supplyAdmins.isNotEmpty) {
       dropdownValue = widget.adminId;
     }
+    if (currentStage == OrderStages.admin &&
+        (widget.product.processingStatus != 'pending' &&
+            widget.product.processingStatus.isNotEmpty)) {
+      dropdownValue = widget.product.processingStatus;
+    }
     super.initState();
   }
 
@@ -144,22 +150,28 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 !(currentStage == OrderStages.receiving &&
                     status[statusIndex] == 'Failed') ||
                 currentStage == OrderStages.processing) {
+              if (kDebugMode) {
+                print('Turn off loading');
+              }
               setState(() {
                 isLoading = false;
               });
             }
-            if (currentStage == OrderStages.admin &&
-                dropdownValue == 'failed') {
-              orderUpdate(
-                context: context,
-                data: const {
-                  'processingStatus': 'canceled',
-                  'notificationType': 'employee2Admin',
-                  'orderStage': 'admin',
-                },
-                orderId: widget.orderId,
-                token: jWTToken,
-              );
+            if (currentStage == OrderStages.admin) {
+              Provider.of<OrderProvider>(context, listen: false)
+                  .updateProcessingStatus(dropdownValue ?? '', widget.index);
+              if (dropdownValue == 'failed') {
+                orderUpdate(
+                  context: context,
+                  data: const {
+                    'processingStatus': 'canceled',
+                    'notificationType': 'employee2Admin',
+                    'orderStage': 'admin',
+                  },
+                  orderId: widget.orderId,
+                  token: jWTToken,
+                );
+              }
             }
             if (currentStage == OrderStages.receiving &&
                 status[statusIndex] == 'Failed') {
@@ -191,8 +203,10 @@ class _OrderProductCardState extends State<OrderProductCard> {
               );
             }
             if (currentStage == OrderStages.order) {
-              if(dropdownValue == 'confirmed' || dropdownValue == 'failed'){
-                Provider.of<OrderProvider>(context, listen: false).updateItemAvailability(
+              if (dropdownValue == 'confirmed' || dropdownValue == 'failed') {
+                print(dropdownValue);
+                Provider.of<OrderProvider>(context, listen: false)
+                    .updateItemAvailability(
                   dropdownValue == 'confirmed' ? true : false,
                   widget.index,
                 );
@@ -228,6 +242,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                   token: jWTToken,
                 );
               } else {
+                print(dropdownValue);
                 setState(() {
                   newQuantity =
                       (widget.orderInfo['quantity'] - widget.product.quantity) +
@@ -278,38 +293,15 @@ class _OrderProductCardState extends State<OrderProductCard> {
           }
         }),
         BlocListener<OrdersBloc, OrderState>(
-          listenWhen: (prev, curr){
+          listenWhen: (prev, curr) {
             return isLoading;
           },
           listener: (context, state) {
             if (state is RequestFinishedOrderState) {
               if (currentStage == OrderStages.order) {
-                if (onDelete || dropdownValue == 'failed') {
-                  if (onDelete) {
-                    Provider.of<OrderProvider>(context, listen: false)
-                        .deleteProduct(widget.index);
-                  }
+                if (onDelete) {
                   Provider.of<OrderProvider>(context, listen: false)
-                      .updateOrderValues(
-                    due: newDueBalance,
-                    advance: widget.orderInfo['advance'],
-                    discount: newDiscount,
-                    deliveryFee: widget.orderInfo['deliveryFee'],
-                    subTotal: newSubTotal,
-                    total: newTotalPrice,
-                  );
-                    print('I am working even after my context is over');
-                } else {
-                  Provider.of<OrderProvider>(context, listen: false)
-                      .updateOrderValues(
-                    due: newDueBalance,
-                    advance: widget.orderInfo['advance'],
-                    discount: newDiscount,
-                    deliveryFee: widget.orderInfo['deliveryFee'],
-                    subTotal: newSubTotal,
-                    total: newTotalPrice,
-                  );
-                  print('I am working even after my context is over');
+                      .deleteProduct(widget.index);
                 }
               }
               setState(() {
@@ -317,7 +309,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 if (onEdit) onEdit = false;
                 if (onDelete) onDelete = false;
                 if (dropdownValue == 'failed') disable = true;
-                if(dropdownValue == 'confirmed') disable = false;
+                if (dropdownValue == 'confirmed') disable = false;
               });
             } else if (state is OnErrorOrderState) {
               setState(() {
@@ -562,54 +554,65 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ? MainAxisAlignment.start
                             : MainAxisAlignment.spaceEvenly,
                         children: [
-                          Expanded(
-                            child: SizedBox(
-                              width: 100,
-                              child: DropdownButtonFormField(
-                                //underline: const SizedBox(),
-                                decoration: const InputDecoration(
-                                  hintText: 'Select',
-                                  border: InputBorder.none,
-                                ),
-                                borderRadius: BorderRadius.circular(10.0),
-                                dropdownColor: Colors.white,
-                                iconEnabledColor: kSubMainColor,
-                                items: generateItems(
-                                    widget.product.productSupplier.admins,
-                                    context),
-                                value: dropdownValue,
-                                onChanged: (dynamic value) {
-                                        bool onOrderOrAdminStage =
-                                            currentStage == OrderStages.order ||
-                                                currentStage ==
-                                                    OrderStages.admin;
-                                        setState(() {
-                                          dropdownValue =
-                                              (value ?? '') as String?;
+                          if (currentStage != OrderStages.delivery &&
+                              currentStage != OrderStages.receiving)
+                            Expanded(
+                              child: SizedBox(
+                                width: 100,
+                                child: DropdownButtonFormField(
+                                  //underline: const SizedBox(),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Select',
+                                    border: InputBorder.none,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  dropdownColor: Colors.white,
+                                  iconEnabledColor: kSubMainColor,
+                                  items: generateItems(
+                                      widget.product.productSupplier.admins,
+                                      context),
+                                  value: dropdownValue,
+                                  onChanged: currentStage ==
+                                              OrderStages.order ||
+                                          (currentStage ==
+                                                  OrderStages.processing &&
+                                              !disable) ||
+                                          (currentStage == OrderStages.admin &&
+                                              !disable)
+                                      ? (dynamic value) {
+                                          bool onOrderOrAdminStage =
+                                              currentStage ==
+                                                      OrderStages.order ||
+                                                  currentStage ==
+                                                      OrderStages.admin;
+                                          setState(() {
+                                            dropdownValue =
+                                                (value ?? '') as String?;
+                                            if (onOrderOrAdminStage) {
+                                              isLoading = true;
+                                            }
+                                          });
                                           if (onOrderOrAdminStage) {
-                                            isLoading = true;
-                                          }
-                                        });
-                                        if (onOrderOrAdminStage) {
-                                          productUpdate(
-                                            context: context,
-                                            data: {
-                                              'id': widget.product.id,
-                                              'itemInfo': {
-                                                if (onOrderStage)
-                                                  'availability':
-                                                      value == 'confirmed',
-                                                if (currentStage ==
-                                                    OrderStages.admin)
-                                                  'processingStatus': value,
+                                            productUpdate(
+                                              context: context,
+                                              data: {
+                                                'id': widget.product.id,
+                                                'itemInfo': {
+                                                  if (onOrderStage)
+                                                    'availability':
+                                                        value == 'confirmed',
+                                                  if (currentStage ==
+                                                      OrderStages.admin)
+                                                    'processingStatus': value,
+                                                },
                                               },
-                                            },
-                                          );
+                                            );
+                                          }
                                         }
-                                      },
+                                      : null,
+                                ),
                               ),
                             ),
-                          ),
                           const SizedBox(
                             width: 10.0,
                           ),
@@ -726,7 +729,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                 if (provider.currentStage ==
                                                     OrderStages.processing)
                                                   'adminId': dropdownValue,
-                                                'processingStatus': 'pending',
+                                                if (provider.currentStage ==
+                                                    OrderStages.processing)
+                                                  'processingStatus': 'pending',
                                                 if (provider.currentStage ==
                                                     OrderStages.receiving)
                                                   'receiveStatus':

@@ -18,26 +18,29 @@ class CartAdapter extends TypeAdapter<Cart> {
     };
     return Cart(
       productName: fields[0] as String,
-      productId: fields[3] as String,
-      price: fields[1] as dynamic,
+      productId: fields[3] as int,
+      productPrice: fields[1] as num,
       quantity: fields[2] as int,
       unitPrice: fields[4] as num,
+      productCode: fields[10] as String,
+      productImage: fields[11] as String,
+      originalPrice: fields[12] as num,
       buyPrice: fields[9] as num,
       discountPercent: fields[5] as num,
-      discountValue: fields[6] as num,
+      discount: fields[6] as num,
       isInventory: fields[7] as bool,
-      supplierId: fields[8] as String,
+      supplierId: fields[8] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, Cart obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.productName)
       ..writeByte(1)
-      ..write(obj.price)
+      ..write(obj.productPrice)
       ..writeByte(2)
       ..write(obj.quantity)
       ..writeByte(3)
@@ -47,13 +50,19 @@ class CartAdapter extends TypeAdapter<Cart> {
       ..writeByte(5)
       ..write(obj.discountPercent)
       ..writeByte(6)
-      ..write(obj.discountValue)
+      ..write(obj.discount)
       ..writeByte(7)
       ..write(obj.isInventory)
       ..writeByte(8)
       ..write(obj.supplierId)
       ..writeByte(9)
-      ..write(obj.buyPrice);
+      ..write(obj.buyPrice)
+      ..writeByte(10)
+      ..write(obj.productCode)
+      ..writeByte(11)
+      ..write(obj.productImage)
+      ..writeByte(12)
+      ..write(obj.originalPrice);
   }
 
   @override

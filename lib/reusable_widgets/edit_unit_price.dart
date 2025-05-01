@@ -100,10 +100,10 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
                   Box box = Hive.box('cartDetails');
                   num totalPrice = box.get('totalPrice', defaultValue: 0.0);
                   Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
-                  totalPrice -= item!.price;
+                  totalPrice -= item!.productPrice;
                   item.unitPrice = newUnitPrice;
-                  item.price = item.quantity * newUnitPrice;
-                  box.put('totalPrice', totalPrice + item.price);
+                  item.productPrice = item.quantity * newUnitPrice;
+                  box.put('totalPrice', totalPrice + item.productPrice);
                   Hive.box<Cart>('cart').put(widget.keyStore, item);                  
                   Navigator.pop(context);                  
                 },

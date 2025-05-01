@@ -48,8 +48,8 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
   List dataTemp = [];
   Tuple3<num, num, num> totals = const Tuple3<num, num, num>(0, 0, 0);
   Tuple3<num, num, num> totalsTemp = const Tuple3<num, num, num>(0, 0, 0);
-  DateTime begin = DateTime.now();
-  DateTime end = DateTime.now();
+  static DateTime begin = DateTime.now();
+  DateTime end = begin;
   final jWTToken = Hive.box('adminInfo').get('token');
   bool isLoading = true;
   @override
@@ -125,8 +125,8 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
               ),
             ),
             title: Text(
-              widget.name,
-              style: kDrawerTextStyle2,
+              '${widget.name}\'s Total Sales',
+              style: kDrawerTextStyle1,
             ),
             leading: IconButton(
               onPressed: () {
@@ -174,7 +174,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                   child: Column(
                     children: [
                       Container(
-                        height: 160.0,
+                        height: 180.0,
                         width: screenSize.width,
                         padding: const EdgeInsets.all(10.0),
                         decoration: const BoxDecoration(
@@ -186,9 +186,98 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Total Sales',
-                              style: kDrawerTextStyle1,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                MyOutlinedButton(
+                                  title: 'All',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                      begin = DateTime.now();
+                                      end = DateTime.now();
+                                    });
+                                    final transactionBloc =
+                                        BlocProvider.of<TransactionsBloc>(
+                                            context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: 'customerInvoice',
+                                        userID: widget.userID,
+                                        isFilter: false,
+                                        token: jWTToken,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                MyOutlinedButton(
+                                  title: 'Sales',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    bool onDateFilter =
+                                        !begin.isAtSameMomentAs(end);
+                                    final transactionBloc =
+                                        BlocProvider.of<TransactionsBloc>(
+                                            context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: 'customerInvoice',
+                                        userID: widget.userID,
+                                        isFilter: onDateFilter,
+                                        token: jWTToken,
+                                        begin: onDateFilter
+                                            ? dateToJson(
+                                                Timestamp.fromDate(begin),
+                                              )
+                                            : '',
+                                        end: onDateFilter
+                                            ? dateToJson(
+                                                Timestamp.fromDate(end),
+                                              )
+                                            : '',
+                                        channel: 'in_store',
+                                      ),
+                                    );
+                                  },
+                                ),
+                                MyOutlinedButton(
+                                  title: 'Orders',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    bool onDateFilter =
+                                        !begin.isAtSameMomentAs(end);
+                                    final transactionBloc =
+                                        BlocProvider.of<TransactionsBloc>(
+                                            context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: 'customerInvoice',
+                                        userID: widget.userID,
+                                        isFilter: onDateFilter,
+                                        token: jWTToken,
+                                        begin: onDateFilter
+                                            ? dateToJson(
+                                                Timestamp.fromDate(begin),
+                                              )
+                                            : '',
+                                        end: onDateFilter
+                                            ? dateToJson(
+                                                Timestamp.fromDate(end),
+                                              )
+                                            : '',
+                                        channel: 'mobile_app',
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10.0,
                             ),
                             const SizedBox(
                               height: 10.0,
@@ -369,7 +458,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                 ),
                                 DataCell(
                                     Text(
-                                      '${dataTemp[index]['invoiceNo']}',
+                                      '${dataTemp[index]['channel'] == 'mobile_app' && dataTemp[index]['orderId'] != null ? dataTemp[index]['orderId'] : dataTemp[index]['invoiceNo']}',
                                       style: kCustomerCellStyle,
                                     ), onTap: () {
                                   Navigator.push(

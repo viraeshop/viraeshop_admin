@@ -173,8 +173,14 @@ class _SalesTabState extends State<SalesTab> {
                                             ['adminInfo']['name'],
                                         customerName: customerName,
                                         desc: description,
-                                        id: transactions[i]['invoiceNo']
-                                            .toString(),
+                                        id: transactions[i]['channel'] ==
+                                                    'mobile_app' &&
+                                                transactions[i]['orderId'] !=
+                                                    null
+                                            ? transactions[i]['orderId']
+                                                .toString()
+                                            : transactions[i]['invoiceNo']
+                                                .toString(),
                                       );
                                     },
                                   ),
@@ -586,10 +592,14 @@ class _OrdersTabState extends State<OrdersTab> {
                 Provider.of<OrderProvider>(context, listen: false).currentStage;
             bool processorSeen = true;
             for (var a in orders[i].admin) {
-              print(a);
+              if (kDebugMode) {
+                print(a);
+              }
               if (a['adminId'] == widget.userId) {
                 processorSeen = a['OrderProcessors']['seen'];
-                print(processorSeen);
+                if (kDebugMode) {
+                  print(processorSeen);
+                }
               }
             }
             List<Items> items = orders[i].items;

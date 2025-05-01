@@ -10,9 +10,8 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 
 class DiscountScreen extends StatefulWidget {
   final bool isItems;
-  final String keyStore;
-  const DiscountScreen({this.isItems = false, this.keyStore = '', Key? key})
-      : super(key: key);
+  final dynamic keyStore;
+  const DiscountScreen({this.isItems = false, this.keyStore = '', super.key});
 
   @override
   _DiscountScreenState createState() => _DiscountScreenState();
@@ -35,11 +34,11 @@ class _DiscountScreenState extends State<DiscountScreen> {
     // TODO: implement initState
     if (widget.isItems) {
       Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
-      totalPrice -= item!.price;
-      item.price = item.unitPrice * item.quantity;
-      cashHint = item.discountValue.toString();
+      totalPrice -= item!.productPrice;
+      item.productPrice = item.unitPrice * item.quantity;
+      cashHint = item.discount.toString();
       percentHint = item.discountPercent.toString();
-      originalTotalPrice = item.price;
+      originalTotalPrice = item.productPrice;
       currentTotalPrice = originalTotalPrice;
     } else {
       originalTotalPrice = box.get('totalPrice', defaultValue: 0.0);
@@ -281,9 +280,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
                               if (widget.isItems) {
                                 Cart? item =
                                     Hive.box<Cart>('cart').get(widget.keyStore);
-                                item!.price = currentTotalPrice;
+                                item!.productPrice = currentTotalPrice;
                                 item.discountPercent = discountPercent;
-                                item.discountValue = discountAmount;
+                                item.discount = discountAmount;
                                 Hive.box<Cart>('cart')
                                     .put(widget.keyStore, item);
                                 box.put('totalPrice',

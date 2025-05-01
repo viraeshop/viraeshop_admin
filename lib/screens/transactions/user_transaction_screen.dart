@@ -31,7 +31,7 @@ class UserTransactionScreen extends StatefulWidget {
   final bool isFromEmployee;
   const UserTransactionScreen(
       {Key? key,
-        this.isFromEmployee = true,
+      this.isFromEmployee = true,
       required this.name,
       required this.queryType,
       required this.userID})
@@ -46,8 +46,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
   List backupTransactionData = [];
   Tuple3<num, num, num> totalBalance = const Tuple3<num, num, num>(0, 0, 0);
   Tuple3<num, num, num> totalBalanceTemp = const Tuple3<num, num, num>(0, 0, 0);
-  DateTime begin = DateTime.now();
-  DateTime end = DateTime.now();
+  static DateTime begin = DateTime.now();
+  DateTime end = begin;
   final jWTToken = Hive.box('adminInfo').get('token');
   bool isLoading = true;
   // Set customers = {};
@@ -93,10 +93,11 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return BlocListener<TransactionsBloc, TransactionState>(
-      listenWhen: (prev, current){
-        if(prev is RequestFinishedTransactionState && current is OnErrorTransactionState){
+      listenWhen: (prev, current) {
+        if (prev is RequestFinishedTransactionState &&
+            current is OnErrorTransactionState) {
           return false;
-        } else{
+        } else {
           return true;
         }
       },
@@ -112,7 +113,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
           }
           setState(() {
             isLoading = false;
-            if(data!.isNotEmpty){
+            if (data!.isNotEmpty) {
               totalBalance = Tuple3(data['totalPaid'] ?? 0,
                   data['totalDue'] ?? 0, data['totalAmount'] ?? 0);
               totalBalanceTemp = totalBalance;
@@ -139,15 +140,17 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
               ),
             ),
             title: Text(
-              widget.name,
-              style: kDrawerTextStyle2,
+              '${widget.name}\'s Total Sales',
+              style: kDrawerTextStyle1,
             ),
             leading: IconButton(
               onPressed: () {
-                final transactionBloc = BlocProvider.of<TransactionsBloc>(context);
+                final transactionBloc =
+                    BlocProvider.of<TransactionsBloc>(context);
                 transactionBloc.add(
                   GetTransactionDetailsEvent(
-                    queryType: widget.isFromEmployee ? 'employees' : 'customers',
+                    queryType:
+                        widget.isFromEmployee ? 'employees' : 'customers',
                     isFilter: false,
                     token: jWTToken,
                   ),
@@ -165,6 +168,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                 onPressed: () {
                   setState(() {
                     isLoading = true;
+                    begin = DateTime.now();
+                    end = DateTime.now();
                   });
                   final transactionBloc =
                       BlocProvider.of<TransactionsBloc>(context);
@@ -189,13 +194,13 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
             children: [
               FractionallySizedBox(
                 alignment: Alignment.topCenter,
-                heightFactor: 0.67,
+                heightFactor: 0.7,
                 child: SingleChildScrollView(
                   // padding: EdgeInsets.all(15.0),
                   child: Column(
                     children: [
                       Container(
-                        height: 160.0,
+                        height: 170.0,
                         width: screenSize.width,
                         padding: const EdgeInsets.all(10.0),
                         decoration: const BoxDecoration(
@@ -207,9 +212,85 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Total Sales',
-                              style: kDrawerTextStyle1,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                MyOutlinedButton(
+                                  title: 'All',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                      begin = DateTime.now();
+                                      end = DateTime.now();
+                                    });
+                                    final transactionBloc =
+                                        BlocProvider.of<TransactionsBloc>(
+                                            context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: widget.queryType,
+                                        userID: widget.userID,
+                                        isFilter: false,
+                                        token: jWTToken,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                MyOutlinedButton(
+                                  title: 'Sales',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    bool onDateFilter = !begin.isAtSameMomentAs(end);
+                                    final transactionBloc =
+                                    BlocProvider.of<TransactionsBloc>(
+                                        context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: widget.queryType,
+                                        userID: widget.userID,
+                                        isFilter: onDateFilter,
+                                        token: jWTToken,
+                                        begin: onDateFilter ? dateToJson(
+                                          Timestamp.fromDate(begin),
+                                        ) : '',
+                                        end: onDateFilter ? dateToJson(
+                                          Timestamp.fromDate(end),
+                                        ) : '',
+                                        channel: 'in_store',
+                                      ),
+                                    );
+                                  },
+                                ),
+                                MyOutlinedButton(
+                                  title: 'Orders',
+                                  onTap: () {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    bool onDateFilter = !begin.isAtSameMomentAs(end);
+                                    final transactionBloc =
+                                    BlocProvider.of<TransactionsBloc>(
+                                        context);
+                                    transactionBloc.add(
+                                      GetTransactionDetailsEvent(
+                                        queryType: widget.queryType,
+                                        userID: widget.userID,
+                                        isFilter: onDateFilter,
+                                        token: jWTToken,
+                                        begin: onDateFilter ? dateToJson(
+                                          Timestamp.fromDate(begin),
+                                        ) : '',
+                                        end: onDateFilter ? dateToJson(
+                                          Timestamp.fromDate(end),
+                                        ) : '',
+                                        channel: 'mobile_app',
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                             const SizedBox(
                               height: 10.0,
@@ -334,7 +415,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                             element['totalPaid'] != 0)
                                         .toList();
                                   } else {
-                                    transactionData = backupTransactionData.toList();
+                                    transactionData =
+                                        backupTransactionData.toList();
                                   }
                                 });
                               },
@@ -356,7 +438,8 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                             element['totalDue'] != 0)
                                         .toList();
                                   } else {
-                                    transactionData = backupTransactionData.toList();
+                                    transactionData =
+                                        backupTransactionData.toList();
                                   }
                                 });
                               },
@@ -385,8 +468,12 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                 DataCell(
                                   Text(
                                     transactionData[index]['businessName'] !=
-                                                null && transactionData[index]['businessName'] != ''
-                                        ? transactionData[index]['businessName'] ?? ''
+                                                null &&
+                                            transactionData[index]
+                                                    ['businessName'].isNotEmpty
+                                        ? transactionData[index]
+                                                ['businessName'] ??
+                                            ''
                                         : transactionData[index]['name'] ?? '',
                                     style: kCustomerCellStyle,
                                   ),
@@ -397,11 +484,20 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                         builder: (context) {
                                           return CustomerTransactionScreen(
                                             userID: transactionData[index]
-                                                ['customerId'],
-                                            name: transactionData[index]['businessName'] !=
-                                                null && transactionData[index]['businessName'] != ''
-                                                ? transactionData[index]['businessName'] ?? ''
-                                                : transactionData[index]['name'] ?? '',
+                                                    ['customerId'] ??
+                                                '',
+                                            name: transactionData[index]
+                                                            ['businessName'] !=
+                                                        null &&
+                                                    transactionData[index]
+                                                            ['businessName'] !=
+                                                        ''
+                                                ? transactionData[index]
+                                                        ['businessName'] ??
+                                                    ''
+                                                : transactionData[index]
+                                                        ['name'] ??
+                                                    '',
                                             queryType: widget.queryType,
                                             adminId: widget.userID,
                                           );
@@ -565,7 +661,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
       context: context,
       initialDate: date,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
+      lastDate: DateTime(2300),
       initialEntryMode: DatePickerEntryMode.calendar,
       initialDatePickerMode: DatePickerMode.day,
       fieldHintText: 'Month/Date/Year',
@@ -587,6 +683,44 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
         });
       }
     }
+  }
+}
+
+class MyOutlinedButton extends StatelessWidget {
+  const MyOutlinedButton({
+    super.key,
+    required this.title,
+    required this.onTap,
+  });
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120.0,
+        height: 40.0,
+        padding: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: kBackgroundColor,
+            width: 3.0,
+          ),
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: kDrawerTextStyle2.copyWith(
+              fontSize: 12.0,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -188,7 +188,6 @@ class _EditUserScreenState extends State<EditUserScreen> {
                   email: widget.adminInfo['email'],
                   name: widget.adminInfo['name'],
                   isActive: widget.adminInfo['active'],
-                  isAdmin: widget.adminInfo['isAdmin'],
                   isSelf: widget.selfAdmin,
                   adminId: widget.adminInfo['adminId'],
                   supplier: widget.adminInfo['Suppliers'] ?? [],
@@ -215,7 +214,6 @@ class InfoTab extends StatefulWidget {
   final String email;
   final String adminId;
   final bool isActive;
-  final bool isAdmin;
   final bool isSelf;
   final List supplier;
   const InfoTab({
@@ -223,7 +221,6 @@ class InfoTab extends StatefulWidget {
     required this.adminId,
     required this.email,
     required this.isActive,
-    required this.isAdmin,
     required this.isSelf,
     required this.supplier,
     Key? key,
@@ -242,6 +239,7 @@ class _InfoTabState extends State<InfoTab> {
   List<String?> supplierId = [];
   bool onErrorSupplier = false;
   bool isLoading = false;
+  bool isAdmin = Hive.box('adminInfo').get('isAdmin');
   @override
   void initState() {
     // TODO: implement initState
@@ -401,7 +399,7 @@ class _InfoTabState extends State<InfoTab> {
                 const SizedBox(
                   height: 40,
                 ),
-                if (suppliers.isNotEmpty && widget.isAdmin && !widget.isSelf)
+                if (suppliers.isNotEmpty && isAdmin && !widget.isSelf)
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.3,
                     child: Scrollbar(
@@ -471,7 +469,7 @@ class _InfoTabState extends State<InfoTab> {
                       ),
                     ),
                   )
-                else if (suppliers.isEmpty && onErrorSupplier && widget.isAdmin &&
+                else if (suppliers.isEmpty && onErrorSupplier && isAdmin &&
                     !widget.isSelf)
                   Row(
                     children: [
@@ -498,7 +496,7 @@ class _InfoTabState extends State<InfoTab> {
                       ),
                     ],
                   )
-                else if (widget.isAdmin && !widget.isSelf)
+                else if (isAdmin && !widget.isSelf)
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

@@ -32,7 +32,7 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
@@ -40,7 +40,8 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
         appBar: AppBar(
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: const Text('Sell a non-inventory item', style: kAppBarTitleTextStyle),
+          title: const Text('Sell a non-inventory item',
+              style: kAppBarTitleTextStyle),
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(
@@ -130,7 +131,8 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                             borderSide: BorderSide(color: kMainColor),
                           ),
                           enabledBorder: const UnderlineInputBorder(
-                            borderSide: BorderSide(color: kMainColor, width: 2.0),
+                            borderSide:
+                                BorderSide(color: kMainColor, width: 2.0),
                           ),
                           suffixIcon: IconButton(
                             icon: const Icon(
@@ -163,8 +165,8 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
                     ValueListenableBuilder(
                         valueListenable: Hive.box('shops').listenable(),
                         builder: (context, Box box, childs) {
-                          String shopName =
-                              box.get('businessName', defaultValue: 'Suppliers');
+                          String shopName = box.get('businessName',
+                              defaultValue: 'Suppliers');
                           return Text(
                             shopName,
                             style: kTotalTextStyle,
@@ -212,55 +214,72 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
               InkWell(
                 onTap: () {
                   Box shopBox = Hive.box('shops');
-                  if(shopBox.isNotEmpty){
+                  if (shopBox.isNotEmpty) {
                     Box box = Hive.box('cartDetails');
-                    Random random = Random();
                     Box<Cart> cart = Hive.box<Cart>('cart');
                     Box<Shop> shop = Hive.box<Shop>('shopList');
                     var price = num.parse(_controller.text);
-                    int totalItems = box.get('totalItems', defaultValue: 0);
-                    var totalPrice = box.get('totalPrice', defaultValue: 0.0);
-                    box.put('totalItems', ++totalItems);
-                    box.put(
-                      'totalPrice',
-                      totalPrice + price,
-                    );
-                    box.put('isAdded', true);
-                    String id = '${random.nextInt(100)}NIV';
-                    cart.put(
-                      id,
-                      Cart(
-                        productName: descControl.text,
-                        productId: id,
-                        price: num.parse(_controller.text),
-                        quantity: 1,
-                        unitPrice: num.parse(_controller.text),
-                        isInventory: false,
-                        supplierId: shopBox.get('supplierId').toString(),
-                      ),
-                    );
-                    shop
-                        .put(
-                      id,
-                      Shop(
-                        supplierId: shopBox.get('supplierId').toString(),
-                        name: shopBox.get('businessName'),
-                        price: price,
-                        address: shopBox.get('address'),
-                        email: shopBox.get('email'),
-                        mobile: shopBox.get('mobile'),
-                        description: descControl.text,
-                        buyPrice: 0,
-                      ),
-                    )
-                        .whenComplete(() {
-                      shopBox
-                          .clear()
-                          .whenComplete(() => Navigator.pop(context))
-                          .catchError((error) => print(error));
-                    }).catchError((error) => print(error));
-                  }else{
-                    toast(context: context, title: 'Supplier must\'nt be empty', color: kRedColor);
+                    String businessName = shopBox.get('businessName');
+                    String bizCode = generateBizCode(businessName);
+                    int id = generateProductId(descControl.text, bizCode);
+                    int idModulo = id % 100000;
+                    String productCode = '$idModulo$bizCode';
+                    if (!cart.containsKey(id)) {
+                      int totalItems = box.get('totalItems', defaultValue: 0);
+                      var totalPrice = box.get('totalPrice', defaultValue: 0.0);
+                      box.put('totalItems', ++totalItems);
+                      box.put(
+                        'totalPrice',
+                        totalPrice + price,
+                      );
+                      box.put('isAdded', true);
+                      cart.put(
+                        id,
+                        Cart(
+                          productName: descControl.text,
+                          productId: id,
+                          productCode: productCode,
+                          productPrice: num.parse(_controller.text),
+                          quantity: 1,
+                          unitPrice: num.parse(_controller.text),
+                          isInventory: false,
+                          supplierId: shopBox.get('supplierId'),
+                          productImage: '',
+                          originalPrice: num.parse(_controller.text),
+                        ),
+                      );
+                      shop
+                          .put(
+                        id,
+                        Shop(
+                          supplierId: shopBox.get('supplierId'),
+                          name: shopBox.get('businessName'),
+                          price: price,
+                          address: shopBox.get('address'),
+                          email: shopBox.get('email'),
+                          mobile: shopBox.get('mobile'),
+                          description: descControl.text,
+                          buyPrice: 0,
+                        ),
+                      )
+                          .whenComplete(() {
+                        shopBox
+                            .clear()
+                            .whenComplete(() => Navigator.pop(context))
+                            .catchError((error) => print(error));
+                      }).catchError((error) => print(error));
+                    } else {
+                      toast(
+                        context: context,
+                        title: 'You can\'t add duplicate products',
+                        color: kRedColor,
+                      );
+                    }
+                  } else {
+                    toast(
+                        context: context,
+                        title: 'Supplier must\'nt be empty',
+                        color: kRedColor);
                   }
                 },
                 child: Container(
@@ -285,4 +304,17 @@ class _NonInventoryScreenState extends State<NonInventoryScreen> {
       ),
     );
   }
+}
+
+int generateProductId(String name, String productCode) {
+  // Combine name and productCode
+  String uniqueString = '$name$productCode';
+
+  // Generate a hash code and ensure it's positive
+  return uniqueString.hashCode.abs();
+}
+
+String generateBizCode(String businessName) {
+  // Ensure bizCode is at least 3 characters long
+  return businessName.padRight(3, 'X').substring(0, 3).toUpperCase();
 }

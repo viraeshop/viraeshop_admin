@@ -8,7 +8,7 @@ class Shop {
   @HiveField(0)
   String name;
   @HiveField(12)
-  String supplierId;
+  int supplierId;
   @HiveField(1)
   String email;
   @HiveField(2)

@@ -280,7 +280,7 @@ class _DueReceiptState extends State<DueReceipt> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      'Invoice No ${widget.data['invoiceNo']}',
+                      'Invoice No ${widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'] : widget.data['invoiceNo']}',
                       style: kProductNameStyle,
                     ),
                   ],
@@ -744,7 +744,7 @@ class _DueReceiptState extends State<DueReceipt> {
                             due: due.toString(),
                             paid: paid.toString(),
                             discountAmount: discount.toString(),
-                            invoiceId: widget.data['invoiceNo'].toString(),
+                            invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
                             date: DateFormat.yMMMd().format(date),
                             payList: payList,
                           );
@@ -780,7 +780,7 @@ class _DueReceiptState extends State<DueReceipt> {
                             due: due.toString(),
                             paid: paid.toString(),
                             discountAmount: discount.toString(),
-                            invoiceId: widget.data['invoiceNo'].toString(),
+                            invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
                             date: DateFormat.yMMMd().format(date),
                             payList: payList,
                           );
@@ -848,7 +848,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 paid: widget.data['paid'].toString(),
                                 discountAmount:
                                     widget.data['discount'].toString(),
-                                invoiceId: widget.data['invoiceNo'].toString(),
+                                invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
                               );
                             },
                           ),

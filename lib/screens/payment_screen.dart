@@ -36,7 +36,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List<Shop> shops = Hive.box<Shop>('shopList').values.toList();
   static Box customerBox = Hive.box('customer');
   static final cartDetails = Hive.box('cartDetails');
-  List shop = [];
+  List supplierShops = [];
   num totalPrice = cartDetails.get('totalPrice');
   num amountReceived = 0;
   num profit = 0;
@@ -55,18 +55,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
     amountReceived = widget.advance != 0 ? widget.advance : widget.paid;
     for (var element in cartItems) {
       if (element.isInventory) {
-        profit += element.price - (element.buyPrice * element.quantity);
+        profit += element.productPrice - (element.buyPrice * element.quantity);
       }
       Map cartProduct = {
-        'productName': element.productName,
         'productId': element.productId,
-        'productPrice': element.price,
-        'quantity': element.quantity,
-        'unitPrice': element.unitPrice,
-        'isInventory': element.isInventory,
         'buyPrice': element.buyPrice,
+        'isInventory': element.isInventory,
+        'productName': element.productName,
+        'productPrice': element.productPrice,
+        'unitPrice': element.unitPrice,
+        'quantity': element.quantity,
+        'supplierId': element.supplierId,
+        'productCode': element.productCode,
+        'productImage': element.productImage,
+        'originalPrice': element.originalPrice,
+        'discount': element.discount,
+        'discountPercent': element.discountPercent,
       };
-      if (element.supplierId != '') {
+      if (!element.isInventory) {
         cartProduct['shopName'] = element.supplierId;
       }
       transDesc.add(cartProduct);
@@ -74,36 +80,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
         isWithNonInventory = true;
       }
     }
-    for (var element in shops) {
-      if (!shop.any((item) => element.supplierId == item['supplierId'])) {
-        List<Cart> nonInventoryItems = cartItems
-            .where((cartItem) =>
-                !cartItem.isInventory &&
-                element.supplierId == cartItem.supplierId)
-            .toList();
-        Map<String, dynamic> shopItem = {};
-        for (var item in nonInventoryItems) {
-          if (shopItem.isNotEmpty) {
-            shopItem['supplierId'] = item.supplierId;
-            shopItem['price'] += item.price;
-            shopItem['buyPrice'] += item.buyPrice;
-            shopItem['profit'] += 0;
-            shopItem['paid'] += 0;
-            shopItem['due'] += 0;
-            shopItem['description'] +=
-                ' ,${item.productName}(${item.quantity} Items)';
-          } else {
-            shopItem['supplierId'] = item.supplierId;
-            shopItem['price'] = item.price;
-            shopItem['buyPrice'] = item.buyPrice;
-            shopItem['profit'] = 0;
-            shopItem['paid'] = 0;
-            shopItem['due'] = 0;
-            shopItem['description'] =
-                '${item.productName}(${item.quantity} Items)';
+    if(isWithNonInventory){
+      for (var element in shops) {
+        if (!supplierShops.any((item) => element.supplierId == item['supplierId'])) {
+          List<Cart> nonInventoryItems = cartItems
+              .where((cartItem) =>
+          !cartItem.isInventory &&
+              element.supplierId == cartItem.supplierId)
+              .toList();
+          Map<String, dynamic> shopItem = {};
+          for (var item in nonInventoryItems) {
+            if (shopItem.isNotEmpty) {
+              shopItem['supplierId'] = item.supplierId;
+              shopItem['price'] += item.productPrice;
+              shopItem['buyPrice'] += item.buyPrice;
+              shopItem['profit'] += 0;
+              shopItem['paid'] += 0;
+              shopItem['due'] += 0;
+              shopItem['description'] +=
+              ' ,${item.productName}(${item.quantity} Items)';
+            } else {
+              shopItem['supplierId'] = item.supplierId;
+              shopItem['price'] = item.productPrice;
+              shopItem['buyPrice'] = item.buyPrice;
+              shopItem['profit'] = 0;
+              shopItem['paid'] = 0;
+              shopItem['due'] = 0;
+              shopItem['description'] =
+              '${item.productName}(${item.quantity} Items)';
+            }
           }
+          supplierShops.add(shopItem);
         }
-        shop.add(shopItem);
       }
     }
     super.initState();
@@ -256,8 +264,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         'advance': widget.advance,
                         'discount': discount,
                         'profit': profit,
+                        'channel': 'in_store',
                       };
-                      if (isWithNonInventory) transInfo['shops'] = shop;
+                      if (isWithNonInventory) transInfo['shops'] = supplierShops;
                       if (customerRole == 'agents' && widget.paid == 0) {
                         num wallet = customerBox.get('wallet', defaultValue: 0);
                         num balanceToPay = totalPrice - discount;

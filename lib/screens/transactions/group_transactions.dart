@@ -78,6 +78,7 @@ class _GroupTransactionsState extends State<GroupTransactions> {
           });
         } else if (state is RequestFinishedTransactionState) {
           final data = state.response.result;
+          print(data);
           setState(() {
             isLoading = false;
             if(data!.isNotEmpty){

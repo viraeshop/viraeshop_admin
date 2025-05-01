@@ -236,8 +236,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                           quantity:
                                               carts[i].quantity.toString(),
                                           name: carts[i].productName,
-                                          code: carts[i].productId,
-                                          price: carts[i].price.toString(),
+                                          code: carts[i].productCode,
+                                          price: carts[i].productPrice.toString(),
                                           keyStore: keys[i],
                                           unitPrice:
                                               carts[i].unitPrice.toString(),
@@ -350,40 +350,48 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     Padding(
                                       padding: const EdgeInsets.all(10.0),
                                       child: ValueListenableBuilder(
-                                        valueListenable: Hive.box('cartDetails').listenable(),
-                                        builder: (context, Box box, childs) {
-                                          num discount = box.get('discountAmount', defaultValue: 0);
-                                          if(advance != 0){
-                                            due = totalPrice - advance - discount;
-                                          }
-                                          return TypableText(
-                                            isDesc: isDesc,
-                                            controller: descController,
-                                            switchOn: () {
-                                              setState(() {
-                                                isDesc = true;
-                                                selected = '';
-                                                due = 0;
-                                                paid = 0;
-                                                // paid = 0;
-                                              });
-                                            },
-                                            switchOff: () {
-                                              setState(() {
-                                                isDesc = false;
-                                              });
-                                            },
-                                            onChanged: (e) {
-                                              setState(() {
-                                                due = totalPrice - num.parse(e) - discount;
-                                                advance = num.parse(e);
-                                                paid = advance;
-                                              });
-                                            },
-                                            keyboardType: TextInputType.number,
-                                          );
-                                        }
-                                      ),
+                                          valueListenable:
+                                              Hive.box('cartDetails')
+                                                  .listenable(),
+                                          builder: (context, Box box, childs) {
+                                            num discount = box.get(
+                                                'discountAmount',
+                                                defaultValue: 0);
+                                            if (advance != 0) {
+                                              due = totalPrice -
+                                                  advance -
+                                                  discount;
+                                            }
+                                            return TypableText(
+                                              isDesc: isDesc,
+                                              controller: descController,
+                                              switchOn: () {
+                                                setState(() {
+                                                  isDesc = true;
+                                                  selected = '';
+                                                  due = 0;
+                                                  paid = 0;
+                                                  // paid = 0;
+                                                });
+                                              },
+                                              switchOff: () {
+                                                setState(() {
+                                                  isDesc = false;
+                                                });
+                                              },
+                                              onChanged: (e) {
+                                                setState(() {
+                                                  due = totalPrice -
+                                                      num.parse(e) -
+                                                      discount;
+                                                  advance = num.parse(e);
+                                                  paid = advance;
+                                                });
+                                              },
+                                              keyboardType:
+                                                  TextInputType.number,
+                                            );
+                                          }),
                                     ),
                                   ],
                                 ),
@@ -535,12 +543,21 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     ),
                                   ),
                                   onTap: () {
+                                    final customer = Hive.box('customer');
                                     if (paid == 0 && due == 0 && advance == 0) {
                                       toast(
-                                          context: context,
-                                          title:
-                                              'You have not complete the payment status!',
-                                          color: kRedColor);
+                                        context: context,
+                                        title:
+                                            'You have not complete the payment status!',
+                                        color: kRedColor,
+                                      );
+                                    } else if (customer.values.isEmpty) {
+                                      toast(
+                                        context: context,
+                                        title:
+                                            'You have not selected a customer!',
+                                        color: kRedColor,
+                                      );
                                     } else {
                                       Navigator.push(
                                         context,
@@ -584,6 +601,7 @@ class CollapsableWidget extends StatefulWidget {
   final String quantity, name, price, unitPrice, code;
   var keyStore;
   CollapsableWidget({
+    super.key,
     required this.quantity,
     required this.name,
     required this.price,
@@ -722,10 +740,10 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                                 num totalDiscountPer =
                                     box.get('discountPercent', defaultValue: 0);
                                 box.put('discountAmount',
-                                    totalDiscountVal - item!.discountValue);
+                                    totalDiscountVal - item!.discount);
                                 box.put('discountPercent',
                                     totalDiscountPer - item.discountPercent);
-                                item.discountValue = 0;
+                                item.discount = 0;
                                 item.discountPercent = 0;
                                 Hive.box<Cart>('cart')
                                     .put(widget.keyStore, item);
@@ -772,7 +790,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                   valueListenable: Hive.box<Cart>('cart').listenable(),
                   builder: (context, Box box, childs) {
                     Cart? item = box.get(widget.keyStore);
-                    bool isDiscount = item!.discountValue != 0;
+                    bool isDiscount = item!.discount != 0;
                     return Container(
                       color: isDiscount ? kRedColor : kBackgroundColor,
                       //width: double.infinity,

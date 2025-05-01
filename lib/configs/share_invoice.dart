@@ -145,7 +145,7 @@ Future<pw.Document> _generateInvoicePdf({
                               style: const pw.TextStyle(fontSize: 10)),
                           pw.SizedBox(height: 8),
                           pw.Text(
-                              'Tel: 01710735425 | 01324430921 | +8801729396990',
+                              'Tel: 01710735425 | 01324430921 | 01324430922-30',
                               style: const pw.TextStyle(fontSize: 9)),
                           pw.Text('Email: viraeshop@gmail.com',
                               style: const pw.TextStyle(fontSize: 9)),
@@ -190,8 +190,8 @@ Future<pw.Document> _generateInvoicePdf({
                     border: pw.TableBorder.all(
                         color: PdfColors.grey300, width: 0.5),
                     columnWidths: {
-                      0: const pw.FlexColumnWidth(1.5),
-                      1: const pw.FlexColumnWidth(3),
+                      0: const pw.FlexColumnWidth(3),
+                      1: const pw.FlexColumnWidth(1.5),
                       2: const pw.FlexColumnWidth(1.5),
                       3: const pw.FlexColumnWidth(1.5),
                     },
@@ -201,15 +201,17 @@ Future<pw.Document> _generateInvoicePdf({
                         children: [
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('Qty',
+                            child: pw.Text('Product',
                                 style: pw.TextStyle(
                                     fontWeight: pw.FontWeight.bold)),
                           ),
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(4),
-                            child: pw.Text('Product',
+                            child: pw.Text('Qty',
                                 style: pw.TextStyle(
-                                    fontWeight: pw.FontWeight.bold)),
+                                    fontWeight: pw.FontWeight.bold),
+                              textAlign: pw.TextAlign.center,
+                            ),
                           ),
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(4),
@@ -232,13 +234,9 @@ Future<pw.Document> _generateInvoicePdf({
                             children: [
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(4),
-                                child: pw.Text('${item['quantity']} x'),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(4),
                                 child: pw.Column(
                                   crossAxisAlignment:
-                                      pw.CrossAxisAlignment.start,
+                                  pw.CrossAxisAlignment.start,
                                   children: [
                                     pw.Text(
                                       item['productName'].toString(),
@@ -253,6 +251,12 @@ Future<pw.Document> _generateInvoicePdf({
                                       ),
                                     ),
                                   ],
+                                ),
+                              ),
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(4),
+                                child: pw.Text('${item['quantity']} x',
+                                  textAlign: pw.TextAlign.center,
                                 ),
                               ),
                               pw.Padding(
@@ -367,10 +371,20 @@ String _formatCurrency(dynamic value) {
 
 String _formatDate(dynamic date) {
   try {
-    if (date is String) return date;
-    if (date is DateTime) return DateFormat('dd/MM/yyyy').format(date);
-    if (date is Timestamp)
+    if (date is String) {
+      // Parse ISO 8601 string to DateTime and format it
+      final parsedDate = DateTime.tryParse(date);
+      if (parsedDate != null) {
+        return DateFormat('dd/MM/yyyy').format(parsedDate);
+      }
+      return date; // Return the original string if parsing fails
+    }
+    if (date is DateTime) {
+      return DateFormat('dd/MM/yyyy').format(date);
+    }
+    if (date is Timestamp) {
       return DateFormat('dd/MM/yyyy').format(date.toDate());
+    }
     return date.toString();
   } catch (e) {
     return date.toString();

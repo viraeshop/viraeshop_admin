@@ -24,7 +24,7 @@ class ShopAdapter extends TypeAdapter<Shop> {
       mobile: fields[2] as String,
       description: fields[9] as String,
       buyPrice: fields[8] as num,
-      supplierId: fields[12] as String,
+      supplierId: fields[12] as int,
       due: fields[7] as dynamic,
       images: fields[10] as dynamic,
       payList: fields[11] as dynamic,

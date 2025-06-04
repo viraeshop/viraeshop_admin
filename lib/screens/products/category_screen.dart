@@ -79,90 +79,92 @@ class _CategoryScreenState extends State<CategoryScreen> {
             )
           ],
         ),
-        body: BlocBuilder<CategoryBloc, CategoryState>(
-        builder: (context, state) {
-          if (state is FetchedCategoryState) {
-            List<ProductCategory> myCategories = state.categories.result;
-            List categoryList = [];
-            for (var element in myCategories) {
-              categoryList.add(element.toJson());
-            }
-            // isLoaded = true;
-            return ListView.builder(
-              itemCount: myCategories.length,
-              itemBuilder: (BuildContext context, int i) {
-                return Container(
-                  height: 70,
-                  decoration: const BoxDecoration(
-                    color: kBackgroundColor,
-                    border: Border(
-                      bottom: BorderSide(color: kStrokeColor),
+        body: SafeArea(
+          child: BlocBuilder<CategoryBloc, CategoryState>(
+          builder: (context, state) {
+            if (state is FetchedCategoryState) {
+              List<ProductCategory> myCategories = state.categories.result;
+              List categoryList = [];
+              for (var element in myCategories) {
+                categoryList.add(element.toJson());
+              }
+              // isLoaded = true;
+              return ListView.builder(
+                itemCount: myCategories.length,
+                itemBuilder: (BuildContext context, int i) {
+                  return Container(
+                    height: 70,
+                    decoration: const BoxDecoration(
+                      color: kBackgroundColor,
+                      border: Border(
+                        bottom: BorderSide(color: kStrokeColor),
+                      ),
                     ),
-                  ),
-                  padding: const EdgeInsets.all(15.0),
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: kCategoryBackgroundColor,
-                              backgroundImage: CachedNetworkImageProvider(
-                                  '${categoryList[i]['image']}'),
-                              radius: 50.0,
-                            ),
-                            const SizedBox(
-                              width: 5.0,
-                            ),
-                            Text(
-                              '${categoryList[i]['category']}',
-                              style: kProductNameStyle,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddCategory(
-                                      isEdit: true,
-                                      isSubCategory: widget.isSubCategory,
-                                      category: categoryList[i],
-                                      categoryId: categoryList[i]['categoryId'],
+                    padding: const EdgeInsets.all(15.0),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: kCategoryBackgroundColor,
+                                backgroundImage: CachedNetworkImageProvider(
+                                    '${categoryList[i]['image']}'),
+                                radius: 50.0,
+                              ),
+                              const SizedBox(
+                                width: 5.0,
+                              ),
+                              Text(
+                                '${categoryList[i]['category']}',
+                                style: kProductNameStyle,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddCategory(
+                                        isEdit: true,
+                                        isSubCategory: widget.isSubCategory,
+                                        category: categoryList[i],
+                                        categoryId: categoryList[i]['categoryId'],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.edit),
-                              color: kSubMainColor,
-                              iconSize: 20.0,
-                            ),
-                            // SizedBox(
-                            //   width: 5.0,
-                            // )
-                          ],
-                        ),
-                      ],
+                                  );
+                                },
+                                icon: const Icon(Icons.edit),
+                                color: kSubMainColor,
+                                iconSize: 20.0,
+                              ),
+                              // SizedBox(
+                              //   width: 5.0,
+                              // )
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            );
-          } else if (state is OnErrorCategoryState) {
-            return Center(
-              child: Text(
-                state.message,
-                style: kProductNameStylePro,
-              ),
-            );
-          }
-          return const Center(child: CircularProgressIndicator());
-        }),
+                  );
+                },
+              );
+            } else if (state is OnErrorCategoryState) {
+              return Center(
+                child: Text(
+                  state.message,
+                  style: kProductNameStylePro,
+                ),
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          }),
+        ),
       ),
     );
   }

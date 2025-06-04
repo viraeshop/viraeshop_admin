@@ -122,7 +122,6 @@ class _OrderProductsState extends State<OrderProducts> {
     super.deactivate();
   }
 
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -171,8 +170,16 @@ class _OrderProductsState extends State<OrderProducts> {
             icon: const Icon(FontAwesomeIcons.chevronLeft),
             color: kBlackColor,
           ),
-          title: const Text(
-            'Orders',
+          title: Text(
+            currentStage == OrderStages.order
+                ? 'Orders'
+                : currentStage == OrderStages.admin
+                    ? 'Admin Order'
+                    : currentStage == OrderStages.processing
+                        ? 'Processing Order'
+                        : currentStage == OrderStages.receiving
+                            ? 'Receiving Order'
+                            : 'Delivery Order',
             style: kTotalSalesStyle,
           ),
           centerTitle: true,
@@ -234,188 +241,202 @@ class _OrderProductsState extends State<OrderProducts> {
                     );
                   }),
                 ),
-               if(!(widget.orderInfo['receiveStatus'] != 'pending' && currentStage == OrderStages.receiving)) SafeArea(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                        height: currentStage == OrderStages.receiving ||
-                                currentStage == OrderStages.admin
-                            ? 80.0
-                            : 130.0,
-                        padding: const EdgeInsets.all(10.0),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: kNewMainColor,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Consumer<OrderProvider>(
-                          builder: (context, order, any) {
-                            if (order.currentStage == OrderStages.receiving ||
-                                currentStage == OrderStages.admin) {
-                              bool adminItemsConfirmed = order.orderProducts
-                                  .every((element) =>
-                                      element.processingStatus == 'confirmed' ||
-                                      element.processingStatus == 'failed');
-                              bool receiveItemsConfirmed = order.orderProducts
-                                  .every((item) =>
-                                      item.receiveStatus == 'confirmed' ||
-                                      item.receiveStatus == 'failed');
-                              return Center(
-                                child: SendButton(
-                                  onTap: () {
-                                    if (receiveItemsConfirmed ||
-                                        adminItemsConfirmed) {
-                                      setState(() {
-                                        isLoading = true;
-                                      });
-                                      final orderBloc =
-                                          BlocProvider.of<OrdersBloc>(context);
-                                      orderBloc.add(
-                                        UpdateOrderEvent(
-                                          orderId: widget.orderInfo['orderId']
-                                              .toString(),
-                                          orderModel: {
-                                            'notificationType': 'employee2Admin',
-                                            'orderStage': order.currentStage.name,
-                                            if (order.currentStage ==
-                                                OrderStages.receiving)
-                                              'receiveStatus': 'completed',
-                                            if (order.currentStage ==
-                                                OrderStages.receiving)
-                                              'deliveryStatus': 'pending',
-                                            if (order.currentStage ==
-                                                OrderStages.admin)
-                                              'processingStatus': 'confirmed',
-                                            if (order.currentStage ==
-                                                OrderStages.admin)
-                                              'incrementReceiveCount': true,
-                                            if (order.currentStage ==
-                                                OrderStages.admin)
-                                              'receiveStatus': 'pending',
-                                          },
-                                          token: jWTToken,
+                if (!(widget.orderInfo['receiveStatus'] != 'pending' &&
+                    currentStage == OrderStages.receiving))
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                          height: currentStage == OrderStages.receiving ||
+                                  currentStage == OrderStages.admin
+                              ? 80.0
+                              : 130.0,
+                          padding: const EdgeInsets.all(10.0),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kNewMainColor,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: Consumer<OrderProvider>(
+                            builder: (context, order, any) {
+                              if (order.currentStage == OrderStages.receiving ||
+                                  currentStage == OrderStages.admin) {
+                                bool adminItemsConfirmed = order.orderProducts
+                                    .every((element) =>
+                                        element.processingStatus ==
+                                            'confirmed' ||
+                                        element.processingStatus == 'failed');
+                                bool receiveItemsConfirmed = order.orderProducts
+                                    .every((item) =>
+                                        item.receiveStatus == 'confirmed' ||
+                                        item.receiveStatus == 'failed');
+                                return Center(
+                                  child: SendButton(
+                                    onTap: () {
+                                      if (receiveItemsConfirmed ||
+                                          adminItemsConfirmed) {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                        final orderBloc =
+                                            BlocProvider.of<OrdersBloc>(
+                                                context);
+                                        orderBloc.add(
+                                          UpdateOrderEvent(
+                                            orderId: widget.orderInfo['orderId']
+                                                .toString(),
+                                            orderModel: {
+                                              'notificationType':
+                                                  'employee2Admin',
+                                              'orderStage':
+                                                  order.currentStage.name,
+                                              if (order.currentStage ==
+                                                  OrderStages.receiving)
+                                                'receiveStatus': 'completed',
+                                              if (order.currentStage ==
+                                                  OrderStages.receiving)
+                                                'deliveryStatus': 'pending',
+                                              if (order.currentStage ==
+                                                  OrderStages.admin)
+                                                'processingStatus': 'confirmed',
+                                              if (order.currentStage ==
+                                                  OrderStages.admin)
+                                                'incrementReceiveCount': true,
+                                              if (order.currentStage ==
+                                                  OrderStages.admin)
+                                                'receiveStatus': 'pending',
+                                            },
+                                            token: jWTToken,
+                                          ),
+                                        );
+                                      } else {
+                                        showToast(
+                                          'Please make sure you have confirmed all items',
+                                          backgroundColor: kRedColor,
+                                          context: context,
+                                        );
+                                      }
+                                    },
+                                    title:
+                                        order.currentStage == OrderStages.admin
+                                            ? 'Send To Delivery Hub'
+                                            : 'Received',
+                                    textStyle: kTotalSalesStyle,
+                                    width: 250.0,
+                                    color: kBackgroundColor,
+                                  ),
+                                );
+                              } else {
+                                bool orderItemsConfirmed = order.orderProducts
+                                    .any((element) =>
+                                        element.availability ?? false);
+                                return Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          widget.customerInfo['name'],
+                                          style: kSansTextStyleWhite,
                                         ),
-                                      );
-                                    } else {
-                                      showToast(
-                                        'Please make sure you have confirmed all items',
-                                        backgroundColor: kRedColor,
-                                        context: context,
-                                      );
-                                    }
-                                  },
-                                  title: order.currentStage == OrderStages.admin
-                                      ? 'Send To Delivery Hub'
-                                      : 'Received',
-                                  textStyle: kTotalSalesStyle,
-                                  width: 250.0,
-                                  color: kBackgroundColor,
-                                ),
-                              );
-                            } else {
-                              bool orderItemsConfirmed = order.orderProducts.any(
-                                  (element) => element.availability ?? false);
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        widget.customerInfo['name'],
-                                        style: kSansTextStyleWhite,
-                                      ),
-                                      const Text(
-                                        'Sub-Total',
-                                        style: kSansTextStyleWhite1,
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        widget.customerInfo['role'],
-                                        style: kSansTextStyleWhite1,
-                                      ),
-                                      Row(
-                                        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          ///TODO: Add product discount here..
-                                          Text(
-                                            '${orderItemsConfirmed ? order.total : 0.00}$bdtSign',
-                                            style: const TextStyle(
-                                              color: kBackgroundColor,
-                                              fontFamily: 'SourceSans',
-                                              fontSize: 15,
-                                              letterSpacing: 1.3,
-                                              decoration:
-                                                  TextDecoration.lineThrough,
+                                        const Text(
+                                          'Sub-Total',
+                                          style: kSansTextStyleWhite1,
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          widget.customerInfo['role'],
+                                          style: kSansTextStyleWhite1,
+                                        ),
+                                        Row(
+                                          //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            ///TODO: Add product discount here..
+                                            Text(
+                                              '${orderItemsConfirmed ? order.total : 0.00}$bdtSign',
+                                              style: const TextStyle(
+                                                color: kBackgroundColor,
+                                                fontFamily: 'SourceSans',
+                                                fontSize: 15,
+                                                letterSpacing: 1.3,
+                                                decoration:
+                                                    TextDecoration.lineThrough,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(
-                                            width: 10.0,
-                                          ),
-                                          Text(
-                                            '${orderItemsConfirmed ? order.subTotal : 0.00}$bdtSign',
-                                            style: kSansTextStyleWhite,
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      OutlinedIconWidget(
-                                        onTap: () async {
-                                          String mobile =
-                                              widget.customerInfo['mobile'];
-                                          final url = Uri.parse('tel:$mobile');
-                                          if (await canLaunchUrl(url)) {
-                                            await launchUrl(url);
-                                          }
-                                        },
-                                        iconData: Icons.call,
-                                        height: 40.0,
-                                        width: 40.0,
-                                        color: kBackgroundColor,
-                                        borderWidth: 3.0,
-                                      ),
-                                      InkWell(
-                                        onTap: order.currentStage ==
-                                                    OrderStages.processing ||
-                                                (order.currentStage ==
-                                                        OrderStages.order &&
-                                                    !orderItemsConfirmed)
-                                            ? null
-                                            : () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        OrdersDetails(
-                                                      customerInfo:
-                                                          widget.customerInfo,
-                                                      orderInfo: widget.orderInfo,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                        child: const BigButton(),
-                                      )
-                                    ],
-                                  ),
-                                ],
-                              );
-                            }
-                          },
-                        )),
+                                            const SizedBox(
+                                              width: 10.0,
+                                            ),
+                                            Text(
+                                              '${orderItemsConfirmed ? order.subTotal : 0.00}$bdtSign',
+                                              style: kSansTextStyleWhite,
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        OutlinedIconWidget(
+                                          onTap: () async {
+                                            String mobile =
+                                                widget.customerInfo['mobile'];
+                                            final url =
+                                                Uri.parse('tel:$mobile');
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(url);
+                                            }
+                                          },
+                                          iconData: Icons.call,
+                                          height: 40.0,
+                                          width: 40.0,
+                                          color: kBackgroundColor,
+                                          borderWidth: 3.0,
+                                        ),
+                                        if (currentStage !=
+                                            OrderStages.processing)
+                                          InkWell(
+                                            onTap: order.currentStage ==
+                                                        OrderStages
+                                                            .processing ||
+                                                    (order.currentStage ==
+                                                            OrderStages.order &&
+                                                        !orderItemsConfirmed)
+                                                ? null
+                                                : () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            OrdersDetails(
+                                                          customerInfo: widget
+                                                              .customerInfo,
+                                                          orderInfo:
+                                                              widget.orderInfo,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                            child: const BigButton(),
+                                          )
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                            },
+                          )),
+                    ),
                   ),
-                ),
               ],
             ),
           ),

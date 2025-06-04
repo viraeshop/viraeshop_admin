@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -14,9 +13,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/clipper.dart';
-import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/screens/supplier/shops.dart';
-import 'package:viraeshop_api/apiCalls/notifications.dart';
 
 import '../../components/styles/text_styles.dart';
 import '../advert/ads_card.dart';
@@ -173,15 +170,17 @@ class _NotificationScreenState extends State<NotificationScreen>
                     }),
                   ),
                 ),
-                FractionallySizedBox(
-                  heightFactor: 0.2,
-                  alignment: Alignment.bottomCenter,
-                  child: NotificationMaker(
-                    onSend: (){
-                      setState(() {
-                        isLoading = true;
-                      });
-                    },
+                SafeArea(
+                  child: FractionallySizedBox(
+                    heightFactor: 0.2,
+                    alignment: Alignment.bottomCenter,
+                    child: NotificationMaker(
+                      onSend: (){
+                        setState(() {
+                          isLoading = true;
+                        });
+                      },
+                    ),
                   ),
                 ),
               ],

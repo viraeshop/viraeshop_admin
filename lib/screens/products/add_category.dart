@@ -1,11 +1,15 @@
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_bloc/category/category_event.dart';
 import 'package:viraeshop_bloc/category/category_state.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
@@ -48,9 +52,9 @@ class _AddCategoryState extends State<AddCategory> {
   final jWTToken = Hive.box('adminInfo').get('token');
   TextEditingController categoryController = TextEditingController();
   bool onDelete = false;
+  final ImagePickerService imagePickerService = ImagePickerService();
   @override
   void initState() {
-    // TODO: implement initState
     print(widget.category);
     if (widget.isEdit == true) {
       setState(() {
@@ -250,88 +254,94 @@ class _AddCategoryState extends State<AddCategory> {
                 ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Stack(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      imagePickerWidget(
-                        onTap: () {
-                          if (kIsWeb) {
-                            // getImageWeb('category_images').then((value) {
-                            //   setState(() {
-                            //     images = value.item1!;
-                            //     imageData = value.item2!;
-                            //   });
-                            // });
-                          } else {
-                            getImageNative('category_images').then((value) {
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Form(
+                key: _formKey,
+                child: Stack(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        imagePickerWidget(
+                          onTap: () async{
+                            try {
+                              PlatformFile? imageResult =
+                                  await imagePickerService.pickImage(context);
+                              if (imageResult == null) return;
+                              final imageData =
+                                  await NetworkUtility.uploadImageFromNative(
+                                      file: imageResult,
+                                      folder: 'category_images');
                               setState(() {
-                                imagePath = value['path'];
-                                imageData = value['imageData'];
+                                imagePath = imageResult.path ?? '';
+                                this.imageData = imageData;
+                                
                               });
-                            });
-                          }
-                        },
-                        imagePath: imagePath,
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      TextFormField(
-                        validator: (value) {
-                          if (value!.isEmpty || value == null) {
-                            return 'enter category name';
-                          }
-                          return null;
-                        },
-                        controller: nameController,
-                        decoration:
-                            const InputDecoration(labelText: 'Enter name.'),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('Max. 20 Characters.',
-                            style: TextStyle(fontSize: 16)),
-                      ),
-                      const SizedBox(
-                        height: 15.0,
-                      ),
-                      const SizedBox(
-                        height: 70,
-                      ),
-                      if (widget.isEdit && !widget.isSubCategory)
-                        ListTile(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CategoryScreen(
-                                  isSubCategory: true,
-                                  categoryId: widget.categoryId,
-                                ),
-                              ),
-                            );
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print(e);
+                              }
+                              showToast('msg: $e', backgroundColor: kRedColor);
+                            }
                           },
-                          tileColor: kSelectedTileColor,
-                          title: const Text(
-                            'Sub-Categories',
-                            style: kTableHeadingStyle,
-                          ),
-                          trailing: const Icon(
-                            FontAwesomeIcons.chevronRight,
-                            color: kBackgroundColor,
-                            size: 20.0,
-                          ),
+                          imagePath: imagePath,
                         ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        TextFormField(
+                          validator: (value) {
+                            if (value!.isEmpty || value == null) {
+                              return 'enter category name';
+                            }
+                            return null;
+                          },
+                          controller: nameController,
+                          decoration:
+                              const InputDecoration(labelText: 'Enter name.'),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('Max. 20 Characters.',
+                              style: TextStyle(fontSize: 16)),
+                        ),
+                        const SizedBox(
+                          height: 15.0,
+                        ),
+                        const SizedBox(
+                          height: 70,
+                        ),
+                        if (widget.isEdit && !widget.isSubCategory)
+                          ListTile(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CategoryScreen(
+                                    isSubCategory: true,
+                                    categoryId: widget.categoryId,
+                                  ),
+                                ),
+                              );
+                            },
+                            tileColor: kSelectedTileColor,
+                            title: const Text(
+                              'Sub-Categories',
+                              style: kTableHeadingStyle,
+                            ),
+                            trailing: const Icon(
+                              FontAwesomeIcons.chevronRight,
+                              color: kBackgroundColor,
+                              size: 20.0,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

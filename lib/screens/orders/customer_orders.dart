@@ -3,12 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
-import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/customerOrderInfoCard.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_admin/screens/customers/tabWidgets.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
-import 'package:viraeshop_api/models/customers/customers.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
 
 import '../../components/styles/colors.dart';
@@ -17,7 +15,6 @@ import '../../reusable_widgets/loading_widget.dart';
 import '../../reusable_widgets/on_error_widget.dart';
 import '../../reusable_widgets/orders/functions.dart';
 import '../../reusable_widgets/orders/order_chips.dart';
-import 'orderRoutineReport.dart';
 
 enum Events {
   getCustomer,

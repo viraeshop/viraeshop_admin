@@ -29,7 +29,7 @@ class _CustomerOrderHistoryState extends State<CustomerOrderHistory>
           future: generalCrud.getCustomerOrder(widget.customerId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
+              return const Center(
                 child: SizedBox(
                   height: 50.0,
                   width: 50.0,
@@ -42,9 +42,9 @@ class _CustomerOrderHistoryState extends State<CustomerOrderHistory>
               isAlive = true;
               final data = snapshot.data!.docs;
               List orders = [];
-              data.forEach((element) {
+              for (var element in data) {
                 orders.add(element.data());
-              });
+              }
               return ListView.builder(
                   itemCount: orders.length,
                   itemBuilder: (context, i) {
@@ -53,10 +53,10 @@ class _CustomerOrderHistoryState extends State<CustomerOrderHistory>
                     String date = DateFormat.yMMMd().format(dateTime);
                     List items = orders[i]['items'];
                     String description = '';
-                    items.forEach((element) {
+                    for (var element in items) {
                       description +=
                           '${element['quantity']}x ${element['product_name']} ';
-                    });
+                    }
                     return OrderTranzCard(
                       onTap: () {
                         Navigator.push(context,
@@ -73,7 +73,7 @@ class _CustomerOrderHistoryState extends State<CustomerOrderHistory>
                   });
             } else {
               isAlive = false;
-              return Center(
+              return const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

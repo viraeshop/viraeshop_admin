@@ -166,96 +166,42 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                     height: 20.0,
                   ),
                   userInfo['role'] == 'agents' && userInfo['binNumber'] != null
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      ? Column(
                           children: [
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(10.0),
-                                height: screenSize.height * 0.23,
-                                // width: screenSize.width,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: kSubMainColor,
-                                  ),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(100.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: strings['binImage']!,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
+                            IdImageWidget(
+                              height: screenSize.height * 0.23,
+                              image: strings['binImage']!,
+                              isAgent: true,
                             ),
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(10.0),
-                                height: screenSize.height * 0.23,
-                                // width: screenSize.width,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: kSubMainColor,
-                                  ),
+                            const SizedBox(
+                                  height: 10.0,
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(100.0),
-                                  child: CachedNetworkImage(
-                                    imageUrl: strings['tinImage']!,
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
+                            IdImageWidget(
+                              isAgent: true,
+                              height: screenSize.height * 0.23,
+                              image: strings['tinImage']!,
                             ),
                           ],
                         )
                       : userInfo['role'] == 'architect' &&
                               userInfo['idType'] != null
                           ? Column(
-                              children: [
-                                IdWidget(
-                                  screenSize: screenSize,
-                                  url: strings['idFrontImage']!,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return PhotoSlideShow(images: [
-                                            strings['idFrontImage'],
-                                            strings['idBackImage']
-                                          ]);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(
+                          children: [
+                            IdImageWidget(
+                              height: screenSize.height * 0.23,
+                              image: strings['idFrontImage']!,
+                              isAgent: true,
+                            ),
+                            const SizedBox(
                                   height: 10.0,
                                 ),
-                                IdWidget(
-                                  screenSize: screenSize,
-                                  url: strings['idBackImage']!,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return PhotoSlideShow(
-                                              initialPage: 1,
-                                              images: [
-                                                strings['idFrontImage'],
-                                                strings['idBackImage']
-                                              ]);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            )
+                            IdImageWidget(
+                              isAgent: true,
+                              height: screenSize.height * 0.23,
+                              image: strings['idBackImage']!,
+                            ),
+                          ],
+                        )
                           : const SizedBox(),
                   const SizedBox(
                     height: 20.0,
@@ -471,42 +417,62 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
   }
 }
 
-class IdWidget extends StatelessWidget {
-  const IdWidget({
-    Key? key,
-    required this.screenSize,
-    required this.url,
-    this.onTap,
-  }) : super(key: key);
+class IdImageWidget extends StatelessWidget {
+  const IdImageWidget({
+    super.key,
+    required this.isAgent,
+    required this.height,
+    required this.image,
+  });
 
-  final Size screenSize;
-  final String url;
-  final void Function()? onTap;
+  final double height;
+  final String image;
+  final bool isAgent;
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        height: screenSize.height * 0.23,
-        width: screenSize.width,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(url),
-            fit: BoxFit.fill,
-          ),
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(
-            color: kSubMainColor,
+    return Column(
+      children: [
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.all(10.0),
+            height: height,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: kSubMainColor,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100.0),
+              child: CachedNetworkImage(
+                imageUrl: image,
+                fit: BoxFit.fill,
+              ),
+            ),
           ),
         ),
-        child: const Center(
-          child: Icon(
-            Icons.crop_free,
-            color: kBackgroundColor,
-            size: 50.0,
+        Align(
+          alignment: Alignment.center,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return PhotoSlideShow(images: [image]);
+                  },
+                ),
+              );
+            },
+            child: const Icon(
+              Icons.crop_free,
+              color: kNewMainColor,
+              size: 30.0,
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

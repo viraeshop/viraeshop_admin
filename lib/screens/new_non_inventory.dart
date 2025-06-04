@@ -1,25 +1,25 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_bloc/shops/barrel.dart';
-import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/non_inventory_transaction_info.dart';
-import 'package:viraeshop_admin/screens/supplier/shops.dart' hide Shops;
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_api/models/shops/shops.dart';
-import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
@@ -48,6 +48,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
   num paid = 0;
   String imagePath = '';
   final jWTToken = Hive.box('adminInfo').get('token');
+  final ImagePickerService imagePickerService = ImagePickerService();
   @override
   void initState() {
     // TODO: implement initState
@@ -74,11 +75,11 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
             shopNames.clear();
             dropdownValue = '';
             isLoading = false;
-            if(value.isNotEmpty){
+            if (value.isNotEmpty) {
               date = dateFromJson(value[0].createdAt);
               for (var element in value) {
-                  shopNames.add(element.supplierInfo.businessName);
-                  shopList.add(element);
+                shopNames.add(element.supplierInfo.businessName);
+                shopList.add(element);
               }
               currentShop = shopList[0];
               dropdownValue = currentShop.supplierInfo.businessName;
@@ -94,7 +95,6 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
               controllers[8].text = currentShop.description;
             }
           });
-          
         } else if (state is RequestFinishedShopState) {
           setState(() {
             isLoading = false;
@@ -136,69 +136,61 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                   ),
                   receipt == null
                       ? imagePickerWidget(
-                          onTap: () {
+                          onTap: () async {
                             try {
-                              if (kIsWeb) {
-                                // getImageWeb('product_expense_images')
-                                //     .then((value) {
-                                //   setState(() {
-                                //     image = value.item1;
-                                //     uploadImageString = value.item2;
-                                //   });
-                                // });
-                              } else {
-                                getImageNative('product_expense_images')
-                                    .then((value) {
-                                  setState(() {
-                                    imagePath = value['path'];
-                                    uploadImageString = value['imageData'];
-                                  });
-                                });
-                              }
+                              PlatformFile? imageResult =
+                                  await imagePickerService.pickImage(context);
+                              if (imageResult == null) return;
+                              final imageData =
+                                  await NetworkUtility.uploadImageFromNative(
+                                      file: imageResult,
+                                      folder: 'product_expense_images');
+                              setState(() {
+                                imagePath = imageResult.path ?? '';
+                                uploadImageString = imageData;
+                              });
                             } catch (e) {
                               if (kDebugMode) {
                                 print(e);
                               }
+                              showToast('msg: $e', backgroundColor: kRedColor);
                             }
                           },
                           imagePath: imagePath,
                         )
-                      : GestureDetector(
-                          onTap: () {
-                            try {
-                              if (kIsWeb) {
-                                // getImageWeb('product_expense_images')
-                                //     .then((value) {
-                                //   setState(() {
-                                //     image = value.item1;
-                                //     uploadImageString = value.item2;
-                                //     receipt = value.item2!;
-                                //   });
-                                // });
-                              } else {
-                                getImageNative('product_expense_images')
-                                    .then((value) {
+                      : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GestureDetector(
+                              onTap: () async {
+                                try {
+                                  PlatformFile? imageResult =
+                                      await imagePickerService.pickImage(context);
+                                  if (imageResult == null) return;
+                                  final imageData =
+                                      await NetworkUtility.uploadImageFromNative(
+                                          file: imageResult,
+                                          folder: 'product_expense_images');
                                   setState(() {
-                                    imagePath = value['path'];
-                                    uploadImageString = value['imageData'];
-                                    receipt = value['imageData']['url'];
+                                    imagePath = imageResult.path ?? '';
+                                    uploadImageString = imageData;
+                                    receipt = imageData['url'];
                                   });
-                                });
-                              }
-                            } catch (e) {
-                              if (kDebugMode) {
-                                print(e);
-                              }
-                            }
-                          },
-                          child: Stack(
-                            children: [
-                              ClipRRect(
+                                } catch (e) {
+                                  if (kDebugMode) {
+                                    print(e);
+                                  }
+                                  showToast('msg: $e', backgroundColor: kRedColor);
+                                }
+                              },
+                              child: ClipRRect(
+                                clipBehavior: Clip.hardEdge,
                                 borderRadius: BorderRadius.circular(10.0),
                                 child: CachedNetworkImage(
                                   imageUrl: receipt!,
                                   height: 150.0,
                                   width: 150.0,
+                                  fit: BoxFit.cover,
                                   errorWidget: (context, url, childs) {
                                     return Image.asset(
                                       'assets/default.jpg',
@@ -208,17 +200,17 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                   },
                                 ),
                               ),
-                              const Align(
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  Icons.add,
-                                  size: 25.0,
-                                  color: kStrokeColor,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                        const SizedBox(
+                          width: 10.0,
                         ),
+                        Text(currentShop.images.length > 1
+                            ? '${currentShop.images.length} receipts paid'
+                            : '',
+                          style: kTableCellStyle,
+                        ),
+                        ],
+                      ),
                   const SizedBox(
                     height: 20.0,
                   ),
@@ -279,7 +271,9 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                             if (kDebugMode) {
                               print(changingShop);
                             }
-                            Shops shop = shopList.firstWhere((element) => changingShop == element.supplierInfo.businessName);
+                            Shops shop = shopList.firstWhere((element) =>
+                                changingShop ==
+                                element.supplierInfo.businessName);
                             setState(() {
                               dropdownValue = value.toString();
                               currentShop = shop;
@@ -406,7 +400,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                             final shopsBloc =
                                 BlocProvider.of<ShopsBloc>(context);
                             shopsBloc.add(UpdateShopEvent(
-                              token: jWTToken,
+                                token: jWTToken,
                                 shopId: updatingShopId,
                                 shopModel: updatedShop));
                           }),

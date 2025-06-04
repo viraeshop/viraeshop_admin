@@ -244,15 +244,15 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                textContainer('Pay'),
+                                textContainer('Pay', index == imageIndex,),
                                 const SizedBox(
                                   width: 3.0,
                                 ),
-                                textContainer(dateTime),
+                                textContainer(dateTime,  index == imageIndex,),
                                 const SizedBox(
                                   width: 3.0,
                                 ),
-                                textContainer(payList[index]['paid'].toString()),
+                                textContainer('${payList[index]['paid'].toString()}$bdtSign',  index == imageIndex,),
                               ],
                             );
                           }),

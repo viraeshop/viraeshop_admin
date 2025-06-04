@@ -182,25 +182,27 @@ class _EditUserScreenState extends State<EditUserScreen> {
                     ),
               ],
             ),
-            body: TabBarView(
-              children: [
-                InfoTab(
-                  email: widget.adminInfo['email'],
-                  name: widget.adminInfo['name'],
-                  isActive: widget.adminInfo['active'],
-                  isSelf: widget.selfAdmin,
-                  adminId: widget.adminInfo['adminId'],
-                  supplier: widget.adminInfo['Suppliers'] ?? [],
-                ),
-                OrdersTab(
-                  userId: widget.adminInfo['adminId'],
-                ),
-                SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
-                if (!widget.selfAdmin)
-                  PermissionTab(
-                    adminModel: AdminModel.fromJson(widget.adminInfo),
+            body: SafeArea(
+              child: TabBarView(
+                children: [
+                  InfoTab(
+                    email: widget.adminInfo['email'],
+                    name: widget.adminInfo['name'],
+                    isActive: widget.adminInfo['active'],
+                    isSelf: widget.selfAdmin,
+                    adminId: widget.adminInfo['adminId'],
+                    supplier: widget.adminInfo['Suppliers'] ?? [],
                   ),
-              ],
+                  OrdersTab(
+                    userId: widget.adminInfo['adminId'],
+                  ),
+                  SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
+                  if (!widget.selfAdmin)
+                    PermissionTab(
+                      adminModel: AdminModel.fromJson(widget.adminInfo),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

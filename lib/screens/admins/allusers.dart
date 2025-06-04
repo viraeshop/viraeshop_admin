@@ -69,7 +69,7 @@ class _AllUserScreenState extends State<AllUserScreen> {
           ),
         ],
       ),
-      body: architect(),
+      body: SafeArea(child: architect()),
     );
   }
 }

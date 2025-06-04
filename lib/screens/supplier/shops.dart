@@ -1,19 +1,21 @@
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
-import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Shops extends StatefulWidget {
@@ -35,6 +37,7 @@ class _ShopsState extends State<Shops> {
   String imagePath = '';
   bool isNonInventory = false;
   final jWTToken = Hive.box('adminInfo').get('token');
+  final imagePickerService = ImagePickerService();
 
   @override
   void initState() {
@@ -121,24 +124,27 @@ class _ShopsState extends State<Shops> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () {
-                            if (kIsWeb) {
-                              // getImageWeb('suppliers').then((value) {
-                              //   setState(() {
-                              //     bundleImage = value.item1!;
-                              //     imageUrlData = value.item2!;
-                              //   });
-                              // });
-                            } else {
-                              getImageNative('suppliers').then((value) {
-                                setState(() {
-                                  imagePath = value['path'];
-                                  imageUrlData = value['imageData'];
+                          onTap: () async {
+                            try {
+                              PlatformFile? imageResult =
+                                  await imagePickerService.pickImage(context);
+                              if (imageResult == null) return;
+                              final imageData =
+                                  await NetworkUtility.uploadImageFromNative(
+                                      file: imageResult,
+                                      folder: 'suppliers');
+                              setState(() {
+                                imagePath = imageResult.path ?? '';
+                                  imageUrlData = imageData;
                                   if (widget.isUpdate) {
                                     imageUpdated = true;
                                   }
-                                });
                               });
+                            } catch (e) {
+                              if (kDebugMode) {
+                                print(e);
+                              }
+                              showToast('msg: $e', backgroundColor: kRedColor);
                             }
                           },
                           child: Container(

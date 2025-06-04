@@ -10,14 +10,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
-import 'package:viraeshop_admin/reusable_widgets/non_inventory_items.dart';
 import 'package:viraeshop_admin/reusable_widgets/popWidget.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
-import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/reusable_widgets/category/special_category_models.dart';
@@ -160,27 +157,27 @@ class _TabWidgetState extends State<TabWidget> {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
-    if (deviceSize.width <= 480) {
-      // mobile screen sizes
-      aspectRatio = 3 / 1.90;
-      childAspectRatio = 1;
-      crossAxisCount = 3;
-    } else if (deviceSize.width > 480 && deviceSize.width <= 768) {
-      // Ipads/ Tablets screens
-      aspectRatio = 16.0 / 10.0;
-      childAspectRatio = 16 / 15.5;
-      crossAxisCount = 4;
-    } else if (deviceSize.width > 768 && deviceSize.width <= 1024) {
-      // Small screens and Laptops
-      aspectRatio = 16.0 / 8.8;
-      childAspectRatio = 16 / 14.5;
-      crossAxisCount = 5;
-    } else if (deviceSize.width > 1024) {
-      // Desktops and Large Screens
-      aspectRatio = 16.0 / 8.8;
-      childAspectRatio = 16 / 12.5;
-      crossAxisCount = 5;
-    }
+//    if (deviceSize.width <= 480) {
+    // mobile screen sizes
+    aspectRatio = 1.3; // Image aspect ratio
+    childAspectRatio = 0.7; // Grid item aspect ratio
+    crossAxisCount = 3;
+    // } else if (deviceSize.width > 480 && deviceSize.width <= 768) {
+    //   // Ipads/ Tablets screens
+    //   aspectRatio = 16.0 / 10.0;
+    //   childAspectRatio = 16 / 15.5;
+    //   crossAxisCount = 4;
+    // } else if (deviceSize.width > 768 && deviceSize.width <= 1024) {
+    //   // Small screens and Laptops
+    //   aspectRatio = 16.0 / 8.8;
+    //   childAspectRatio = 16 / 14.5;
+    //   crossAxisCount = 5;
+    // } else if (deviceSize.width > 1024) {
+    //   // Desktops and Large Screens
+    //   aspectRatio = 16.0 / 8.8;
+    //   childAspectRatio = 16 / 12.5;
+    //   crossAxisCount = 5;
+    // }
     return Container(
       color: kBackgroundColor,
       child: Stack(
@@ -437,9 +434,12 @@ class _TabWidgetState extends State<TabWidget> {
                                   productImage: productsList[index - 1]
                                       ['thumbnail'],
                                   originalPrice: originalPrice,
-                                  discount: discountData.item3 ? originalPrice - discountData.item1 : 0,
+                                  discount: discountData.item3
+                                      ? originalPrice - discountData.item1
+                                      : 0,
                                   discountPercent: discountData.item2,
-                                  supplierId: productsList[index - 1]['supplier']['supplierId'],
+                                  supplierId: productsList[index - 1]
+                                      ['supplier']['supplierId'],
                                 ),
                               );
                             }
@@ -517,6 +517,18 @@ class _TabWidgetState extends State<TabWidget> {
                                                   fontSize: 12.0,
                                                   fontFamily: 'Montserrat',
                                                 ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                '${productsList[index - 1]['productCode']}',
+                                                style: const TextStyle(
+                                                  color: kBackgroundColor,
+                                                  fontSize: 12.0,
+                                                  fontFamily: 'Montserrat',
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                               Padding(
                                                 padding:
@@ -543,7 +555,7 @@ class _TabWidgetState extends State<TabWidget> {
                                                                 .item3
                                                             ? kIconColor2
                                                             : Colors.teal[100],
-                                                        fontSize: 12.0,
+                                                        fontSize: 10.0,
                                                         fontFamily:
                                                             'Montserrat',
                                                       ),
@@ -554,7 +566,7 @@ class _TabWidgetState extends State<TabWidget> {
                                                             style: TextStyle(
                                                               color: Colors
                                                                   .teal[100],
-                                                              fontSize: 12.0,
+                                                              fontSize: 10.0,
                                                               fontFamily:
                                                                   'Montserrat',
                                                             ),

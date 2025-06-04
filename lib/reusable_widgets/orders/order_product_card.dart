@@ -675,8 +675,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                 maxLines: 3,
                               ),
                             ),
-                          if (!onOrderStage &&
-                              currentStage != OrderStages.admin)
+                          if ((currentStage == OrderStages.receiving && widget.orderInfo['receiveStatus'] == 'pending') ||
+                              currentStage == OrderStages.processing || currentStage == OrderStages.delivery)
                             Consumer<OrderProvider>(
                                 builder: (context, provider, any) {
                               int counter =
@@ -685,7 +685,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                       : 1;
                               if (provider.currentStage ==
                                   OrderStages.receiving) {
-                                status = ['Pending', 'Confirmed', 'Failed'];
+                                status = ['Receiving', 'Confirmed', 'Failed'];
                               } else if (provider.currentStage ==
                                   OrderStages.processing) {
                                 status = ['Send', 'Pending'];
@@ -696,7 +696,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                 title: provider.currentStage ==
                                                 OrderStages.receiving &&
                                             currentStatus.isNotEmpty ||
-                                        provider.currentStage ==
+                                        provider.currentStage ==  
                                                 OrderStages.processing &&
                                             currentStatus.isNotEmpty
                                     ? currentStatus.capitalize()
@@ -736,6 +736,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                     OrderStages.receiving)
                                                   'receiveStatus':
                                                       status[statusIndex]
+                                                          .toLowerCase() == 'receiving' ? 'pending' : status[statusIndex]
                                                           .toLowerCase(),
                                               },
                                             },

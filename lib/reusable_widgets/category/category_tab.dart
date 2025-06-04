@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 
 class CategoryCard extends StatelessWidget {
-  const CategoryCard({Key? key,
+  const CategoryCard({
+    Key? key,
     required this.imageUrl,
     required this.title,
     this.onTap,
@@ -30,8 +31,8 @@ class CategoryCard extends StatelessWidget {
           Container(
             margin: const EdgeInsets.all(7.0),
             padding: const EdgeInsets.all(3.0),
-            height: 75.0,
-            width: isSubCategory ? 100.0 : 150.0,
+            width: isSubCategory ? 100 : 125,
+            height: isSubCategory ? 50 : 60,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: image(isAssetImage, imageUrl),

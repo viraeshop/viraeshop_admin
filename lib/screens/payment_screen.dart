@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:random_string/random_string.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -15,8 +14,6 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
@@ -242,76 +239,78 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ],
                   ),
                 ),
-                FractionallySizedBox(
-                  heightFactor: 0.12,
-                  alignment: Alignment.bottomCenter,
-                  child: InkWell(
-                    onTap: () async {
-                      setState(() {
-                        isLoading = true;
-                      });
-                      transInfo = {
-                        'price': totalPrice - discount,
-                        'quantity': totalQuantity.toString(),
-                        'createdAt': dateToJson(Timestamp.now()),
-                        'adminId': adminId,
-                        'items': transDesc,
-                        'isWithNonInventory': isWithNonInventory,
-                        'customerId': customerId,
-                        'role': customerRole,
-                        'paid': widget.paid,
-                        'due': widget.due,
-                        'advance': widget.advance,
-                        'discount': discount,
-                        'profit': profit,
-                        'channel': 'in_store',
-                      };
-                      if (isWithNonInventory) transInfo['shops'] = supplierShops;
-                      if (customerRole == 'agents' && widget.paid == 0) {
-                        num wallet = customerBox.get('wallet', defaultValue: 0);
-                        num balanceToPay = totalPrice - discount;
-                        if (kDebugMode) {
-                          print(wallet);
-                        }
-                        if (wallet >= balanceToPay) {
-                          num balance = wallet - balanceToPay;
-                          customerBox.put('wallet', balance);
-                          customerBloc.add(UpdateCustomerEvent(
-                              token: jWTToken,
-                              customerId: customerId,
-                              customerModel: {
-                                'wallet': balance,
-                              }));
+                SafeArea(
+                  child: FractionallySizedBox(
+                    heightFactor: 0.12,
+                    alignment: Alignment.bottomCenter,
+                    child: InkWell(
+                      onTap: () async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        transInfo = {
+                          'price': totalPrice - discount,
+                          'quantity': totalQuantity.toString(),
+                          'createdAt': dateToJson(Timestamp.now()),
+                          'adminId': adminId,
+                          'items': transDesc,
+                          'isWithNonInventory': isWithNonInventory,
+                          'customerId': customerId,
+                          'role': customerRole,
+                          'paid': widget.paid,
+                          'due': widget.due,
+                          'advance': widget.advance,
+                          'discount': discount,
+                          'profit': profit,
+                          'channel': 'in_store',
+                        };
+                        if (isWithNonInventory) transInfo['shops'] = supplierShops;
+                        if (customerRole == 'agents' && widget.paid == 0) {
+                          num wallet = customerBox.get('wallet', defaultValue: 0);
+                          num balanceToPay = totalPrice - discount;
+                          if (kDebugMode) {
+                            print(wallet);
+                          }
+                          if (wallet >= balanceToPay) {
+                            num balance = wallet - balanceToPay;
+                            customerBox.put('wallet', balance);
+                            customerBloc.add(UpdateCustomerEvent(
+                                token: jWTToken,
+                                customerId: customerId,
+                                customerModel: {
+                                  'wallet': balance,
+                                }));
+                          } else {
+                            toast(
+                              context: context,
+                              title:
+                                  'Sorry customer has insufficient balance in his account',
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                          }
                         } else {
-                          toast(
-                            context: context,
-                            title:
-                                'Sorry customer has insufficient balance in his account',
+                          transacBloc.add(
+                            AddTransactionEvent(
+                              token: jWTToken,
+                              transactionModel: transInfo,
+                            ),
                           );
-                          setState(() {
-                            isLoading = false;
-                          });
                         }
-                      } else {
-                        transacBloc.add(
-                          AddTransactionEvent(
-                            token: jWTToken,
-                            transactionModel: transInfo,
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10.0),
+                        margin: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: kMainColor,
+                          borderRadius: BorderRadius.circular(7.0),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Charge BDT ${(totalPrice - discount).toString()}',
+                            style: kDrawerTextStyle1,
                           ),
-                        );
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10.0),
-                      margin: const EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: kMainColor,
-                        borderRadius: BorderRadius.circular(7.0),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Charge BDT ${(totalPrice - discount).toString()}',
-                          style: kDrawerTextStyle1,
                         ),
                       ),
                     ),

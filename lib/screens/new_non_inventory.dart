@@ -94,6 +94,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
               controllers[8].text = currentShop.description;
             }
           });
+          
         } else if (state is RequestFinishedShopState) {
           setState(() {
             isLoading = false;

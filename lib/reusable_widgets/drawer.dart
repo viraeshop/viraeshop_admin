@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/configs/desktop_orders.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/screens/orders/processing.dart';
@@ -19,10 +17,7 @@ import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_admin/screens/supplier/suppliers_list.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
-import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
-import 'package:viraeshop_admin/screens/advert/advert_screen.dart';
-import 'package:viraeshop_admin/screens/agent_products.dart';
 import 'package:viraeshop_admin/screens/customers/agents_list.dart';
 import 'package:viraeshop_admin/screens/admins/allusers.dart';
 import 'package:viraeshop_admin/screens/customers/architects_list.dart';
@@ -32,7 +27,6 @@ import 'package:viraeshop_admin/screens/expense_history.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
 import 'package:viraeshop_admin/screens/messages_screen/users_screen.dart';
 import 'package:viraeshop_admin/screens/new_expense.dart';
-import 'package:viraeshop_admin/screens/orders/order_screen.dart';
 import 'package:viraeshop_admin/screens/products_screen.dart';
 import 'package:viraeshop_admin/screens/return_history.dart';
 import 'package:viraeshop_admin/screens/return_product.dart';
@@ -262,19 +256,19 @@ class _AppDrawerState extends State<AppDrawer> {
                       );
                     },
                   ),
-                  ReusableTile(
-                    icon: FontAwesomeIcons.cube,
-                    title: 'Products',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Products(),
-                        ),
-                      );
-                      //}
-                    },
-                  ),
+                  // ReusableTile(
+                  //   icon: FontAwesomeIcons.cube,
+                  //   title: 'Products',
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => const Products(),
+                  //       ),
+                  //     );
+                  //     //}
+                  //   },
+                  // ),
                   ReusableTile(
                     icon: Icons.grid_view,
                     title: 'Category',

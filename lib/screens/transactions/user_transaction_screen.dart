@@ -539,94 +539,80 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                   ),
                 ),
               ),
-              FractionallySizedBox(
-                alignment: Alignment.bottomCenter,
-                heightFactor: 0.31,
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        LimitedBox(
-                          maxHeight: 140,
-                          child: GridView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 10.0,
-                              crossAxisSpacing: 10.0,
-                              childAspectRatio: 1,
-                            ),
-                            children: [
-                              showDue
-                                  ? const SizedBox()
-                                  : SpecialContainer(
-                                      value: totalBalanceTemp.item1.toString(),
-                                      title: 'Total Paid',
-                                      color: kNewTextColor,
-                                    ),
-                              showPaid
-                                  ? const SizedBox()
-                                  : SpecialContainer(
-                                      value: totalBalanceTemp.item2.toString(),
-                                      title: 'Total Due',
-                                      color: kRedColor,
-                                    ),
-                              SpecialContainer(
-                                value: totalBalanceTemp.item3.toString(),
-                                title: 'Amount',
-                                color: kBlueColor,
+              SafeArea(
+                child: FractionallySizedBox(
+                  alignment: Alignment.bottomCenter,
+                  heightFactor: 0.31,
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          LimitedBox(
+                            maxHeight: 140,
+                            child: GridView(
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 10.0,
+                                crossAxisSpacing: 10.0,
+                                childAspectRatio: 1,
                               ),
-                            ],
+                              children: [
+                                showDue
+                                    ? const SizedBox()
+                                    : SpecialContainer(
+                                        value: totalBalanceTemp.item1.toString(),
+                                        title: 'Total Paid',
+                                        color: kNewTextColor,
+                                      ),
+                                showPaid
+                                    ? const SizedBox()
+                                    : SpecialContainer(
+                                        value: totalBalanceTemp.item2.toString(),
+                                        title: 'Total Due',
+                                        color: kRedColor,
+                                      ),
+                                SpecialContainer(
+                                  value: totalBalanceTemp.item3.toString(),
+                                  title: 'Amount',
+                                  color: kBlueColor,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            buttons(
-                              title: 'Save PDF',
-                              onTap: () {
-                                try {
-                                  shareStatement(
-                                    items: transactionData,
-                                    begin: begin,
-                                    end: end,
-                                    name: widget.name ?? '',
-                                    totalAmount:
-                                        totalBalanceTemp.item3.toString(),
-                                    totalDue: totalBalanceTemp.item2.toString(),
-                                    totalPay: totalBalanceTemp.item1.toString(),
-                                    isSave: true,
-                                  );
-                                  toast(
-                                    context: context,
-                                    title: 'saved',
-                                    color: kNewMainColor,
-                                  );
-                                } catch (e) {
-                                  if (kDebugMode) {
-                                    print(e);
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              buttons(
+                                title: 'Save PDF',
+                                onTap: () {
+                                  try {
+                                    shareStatement(
+                                      items: transactionData,
+                                      begin: begin,
+                                      end: end,
+                                      name: widget.name ?? '',
+                                      totalAmount:
+                                          totalBalanceTemp.item3.toString(),
+                                      totalDue: totalBalanceTemp.item2.toString(),
+                                      totalPay: totalBalanceTemp.item1.toString(),
+                                      isSave: true,
+                                    );
+                                    toast(
+                                      context: context,
+                                      title: 'saved',
+                                      color: kNewMainColor,
+                                    );
+                                  } catch (e) {
+                                    if (kDebugMode) {
+                                      print(e);
+                                    }
                                   }
-                                }
-                              },
-                            ),
-                            buttons(
-                              onTap: () {
-                                shareStatement(
-                                  items: transactionData,
-                                  begin: begin,
-                                  end: end,
-                                  name: widget.name ?? '',
-                                  totalAmount:
-                                      totalBalanceTemp.item3.toString(),
-                                  totalDue: totalBalanceTemp.item2.toString(),
-                                  totalPay: totalBalanceTemp.item1.toString(),
-                                );
-                              },
-                              title: 'Share',
-                            ),
-                            buttons(
+                                },
+                              ),
+                              buttons(
                                 onTap: () {
                                   shareStatement(
                                     items: transactionData,
@@ -637,13 +623,29 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                                         totalBalanceTemp.item3.toString(),
                                     totalDue: totalBalanceTemp.item2.toString(),
                                     totalPay: totalBalanceTemp.item1.toString(),
-                                    isPrint: true,
                                   );
                                 },
-                                title: 'Print'),
-                          ],
-                        ),
-                      ],
+                                title: 'Share',
+                              ),
+                              buttons(
+                                  onTap: () {
+                                    shareStatement(
+                                      items: transactionData,
+                                      begin: begin,
+                                      end: end,
+                                      name: widget.name ?? '',
+                                      totalAmount:
+                                          totalBalanceTemp.item3.toString(),
+                                      totalDue: totalBalanceTemp.item2.toString(),
+                                      totalPay: totalBalanceTemp.item1.toString(),
+                                      isPrint: true,
+                                    );
+                                  },
+                                  title: 'Print'),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -8,7 +8,6 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
-import 'package:viraeshop_bloc/expense/expense_state.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -19,7 +18,6 @@ import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dar
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/transactions/all_transactions.dart';
-import 'package:viraeshop_api/models/transactions/transactions.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
 class TransactionDetails extends StatefulWidget {
@@ -266,7 +264,7 @@ class _TransactionDetailsState extends State<TransactionDetails> {
 
                           ///Pie chart will be here
                           SizedBox(
-                            height: 220.0,
+                            height: 300.0,
                             width: double.infinity,
                             child: SfCircularChart(
                                 // title: ChartTitle(

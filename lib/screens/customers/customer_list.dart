@@ -128,82 +128,84 @@ class _CustomersState extends State<Customers> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(top: 70.0),
-                child: FractionallySizedBox(
-                  alignment: Alignment.topCenter,
-                  heightFactor: widget.role == 'agents' ? 0.88 : 1,
-                  child: ListView.builder(
-                    itemCount: customersList.length,
-                    itemBuilder: (context, i) {
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: ListTile(
-                            onTap: () {
-                              if (widget.isSelectCustomer) {
-                                onSelectCustomer(
-                                  context,
-                                  customersList[i].toJson(),
-                                );
-                              } else {
-                                onCustomerTap(
-                                  context,
-                                  customersList[i].toJson(),
-                                  widget.role,
-                                );
-                              }
-                            },
-                            leading: CircleAvatar(
-                              radius: 60.0,
-                              backgroundColor: kNewTextColor,
-                              backgroundImage: NetworkImage(
-                                  customersList[i].profileImage ?? ''),
-                              child: Text('$i'),
-                            ),
-                            trailing: const Icon(Icons.arrow_right),
-                            title: Text(customersList[i].name,
-                                style: const TextStyle(color: kMainColor)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (customersList[i].role != 'general')
-                                  Text(
-                                    '${customersList[i].businessName}',
-                                    style: kProductNameStylePro,
+                child: SafeArea(
+                  child: FractionallySizedBox(
+                    alignment: Alignment.topCenter,
+                    heightFactor: widget.role == 'agents' ? 0.88 : 1,
+                    child: ListView.builder(
+                      itemCount: customersList.length,
+                      itemBuilder: (context, i) {
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: ListTile(
+                              onTap: () {
+                                if (widget.isSelectCustomer) {
+                                  onSelectCustomer(
+                                    context,
+                                    customersList[i].toJson(),
+                                  );
+                                } else {
+                                  onCustomerTap(
+                                    context,
+                                    customersList[i].toJson(),
+                                    widget.role,
+                                  );
+                                }
+                              },
+                              leading: CircleAvatar(
+                                radius: 60.0,
+                                backgroundColor: kNewTextColor,
+                                backgroundImage: NetworkImage(
+                                    customersList[i].profileImage ?? ''),
+                                child: Text('$i'),
+                              ),
+                              trailing: const Icon(Icons.arrow_right),
+                              title: Text(customersList[i].name,
+                                  style: const TextStyle(color: kMainColor)),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (customersList[i].role != 'general')
+                                    Text(
+                                      '${customersList[i].businessName}',
+                                      style: kProductNameStylePro,
+                                    ),
+                                  const SizedBox(
+                                    height: 10.0,
                                   ),
-                                const SizedBox(
-                                  height: 10.0,
-                                ),
-                                Text(
-                                  customersList[i].mobile,
-                                  style: kTableCellStyle,
-                                ),
-                                if (customersList[i].email.isNotEmpty)
                                   Text(
-                                    customersList[i].email,
-                                    style: kProductNameStylePro,
+                                    customersList[i].mobile,
+                                    style: kTableCellStyle,
                                   ),
-                                if (widget.role == 'agents')
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        '${customersList[i].wallet}$bdtSign',
-                                        style: const TextStyle(
-                                          color: kNewMainColor,
-                                          fontFamily: 'Montserrat',
-                                          fontSize: 15,
-                                          letterSpacing: 1.3,
-                                          fontWeight: FontWeight.bold,
+                                  if (customersList[i].email.isNotEmpty)
+                                    Text(
+                                      customersList[i].email,
+                                      style: kProductNameStylePro,
+                                    ),
+                                  if (widget.role == 'agents')
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '${customersList[i].wallet}$bdtSign',
+                                          style: const TextStyle(
+                                            color: kNewMainColor,
+                                            fontFamily: 'Montserrat',
+                                            fontSize: 15,
+                                            letterSpacing: 1.3,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                              ],
+                                      ],
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -262,38 +264,40 @@ class _CustomersState extends State<Customers> {
                 ),
               ),
               if (widget.role == 'agents')
-                FractionallySizedBox(
-                  alignment: Alignment.bottomCenter,
-                  heightFactor: 0.12,
-                  child: Container(
-                    width: double.infinity,
-                    color: kSubMainColor,
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Total Balance:',
-                          style: TextStyle(
-                            color: kBackgroundColor,
-                            fontSize: 20.0,
-                            letterSpacing: 1.3,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
+                SafeArea(
+                  child: FractionallySizedBox(
+                    alignment: Alignment.bottomCenter,
+                    heightFactor: 0.12,
+                    child: Container(
+                      width: double.infinity,
+                      color: kSubMainColor,
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Total Balance:',
+                            style: TextStyle(
+                              color: kBackgroundColor,
+                              fontSize: 20.0,
+                              letterSpacing: 1.3,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          ' ${agentsBalances.toString()}$bdtSign',
-                          style: const TextStyle(
-                            color: kMainColor,
-                            fontSize: 15.0,
-                            letterSpacing: 1.3,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
+                          Text(
+                            ' ${agentsBalances.toString()}$bdtSign',
+                            style: const TextStyle(
+                              color: kMainColor,
+                              fontSize: 15.0,
+                              letterSpacing: 1.3,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 )

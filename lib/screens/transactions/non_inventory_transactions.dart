@@ -174,7 +174,6 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                 alignment: Alignment.topCenter,
                 heightFactor: 0.76,
                 child: SingleChildScrollView(
-                  // padding: EdgeInsets.all(15.0),
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   child: Column(
@@ -404,137 +403,139 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                   ),
                 ),
               ),
-              FractionallySizedBox(
-                alignment: Alignment.bottomCenter,
-                heightFactor: 0.24,
-                child: Container(
-                  color: kBackgroundColor,
-                  padding: const EdgeInsets.all(15.0),
-                  child: Column(
-                    children: [
-                      LimitedBox(
-                        maxHeight: 140,
-                        child: GridView(
-                          // physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            mainAxisSpacing: 10.0,
-                            crossAxisSpacing: 10.0,
-                            childAspectRatio: 1,
-                          ),
-                          children: [
-                            showPaid == true
-                                ? SpecialContainer(
-                                    value: totalsTemp.item1.toString(),
-                                    title: 'Total Paid',
-                                    color: kNewTextColor,
-                                  )
-                                : const SizedBox(),
-                            showDue == true
-                                ? SpecialContainer(
-                                    value: totalsTemp.item2.toString(),
-                                    title: 'Total Due',
-                                    color: kRedColor,
-                                  )
-                                : const SizedBox(),
-                            SpecialContainer(
-                              value: totalsTemp.item3.toString(),
-                              title: 'Buying Amount',
-                              color: kNewTextColor,
+              SafeArea(
+                child: FractionallySizedBox(
+                  alignment: Alignment.bottomCenter,
+                  heightFactor: 0.24,
+                  child: Container(
+                    color: kBackgroundColor,
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      children: [
+                        LimitedBox(
+                          maxHeight: 140,
+                          child: GridView(
+                            // physics: NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              mainAxisSpacing: 10.0,
+                              crossAxisSpacing: 10.0,
+                              childAspectRatio: 1,
                             ),
-                            if (!widget.isSupplier)
+                            children: [
+                              showPaid == true
+                                  ? SpecialContainer(
+                                      value: totalsTemp.item1.toString(),
+                                      title: 'Total Paid',
+                                      color: kNewTextColor,
+                                    )
+                                  : const SizedBox(),
+                              showDue == true
+                                  ? SpecialContainer(
+                                      value: totalsTemp.item2.toString(),
+                                      title: 'Total Due',
+                                      color: kRedColor,
+                                    )
+                                  : const SizedBox(),
                               SpecialContainer(
-                                value: totalsTemp.item4.toString(),
-                                title: 'Sales Amount',
-                                color: kBlueColor,
+                                value: totalsTemp.item3.toString(),
+                                title: 'Buying Amount',
+                                color: kNewTextColor,
                               ),
-                          ],
+                              if (!widget.isSupplier)
+                                SpecialContainer(
+                                  value: totalsTemp.item4.toString(),
+                                  title: 'Sales Amount',
+                                  color: kBlueColor,
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          buttons(
-                            title: 'Save PDF',
-                            onTap: () {
-                              try {
-                                shareCustomerStatement(
-                                  name: widget.name,
-                                  email: dataTemp[0]['supplierInfo']['email'] ??
-                                      '',
-                                  mobile: dataTemp[0]['supplierInfo']['mobile'],
-                                  address: dataTemp[0]['supplierInfo']
-                                      ['address'],
-                                  isInventory: false,
-                                  items: data,
-                                  begin: begin,
-                                  end: end,
-                                  isSupplier: widget.isSupplier,
-                                  totalSale: totalsTemp.item4.toString(),
-                                  totalAmount: totalsTemp.item3.toString(),
-                                  totalDue: totalsTemp.item2.toString(),
-                                  totalPay: totalsTemp.item1.toString(),
-                                  isSave: true,
-                                );
-                                toast(
-                                    context: context,
-                                    title: 'Saved',
-                                    color: kNewMainColor);
-                              } catch (e) {
-                                if (kDebugMode) {
-                                  print(e);
-                                }
-                              }
-                            },
-                          ),
-                          buttons(
-                            onTap: () {
-                              shareCustomerStatement(
-                                name: widget.name,
-                                email:
-                                    dataTemp[0]['supplierInfo']['email'] ?? '',
-                                mobile: dataTemp[0]['supplierInfo']['mobile'],
-                                address: dataTemp[0]['supplierInfo']['address'],
-                                isInventory: false,
-                                isSupplier: widget.isSupplier,
-                                items: data,
-                                begin: begin,
-                                end: end,
-                                totalSale: totalsTemp.item4.toString(),
-                                totalAmount: totalsTemp.item3.toString(),
-                                totalDue: totalsTemp.item2.toString(),
-                                totalPay: totalsTemp.item1.toString(),
-                              );
-                            },
-                            title: 'Share',
-                          ),
-                          buttons(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buttons(
+                              title: 'Save PDF',
                               onTap: () {
-                                shareCustomerStatement(
+                                try {
+                                  shareCustomerStatement(
                                     name: widget.name,
-                                    email: dataTemp[0]['supplierInfo']
-                                            ['email'] ??
+                                    email: dataTemp[0]['supplierInfo']['email'] ??
                                         '',
-                                    mobile: dataTemp[0]['supplierInfo']
-                                        ['mobile'],
+                                    mobile: dataTemp[0]['supplierInfo']['mobile'],
                                     address: dataTemp[0]['supplierInfo']
                                         ['address'],
                                     isInventory: false,
                                     items: data,
                                     begin: begin,
-                                    isSupplier: widget.isSupplier,
                                     end: end,
+                                    isSupplier: widget.isSupplier,
                                     totalSale: totalsTemp.item4.toString(),
                                     totalAmount: totalsTemp.item3.toString(),
                                     totalDue: totalsTemp.item2.toString(),
                                     totalPay: totalsTemp.item1.toString(),
-                                    isPrint: true);
+                                    isSave: true,
+                                  );
+                                  toast(
+                                      context: context,
+                                      title: 'Saved',
+                                      color: kNewMainColor);
+                                } catch (e) {
+                                  if (kDebugMode) {
+                                    print(e);
+                                  }
+                                }
                               },
-                              title: 'Print'),
-                        ],
-                      ),
-                    ],
+                            ),
+                            buttons(
+                              onTap: () {
+                                shareCustomerStatement(
+                                  name: widget.name,
+                                  email:
+                                      dataTemp[0]['supplierInfo']['email'] ?? '',
+                                  mobile: dataTemp[0]['supplierInfo']['mobile'],
+                                  address: dataTemp[0]['supplierInfo']['address'],
+                                  isInventory: false,
+                                  isSupplier: widget.isSupplier,
+                                  items: data,
+                                  begin: begin,
+                                  end: end,
+                                  totalSale: totalsTemp.item4.toString(),
+                                  totalAmount: totalsTemp.item3.toString(),
+                                  totalDue: totalsTemp.item2.toString(),
+                                  totalPay: totalsTemp.item1.toString(),
+                                );
+                              },
+                              title: 'Share',
+                            ),
+                            buttons(
+                                onTap: () {
+                                  shareCustomerStatement(
+                                      name: widget.name,
+                                      email: dataTemp[0]['supplierInfo']
+                                              ['email'] ??
+                                          '',
+                                      mobile: dataTemp[0]['supplierInfo']
+                                          ['mobile'],
+                                      address: dataTemp[0]['supplierInfo']
+                                          ['address'],
+                                      isInventory: false,
+                                      items: data,
+                                      begin: begin,
+                                      isSupplier: widget.isSupplier,
+                                      end: end,
+                                      totalSale: totalsTemp.item4.toString(),
+                                      totalAmount: totalsTemp.item3.toString(),
+                                      totalDue: totalsTemp.item2.toString(),
+                                      totalPay: totalsTemp.item1.toString(),
+                                      isPrint: true);
+                                },
+                                title: 'Print'),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -67,11 +67,11 @@ dependencies:
   viraeshop_api:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-api.git
-    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
+    path: ../viraeshop-api
   viraeshop_bloc:
 #    git:
 #      url: https://github.com/viraeshop/viraeshop-bloc.git
-    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-bloc
+    path: ../viraeshop-bloc
   badges: ^3.1.2
   printing: ^5.14.2
 dependency_overrides:

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,25 +7,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:viraeshop_bloc/admin/admin_bloc.dart';
-import 'package:viraeshop_bloc/admin/admin_event.dart';
-import 'package:viraeshop_bloc/admin/admin_state.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
-import 'package:viraeshop_bloc/suppliers/barrel.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
 import 'package:viraeshop_admin/screens/orders/details.dart';
-import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
-import 'package:viraeshop_admin/screens/orders/order_screen.dart';
-import 'package:viraeshop_api/apiCalls/orders.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
-import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 
 import '../../components/styles/colors.dart';
 import '../../components/styles/text_styles.dart';
 import '../../configs/boxes.dart';
 import '../../filters/orderFilters.dart';
-import '../../reusable_widgets/loading_widget.dart';
 import '../../reusable_widgets/orders/functions.dart';
 import '../../reusable_widgets/orders/order_product_card.dart';
 import '../../reusable_widgets/send_button.dart';
@@ -133,13 +122,11 @@ class _OrderProductsState extends State<OrderProducts> {
     super.deactivate();
   }
 
-  OrderProvider? _orderProvider;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Save a reference to the OrderProvider
-    _orderProvider = Provider.of<OrderProvider>(context, listen: false);
   }
 
   @override
@@ -247,185 +234,187 @@ class _OrderProductsState extends State<OrderProducts> {
                     );
                   }),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                      height: currentStage == OrderStages.receiving ||
-                              currentStage == OrderStages.admin
-                          ? 80.0
-                          : 130.0,
-                      padding: const EdgeInsets.all(10.0),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: kNewMainColor,
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      child: Consumer<OrderProvider>(
-                        builder: (context, order, any) {
-                          if (order.currentStage == OrderStages.receiving ||
-                              currentStage == OrderStages.admin) {
-                            bool adminItemsConfirmed = order.orderProducts
-                                .every((element) =>
-                                    element.processingStatus == 'confirmed' ||
-                                    element.processingStatus == 'failed');
-                            bool receiveItemsConfirmed = order.orderProducts
-                                .every((item) =>
-                                    item.receiveStatus == 'confirmed' ||
-                                    item.receiveStatus == 'failed');
-                            return Center(
-                              child: SendButton(
-                                onTap: () {
-                                  if (receiveItemsConfirmed ||
-                                      adminItemsConfirmed) {
-                                    setState(() {
-                                      isLoading = true;
-                                    });
-                                    final orderBloc =
-                                        BlocProvider.of<OrdersBloc>(context);
-                                    orderBloc.add(
-                                      UpdateOrderEvent(
-                                        orderId: widget.orderInfo['orderId']
-                                            .toString(),
-                                        orderModel: {
-                                          'notificationType': 'employee2Admin',
-                                          'orderStage': order.currentStage.name,
-                                          if (order.currentStage ==
-                                              OrderStages.receiving)
-                                            'receiveStatus': 'completed',
-                                          if (order.currentStage ==
-                                              OrderStages.receiving)
-                                            'deliveryStatus': 'pending',
-                                          if (order.currentStage ==
-                                              OrderStages.admin)
-                                            'processingStatus': 'confirmed',
-                                          if (order.currentStage ==
-                                              OrderStages.admin)
-                                            'incrementReceiveCount': true,
-                                          if (order.currentStage ==
-                                              OrderStages.admin)
-                                            'receiveStatus': 'pending',
-                                        },
-                                        token: jWTToken,
+               if(!(widget.orderInfo['receiveStatus'] != 'pending' && currentStage == OrderStages.receiving)) SafeArea(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                        height: currentStage == OrderStages.receiving ||
+                                currentStage == OrderStages.admin
+                            ? 80.0
+                            : 130.0,
+                        padding: const EdgeInsets.all(10.0),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: kNewMainColor,
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Consumer<OrderProvider>(
+                          builder: (context, order, any) {
+                            if (order.currentStage == OrderStages.receiving ||
+                                currentStage == OrderStages.admin) {
+                              bool adminItemsConfirmed = order.orderProducts
+                                  .every((element) =>
+                                      element.processingStatus == 'confirmed' ||
+                                      element.processingStatus == 'failed');
+                              bool receiveItemsConfirmed = order.orderProducts
+                                  .every((item) =>
+                                      item.receiveStatus == 'confirmed' ||
+                                      item.receiveStatus == 'failed');
+                              return Center(
+                                child: SendButton(
+                                  onTap: () {
+                                    if (receiveItemsConfirmed ||
+                                        adminItemsConfirmed) {
+                                      setState(() {
+                                        isLoading = true;
+                                      });
+                                      final orderBloc =
+                                          BlocProvider.of<OrdersBloc>(context);
+                                      orderBloc.add(
+                                        UpdateOrderEvent(
+                                          orderId: widget.orderInfo['orderId']
+                                              .toString(),
+                                          orderModel: {
+                                            'notificationType': 'employee2Admin',
+                                            'orderStage': order.currentStage.name,
+                                            if (order.currentStage ==
+                                                OrderStages.receiving)
+                                              'receiveStatus': 'completed',
+                                            if (order.currentStage ==
+                                                OrderStages.receiving)
+                                              'deliveryStatus': 'pending',
+                                            if (order.currentStage ==
+                                                OrderStages.admin)
+                                              'processingStatus': 'confirmed',
+                                            if (order.currentStage ==
+                                                OrderStages.admin)
+                                              'incrementReceiveCount': true,
+                                            if (order.currentStage ==
+                                                OrderStages.admin)
+                                              'receiveStatus': 'pending',
+                                          },
+                                          token: jWTToken,
+                                        ),
+                                      );
+                                    } else {
+                                      showToast(
+                                        'Please make sure you have confirmed all items',
+                                        backgroundColor: kRedColor,
+                                        context: context,
+                                      );
+                                    }
+                                  },
+                                  title: order.currentStage == OrderStages.admin
+                                      ? 'Send To Delivery Hub'
+                                      : 'Received',
+                                  textStyle: kTotalSalesStyle,
+                                  width: 250.0,
+                                  color: kBackgroundColor,
+                                ),
+                              );
+                            } else {
+                              bool orderItemsConfirmed = order.orderProducts.any(
+                                  (element) => element.availability ?? false);
+                              return Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        widget.customerInfo['name'],
+                                        style: kSansTextStyleWhite,
                                       ),
-                                    );
-                                  } else {
-                                    showToast(
-                                      'Please make sure you have confirmed all items',
-                                      backgroundColor: kRedColor,
-                                      context: context,
-                                    );
-                                  }
-                                },
-                                title: order.currentStage == OrderStages.admin
-                                    ? 'Send To Delivery Hub'
-                                    : 'Received',
-                                textStyle: kTotalSalesStyle,
-                                width: 250.0,
-                                color: kBackgroundColor,
-                              ),
-                            );
-                          } else {
-                            bool orderItemsConfirmed = order.orderProducts.any(
-                                (element) => element.availability ?? false);
-                            return Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      widget.customerInfo['name'],
-                                      style: kSansTextStyleWhite,
-                                    ),
-                                    const Text(
-                                      'Sub-Total',
-                                      style: kSansTextStyleWhite1,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      widget.customerInfo['role'],
-                                      style: kSansTextStyleWhite1,
-                                    ),
-                                    Row(
-                                      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        ///TODO: Add product discount here..
-                                        Text(
-                                          '${orderItemsConfirmed ? order.total : 0.00}$bdtSign',
-                                          style: const TextStyle(
-                                            color: kBackgroundColor,
-                                            fontFamily: 'SourceSans',
-                                            fontSize: 15,
-                                            letterSpacing: 1.3,
-                                            decoration:
-                                                TextDecoration.lineThrough,
+                                      const Text(
+                                        'Sub-Total',
+                                        style: kSansTextStyleWhite1,
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        widget.customerInfo['role'],
+                                        style: kSansTextStyleWhite1,
+                                      ),
+                                      Row(
+                                        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          ///TODO: Add product discount here..
+                                          Text(
+                                            '${orderItemsConfirmed ? order.total : 0.00}$bdtSign',
+                                            style: const TextStyle(
+                                              color: kBackgroundColor,
+                                              fontFamily: 'SourceSans',
+                                              fontSize: 15,
+                                              letterSpacing: 1.3,
+                                              decoration:
+                                                  TextDecoration.lineThrough,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          width: 10.0,
-                                        ),
-                                        Text(
-                                          '${orderItemsConfirmed ? order.subTotal : 0.00}$bdtSign',
-                                          style: kSansTextStyleWhite,
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    OutlinedIconWidget(
-                                      onTap: () async {
-                                        String mobile =
-                                            widget.customerInfo['mobile'];
-                                        final url = Uri.parse('tel:$mobile');
-                                        if (await canLaunchUrl(url)) {
-                                          await launchUrl(url);
-                                        }
-                                      },
-                                      iconData: Icons.call,
-                                      height: 40.0,
-                                      width: 40.0,
-                                      color: kBackgroundColor,
-                                      borderWidth: 3.0,
-                                    ),
-                                    InkWell(
-                                      onTap: order.currentStage ==
-                                                  OrderStages.processing ||
-                                              (order.currentStage ==
-                                                      OrderStages.order &&
-                                                  !orderItemsConfirmed)
-                                          ? null
-                                          : () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      OrdersDetails(
-                                                    customerInfo:
-                                                        widget.customerInfo,
-                                                    orderInfo: widget.orderInfo,
+                                          const SizedBox(
+                                            width: 10.0,
+                                          ),
+                                          Text(
+                                            '${orderItemsConfirmed ? order.subTotal : 0.00}$bdtSign',
+                                            style: kSansTextStyleWhite,
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      OutlinedIconWidget(
+                                        onTap: () async {
+                                          String mobile =
+                                              widget.customerInfo['mobile'];
+                                          final url = Uri.parse('tel:$mobile');
+                                          if (await canLaunchUrl(url)) {
+                                            await launchUrl(url);
+                                          }
+                                        },
+                                        iconData: Icons.call,
+                                        height: 40.0,
+                                        width: 40.0,
+                                        color: kBackgroundColor,
+                                        borderWidth: 3.0,
+                                      ),
+                                      InkWell(
+                                        onTap: order.currentStage ==
+                                                    OrderStages.processing ||
+                                                (order.currentStage ==
+                                                        OrderStages.order &&
+                                                    !orderItemsConfirmed)
+                                            ? null
+                                            : () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        OrdersDetails(
+                                                      customerInfo:
+                                                          widget.customerInfo,
+                                                      orderInfo: widget.orderInfo,
+                                                    ),
                                                   ),
-                                                ),
-                                              );
-                                            },
-                                      child: const BigButton(),
-                                    )
-                                  ],
-                                ),
-                              ],
-                            );
-                          }
-                        },
-                      )),
+                                                );
+                                              },
+                                        child: const BigButton(),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              );
+                            }
+                          },
+                        )),
+                  ),
                 ),
               ],
             ),

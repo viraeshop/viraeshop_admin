@@ -501,108 +501,58 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                   ),
                 ),
               ),
-              FractionallySizedBox(
-                alignment: Alignment.bottomCenter,
-                heightFactor: 0.24,
-                child: Container(
-                  color: kBackgroundColor,
-                  padding: const EdgeInsets.all(15.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        LimitedBox(
-                          maxHeight: 140,
-                          child: GridView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 10.0,
-                              crossAxisSpacing: 10.0,
-                              childAspectRatio: 1,
-                            ),
-                            children: [
-                              showDue
-                                  ? const SizedBox()
-                                  : SpecialContainer(
-                                      value: totalsTemp.item1.toString(),
-                                      title: 'Total Paid',
-                                      color: kNewTextColor,
-                                    ),
-                              showPaid
-                                  ? const SizedBox()
-                                  : SpecialContainer(
-                                      value: totalsTemp.item2.toString(),
-                                      title: 'Total Due',
-                                      color: kRedColor,
-                                    ),
-                              SpecialContainer(
-                                value: totalsTemp.item3.toString(),
-                                title: 'Amount',
-                                color: kBlueColor,
+              SafeArea(
+                child: FractionallySizedBox(
+                  alignment: Alignment.bottomCenter,
+                  heightFactor: 0.24,
+                  child: Container(
+                    color: kBackgroundColor,
+                    padding: const EdgeInsets.all(15.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          LimitedBox(
+                            maxHeight: 140,
+                            child: GridView(
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 10.0,
+                                crossAxisSpacing: 10.0,
+                                childAspectRatio: 1,
                               ),
-                            ],
+                              children: [
+                                showDue
+                                    ? const SizedBox()
+                                    : SpecialContainer(
+                                        value: totalsTemp.item1.toString(),
+                                        title: 'Total Paid',
+                                        color: kNewTextColor,
+                                      ),
+                                showPaid
+                                    ? const SizedBox()
+                                    : SpecialContainer(
+                                        value: totalsTemp.item2.toString(),
+                                        title: 'Total Due',
+                                        color: kRedColor,
+                                      ),
+                                SpecialContainer(
+                                  value: totalsTemp.item3.toString(),
+                                  title: 'Amount',
+                                  color: kBlueColor,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            buttons(
-                              title: 'Save PDF',
-                              onTap: () {
-                                try {
-                                  shareCustomerStatement(
-                                    name: widget.name,
-                                    email: dataTemp[0]['customerInfo']
-                                            ['email'] ??
-                                        '',
-                                    mobile: dataTemp[0]['customerInfo']
-                                        ['mobile'],
-                                    address: dataTemp[0]['customerInfo']
-                                        ['address'],
-                                    isInventory: true,
-                                    items: dataTemp,
-                                    begin: begin,
-                                    end: end,
-                                    totalAmount: totalsTemp.item3.toString(),
-                                    totalDue: totalsTemp.item2.toString(),
-                                    totalPay: totalsTemp.item1.toString(),
-                                    isSave: true,
-                                  );
-                                  toast(
-                                      context: context,
-                                      title: 'Saved',
-                                      color: kNewMainColor);
-                                } catch (e) {
-                                  if (kDebugMode) {
-                                    print(e);
-                                  }
-                                }
-                              },
-                            ),
-                            buttons(
-                              onTap: () {
-                                shareCustomerStatement(
-                                  name: widget.name,
-                                  email: dataTemp[0]['customerInfo']['email'] ??
-                                      '',
-                                  mobile: dataTemp[0]['customerInfo']['mobile'],
-                                  address: dataTemp[0]['customerInfo']
-                                      ['address'],
-                                  isInventory: true,
-                                  items: dataTemp,
-                                  begin: begin,
-                                  end: end,
-                                  totalAmount: totalsTemp.item3.toString(),
-                                  totalDue: totalsTemp.item2.toString(),
-                                  totalPay: totalsTemp.item1.toString(),
-                                );
-                              },
-                              title: 'Share',
-                            ),
-                            buttons(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              buttons(
+                                title: 'Save PDF',
                                 onTap: () {
-                                  shareCustomerStatement(
+                                  try {
+                                    shareCustomerStatement(
                                       name: widget.name,
                                       email: dataTemp[0]['customerInfo']
                                               ['email'] ??
@@ -618,12 +568,64 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                                       totalAmount: totalsTemp.item3.toString(),
                                       totalDue: totalsTemp.item2.toString(),
                                       totalPay: totalsTemp.item1.toString(),
-                                      isPrint: true);
+                                      isSave: true,
+                                    );
+                                    toast(
+                                        context: context,
+                                        title: 'Saved',
+                                        color: kNewMainColor);
+                                  } catch (e) {
+                                    if (kDebugMode) {
+                                      print(e);
+                                    }
+                                  }
                                 },
-                                title: 'Print'),
-                          ],
-                        ),
-                      ],
+                              ),
+                              buttons(
+                                onTap: () {
+                                  shareCustomerStatement(
+                                    name: widget.name,
+                                    email: dataTemp[0]['customerInfo']['email'] ??
+                                        '',
+                                    mobile: dataTemp[0]['customerInfo']['mobile'],
+                                    address: dataTemp[0]['customerInfo']
+                                        ['address'],
+                                    isInventory: true,
+                                    items: dataTemp,
+                                    begin: begin,
+                                    end: end,
+                                    totalAmount: totalsTemp.item3.toString(),
+                                    totalDue: totalsTemp.item2.toString(),
+                                    totalPay: totalsTemp.item1.toString(),
+                                  );
+                                },
+                                title: 'Share',
+                              ),
+                              buttons(
+                                  onTap: () {
+                                    shareCustomerStatement(
+                                        name: widget.name,
+                                        email: dataTemp[0]['customerInfo']
+                                                ['email'] ??
+                                            '',
+                                        mobile: dataTemp[0]['customerInfo']
+                                            ['mobile'],
+                                        address: dataTemp[0]['customerInfo']
+                                            ['address'],
+                                        isInventory: true,
+                                        items: dataTemp,
+                                        begin: begin,
+                                        end: end,
+                                        totalAmount: totalsTemp.item3.toString(),
+                                        totalDue: totalsTemp.item2.toString(),
+                                        totalPay: totalsTemp.item1.toString(),
+                                        isPrint: true);
+                                  },
+                                  title: 'Print'),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -1,12 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
-import 'package:viraeshop_admin/reusable_widgets/send_button.dart';
 import 'package:viraeshop_api/models/items/items.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
@@ -15,7 +12,6 @@ import 'package:viraeshop_admin/reusable_widgets/orders/order_chips.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
-import 'package:viraeshop_bloc/transactions/transactions_event.dart';
 import 'package:viraeshop_bloc/transactions/transactions_state.dart';
 
 import '../../components/styles/colors.dart';
@@ -48,7 +44,8 @@ class _OrdersDetailsState extends State<OrdersDetails> {
   @override
   void initState() {
     // TODO: implement initState
-    orderItems = Provider.of<OrderProvider>(context, listen: false).orderProducts;
+    orderItems =
+        Provider.of<OrderProvider>(context, listen: false).orderProducts;
     OrderStages currentStage =
         Provider.of<OrderProvider>(context, listen: false).currentStage;
     if (currentStage == OrderStages.delivery) {
@@ -177,7 +174,8 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                                               !onEditCustomerInfo;
                                         });
                                         if (onEditCustomerInfo &&
-                                            widget.orderInfo['shippingAddress'] !=
+                                            widget.orderInfo[
+                                                    'shippingAddress'] !=
                                                 addressController.text) {
                                           Provider.of<OrderProvider>(context)
                                               .updateOrderInfo(
@@ -280,166 +278,176 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                       ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (widget.orderInfo['orderStatus'] != 'success')
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: List.generate(
-                                        buttonTitles.length,
-                                        (index) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 10.0),
-                                              child: OrderChips(
-                                                title: buttonTitles[index],
-                                                onTap: () {
-                                                  final orderProvider = Provider
-                                                      .of<OrderProvider>(
-                                                          context,
-                                                          listen: false);
-                                                  final orderBloc = BlocProvider
-                                                      .of<OrdersBloc>(context);
-                                                  OrderStages currentStage =
-                                                      orderProvider
-                                                          .currentStage;
-                                                  setState(() {
-                                                    selected =
-                                                        buttonTitles[index];
-                                                    isLoading = true;
-                                                  });
-                                                  if (currentStage ==
-                                                      OrderStages.order) {
-                                                    Map<String, dynamic>
-                                                        orderInfo = {
-                                                      'orderStage': 'order',
-                                                      'notificationType':
-                                                          'admin2Customer',
-                                                      'orderStatus':
-                                                          buttonTitles[index]
-                                                              .toLowerCase(),
-                                                      if (buttonTitles[index]
-                                                              .toLowerCase() ==
-                                                          'confirmed')
-                                                        'processingStatus':
-                                                            'pending',
-                                                      if (buttonTitles[index]
-                                                              .toLowerCase() ==
-                                                          'confirmed')
-                                                        'incrementProcessingCount':
-                                                            true,
-                                                    };
-                                                    orderBloc.add(
-                                                      UpdateOrderEvent(
-                                                        orderId: widget
-                                                            .orderInfo[
-                                                                'orderId']
-                                                            .toString(),
-                                                        orderModel: orderInfo,
-                                                        token: jWTToken,
-                                                      ),
-                                                    );
-                                                  } else if (currentStage ==
-                                                      OrderStages.delivery) {
-                                                    orderBloc.add(
-                                                      UpdateOrderEvent(
-                                                        orderId: widget
-                                                            .orderInfo[
-                                                                'orderId']
-                                                            .toString(),
-                                                        orderModel: {
-                                                          'orderStage':
-                                                              'delivery',
-                                                          'notificationType':
-                                                              'admin2Customer',
-                                                          if (buttonTitles[
-                                                                  index] ==
-                                                              'Failed')
-                                                            'deliveryStatus':
-                                                                buttonTitles[
-                                                                        index]
-                                                                    .toLowerCase(),
-                                                          if (buttonTitles[
-                                                                  index] ==
-                                                              'Failed')
-                                                            'orderStatus':
-                                                                'failed',
-                                                          if (buttonTitles[
-                                                                  index] ==
-                                                              'Deliver')
-                                                            'onDelivery': true,
-                                                          if (buttonTitles[
-                                                                  index] ==
-                                                              'Delay')
-                                                            'delayDelivery':
-                                                                true,
-                                                        },
-                                                        token: jWTToken,
-                                                      ),
-                                                    );
-                                                  }
-                                                },
-                                                isSelected:
-                                                    buttonTitles[index] ==
-                                                        selected,
-                                                width: 100,
-                                                height: 50,
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (widget.orderInfo['orderStatus'] != 'success')
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: List.generate(
+                                          buttonTitles.length,
+                                          (index) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 10.0),
+                                                child: OrderChips(
+                                                  title: buttonTitles[index],
+                                                  onTap: () {
+                                                    final orderProvider =
+                                                        Provider.of<
+                                                                OrderProvider>(
+                                                            context,
+                                                            listen: false);
+                                                    final orderBloc =
+                                                        BlocProvider.of<
+                                                                OrdersBloc>(
+                                                            context);
+                                                    OrderStages currentStage =
+                                                        orderProvider
+                                                            .currentStage;
+                                                    setState(() {
+                                                      selected =
+                                                          buttonTitles[index];
+                                                      isLoading = true;
+                                                    });
+                                                    if (currentStage ==
+                                                        OrderStages.order) {
+                                                      Map<String, dynamic>
+                                                          orderInfo = {
+                                                        'orderStage': 'order',
+                                                        'notificationType':
+                                                            'admin2Customer',
+                                                        'orderStatus':
+                                                            buttonTitles[index]
+                                                                .toLowerCase(),
+                                                        'adminId': adminId,
+                                                        if (buttonTitles[index]
+                                                                .toLowerCase() ==
+                                                            'confirmed')
+                                                          'processingStatus':
+                                                              'pending',
+                                                        if (buttonTitles[index]
+                                                                .toLowerCase() ==
+                                                            'confirmed')
+                                                          'incrementProcessingCount':
+                                                              true,
+                                                      };
+                                                      orderBloc.add(
+                                                        UpdateOrderEvent(
+                                                          orderId: widget
+                                                              .orderInfo[
+                                                                  'orderId']
+                                                              .toString(),
+                                                          orderModel: orderInfo,
+                                                          token: jWTToken,
+                                                        ),
+                                                      );
+                                                    } else if (currentStage ==
+                                                        OrderStages.delivery) {
+                                                      orderBloc.add(
+                                                        UpdateOrderEvent(
+                                                          orderId: widget
+                                                              .orderInfo[
+                                                                  'orderId']
+                                                              .toString(),
+                                                          orderModel: {
+                                                            'orderStage':
+                                                                'delivery',
+                                                            'notificationType':
+                                                                'admin2Customer',
+                                                            if (buttonTitles[
+                                                                    index] ==
+                                                                'Failed')
+                                                              'deliveryStatus':
+                                                                  buttonTitles[
+                                                                          index]
+                                                                      .toLowerCase(),
+                                                            if (buttonTitles[
+                                                                    index] ==
+                                                                'Failed')
+                                                              'orderStatus':
+                                                                  'failed',
+                                                            if (buttonTitles[
+                                                                    index] ==
+                                                                'Deliver')
+                                                              'onDelivery':
+                                                                  true,
+                                                            if (buttonTitles[
+                                                                    index] ==
+                                                                'Delay')
+                                                              'delayDelivery':
+                                                                  true,
+                                                          },
+                                                          token: jWTToken,
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                  isSelected:
+                                                      buttonTitles[index] ==
+                                                          selected,
+                                                  width: 100,
+                                                  height: 50,
+                                                ),
+                                              )),
+                                    ),
+                                    // const SizedBox(
+                                    //   width: 10,
+                                    // ),
+                                    Consumer<OrderProvider>(
+                                        builder: (context, provider, any) {
+                                      if (provider.currentStage ==
+                                              OrderStages.order ||
+                                          provider.currentStage ==
+                                              OrderStages.delivery) {
+                                        return OrderChips(
+                                          width: 100,
+                                          height: 50,
+                                          title: 'Update',
+                                          onTap: () {
+                                            setState(() {
+                                              isLoading = true;
+                                            });
+                                            final orderBloc =
+                                                BlocProvider.of<OrdersBloc>(
+                                                    context);
+                                            orderBloc.add(
+                                              UpdateOrderEvent(
+                                                orderId: widget
+                                                    .orderInfo['orderId']
+                                                    .toString(),
+                                                orderModel: provider.orderInfo,
+                                                token: jWTToken,
                                               ),
-                                            )),
-                                  ),
-                                  // const SizedBox(
-                                  //   width: 10,
-                                  // ),
-                                  Consumer<OrderProvider>(
-                                      builder: (context, provider, any) {
-                                    if (provider.currentStage ==
-                                            OrderStages.order ||
-                                        provider.currentStage ==
-                                            OrderStages.delivery) {
-                                      return OrderChips(
-                                        width: 100,
-                                        height: 50,
-                                        title: 'Update',
-                                        onTap: () {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          final orderBloc =
-                                              BlocProvider.of<OrdersBloc>(
-                                                  context);
-                                          orderBloc.add(
-                                            UpdateOrderEvent(
-                                              orderId: widget
-                                                  .orderInfo['orderId']
-                                                  .toString(),
-                                              orderModel:  provider.orderInfo,
-                                              token: jWTToken,
-                                            ),
-                                          );
-                                        },
-                                        isSelected: false,
-                                      );
-                                    } else {
-                                      return const SizedBox();
-                                    }
-                                  }),
-                                ],
-                              ),
-                            ],
-                          )
-                        else
-                          const Text('Order Delivered Successfully..', style: kProductNameStylePro,),
-                      ],
+                                            );
+                                          },
+                                          isSelected: false,
+                                        );
+                                      } else {
+                                        return const SizedBox();
+                                      }
+                                    }),
+                                  ],
+                                ),
+                              ],
+                            )
+                          else
+                            const Text(
+                              'Order Delivered Successfully..',
+                              style: kProductNameStylePro,
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

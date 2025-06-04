@@ -251,8 +251,10 @@ class _UpdateUserState extends State<UpdateUser> {
                   );
                 }
               },
-              child: TabBarView(
-                children: tabWidgets,
+              child: SafeArea(
+                child: TabBarView(
+                  children: tabWidgets,
+                ),
               ),
             ),
           ),

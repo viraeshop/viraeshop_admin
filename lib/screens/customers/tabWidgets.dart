@@ -280,152 +280,154 @@ class _SalesTabState extends State<SalesTab> {
                                 ),
                               ),
                             ),
-                            FractionallySizedBox(
-                              heightFactor: 0.12,
-                              alignment: Alignment.bottomCenter,
-                              child: Container(
-                                width: double.infinity,
-                                color: kSubMainColor,
-                                padding: const EdgeInsets.all(10.0),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    isDue
-                                        ? const SizedBox()
-                                        : GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                isPaid = !isPaid;
-                                                if (isPaid) {
-                                                  transactions =
-                                                      transactionBackup
-                                                          .where((element) =>
-                                                              element['paid'] !=
-                                                              0)
-                                                          .toList();
-                                                } else {
-                                                  transactions =
-                                                      transactionBackup;
-                                                }
-                                              });
-                                            },
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                const Text(
-                                                  'Total Paid:',
-                                                  style: TextStyle(
-                                                    color: kBackgroundColor,
-                                                    fontSize: 15.0,
-                                                    letterSpacing: 1.3,
-                                                    fontFamily: 'Montserrat',
-                                                    fontWeight: FontWeight.bold,
+                            SafeArea(
+                              child: FractionallySizedBox(
+                                heightFactor: 0.12,
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                  width: double.infinity,
+                                  color: kSubMainColor,
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      isDue
+                                          ? const SizedBox()
+                                          : GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  isPaid = !isPaid;
+                                                  if (isPaid) {
+                                                    transactions =
+                                                        transactionBackup
+                                                            .where((element) =>
+                                                                element['paid'] !=
+                                                                0)
+                                                            .toList();
+                                                  } else {
+                                                    transactions =
+                                                        transactionBackup;
+                                                  }
+                                                });
+                                              },
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  const Text(
+                                                    'Total Paid:',
+                                                    style: TextStyle(
+                                                      color: kBackgroundColor,
+                                                      fontSize: 15.0,
+                                                      letterSpacing: 1.3,
+                                                      fontFamily: 'Montserrat',
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Text(
-                                                  ' ${totalPaid.toString()}$bdtSign',
-                                                  style: const TextStyle(
-                                                    color: kMainColor,
-                                                    fontSize: 15.0,
-                                                    letterSpacing: 1.3,
-                                                    fontFamily: 'Montserrat',
-                                                    fontWeight: FontWeight.bold,
+                                                  const SizedBox(
+                                                    height: 5,
                                                   ),
-                                                ),
-                                              ],
+                                                  Text(
+                                                    ' ${totalPaid.toString()}$bdtSign',
+                                                    style: const TextStyle(
+                                                      color: kMainColor,
+                                                      fontSize: 15.0,
+                                                      letterSpacing: 1.3,
+                                                      fontFamily: 'Montserrat',
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                      isPaid
+                                          ? const SizedBox()
+                                          : GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  isDue = !isDue;
+                                                  if (isDue) {
+                                                    transactions =
+                                                        transactionBackup
+                                                            .where((element) =>
+                                                                element['due'] !=
+                                                                0)
+                                                            .toList();
+                                                  } else {
+                                                    transactions =
+                                                        transactionBackup;
+                                                  }
+                                                });
+                                              },
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  const Text(
+                                                    'Total Due:',
+                                                    style: TextStyle(
+                                                      color: kBackgroundColor,
+                                                      fontSize: 15.0,
+                                                      letterSpacing: 1.3,
+                                                      fontFamily: 'Montserrat',
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 5,
+                                                  ),
+                                                  Text(
+                                                    ' ${totalDue.toString()}$bdtSign',
+                                                    style: const TextStyle(
+                                                      color: kRedColor,
+                                                      fontSize: 15.0,
+                                                      letterSpacing: 1.3,
+                                                      fontFamily: 'Montserrat',
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Total Amount:',
+                                            style: TextStyle(
+                                              color: kBackgroundColor,
+                                              fontSize: 15.0,
+                                              letterSpacing: 1.3,
+                                              fontFamily: 'Montserrat',
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                    isPaid
-                                        ? const SizedBox()
-                                        : GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                isDue = !isDue;
-                                                if (isDue) {
-                                                  transactions =
-                                                      transactionBackup
-                                                          .where((element) =>
-                                                              element['due'] !=
-                                                              0)
-                                                          .toList();
-                                                } else {
-                                                  transactions =
-                                                      transactionBackup;
-                                                }
-                                              });
-                                            },
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                const Text(
-                                                  'Total Due:',
-                                                  style: TextStyle(
-                                                    color: kBackgroundColor,
-                                                    fontSize: 15.0,
-                                                    letterSpacing: 1.3,
-                                                    fontFamily: 'Montserrat',
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 5,
-                                                ),
-                                                Text(
-                                                  ' ${totalDue.toString()}$bdtSign',
-                                                  style: const TextStyle(
-                                                    color: kRedColor,
-                                                    fontSize: 15.0,
-                                                    letterSpacing: 1.3,
-                                                    fontFamily: 'Montserrat',
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            ' ${totalAmount.toString()}$bdtSign',
+                                            style: const TextStyle(
+                                              color: kNewMainColor,
+                                              fontSize: 15.0,
+                                              letterSpacing: 1.3,
+                                              fontFamily: 'Montserrat',
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        const Text(
-                                          'Total Amount:',
-                                          style: TextStyle(
-                                            color: kBackgroundColor,
-                                            fontSize: 15.0,
-                                            letterSpacing: 1.3,
-                                            fontFamily: 'Montserrat',
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 5,
-                                        ),
-                                        Text(
-                                          ' ${totalAmount.toString()}$bdtSign',
-                                          style: const TextStyle(
-                                            color: kNewMainColor,
-                                            fontSize: 15.0,
-                                            letterSpacing: 1.3,
-                                            fontFamily: 'Montserrat',
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

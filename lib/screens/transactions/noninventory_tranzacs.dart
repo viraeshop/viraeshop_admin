@@ -154,113 +154,115 @@ class _NonInventoryTransactionShopsState
                                 });
                           }),
                     ),
-                    FractionallySizedBox(
-                      heightFactor: 0.25,
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: kBackgroundColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              offset: Offset(0, 0),
-                              spreadRadius: 2.0,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                dateWidget(
-                                  title: begin.toString().split(' ')[0],
-                                  onTap: () {
-                                    buildMaterialDatePicker(context, true);
-                                  },
-                                ),
-                                const Icon(
-                                  Icons.arrow_forward,
-                                  color: kSubMainColor,
-                                  size: 20.0,
-                                ),
-                                dateWidget(
+                    SafeArea(
+                      child: FractionallySizedBox(
+                        heightFactor: 0.25,
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
+                            color: kBackgroundColor,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                offset: Offset(0, 0),
+                                spreadRadius: 2.0,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  dateWidget(
+                                    title: begin.toString().split(' ')[0],
                                     onTap: () {
-                                      buildMaterialDatePicker(context, false);
+                                      buildMaterialDatePicker(context, true);
                                     },
-                                    title: end.isAtSameMomentAs(DateTime.now())
-                                        ? 'To this date..'
-                                        : end.toString().split(' ')[0]),
-                                const SizedBox(
-                                  width: 20.0,
-                                ),
-                                roundedTextButton(onTap: () {
-                                  setState(() {
+                                  ),
+                                  const Icon(
+                                    Icons.arrow_forward,
+                                    color: kSubMainColor,
+                                    size: 20.0,
+                                  ),
+                                  dateWidget(
+                                      onTap: () {
+                                        buildMaterialDatePicker(context, false);
+                                      },
+                                      title: end.isAtSameMomentAs(DateTime.now())
+                                          ? 'To this date..'
+                                          : end.toString().split(' ')[0]),
+                                  const SizedBox(
+                                    width: 20.0,
+                                  ),
+                                  roundedTextButton(onTap: () {
                                     setState(() {
-                                      isLoading = true;
-                                    });
-                                    final beginFormat = DateTime(begin.year, begin.month, begin.day);
-                                    final endFormat = DateTime(end.year, end.month, end.day);
-                                    if(beginFormat == endFormat){
-                                      int day = begin.day;
-                                      int month = begin.month;
-                                      int year = begin.year;
-                                      if(lastDayOfMonth(begin.day, begin.month) == LastDay.lastDay){
-                                        end = DateTime(begin.year, month++, 1);
-                                      }else if(lastDayOfMonth(begin.day, begin.month) == LastDay.endingYear){
-                                        end = DateTime(year++, 1, 1);
-                                      }else{
-                                        begin = DateTime(begin.year, begin.month, day++);
+                                      setState(() {
+                                        isLoading = true;
+                                      });
+                                      final beginFormat = DateTime(begin.year, begin.month, begin.day);
+                                      final endFormat = DateTime(end.year, end.month, end.day);
+                                      if(beginFormat == endFormat){
+                                        int day = begin.day;
+                                        int month = begin.month;
+                                        int year = begin.year;
+                                        if(lastDayOfMonth(begin.day, begin.month) == LastDay.lastDay){
+                                          end = DateTime(begin.year, month++, 1);
+                                        }else if(lastDayOfMonth(begin.day, begin.month) == LastDay.endingYear){
+                                          end = DateTime(year++, 1, 1);
+                                        }else{
+                                          begin = DateTime(begin.year, begin.month, day++);
+                                        }
                                       }
-                                    }
-                                    final transactionBloc =
-                                        BlocProvider.of<TransactionsBloc>(
-                                            context);
-                                    transactionBloc.add(
-                                      GetTransactionDetailsEvent(
-                                        queryType: widget.isSupplier ? 'suppliers' : 'nonInventory',
-                                        isFilter: true,
-                                        token: jWTToken,
-                                        begin: dateToJson(
-                                          Timestamp.fromDate(begin),
+                                      final transactionBloc =
+                                          BlocProvider.of<TransactionsBloc>(
+                                              context);
+                                      transactionBloc.add(
+                                        GetTransactionDetailsEvent(
+                                          queryType: widget.isSupplier ? 'suppliers' : 'nonInventory',
+                                          isFilter: true,
+                                          token: jWTToken,
+                                          begin: dateToJson(
+                                            Timestamp.fromDate(begin),
+                                          ),
+                                          end: dateToJson(
+                                            Timestamp.fromDate(end),
+                                          ),
                                         ),
-                                        end: dateToJson(
-                                          Timestamp.fromDate(end),
-                                        ),
-                                      ),
-                                    );
-                                  });
-                                }),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SpecialContainer(
-                                  height: 110.0,
-                                  width: 150.0,
-                                  value: totalBalanceTemp.item1.toString(),
-                                  title: widget.isSupplier
-                                      ? 'Total Payments'
-                                      : 'Total Sales',
-                                  color: kYellowColor,
-                                ),
-                                const SizedBox(
-                                  width: 20.0,
-                                ),
-                                SpecialContainer(
-                                  height: 110.0,
-                                  width: 150.0,
-                                  value: totalBalanceTemp.item2.toString(),
-                                  title: 'Total Due',
-                                  color: kRedColor,
-                                ),
-                              ],
-                            ),
-                          ],
+                                      );
+                                    });
+                                  }),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SpecialContainer(
+                                    height: 110.0,
+                                    width: 150.0,
+                                    value: totalBalanceTemp.item1.toString(),
+                                    title: widget.isSupplier
+                                        ? 'Total Payments'
+                                        : 'Total Sales',
+                                    color: kYellowColor,
+                                  ),
+                                  const SizedBox(
+                                    width: 20.0,
+                                  ),
+                                  SpecialContainer(
+                                    height: 110.0,
+                                    width: 150.0,
+                                    value: totalBalanceTemp.item2.toString(),
+                                    title: 'Total Due',
+                                    color: kRedColor,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

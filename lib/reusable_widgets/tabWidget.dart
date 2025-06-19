@@ -160,7 +160,7 @@ class _TabWidgetState extends State<TabWidget> {
 //    if (deviceSize.width <= 480) {
     // mobile screen sizes
     aspectRatio = 1.15; // Image aspect ratio
-    childAspectRatio = 0.75; // Grid item aspect ratio
+    childAspectRatio = 0.76; // Grid item aspect ratio
     crossAxisCount = 3;
     // } else if (deviceSize.width > 480 && deviceSize.width <= 768) {
     //   // Ipads/ Tablets screens

@@ -159,8 +159,8 @@ class _TabWidgetState extends State<TabWidget> {
     final deviceSize = MediaQuery.of(context).size;
 //    if (deviceSize.width <= 480) {
     // mobile screen sizes
-    aspectRatio = 1.3; // Image aspect ratio
-    childAspectRatio = 0.7; // Grid item aspect ratio
+    aspectRatio = 1.15; // Image aspect ratio
+    childAspectRatio = 0.75; // Grid item aspect ratio
     crossAxisCount = 3;
     // } else if (deviceSize.width > 480 && deviceSize.width <= 768) {
     //   // Ipads/ Tablets screens
@@ -181,10 +181,9 @@ class _TabWidgetState extends State<TabWidget> {
     return Container(
       color: kBackgroundColor,
       child: Stack(
-        fit: StackFit.expand,
         children: [
           FractionallySizedBox(
-            heightFactor: 0.9,
+            heightFactor: 0.95,
             alignment: Alignment.topCenter,
             child: Column(
               children: [
@@ -274,18 +273,10 @@ class _TabWidgetState extends State<TabWidget> {
                   productsList = ads.products;
                   return Container(
                     padding: const EdgeInsets.all(10.0),
-                    height: deviceSize.height < 741
-                        ? deviceSize.height - 400
-                        : deviceSize.height - 367,
+                    height: deviceSize.height * 0.6,
                     child: GridView.builder(
-                      // physics:
-                      //     ScrollableScrollPhysics(),
                       shrinkWrap: true,
-                      // maxRowCount: 3,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        // crossAxisExtent: MediaQuery.of(context).size.width /
-                        //     MediaQuery.of(context).size.height *
-                        //     170,
                         crossAxisCount: crossAxisCount,
                         childAspectRatio: childAspectRatio,
                         mainAxisSpacing: 10.0,
@@ -491,7 +482,7 @@ class _TabWidgetState extends State<TabWidget> {
                                         ),
                                       ),
                                       Container(
-                                        height: 50.0,
+                                        height: 60.0,
                                         width: double.infinity,
                                         decoration: const BoxDecoration(
                                           color: kSubMainColor,
@@ -604,72 +595,74 @@ class _TabWidgetState extends State<TabWidget> {
               ],
             ),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: 70.0,
-              color: kBackgroundColor,
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      // List<Cart> cart = Hive.box<Cart>('cart').values.toList();
-                      // print(cart[0].productName);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ShoppingCart(),
-                        ),
-                      );
-                    },
-                    child: ValueListenableBuilder(
-                        valueListenable: Hive.box('cartDetails').listenable(),
-                        builder: (context, Box box, childs) {
-                          int totalItems =
-                              box.get('totalItems', defaultValue: 0);
-                          var totalPrice =
-                              box.get('totalPrice', defaultValue: 0.0);
-                          bool isAdded =
-                              box.get('isAdded', defaultValue: false);
-                          return AnimatedContainer(
-                            height: addedToCart ? 47.0 : 45.0,
-                            width: addedToCart
-                                ? deviceSize.width - 20
-                                : deviceSize.width - 30,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: kMainColor, width: 2.0),
-                              borderRadius:
-                                  BorderRadius.circular(addedToCart ? 10 : 7.0),
-                              color: isAdded != true
-                                  ? kBackgroundColor
-                                  : kMainColor,
-                            ),
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.fastOutSlowIn,
-                            child: Center(
-                              child: Text(
-                                totalItems == 0
-                                    ? 'No Items'
-                                    : '${totalItems.toString()} Items = ${totalPrice.toString()}',
-                                style: TextStyle(
-                                  fontSize: 20.0,
-                                  color: isAdded != true
-                                      ? kMainColor
-                                      : kBackgroundColor,
-                                  fontFamily: 'Montserrat',
-                                  letterSpacing: 1.3,
-                                  fontWeight: FontWeight.bold,
-                                  // fontWeight: FontWeight.w700,
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: 70.0,
+                color: kBackgroundColor,
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        // List<Cart> cart = Hive.box<Cart>('cart').values.toList();
+                        // print(cart[0].productName);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ShoppingCart(),
+                          ),
+                        );
+                      },
+                      child: ValueListenableBuilder(
+                          valueListenable: Hive.box('cartDetails').listenable(),
+                          builder: (context, Box box, childs) {
+                            int totalItems =
+                                box.get('totalItems', defaultValue: 0);
+                            var totalPrice =
+                                box.get('totalPrice', defaultValue: 0.0);
+                            bool isAdded =
+                                box.get('isAdded', defaultValue: false);
+                            return AnimatedContainer(
+                              height: addedToCart ? 47.0 : 45.0,
+                              width: addedToCart
+                                  ? deviceSize.width - 20
+                                  : deviceSize.width - 30,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: kMainColor, width: 2.0),
+                                borderRadius:
+                                    BorderRadius.circular(addedToCart ? 10 : 7.0),
+                                color: isAdded != true
+                                    ? kBackgroundColor
+                                    : kMainColor,
+                              ),
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.fastOutSlowIn,
+                              child: Center(
+                                child: Text(
+                                  totalItems == 0
+                                      ? 'No Items'
+                                      : '${totalItems.toString()} Items = ${totalPrice.toString()}',
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    color: isAdded != true
+                                        ? kMainColor
+                                        : kBackgroundColor,
+                                    fontFamily: 'Montserrat',
+                                    letterSpacing: 1.3,
+                                    fontWeight: FontWeight.bold,
+                                    // fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }),
-                  ),
-                ],
+                            );
+                          }),
+                    ),
+                  ],
+                ),
               ),
             ),
           )

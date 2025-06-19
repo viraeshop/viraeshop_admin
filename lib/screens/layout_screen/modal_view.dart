@@ -71,11 +71,8 @@ class _ModalWidgetState extends State<ModalWidget> {
       onTap: () {
         FocusScope.of(context).unfocus();
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) => Scaffold(
-          drawer: constraints.maxWidth > 600
-              ? null
-              : AppDrawer(
+      child: Scaffold(
+          drawer: AppDrawer(
                   isBigScreen: false,
                   newOrders: newOrders,
                   totalMessages: newMessages,
@@ -103,7 +100,6 @@ class _ModalWidgetState extends State<ModalWidget> {
             );
           }),
         ),
-      ),
     );
   }
 }

@@ -25,7 +25,7 @@ class Categories extends StatelessWidget {
         color: kBackgroundColor,
       ),
       child: LimitedBox(
-        maxHeight: 90.0,
+        maxHeight: 75.0,
         child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: catLength,

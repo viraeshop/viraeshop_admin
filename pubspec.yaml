@@ -29,8 +29,8 @@ dependencies:
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   numeric_keyboard: ^1.1.0
-  syncfusion_flutter_pdf: ^23.1.44
-  syncfusion_flutter_charts: ^23.1.44
+  syncfusion_flutter_pdf: ^29.2.11
+  syncfusion_flutter_charts: ^29.2.11
   currency_text_input_formatter: ^2.2.3
   url_launcher: ^6.0.17
 #  esc_pos_printer: ^4.1.0
@@ -79,6 +79,7 @@ dependency_overrides:
   firebase_core_platform_interface: ^4.5.1
   intl: ^0.17.0
   network_info_plus: ^6.0.0
+
 #  viraeshop_api:
 #    path: ../../Documents/flutter projects/viraeshop/viraeshop_packages/viraeshop-api
 

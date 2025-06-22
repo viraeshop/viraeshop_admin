@@ -13,7 +13,6 @@ import 'package:viraeshop_admin/reusable_widgets/category/categories.dart';
 import 'package:viraeshop_admin/screens/advert/ads_carousel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
-import 'package:viraeshop_api/models/adverts/adverts.dart';
 import 'ads_provider.dart';
 
 class AdvertScreen extends StatefulWidget {
@@ -70,7 +69,8 @@ class _AdvertScreenState extends State<AdvertScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     AdsCarousel(
-                                        advertsCategoryName: ads.currentCatg),
+                                      advertsCategoryName: ads.currentCatg,
+                                    ),
                                   ],
                                 ),
                         );
@@ -204,16 +204,10 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         if (kDebugMode) {
           print('Adverts from Database: $data');
         }
-
-        ///TODO: This will be refactored to the current API standard that is
-        ///TODO: IT WILL BE BASED ON INDIVIDUAL ADVERT CATEGORIES
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           for (var ad in data) {
             for (var element in ad.adverts!) {
               Map advert = {
-                'title1': element.title1,
-                'title2': element.title2,
-                'title3': element.title3,
                 'image': element.image,
                 'adId': element.adId,
                 'adsCategory': element.advertsCategory,
@@ -223,12 +217,6 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
               };
               Provider.of<AdsProvider>(context, listen: false)
                   .addAdCard(element.adId ?? '', advert);
-              Provider.of<AdsProvider>(context, listen: false)
-                  .addController(element.adId ?? '', {
-                'title1': TextEditingController(text: element.title1),
-                'title2': TextEditingController(text: element.title2),
-                'title3': TextEditingController(text: element.title3),
-              });
             }
           }
         });

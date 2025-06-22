@@ -8,7 +8,6 @@ class AdsProvider extends ChangeNotifier {
   List products = [];
   List addedToCart = [];
   List<Map<String, dynamic>> subCategories = [];
-  Map<String, Map<String, TextEditingController>> controllers = {};
   String currentCatg = 'All';
   String subCategory = '';
   String dropdownValue = 'general';
@@ -106,13 +105,6 @@ class AdsProvider extends ChangeNotifier {
     adCards[index]['imageBytes'] = imagesBytes;
     adCards[index]['imagePath'] = imagePath;
     notifyListeners();
-  }
-
-  void addController(String key, Map<String, TextEditingController> value) {
-    if (!controllers.containsKey(key)) {
-      controllers[key] = value;
-      notifyListeners();
-    }
   }
 
   void onEdit(String adId, bool value) {

@@ -1,7 +1,10 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
+import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
 import 'package:viraeshop_bloc/adverts/adverts_event.dart';
 import 'package:viraeshop_bloc/adverts/adverts_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -34,6 +37,84 @@ class AdsCarousel extends StatefulWidget {
 class _AdsCarouselState extends State<AdsCarousel> {
   AdsEvents currentEvent = AdsEvents.initial;
   late String adIdInAction;
+  final ImagePickerService _imagePickerService = ImagePickerService();
+  Map<String, dynamic> imageResult = {};
+  PlatformFile? pickedUpdatingImage;
+  // ...existing code...
+
+// Add this helper method inside _AdsCarouselState:
+  Future<void> _handleAddAdvert(int? adCategoryId) async {
+    Map<String, dynamic> imageData = {};
+    final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+    final pickedImage = await _imagePickerService.pickImage(context);
+    if (pickedImage == null) return;
+
+    try {
+      imageData = await NetworkUtility.uploadImageFromNative(
+        file: pickedImage,
+        folder: 'ads_banners',
+      );
+      final advert = AdvertsModel(
+        image: imageData['url'],
+        adCategoryId: adCategoryId,
+        advertsCategory: widget.advertsCategoryName,
+      );
+      final jWTToken = Hive.box('adminInfo').get('token');
+      advertBloc.add(AddAdvertEvent(
+        token: jWTToken,
+        advertModel: advert,
+      ));
+      setState(() {
+        currentEvent = AdsEvents.create;
+        imageResult = {
+          'imageData': imageData,
+          'path': pickedImage.path,
+        };
+      });
+    } catch (e) {
+      if (kDebugMode) print(e);
+    }
+  }
+
+  Future<void> _handleUpdateAdvert({
+    required String imageKey,
+    required String currentId,
+    required Map<String, dynamic> advertData,
+  }) async {
+    if (imageKey.isNotEmpty) {
+      try {
+        await NetworkUtility.deleteImage(key: imageKey);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error deleting image: $e');
+        }
+        snackBar(
+          text: 'Error deleting old image: $e',
+          context: context,
+          color: kRedColor,
+          duration: 300,
+        );
+        return;
+      }
+    }
+    final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+    snackBar(
+      text: 'Updating.......',
+      context: context,
+      duration: 100,
+      color: kNewMainColor,
+    );
+    final jWTToken = Hive.box('adminInfo').get('token');
+    advertBloc.add(UpdateAdvertEvent(
+      token: jWTToken,
+      adId: currentId,
+      advertModel: advertData,
+    ));
+    setState(() {
+      currentEvent = AdsEvents.update;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -45,31 +126,16 @@ class _AdsCarouselState extends State<AdsCarousel> {
             final Map details = state.response.result ?? {};
             if (currentEvent == AdsEvents.create) {
               Provider.of<AdsProvider>(context, listen: false)
-                  .addController(details['adId'].toString(), {
-                'title1': TextEditingController(),
-                'title2': TextEditingController(),
-                'title3': TextEditingController(),
-              });
-              Provider.of<AdsProvider>(context, listen: false)
                   .addAdCard(details['adId'].toString(), {
-                'title1': 'Title 1',
-                'title2': 'Title 2',
-                'title3': 'Title 3',
-                'image': '',
-                'imagePath': '',
+                'image': imageResult['imageData']['url'] ?? '',
+                'imagePath': imageResult['path'] ?? '',
+                'imageKey': imageResult['key'] ?? '',
                 'adId': details['adId'].toString(),
                 'adsCategory': widget.advertsCategoryName,
                 'adCategoryId': details['adCategoryId'],
                 'isEdit': false,
-                'imageBytes': null,
               });
             } else if (currentEvent == AdsEvents.update) {
-              ///Todo: Add update here
-              Provider.of<AdsProvider>(context, listen: false).updateAdCard(
-                  details['adId'].toString(),
-                  details['title1'],
-                  details['title2'],
-                  details['title3']);
               Provider.of<AdsProvider>(context, listen: false)
                   .onEdit(details['adId'].toString(), false);
             } else if (currentEvent == AdsEvents.delete) {
@@ -103,8 +169,6 @@ class _AdsCarouselState extends State<AdsCarousel> {
           if (kDebugMode) {
             print('Ads list: $ads');
           }
-          Map<String, Map<String, TextEditingController>> controllers =
-              childs.controllers;
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -113,31 +177,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                 (int itemIndex) {
                   if (itemIndex == ads.length) {
                     return InkWell(
-                      onTap: () {
-                        final advertBloc =
-                            BlocProvider.of<AdvertsBloc>(context);
-                        snackBar(
-                          text: 'Creating please wait....',
-                          context: context,
-                          duration: 200,
-                          color: kNewMainColor,
-                        );
-                        AdvertsModel advert = AdvertsModel(
-                          image: '',
-                          adCategoryId: adCategoryId,
-                          advertsCategory: widget.advertsCategoryName,
-                          title1: 'title1',
-                          title2: 'title2',
-                          title3: 'title3',
-                        );
-                        final jWTToken = Hive.box('adminInfo').get('token');
-                        advertBloc.add(AddAdvertEvent(
-                            token: jWTToken,
-                            advertModel: advert));
-                        setState(() {
-                          currentEvent = AdsEvents.create;
-                        });
-                      },
+                      onTap: () => _handleAddAdvert(adCategoryId),
                       child: Container(
                         height: 150.0,
                         width: 100.0,
@@ -159,66 +199,47 @@ class _AdsCarouselState extends State<AdsCarousel> {
                   String currentId = ads[itemIndex]['adId'];
                   return AdsCard(
                     isEdit: ads[itemIndex]['isEdit'],
-                    title1: ads[itemIndex]['title1'],
-                    title1Controller: controllers[currentId]!['title1']!,
-                    title2: ads[itemIndex]['title2'],
-                    title2Controller: controllers[currentId]!['title2']!,
-                    title3: ads[itemIndex]['title3'],
-                    title3Controller: controllers[currentId]!['title3']!,
                     image: ads[itemIndex]['image'] ?? '',
-                    imageBytes: ads[itemIndex]['imageBytes'],
                     imagePath: ads[itemIndex]['imagePath'],
-                    onEdit: () {
+                    onEdit: () async {
                       Provider.of<AdsProvider>(context, listen: false)
                           .onEdit(ads[itemIndex]['adId'], true);
                     },
-                    getImage: () async {
-                      if (imageKey.isNotEmpty) {
-                        try {
-                          await NetworkUtility.deleteImage(key: ads[itemIndex]['imageKey']);
-                        }  catch (e) {
-                          if (kDebugMode) {
-                            print(e);
-                          }
+                    onUpdateImage: () async {
+                      try {
+                        pickedUpdatingImage =
+                            await _imagePickerService.pickImage(context);
+                        if (pickedUpdatingImage == null) return;
+                        imageResult =
+                            await NetworkUtility.uploadImageFromNative(
+                          file: pickedUpdatingImage!,
+                          folder: 'ads_banners',
+                        );
+                        Provider.of<AdsProvider>(context, listen: false)
+                            .saveImages(
+                          adId: ads[itemIndex]['adId'],
+                          image: imageResult['url'],
+                          imageKey: imageResult['key'],
+                          imagePath: pickedUpdatingImage!.path,
+                        );
+                      } catch (e) {
+                        if (kDebugMode) {
+                          print('Error picking image: $e');
                         }
                       }
-                      getImageNative('ads_banners').then((value) {
-                          Provider.of<AdsProvider>(context, listen: false)
-                              .saveImages(
-                            adId: ads[itemIndex]['adId'],
-                            image: value['imageData']['url'],
-                            imageKey: value['imageData']['key'],
-                            imagePath: value['path'],
-                          );
-                        });
                     },
-                    onEditDone: () {
-                      final advertBloc = BlocProvider.of<AdvertsBloc>(context);
-                      snackBar(
-                        text: 'Updating.......',
-                        context: context,
-                        duration: 100,
-                        color: kNewMainColor,
-                      );
-                      String title1 = controllers[currentId]!['title1']!.text;
-                      String title2 = controllers[currentId]!['title2']!.text;
-                      String title3 = controllers[currentId]!['title3']!.text;
-                      Map<String, dynamic> advert = {
+                    onEditDone: () async {
+                      final advertData = {
                         'adId': currentId,
                         'image': ads[itemIndex]['image'] ?? '',
                         'imageKey': ads[itemIndex]['imageKey'] ?? '',
                         'advertsCategory': ads[itemIndex]['adsCategory'],
-                        'title1': title1,
-                        'title2': title2,
-                        'title3': title3,
                       };
-                      final jWTToken = Hive.box('adminInfo').get('token');
-                      advertBloc.add(UpdateAdvertEvent(
-                        token: jWTToken,
-                          adId: currentId, advertModel: advert));
-                      setState(() {
-                        currentEvent = AdsEvents.update;
-                      });
+                      await _handleUpdateAdvert(
+                        imageKey: imageKey,
+                        currentId: currentId,
+                        advertData: advertData,
+                      );
                     },
                     onDelete: () async {
                       final advertBloc = BlocProvider.of<AdvertsBloc>(context);
@@ -231,10 +252,8 @@ class _AdsCarouselState extends State<AdsCarousel> {
                       try {
                         await NetworkUtility.deleteImage(key: imageKey);
                         final jWTToken = Hive.box('adminInfo').get('token');
-                        advertBloc.add(
-                            DeleteAdvertEvent(
-                                token: jWTToken,
-                                adId: ads[itemIndex]['adId']));
+                        advertBloc.add(DeleteAdvertEvent(
+                            token: jWTToken, adId: ads[itemIndex]['adId']));
                         setState(() {
                           currentEvent = AdsEvents.delete;
                         });
@@ -243,14 +262,14 @@ class _AdsCarouselState extends State<AdsCarousel> {
                           print(e);
                         }
                         debugPrint('On delete image error');
-                       if(context.mounted){
-                         snackBar(
-                           text: e.toString(),
-                           context: context,
-                           color: kRedColor,
-                           duration: 300,
-                         );
-                       }
+                        if (context.mounted) {
+                          snackBar(
+                            text: e.toString(),
+                            context: context,
+                            color: kRedColor,
+                            duration: 300,
+                          );
+                        }
                       }
                     },
                   );

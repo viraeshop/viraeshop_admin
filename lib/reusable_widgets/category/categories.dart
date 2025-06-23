@@ -67,7 +67,8 @@ class Categories extends StatelessWidget {
                      */
                     if (!isSecondRow && subCategories.isEmpty) {
                       Provider.of<AdsProvider>(context, listen: false)
-                          .updateCatg(categories[i - 1]['category']);
+                          .updateCatg(categories[i - 1]['category'], 
+                              id: categories[i - 1]['categoryId']);
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateHasSubCatg(false);
                       Provider.of<AdsProvider>(context, listen: false)

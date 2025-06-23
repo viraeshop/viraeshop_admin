@@ -25,10 +25,12 @@ import 'ads_provider.dart';
 
 class AdsCarousel extends StatefulWidget {
   final String advertsCategoryName;
+  final int? categoryId;
   const AdsCarousel({
-    Key? key,
+    super.key,
+    this.categoryId,
     required this.advertsCategoryName,
-  }) : super(key: key);
+  });
 
   @override
   State<AdsCarousel> createState() => _AdsCarouselState();
@@ -134,6 +136,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                 'adId': details['adId'].toString(),
                 'adsCategory': widget.advertsCategoryName,
                 'adCategoryId': details['adCategoryId'],
+                'categoryId': widget.categoryId,
                 'isEdit': false,
               });
             } else if (currentEvent == AdsEvents.update) {

@@ -60,9 +60,11 @@ class _AdvertScreenState extends State<AdvertScreen> {
                   child: LimitedBox(
                     child: Consumer<AdsProvider>(
                       builder: (context, ads, childs) {
-                        return const Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: AdvertListWidget(),
+                        return Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: AdvertListWidget(
+                            categoryId: ads.categoryId,
+                          ),
                         );
                       },
                     ),
@@ -77,22 +79,10 @@ class _AdvertScreenState extends State<AdvertScreen> {
   }
 }
 
-class AdvertListWidget extends StatefulWidget {
-  const AdvertListWidget({Key? key}) : super(key: key);
-
-  @override
-  State<AdvertListWidget> createState() => _AdvertListWidgetState();
-}
-
-class _AdvertListWidgetState extends State<AdvertListWidget> {
-  bool onUpdate = false;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
-  @override
+class AdvertListWidget extends StatelessWidget {
+  const AdvertListWidget({super.key, this.categoryId});
+  final int? categoryId;
+    @override
   Widget build(BuildContext context) {
     return BlocBuilder<AdvertsBloc, AdvertState>(buildWhen: (context, state) {
       if (state is FetchedAdvertsState || state is OnGetAdvertsErrorState) {
@@ -127,8 +117,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 'adId': element.adId,
                 'adsCategory': element.advertsCategory,
                 'adCategoryId': element.adCategoryId,
+                'categoryId': element.categoryId,
                 'isEdit': false,
-                'imageBytes': null,
+                'imagePath': '',
               };
               Provider.of<AdsProvider>(context, listen: false)
                   .addAdCard(element.adId ?? '', advert);
@@ -137,67 +128,72 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         });
         return ListView(
           // crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
+          children: [
+            const Text(
               'App Bar Banners',
               style: kTableCellStyle,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             AdsCarousel(
+              categoryId: categoryId,
               advertsCategoryName: 'App Bar Banners',
             ),
-            Text(
+            const Text(
               'Top Discount',
               style: kTableCellStyle,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             AdsCarousel(
+              categoryId: categoryId,
               advertsCategoryName: 'Top Discount',
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
-            Text(
+            const Text(
               'Top Sales',
               style: kTableCellStyle,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             AdsCarousel(
+              categoryId: categoryId,
               advertsCategoryName: 'Top Sales',
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
-            Text(
+            const Text(
               'New Arrivals',
               style: kTableCellStyle,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             AdsCarousel(
+              categoryId: categoryId,
               advertsCategoryName: 'New Arrivals',
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
-            Text(
+            const Text(
               'Vira Shop',
               style: kTableCellStyle,
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
             AdsCarousel(
+              categoryId: categoryId,
               advertsCategoryName: 'Vira Shop',
             ),
-            SizedBox(
+            const SizedBox(
               height: 10.0,
             ),
           ],
@@ -243,7 +239,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
       );
     });
   }
-}
+  }
+
 
 class Shimmers extends StatelessWidget {
   const Shimmers({Key? key}) : super(key: key);

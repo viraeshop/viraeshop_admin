@@ -9,6 +9,7 @@ class AdsProvider extends ChangeNotifier {
   List addedToCart = [];
   List<Map<String, dynamic>> subCategories = [];
   String currentCatg = 'All';
+  int? categoryId;
   String subCategory = '';
   String dropdownValue = 'general';
   bool hasSubCatg = false;
@@ -51,8 +52,12 @@ class AdsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateCatg(String value) {
+  void updateCatg(String value, {int? id}) {
+    if (kDebugMode) {
+      print('Category updated to: $value with id: $id');
+    }
     currentCatg = value;
+    categoryId = id;
     notifyListeners();
   }
   

@@ -60,6 +60,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
         image: imageData['url'],
         imageKey: imageData['key'],
         adCategoryId: adCategoryId,
+        categoryId: widget.categoryId,
         advertsCategory: widget.advertsCategoryName,
       );
       final jWTToken = Hive.box('adminInfo').get('token');

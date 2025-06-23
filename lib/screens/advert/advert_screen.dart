@@ -27,8 +27,6 @@ class _AdvertScreenState extends State<AdvertScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    final advertBloc = BlocProvider.of<AdvertsBloc>(context);
-    advertBloc.add(GetAdvertsEvent());
     super.initState();
   }
 
@@ -79,10 +77,23 @@ class _AdvertScreenState extends State<AdvertScreen> {
   }
 }
 
-class AdvertListWidget extends StatelessWidget {
+class AdvertListWidget extends StatefulWidget {
   const AdvertListWidget({super.key, this.categoryId});
   final int? categoryId;
-    @override
+
+  @override
+  State<AdvertListWidget> createState() => _AdvertListWidgetState();
+}
+
+class _AdvertListWidgetState extends State<AdvertListWidget> {
+  @override
+  initState() {
+    final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+    advertBloc.add(GetAdvertsEvent(categoryId: widget.categoryId));
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<AdvertsBloc, AdvertState>(buildWhen: (context, state) {
       if (state is FetchedAdvertsState || state is OnGetAdvertsErrorState) {
@@ -137,7 +148,7 @@ class AdvertListWidget extends StatelessWidget {
               height: 10.0,
             ),
             AdsCarousel(
-              categoryId: categoryId,
+              categoryId: widget.categoryId,
               advertsCategoryName: 'App Bar Banners',
             ),
             const Text(
@@ -148,7 +159,7 @@ class AdvertListWidget extends StatelessWidget {
               height: 10.0,
             ),
             AdsCarousel(
-              categoryId: categoryId,
+              categoryId: widget.categoryId,
               advertsCategoryName: 'Top Discount',
             ),
             const SizedBox(
@@ -162,7 +173,7 @@ class AdvertListWidget extends StatelessWidget {
               height: 10.0,
             ),
             AdsCarousel(
-              categoryId: categoryId,
+              categoryId: widget.categoryId,
               advertsCategoryName: 'Top Sales',
             ),
             const SizedBox(
@@ -176,7 +187,7 @@ class AdvertListWidget extends StatelessWidget {
               height: 10.0,
             ),
             AdsCarousel(
-              categoryId: categoryId,
+              categoryId: widget.categoryId,
               advertsCategoryName: 'New Arrivals',
             ),
             const SizedBox(
@@ -190,7 +201,7 @@ class AdvertListWidget extends StatelessWidget {
               height: 10.0,
             ),
             AdsCarousel(
-              categoryId: categoryId,
+              categoryId: widget.categoryId,
               advertsCategoryName: 'Vira Shop',
             ),
             const SizedBox(
@@ -239,8 +250,7 @@ class AdvertListWidget extends StatelessWidget {
       );
     });
   }
-  }
-
+}
 
 class Shimmers extends StatelessWidget {
   const Shimmers({Key? key}) : super(key: key);

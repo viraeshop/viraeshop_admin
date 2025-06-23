@@ -58,102 +58,16 @@ class _AdvertScreenState extends State<AdvertScreen> {
                   alignment: Alignment.topCenter,
                   heightFactor: 1,
                   child: LimitedBox(
-                    //maxHeight: size.height * 0.58,
                     child: Consumer<AdsProvider>(
                       builder: (context, ads, childs) {
-                        return Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: ads.currentCatg == 'All'
-                              ? const AdvertListWidget()
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AdsCarousel(
-                                      advertsCategoryName: ads.currentCatg,
-                                    ),
-                                  ],
-                                ),
+                        return const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: AdvertListWidget(),
                         );
                       },
                     ),
                   ),
                 ),
-                // FractionallySizedBox(
-                //   heightFactor: 0.1,
-                //   alignment: Alignment.bottomCenter,
-                //   child:
-                //       Consumer<AdsProvider>(builder: (context, advert, widgets) {
-                //     List currentAds = advert.adCards.where((element) {
-                //       if (advert.currentCatg == 'All') {
-                //         return element['adsCategory'] == 'Top Discount' ||
-                //             element['adsCategory'] == 'Top Sales' ||
-                //             element['adsCategory'] == 'New Arrivals' ||
-                //             element['adsCategory'] == 'Vira Shop';
-                //       }
-                //       return element['adsCategory'] == advert.currentCatg;
-                //     }).toList();
-                //     List refinedAds = [];
-                //     for (var element in currentAds) {
-                //       refinedAds.add({
-                //         'title1': element['title1'],
-                //         'title2': element['title2'],
-                //         'title3': element['title3'],
-                //         'image': element['image'],
-                //         'adId': element['adId'],
-                //         'adsCategory': element['adsCategory'],
-                //       });
-                //     }
-                //     return InkWell(
-                //       onTap: () {
-                //         snackBar(
-                //           text: 'Updating please wait....',
-                //           context: context,
-                //           duration: 30,
-                //         );
-                //         if (kDebugMode) {
-                //           print('Refined Ads: $refinedAds');
-                //         }
-                //         FirebaseFirestore.instance
-                //             .collection('adverts')
-                //             .doc('adverts')
-                //             .set({
-                //           'adverts': refinedAds,
-                //         }).then((value) {
-                //           snackBar(
-                //             text: 'Updated Successfully',
-                //             context: context,
-                //             duration: 30,
-                //           );
-                //         }).catchError((error) {
-                //           snackBar(
-                //               text: 'Oops an error occurred! please try again',
-                //               context: context,
-                //               duration: 30,
-                //               color: kNewMainColor);
-                //         });
-                //       },
-                //       child: Container(
-                //           margin: const EdgeInsets.all(3.0),
-                //           decoration: BoxDecoration(
-                //             color: kBackgroundColor,
-                //             borderRadius: BorderRadius.circular(10.0),
-                //             border: Border.all(
-                //               color: kNewMainColor,
-                //               width: 3.0,
-                //             ),
-                //           ),
-                //           child: const Center(
-                //             child: Text('Update',
-                //                 style: TextStyle(
-                //                   color: kNewMainColor,
-                //                   fontSize: 15.0,
-                //                   fontFamily: 'Montserrat',
-                //                   letterSpacing: 1.3,
-                //                 )),
-                //           )),
-                //     );
-                //   }),
-                // ),
               ],
             ),
           ),
@@ -209,6 +123,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
             for (var element in ad.adverts!) {
               Map advert = {
                 'image': element.image,
+                'imageKey': element.imageKey,
                 'adId': element.adId,
                 'adsCategory': element.advertsCategory,
                 'adCategoryId': element.adCategoryId,

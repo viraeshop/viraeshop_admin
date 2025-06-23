@@ -56,6 +56,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
       );
       final advert = AdvertsModel(
         image: imageData['url'],
+        imageKey: imageData['key'],
         adCategoryId: adCategoryId,
         advertsCategory: widget.advertsCategoryName,
       );

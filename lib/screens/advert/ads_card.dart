@@ -15,8 +15,8 @@ import '../../components/styles/text_styles.dart';
 
 class AdsCard extends StatelessWidget {
   final bool? isEdit;
-  final String? image;
-  final String? imagePath;
+  final String image;
+  final String imagePath;
   final void Function()? onEdit;
   final void Function()? onEditDone;
   final void Function()? onDelete;
@@ -24,7 +24,7 @@ class AdsCard extends StatelessWidget {
  const  AdsCard({
     this.isEdit,
     required this.image,
-    this.imagePath,
+    required this.imagePath,
     this.onEdit,
     this.onEditDone,
     this.onDelete,
@@ -43,12 +43,9 @@ class AdsCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
             image: DecorationImage(
-              image: imagePath != null
+              image: imagePath.isNotEmpty
                   ? FileImage(File(imagePath!))
-                  : image != null && image!.isNotEmpty
-                      ? CachedNetworkImageProvider(image!)
-                      : const AssetImage('assets/images/placeholder.png')
-                          as ImageProvider,
+                  : CachedNetworkImageProvider(image),
               fit: BoxFit.cover,
             ),
           ),

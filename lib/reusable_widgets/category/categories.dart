@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 import 'package:viraeshop_admin/screens/products/bulk_edit_product.dart';
+import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
+import 'package:viraeshop_bloc/adverts/adverts_event.dart';
 
 import 'category_tab.dart';
 
@@ -13,11 +16,13 @@ class Categories extends StatelessWidget {
     required this.catLength,
     required this.categories,
     this.isSecondRow = false,
+    this.isAdvert = false,
     Key? key,
   }) : super(key: key);
   final int catLength;
   final List categories;
   final bool isSecondRow;
+  final bool isAdvert;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -38,6 +43,10 @@ class Categories extends StatelessWidget {
                         'https://firebasestorage.googleapis.com/v0/b/vira-eshop.appspot.com/o/categories%2FOriginal%20Style%20-%20Something%20Yellow%20(3).jpeg?alt=media&token=f109e833-6e5c-43a1-b60d-6f848798b1f6',
                     isSelected: ads.currentCatg == 'All',
                     onTap: () {
+                      if(isAdvert){
+                        final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+                        advertBloc.add(GetAdvertsEvent(categoryId: null));
+                      }
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCatg('All');
                       Provider.of<AdsProvider>(context, listen: false)
@@ -69,6 +78,11 @@ class Categories extends StatelessWidget {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCatg(categories[i - 1]['category'], 
                               id: categories[i - 1]['categoryId']);
+                      if(isAdvert){
+                        print('adverting');
+                        final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+                        advertBloc.add(GetAdvertsEvent(categoryId: categories[i - 1]['categoryId']));
+                      }
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateHasSubCatg(false);
                       Provider.of<AdsProvider>(context, listen: false)
@@ -85,14 +99,19 @@ class Categories extends StatelessWidget {
                           .updateSubCategories(
                               categories[i - 1]['subCategories']);
                       Provider.of<AdsProvider>(context, listen: false)
-                          .updateCatg(categories[i - 1]['category']);
+                          .updateCatg(categories[i - 1]['category'], id: categories[i - 1]['categoryId']);
+                      if(isAdvert){
+                        print('adverting');
+                        final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+                        advertBloc.add(GetAdvertsEvent(categoryId: categories[i - 1]['categoryId']));
+                      }
                     } else if (isSecondRow && ads.hasSubCatg) {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCurrentSubCategory(
                               (categories[i]['category']));
                     } else {
                       Provider.of<AdsProvider>(context, listen: false)
-                          .updateCatg(categories[i]['category']);
+                          .updateCatg(categories[i]['category'], id: categories[i]['categoryId']);
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCurrentSubCategory('');
                       Provider.of<AdsProvider>(context, listen: false)

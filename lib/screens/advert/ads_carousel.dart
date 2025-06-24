@@ -125,7 +125,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
       create: (context) => AdvertsBloc(advertCalls: AdvertCalls()),
       child: BlocListener<AdvertsBloc, AdvertState>(
         listener: (context, state) {
-          debugPrint('listener called');
+          //debugPrint('listener called');
           if (state is RequestFinishedAdvertState) {
             final Map details = state.response.result ?? {};
             if (currentEvent == AdsEvents.create) {
@@ -171,9 +171,9 @@ class _AdsCarouselState extends State<AdsCarousel> {
             return element['adsCategory'] == widget.advertsCategoryName;
           }).toList();
           int? adCategoryId = ads.isNotEmpty ? ads.first['adCategoryId'] : null;
-          if (kDebugMode) {
-            print('Ads list: $ads');
-          }
+          // if (kDebugMode) {
+          //   print('Ads list: $ads');
+          // }
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(

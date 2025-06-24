@@ -44,6 +44,7 @@ class _AdvertScreenState extends State<AdvertScreen> {
               return Categories(
                 catLength: catgs.length + 1,
                 categories: catgs,
+                isAdvert: true,
               );
             },
           ),
@@ -96,7 +97,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AdvertsBloc, AdvertState>(buildWhen: (context, state) {
-      if (state is FetchedAdvertsState || state is OnGetAdvertsErrorState) {
+      print(state);
+      if (state is FetchedAdvertsState || state is OnGetAdvertsErrorState || state is LoadingAdvertState) {
         return true;
       } else {
         return false;
@@ -105,7 +107,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
       if (kDebugMode) {
         print(state);
       }
-      debugPrint('Listener called');
+      //debugPrint('Listener called');
       if (state is OnGetAdvertsErrorState) {
         return Center(
           child: Text(
@@ -115,10 +117,10 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
           ),
         );
       } else if (state is FetchedAdvertsState) {
-        List<AdvertCategories> data = state.advertList;
-        if (kDebugMode) {
-          print('Adverts from Database: $data');
-        }
+        List<AdvertCategories> data = state.advertList.toList();
+        // if (kDebugMode) {
+        //   print('Adverts from Database: $data');
+        // }
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           for (var ad in data) {
             for (var element in ad.adverts!) {

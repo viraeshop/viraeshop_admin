@@ -50,22 +50,16 @@ class _AdvertScreenState extends State<AdvertScreen> {
           ),
           LimitedBox(
             maxHeight: size.height * 0.68,
-            child: Stack(
+            child: const Stack(
               fit: StackFit.expand,
               children: [
                 FractionallySizedBox(
                   alignment: Alignment.topCenter,
                   heightFactor: 1,
                   child: LimitedBox(
-                    child: Consumer<AdsProvider>(
-                      builder: (context, ads, childs) {
-                        return Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: AdvertListWidget(
-                            categoryId: ads.categoryId,
-                          ),
-                        );
-                      },
+                    child: Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: AdvertListWidget(),
                     ),
                   ),
                 ),
@@ -79,8 +73,7 @@ class _AdvertScreenState extends State<AdvertScreen> {
 }
 
 class AdvertListWidget extends StatefulWidget {
-  const AdvertListWidget({super.key, this.categoryId});
-  final int? categoryId;
+  const AdvertListWidget({super.key});
 
   @override
   State<AdvertListWidget> createState() => _AdvertListWidgetState();
@@ -90,7 +83,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
   @override
   initState() {
     final advertBloc = BlocProvider.of<AdvertsBloc>(context);
-    advertBloc.add(GetAdvertsEvent(categoryId: widget.categoryId));
+    advertBloc.add(GetAdvertsEvent());
     super.initState();
   }
 
@@ -145,78 +138,80 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
             }
           }
         });
-        return ListView(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'App Bar Banners',
-              style: kTableCellStyle,
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            AdsCarousel(
-              categoryId: widget.categoryId,
-              advertsCategoryName: 'App Bar Banners',
-            ),
-            const Text(
-              'Top Discount',
-              style: kTableCellStyle,
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            AdsCarousel(
-              categoryId: widget.categoryId,
-              advertsCategoryName: 'Top Discount',
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            const Text(
-              'Top Sales',
-              style: kTableCellStyle,
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            AdsCarousel(
-              categoryId: widget.categoryId,
-              advertsCategoryName: 'Top Sales',
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            const Text(
-              'New Arrivals',
-              style: kTableCellStyle,
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            AdsCarousel(
-              categoryId: widget.categoryId,
-              advertsCategoryName: 'New Arrivals',
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            const Text(
-              'Vira Shop',
-              style: kTableCellStyle,
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            AdsCarousel(
-              categoryId: widget.categoryId,
-              advertsCategoryName: 'Vira Shop',
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-          ],
-        );
+        return Consumer<AdsProvider>(builder: (context, ads, childs) {
+          return ListView(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'App Bar Banners',
+                style: kTableCellStyle,
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              AdsCarousel(
+                categoryId: ads.categoryId,
+                advertsCategoryName: 'App Bar Banners',
+              ),
+              const Text(
+                'Top Discount',
+                style: kTableCellStyle,
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              AdsCarousel(
+                categoryId: ads.categoryId,
+                advertsCategoryName: 'Top Discount',
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              const Text(
+                'Top Sales',
+                style: kTableCellStyle,
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              AdsCarousel(
+                categoryId: ads.categoryId,
+                advertsCategoryName: 'Top Sales',
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              const Text(
+                'New Arrivals',
+                style: kTableCellStyle,
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              AdsCarousel(
+                categoryId: ads.categoryId,
+                advertsCategoryName: 'New Arrivals',
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              const Text(
+                'Vira Shop',
+                style: kTableCellStyle,
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+              AdsCarousel(
+                categoryId: ads.categoryId,
+                advertsCategoryName: 'Vira Shop',
+              ),
+              const SizedBox(
+                height: 10.0,
+              ),
+            ],
+          );
+        });
       }
       return const Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

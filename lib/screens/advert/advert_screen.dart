@@ -98,7 +98,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
   Widget build(BuildContext context) {
     return BlocBuilder<AdvertsBloc, AdvertState>(buildWhen: (context, state) {
       print(state);
-      if (state is FetchedAdvertsState || state is OnGetAdvertsErrorState || state is LoadingAdvertState) {
+      if (state is FetchedAdvertsState ||
+          state is OnGetAdvertsErrorState ||
+          state is LoadingAdvertState) {
         return true;
       } else {
         return false;
@@ -122,6 +124,10 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         //   print('Adverts from Database: $data');
         // }
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+          final adsProvider = Provider.of<AdsProvider>(context, listen: false);
+          if (adsProvider.adCards.isNotEmpty) {
+            adsProvider.clearAdCards();
+          }
           for (var ad in data) {
             for (var element in ad.adverts!) {
               Map advert = {

@@ -62,6 +62,7 @@ import 'screens/orders/order_configs.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:viraeshop_bloc/notifications/notifications_bloc.dart';
 import 'package:viraeshop_api/apiCalls/notifications.dart';
+import 'package:viraeshop_bloc/adverts/advert_cubit.dart';
 import 'package:viraeshop_bloc/tokens/tokens_bloc.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
@@ -181,6 +182,9 @@ void main() async {
           create: (BuildContext context) => AdvertsBloc(
             advertCalls: AdvertCalls(),
           ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => AdvertCubit(),
         ),
         BlocProvider(
           create: (BuildContext context) => CustomersBloc(

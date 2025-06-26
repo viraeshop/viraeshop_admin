@@ -22,6 +22,7 @@ import 'package:viraeshop_api/models/adverts/adverts.dart';
 import '../../utils/advert_enums.dart';
 import 'ads_card.dart';
 import 'ads_provider.dart';
+import 'package:viraeshop_bloc/adverts/advert_cubit.dart';
 
 class AdsCarousel extends StatefulWidget {
   final String advertsCategoryName;
@@ -47,7 +48,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
 // Add this helper method inside _AdsCarouselState:
   Future<void> _handleAddAdvert(int? adCategoryId) async {
     Map<String, dynamic> imageData = {};
-    final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+    final advertCubit = BlocProvider.of<AdvertCubit>(context);
     final pickedImage = await _imagePickerService.pickImage(context);
     if (pickedImage == null) return;
 
@@ -64,10 +65,10 @@ class _AdsCarouselState extends State<AdsCarousel> {
         advertsCategory: widget.advertsCategoryName,
       );
       final jWTToken = Hive.box('adminInfo').get('token');
-      advertBloc.add(AddAdvertEvent(
+      advertCubit.addAdvert(
         token: jWTToken,
         advertModel: advert,
-      ));
+      );
       setState(() {
         currentEvent = AdsEvents.create;
         imageResult = {
@@ -101,7 +102,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
         return;
       }
     }
-    final advertBloc = BlocProvider.of<AdvertsBloc>(context);
+    final advertCubit = BlocProvider.of<AdvertCubit>(context);
     snackBar(
       text: 'Updating.......',
       context: context,
@@ -109,11 +110,11 @@ class _AdsCarouselState extends State<AdsCarousel> {
       color: kNewMainColor,
     );
     final jWTToken = Hive.box('adminInfo').get('token');
-    advertBloc.add(UpdateAdvertEvent(
+    advertCubit.updateAdvert(
       token: jWTToken,
       adId: currentId,
       advertModel: advertData,
-    ));
+    );
     setState(() {
       currentEvent = AdsEvents.update;
     });
@@ -123,7 +124,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AdvertsBloc(advertCalls: AdvertCalls()),
-      child: BlocListener<AdvertsBloc, AdvertState>(
+      child: BlocListener<AdvertCubit, AdvertState>(
         listener: (context, state) {
           //debugPrint('listener called');
           if (state is RequestFinishedAdvertState) {

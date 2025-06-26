@@ -73,6 +73,7 @@ class AdsProvider extends ChangeNotifier {
 
   void addAdCard(String adId, Map newEntry) {
     int index = adIndex(adId);
+    print(index);
     if (index == -1) {
       adCards.add(newEntry);
       notifyListeners();

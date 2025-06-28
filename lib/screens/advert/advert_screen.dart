@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:viraeshop_api/models/adverts/advert_categories.dart';
@@ -33,48 +34,63 @@ class _AdvertScreenState extends State<AdvertScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ValueListenableBuilder(
-            valueListenable: Hive.box(productsBox).listenable(),
-            builder: (context, Box box, widgets) {
-              List catgs = box.get(catKey);
-              return Categories(
-                catLength: catgs.length + 1,
-                categories: catgs,
-                isAdvert: true,
-              );
-            },
-          ),
-          LimitedBox(
-            maxHeight: size.height * 0.68,
-            child: const Stack(
-              fit: StackFit.expand,
-              children: [
-                FractionallySizedBox(
-                  alignment: Alignment.topCenter,
-                  heightFactor: 1,
-                  child: LimitedBox(
-                    child: Padding(
-                      padding: EdgeInsets.all(10.0),
-                      child: AdvertListWidget(),
+    return ModalProgressHUD(
+      inAsyncCall: isLoading,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ValueListenableBuilder(
+              valueListenable: Hive.box(productsBox).listenable(),
+              builder: (context, Box box, widgets) {
+                List catgs = box.get(catKey);
+                return Categories(
+                  catLength: catgs.length + 1,
+                  categories: catgs,
+                  isAdvert: true,
+                );
+              },
+            ),
+            LimitedBox(
+              maxHeight: size.height * 0.68,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  FractionallySizedBox(
+                    alignment: Alignment.topCenter,
+                    heightFactor: 1,
+                    child: LimitedBox(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: AdvertListWidget(
+                          onAction: (){
+                            setState(() {
+                              isLoading = true;
+                            });
+                          },
+                          onActionDone: (){
+                            setState(() {
+                              isLoading = false;
+                            });
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class AdvertListWidget extends StatefulWidget {
-  const AdvertListWidget({super.key});
-
+  const AdvertListWidget({super.key, required this.onAction, required this.onActionDone,});
+  final VoidCallback onAction;
+  final VoidCallback onActionDone;
   @override
   State<AdvertListWidget> createState() => _AdvertListWidgetState();
 }
@@ -150,6 +166,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 height: 10.0,
               ),
               AdsCarousel(
+                onAction: widget.onAction,
+                onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
                 advertsCategoryName: 'App Bar Banners',
               ),
@@ -161,6 +179,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 height: 10.0,
               ),
               AdsCarousel(
+                onAction: widget.onAction,
+                onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
                 advertsCategoryName: 'Top Discount',
               ),
@@ -175,6 +195,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 height: 10.0,
               ),
               AdsCarousel(
+                onAction: widget.onAction,
+                onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
                 advertsCategoryName: 'Top Sales',
               ),
@@ -189,6 +211,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 height: 10.0,
               ),
               AdsCarousel(
+                onAction: widget.onAction,
+                onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
                 advertsCategoryName: 'New Arrivals',
               ),
@@ -203,6 +227,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 height: 10.0,
               ),
               AdsCarousel(
+                onAction: widget.onAction,
+                onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
                 advertsCategoryName: 'Vira Shop',
               ),

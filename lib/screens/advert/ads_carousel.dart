@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,8 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
+import 'package:viraeshop_admin/screens/orders/order_products.dart';
+import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_bloc/adverts/adverts_event.dart';
 import 'package:viraeshop_bloc/adverts/adverts_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -27,9 +31,13 @@ import 'package:viraeshop_bloc/adverts/advert_cubit.dart';
 class AdsCarousel extends StatefulWidget {
   final String advertsCategoryName;
   final int? categoryId;
+  final VoidCallback onAction;
+  final VoidCallback onActionDone;
   const AdsCarousel({
     super.key,
     this.categoryId,
+    required this.onAction,
+    required this.onActionDone,
     required this.advertsCategoryName,
   });
 
@@ -57,12 +65,15 @@ class _AdsCarouselState extends State<AdsCarousel> {
         file: pickedImage,
         folder: 'ads_banners',
       );
+      final searchTerm = await showSearchTermBox(context: context,);
+      widget.onAction.call();
       final advert = AdvertsModel(
         image: imageData['url'],
         imageKey: imageData['key'],
         adCategoryId: adCategoryId,
         categoryId: widget.categoryId,
         advertsCategory: widget.advertsCategoryName,
+        searchTerm: searchTerm,
       );
       final jWTToken = Hive.box('adminInfo').get('token');
       advertCubit.addAdvert(
@@ -103,12 +114,13 @@ class _AdsCarouselState extends State<AdsCarousel> {
       }
     }
     final advertCubit = BlocProvider.of<AdvertCubit>(context);
-    snackBar(
-      text: 'Updating.......',
-      context: context,
-      duration: 100,
-      color: kNewMainColor,
-    );
+    // snackBar(
+    //   text: 'Updating.......',
+    //   context: context,
+    //   duration: 100,
+    //   color: kNewMainColor,
+    // );
+    widget.onAction.call();
     final jWTToken = Hive.box('adminInfo').get('token');
     advertCubit.updateAdvert(
       token: jWTToken,
@@ -139,6 +151,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                 'adsCategory': widget.advertsCategoryName,
                 'adCategoryId': details['adCategoryId'],
                 'categoryId': widget.categoryId,
+                'searchTerm': details['searchTerm'],
                 'isEdit': false,
               });
             } else if (currentEvent == AdsEvents.update) {
@@ -149,6 +162,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
               Provider.of<AdsProvider>(context, listen: false)
                   .deleteAdCard(details['adId'].toString());
             }
+            widget.onActionDone.call();
             toast(
               title: currentEvent == AdsEvents.delete
                   ? 'Advert deleted successfully'
@@ -160,6 +174,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
             );
           } else if (state is OnCUDAdvertsErrorState) {
             debugPrint('i got called on OnCUDError');
+            widget.onActionDone.call();
             snackBar(
               text: state.message,
               context: context,
@@ -240,6 +255,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         'image': ads[itemIndex]['image'] ?? '',
                         'imageKey': ads[itemIndex]['imageKey'] ?? '',
                         'advertsCategory': ads[itemIndex]['adsCategory'],
+                        'searchTerm': ads[itemIndex]['searchTerm'],
                       };
                       await _handleUpdateAdvert(
                         imageKey: imageKey,
@@ -249,12 +265,13 @@ class _AdsCarouselState extends State<AdsCarousel> {
                     },
                     onDelete: () async {
                       final advertBloc = BlocProvider.of<AdvertsBloc>(context);
-                      snackBar(
-                        text: 'Deleting.......',
-                        context: context,
-                        duration: 300,
-                        color: kNewMainColor,
-                      );
+                      widget.onAction.call();
+                      // snackBar(
+                      //   text: 'Deleting.......',
+                      //   context: context,
+                      //   duration: 300,
+                      //   color: kNewMainColor,
+                      // );
                       try {
                         await NetworkUtility.deleteImage(key: imageKey);
                         final jWTToken = Hive.box('adminInfo').get('token');
@@ -267,6 +284,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         if (kDebugMode) {
                           print(e);
                         }
+                        widget.onActionDone.call();
                         debugPrint('On delete image error');
                         if (context.mounted) {
                           snackBar(
@@ -287,4 +305,43 @@ class _AdsCarouselState extends State<AdsCarousel> {
       ),
     );
   }
+}
+
+Future<String> showSearchTermBox(
+    {required BuildContext context}) async {
+  TextEditingController searchTerm = TextEditingController();
+  final value = await showDialog(
+      context: context,
+      builder: (context) {
+        return Container(
+          color: kBackgroundColor,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              TextField(
+                controller: searchTerm,
+                style: kProductNameStylePro,
+                decoration: InputDecoration(
+                  hintText: 'Please enter the search term here...',
+                  hintStyle: kProductNameStylePro.copyWith(
+                    color: Colors.black12,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              sendButton(
+                onTap: (){
+                 Navigator.pop(context, searchTerm.text); 
+                },
+                title: 'Create',
+              ),
+            ],
+          ),
+        );
+      });
+  return value;
 }

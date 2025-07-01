@@ -87,22 +87,16 @@ class AdsProvider extends ChangeNotifier {
 
   void deleteAdCard(String adId) {
     int index = adIndex(adId);
-    print('Item index $index');
     adCards.removeAt(index);
     notifyListeners();
   }
 
   void updateAdCard(
     String adId,
-    String title1,
-    title2,
-    title3,
+    String searchTerm,
   ) {
     int index = adIndex(adId);
-    print('Item index $index');
-    adCards[index]['title1'] = title1;
-    adCards[index]['title2'] = title2;
-    adCards[index]['title3'] = title3;
+    adCards[index]['searchTerm'] = searchTerm;
     notifyListeners();
   }
 

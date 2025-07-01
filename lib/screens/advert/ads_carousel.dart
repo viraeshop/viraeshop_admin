@@ -65,7 +65,9 @@ class _AdsCarouselState extends State<AdsCarousel> {
         file: pickedImage,
         folder: 'ads_banners',
       );
-      final searchTerm = await showSearchTermBox(context: context,);
+      final searchTerm = await showSearchTermBox(
+        context: context,
+      );
       widget.onAction.call();
       final advert = AdvertsModel(
         image: imageData['url'],
@@ -153,6 +155,8 @@ class _AdsCarouselState extends State<AdsCarousel> {
                 'categoryId': widget.categoryId,
                 'searchTerm': details['searchTerm'],
                 'isEdit': false,
+                'searchTermController':
+                    TextEditingController(text: details['searchTerm'] ?? ''),
               });
             } else if (currentEvent == AdsEvents.update) {
               Provider.of<AdsProvider>(context, listen: false)
@@ -187,9 +191,6 @@ class _AdsCarouselState extends State<AdsCarousel> {
             return element['adsCategory'] == widget.advertsCategoryName;
           }).toList();
           int? adCategoryId = ads.isNotEmpty ? ads.first['adCategoryId'] : null;
-          // if (kDebugMode) {
-          //   print('Ads list: $ads');
-          // }
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -222,6 +223,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
                     isEdit: ads[itemIndex]['isEdit'],
                     image: ads[itemIndex]['image'] ?? '',
                     imagePath: ads[itemIndex]['imagePath'],
+                    textController: ads[itemIndex]['searchTermController'],
                     onEdit: () async {
                       Provider.of<AdsProvider>(context, listen: false)
                           .onEdit(ads[itemIndex]['adId'], true);
@@ -255,8 +257,14 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         'image': ads[itemIndex]['image'] ?? '',
                         'imageKey': ads[itemIndex]['imageKey'] ?? '',
                         'advertsCategory': ads[itemIndex]['adsCategory'],
-                        'searchTerm': ads[itemIndex]['searchTerm'],
+                        'searchTerm':
+                            ads[itemIndex]['searchTermController'].text,
                       };
+                      Provider.of<AdsProvider>(context, listen: false)
+                          .updateAdCard(
+                        currentId,
+                        ads[itemIndex]['searchTermController'].text,
+                      );
                       await _handleUpdateAdvert(
                         imageKey: imageKey,
                         currentId: currentId,
@@ -307,8 +315,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
   }
 }
 
-Future<String> showSearchTermBox(
-    {required BuildContext context}) async {
+Future<String> showSearchTermBox({required BuildContext context}) async {
   TextEditingController searchTerm = TextEditingController();
   final value = await showDialog(
       context: context,
@@ -334,8 +341,8 @@ Future<String> showSearchTermBox(
                 height: 10,
               ),
               sendButton(
-                onTap: (){
-                 Navigator.pop(context, searchTerm.text); 
+                onTap: () {
+                  Navigator.pop(context, searchTerm.text);
                 },
                 title: 'Create',
               ),

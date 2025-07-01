@@ -256,7 +256,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CustomTextStyle(
+                            CustomTextField(
                               hintText: 'Title',
                               width: size.width * 0.4,
                               title1Controller: titleController,
@@ -267,7 +267,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                               ),
                             ),
                             const SizedBox(),
-                            CustomTextStyle(
+                            CustomTextField(
                               height: 40,
                               width: size.width * 0.4,
                               hintText: 'Sub-title',
@@ -279,7 +279,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                               ),
                             ),
                             const SizedBox(),
-                            CustomTextStyle(
+                            CustomTextField(
                               lines: 3,
                               width: size.width * 0.4,
                               height: 70.0,

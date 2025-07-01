@@ -106,7 +106,6 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AdvertsBloc, AdvertState>(buildWhen: (context, state) {
-      print(state);
       if (state is FetchedAdvertsState ||
           state is OnGetAdvertsErrorState ||
           state is LoadingAdvertState) {
@@ -118,7 +117,6 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
       if (kDebugMode) {
         print(state);
       }
-      //debugPrint('Listener called');
       if (state is OnGetAdvertsErrorState) {
         return Center(
           child: Text(
@@ -129,9 +127,6 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         );
       } else if (state is FetchedAdvertsState) {
         List<AdvertCategories> data = state.advertList.toList();
-        // if (kDebugMode) {
-        //   print('Adverts from Database: $data');
-        // }
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           final adsProvider = Provider.of<AdsProvider>(context, listen: false);
           if (adsProvider.adCards.isNotEmpty) {
@@ -148,6 +143,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 'categoryId': element.categoryId,
                 'isEdit': false,
                 'imagePath': '',
+                'searchTermController': TextEditingController(text: element.searchTerm),
+                'searchTerm': element.searchTerm,
               };
               Provider.of<AdsProvider>(context, listen: false)
                   .addAdCard(element.adId ?? '', advert);
@@ -156,7 +153,6 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         });
         return Consumer<AdsProvider>(builder: (context, ads, childs) {
           return ListView(
-            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'App Bar Banners',

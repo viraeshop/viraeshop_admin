@@ -1,15 +1,7 @@
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:random_string/random_string.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/components/styles/gradients.dart';
-import 'package:viraeshop_admin/configs/image_picker.dart';
-import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 
 import '../../components/styles/text_styles.dart';
 
@@ -21,7 +13,8 @@ class AdsCard extends StatelessWidget {
   final void Function()? onEditDone;
   final void Function()? onDelete;
   final void Function()? onUpdateImage;
- const  AdsCard({
+  final TextEditingController textController;
+  const AdsCard({
     this.isEdit,
     required this.image,
     required this.imagePath,
@@ -29,8 +22,9 @@ class AdsCard extends StatelessWidget {
     this.onEditDone,
     this.onDelete,
     this.onUpdateImage,
+    required this.textController,
     super.key,
-    });
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +43,31 @@ class AdsCard extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          child: isEdit! ? Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              onPressed: onUpdateImage,
-              icon: const Icon(Icons.edit),
-              iconSize: 30.0,
-              color: kSubMainColor,
-            ),
-          ) : null,
+          child: isEdit!
+              ? Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        onPressed: onUpdateImage,
+                        icon: const Icon(Icons.edit),
+                        iconSize: 30.0,
+                        color: kSubMainColor,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: CustomTextField(
+                        title1Controller: textController,
+                        textStyle: kDrawerTextStyle2,
+                        hintText: 'Search term',
+                        height: 30.0,
+                        width: 100.0,
+                      ),
+                    ),
+                  ],
+                )
+              : null,
         ),
         const SizedBox(
           width: 10.0,
@@ -101,8 +111,8 @@ class AdsCard extends StatelessWidget {
   }
 }
 
-class CustomTextStyle extends StatelessWidget {
-  const CustomTextStyle({
+class CustomTextField extends StatelessWidget {
+  const CustomTextField({
     Key? key,
     required this.title1Controller,
     required this.textStyle,
@@ -120,7 +130,7 @@ class CustomTextStyle extends StatelessWidget {
   final double width;
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: height,
       width: width,
       child: TextField(

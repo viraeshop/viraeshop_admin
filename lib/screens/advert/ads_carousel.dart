@@ -1,13 +1,10 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
+import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
-import 'package:viraeshop_admin/screens/orders/order_products.dart';
 import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_bloc/adverts/adverts_event.dart';
 import 'package:viraeshop_bloc/adverts/adverts_state.dart';
@@ -15,7 +12,6 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/gradients.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -161,6 +157,8 @@ class _AdsCarouselState extends State<AdsCarousel> {
             } else if (currentEvent == AdsEvents.update) {
               Provider.of<AdsProvider>(context, listen: false)
                   .onEdit(details['adId'].toString(), false);
+              Provider.of<AdsProvider>(context, listen: false).updateAdCard(
+                  details['adId'].toString(), details['searchTerm']);
             } else if (currentEvent == AdsEvents.delete) {
               ///Todo: Add delete here
               Provider.of<AdsProvider>(context, listen: false)
@@ -224,6 +222,9 @@ class _AdsCarouselState extends State<AdsCarousel> {
                     image: ads[itemIndex]['image'] ?? '',
                     imagePath: ads[itemIndex]['imagePath'],
                     textController: ads[itemIndex]['searchTermController'],
+                    searchTerm: ads[itemIndex]['searchTerm'].isNotEmpty
+                        ? ads[itemIndex]['searchTerm']
+                        : 'Search Term',
                     onEdit: () async {
                       Provider.of<AdsProvider>(context, listen: false)
                           .onEdit(ads[itemIndex]['adId'], true);
@@ -260,11 +261,6 @@ class _AdsCarouselState extends State<AdsCarousel> {
                         'searchTerm':
                             ads[itemIndex]['searchTermController'].text,
                       };
-                      Provider.of<AdsProvider>(context, listen: false)
-                          .updateAdCard(
-                        currentId,
-                        ads[itemIndex]['searchTermController'].text,
-                      );
                       await _handleUpdateAdvert(
                         imageKey: imageKey,
                         currentId: currentId,
@@ -319,34 +315,45 @@ Future<String> showSearchTermBox({required BuildContext context}) async {
   TextEditingController searchTerm = TextEditingController();
   final value = await showDialog(
       context: context,
-      builder: (context) {
-        return Container(
-          color: kBackgroundColor,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            children: [
-              TextField(
-                controller: searchTerm,
-                style: kProductNameStylePro,
-                decoration: InputDecoration(
-                  hintText: 'Please enter the search term here...',
-                  hintStyle: kProductNameStylePro.copyWith(
-                    color: Colors.black12,
+      builder: (BuildContext bc) {
+        return AlertDialog(
+          backgroundColor: kBackgroundColor,
+          title: const Text('Enter Search Term', style: kProductNameStylePro,),
+          content: Container(
+            height: 200,
+            width: MediaQuery.of(bc).size.width * 0.7,
+            decoration: BoxDecoration(
+              color: kBackgroundColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                TextField(
+                  controller: searchTerm,
+                  style: kProductNameStylePro,
+                  decoration: InputDecoration(
+                    hintText: 'Please enter the search term here...',
+                    hintStyle: kProductNameStylePro.copyWith(
+                      color: Colors.black12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              sendButton(
-                onTap: () {
-                  Navigator.pop(context, searchTerm.text);
-                },
-                title: 'Create',
-              ),
-            ],
+                const SizedBox(
+                  height: 30,
+                ),
+                sendButton(
+                  onTap: () {
+                    Navigator.pop(context, searchTerm.text);
+                  },
+                  title: 'Create',
+                  width: 250,
+                  color: kNewMainColor,
+                ),
+              ],
+            ),
           ),
         );
       });

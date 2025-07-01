@@ -14,10 +14,12 @@ class AdsCard extends StatelessWidget {
   final void Function()? onDelete;
   final void Function()? onUpdateImage;
   final TextEditingController textController;
+  final String searchTerm;
   const AdsCard({
     this.isEdit,
     required this.image,
     required this.imagePath,
+    required this.searchTerm,
     this.onEdit,
     this.onEditDone,
     this.onDelete,
@@ -43,10 +45,9 @@ class AdsCard extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          child: isEdit!
-              ? Stack(
+          child: Stack(
                   children: [
-                    Align(
+                    if(isEdit!) Align(
                       alignment: Alignment.topRight,
                       child: IconButton(
                         onPressed: onUpdateImage,
@@ -58,16 +59,16 @@ class AdsCard extends StatelessWidget {
                     Align(
                       alignment: Alignment.bottomRight,
                       child: CustomTextField(
+                        enabled: isEdit!,
                         title1Controller: textController,
                         textStyle: kDrawerTextStyle2,
-                        hintText: 'Search term',
+                        hintText: searchTerm,
                         height: 30.0,
                         width: 100.0,
                       ),
                     ),
                   ],
-                )
-              : null,
+                ),
         ),
         const SizedBox(
           width: 10.0,
@@ -117,6 +118,7 @@ class CustomTextField extends StatelessWidget {
     required this.title1Controller,
     required this.textStyle,
     required this.hintText,
+    this.enabled = true,
     this.lines = 1,
     this.height = 30.0,
     this.width = 100.0,
@@ -128,12 +130,20 @@ class CustomTextField extends StatelessWidget {
   final int lines;
   final double height;
   final double width;
+  final bool enabled;
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    print(hintText);
+    return Container(
+      padding: const EdgeInsets.all(5.0),
+      decoration: BoxDecoration(
+        color: kBlackColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10.0),
+      ),
       height: height,
       width: width,
       child: TextField(
+        enabled: enabled,
         controller: title1Controller,
         style: textStyle,
         cursorColor: kBackgroundColor,

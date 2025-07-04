@@ -72,12 +72,15 @@ class AdsProvider extends ChangeNotifier {
   }
 
   void addAdCard(String adId, Map newEntry) {
+    print('adId: $adId');
+    print('adsLengthBeforeAdding: ${adCards.length}');
     int index = adIndex(adId);
-    print(index);
+    print('adIndex: $index');
     if (index == -1) {
       adCards.add(newEntry);
-      notifyListeners();
+      print('adsLengthAfterAdding: ${adCards.length}');
     }
+    notifyListeners();
   }
 
   void clearAdCards() {
@@ -87,6 +90,9 @@ class AdsProvider extends ChangeNotifier {
 
   void deleteAdCard(String adId) {
     int index = adIndex(adId);
+    if (kDebugMode) {
+      print('Item index $index');
+    }
     adCards.removeAt(index);
     notifyListeners();
   }

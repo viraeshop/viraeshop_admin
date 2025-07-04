@@ -165,6 +165,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 onAction: widget.onAction,
                 onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
+                ads: ads.adCards.where((element) {
+                  return element['adsCategory'] == 'App Bar Banners';
+                }).toList(),
                 advertsCategoryName: 'App Bar Banners',
               ),
               const Text(
@@ -178,6 +181,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 onAction: widget.onAction,
                 onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
+                ads: ads.adCards.where((element) {
+                  return element['adsCategory'] == 'Top Discount';
+                }).toList(),
                 advertsCategoryName: 'Top Discount',
               ),
               const SizedBox(
@@ -194,6 +200,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 onAction: widget.onAction,
                 onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
+                ads: ads.adCards.where((element) {
+                  return element['adsCategory'] == 'Top Sales';
+                }).toList(),
                 advertsCategoryName: 'Top Sales',
               ),
               const SizedBox(
@@ -210,6 +219,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 onAction: widget.onAction,
                 onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
+                ads: ads.adCards.where((element) {
+                  return element['adsCategory'] == 'New Arrivals';
+                }).toList(),
                 advertsCategoryName: 'New Arrivals',
               ),
               const SizedBox(
@@ -226,6 +238,9 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                 onAction: widget.onAction,
                 onActionDone: widget.onActionDone,
                 categoryId: ads.categoryId,
+                ads: ads.adCards.where((element) {
+                  return element['adsCategory'] == 'Vira Shop';
+                }).toList(),
                 advertsCategoryName: 'Vira Shop',
               ),
               const SizedBox(

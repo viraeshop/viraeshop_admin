@@ -27,11 +27,13 @@ import 'package:viraeshop_bloc/adverts/advert_cubit.dart';
 class AdsCarousel extends StatefulWidget {
   final String advertsCategoryName;
   final int? categoryId;
+  final List ads;
   final VoidCallback onAction;
   final VoidCallback onActionDone;
   const AdsCarousel({
     super.key,
     this.categoryId,
+    required this.ads,
     required this.onAction,
     required this.onActionDone,
     required this.advertsCategoryName,
@@ -43,6 +45,7 @@ class AdsCarousel extends StatefulWidget {
 
 class _AdsCarouselState extends State<AdsCarousel> {
   AdsEvents currentEvent = AdsEvents.initial;
+  String deletedAdId = '';
   late String adIdInAction;
   final ImagePickerService _imagePickerService = ImagePickerService();
   Map<String, dynamic> imageResult = {};
@@ -162,7 +165,7 @@ class _AdsCarouselState extends State<AdsCarousel> {
             } else if (currentEvent == AdsEvents.delete) {
               ///Todo: Add delete here
               Provider.of<AdsProvider>(context, listen: false)
-                  .deleteAdCard(details['adId'].toString());
+                  .deleteAdCard(deletedAdId);
             }
             widget.onActionDone.call();
             toast(
@@ -184,128 +187,120 @@ class _AdsCarouselState extends State<AdsCarousel> {
             );
           }
         },
-        child: Consumer<AdsProvider>(builder: (context, childs, widgets) {
-          List ads = childs.adCards.where((element) {
-            return element['adsCategory'] == widget.advertsCategoryName;
-          }).toList();
-          int? adCategoryId = ads.isNotEmpty ? ads.first['adCategoryId'] : null;
-          return SingleChildScrollView(
+        child: SizedBox(
+          height: 160,
+          child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(
-                ads.length + 1,
-                (int itemIndex) {
-                  if (itemIndex == ads.length) {
-                    return InkWell(
-                      onTap: () => _handleAddAdvert(adCategoryId),
-                      child: Container(
-                        height: 150.0,
-                        width: 100.0,
-                        margin: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          gradient: kLinearGradient,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'New',
-                            style: kTableHeadingStyle,
-                          ),
-                        ),
+            itemCount: widget.ads.length + 1,
+            itemBuilder: (context, int itemIndex) {
+              if (itemIndex == widget.ads.length) {
+                return InkWell(
+                  onTap: () => _handleAddAdvert(widget.ads.isNotEmpty ? widget.ads.first['adCategoryId'] : null),
+                  child: Container(
+                    height: 150.0,
+                    width: 100.0,
+                    margin: const EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      gradient: kLinearGradient,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'New',
+                        style: kTableHeadingStyle,
                       ),
+                    ),
+                  ),
+                );
+              }
+              String imageKey = widget.ads[itemIndex]['imageKey'] ?? '';
+              String currentId = widget.ads[itemIndex]['adId'];
+              return AdsCard(
+                isEdit: widget.ads[itemIndex]['isEdit'],
+                image: widget.ads[itemIndex]['image'] ?? '',
+                imagePath: widget.ads[itemIndex]['imagePath'],
+                textController: widget.ads[itemIndex]['searchTermController'],
+                searchTerm: widget.ads[itemIndex]['searchTerm'].isNotEmpty
+                    ? widget.ads[itemIndex]['searchTerm']
+                    : 'Search Term',
+                onEdit: () async {
+                  Provider.of<AdsProvider>(context, listen: false)
+                      .onEdit(widget.ads[itemIndex]['adId'], true);
+                },
+                onUpdateImage: () async {
+                  try {
+                    pickedUpdatingImage =
+                    await _imagePickerService.pickImage(context);
+                    if (pickedUpdatingImage == null) return;
+                    imageResult = await NetworkUtility.uploadImageFromNative(
+                      file: pickedUpdatingImage!,
+                      folder: 'ads_banners',
                     );
+                    Provider.of<AdsProvider>(context, listen: false)
+                        .saveImages(
+                      adId: widget.ads[itemIndex]['adId'],
+                      image: imageResult['url'],
+                      imageKey: imageResult['key'],
+                      imagePath: pickedUpdatingImage!.path,
+                    );
+                  } catch (e) {
+                    if (kDebugMode) {
+                      print('Error picking image: $e');
+                    }
                   }
-                  String imageKey = ads[itemIndex]['imageKey'] ?? '';
-                  String currentId = ads[itemIndex]['adId'];
-                  return AdsCard(
-                    isEdit: ads[itemIndex]['isEdit'],
-                    image: ads[itemIndex]['image'] ?? '',
-                    imagePath: ads[itemIndex]['imagePath'],
-                    textController: ads[itemIndex]['searchTermController'],
-                    searchTerm: ads[itemIndex]['searchTerm'].isNotEmpty
-                        ? ads[itemIndex]['searchTerm']
-                        : 'Search Term',
-                    onEdit: () async {
-                      Provider.of<AdsProvider>(context, listen: false)
-                          .onEdit(ads[itemIndex]['adId'], true);
-                    },
-                    onUpdateImage: () async {
-                      try {
-                        pickedUpdatingImage =
-                            await _imagePickerService.pickImage(context);
-                        if (pickedUpdatingImage == null) return;
-                        imageResult =
-                            await NetworkUtility.uploadImageFromNative(
-                          file: pickedUpdatingImage!,
-                          folder: 'ads_banners',
-                        );
-                        Provider.of<AdsProvider>(context, listen: false)
-                            .saveImages(
-                          adId: ads[itemIndex]['adId'],
-                          image: imageResult['url'],
-                          imageKey: imageResult['key'],
-                          imagePath: pickedUpdatingImage!.path,
-                        );
-                      } catch (e) {
-                        if (kDebugMode) {
-                          print('Error picking image: $e');
-                        }
-                      }
-                    },
-                    onEditDone: () async {
-                      final advertData = {
-                        'adId': currentId,
-                        'image': ads[itemIndex]['image'] ?? '',
-                        'imageKey': ads[itemIndex]['imageKey'] ?? '',
-                        'advertsCategory': ads[itemIndex]['adsCategory'],
-                        'searchTerm':
-                            ads[itemIndex]['searchTermController'].text,
-                      };
-                      await _handleUpdateAdvert(
-                        imageKey: imageKey,
-                        currentId: currentId,
-                        advertData: advertData,
-                      );
-                    },
-                    onDelete: () async {
-                      final advertBloc = BlocProvider.of<AdvertsBloc>(context);
-                      widget.onAction.call();
-                      // snackBar(
-                      //   text: 'Deleting.......',
-                      //   context: context,
-                      //   duration: 300,
-                      //   color: kNewMainColor,
-                      // );
-                      try {
-                        await NetworkUtility.deleteImage(key: imageKey);
-                        final jWTToken = Hive.box('adminInfo').get('token');
-                        advertBloc.add(DeleteAdvertEvent(
-                            token: jWTToken, adId: ads[itemIndex]['adId']));
-                        setState(() {
-                          currentEvent = AdsEvents.delete;
-                        });
-                      } catch (e) {
-                        if (kDebugMode) {
-                          print(e);
-                        }
-                        widget.onActionDone.call();
-                        debugPrint('On delete image error');
-                        if (context.mounted) {
-                          snackBar(
-                            text: e.toString(),
-                            context: context,
-                            color: kRedColor,
-                            duration: 300,
-                          );
-                        }
-                      }
-                    },
+                },
+                onEditDone: () async {
+                  final advertData = {
+                    'adId': currentId,
+                    'image': widget.ads[itemIndex]['image'] ?? '',
+                    'imageKey': widget.ads[itemIndex]['imageKey'] ?? '',
+                    'advertsCategory': widget.ads[itemIndex]['adsCategory'],
+                    'searchTerm': widget.ads[itemIndex]['searchTermController'].text,
+                  };
+                  await _handleUpdateAdvert(
+                    imageKey: imageKey,
+                    currentId: currentId,
+                    advertData: advertData,
                   );
                 },
-              ),
-            ),
-          );
-        }),
+                onDelete: () async {
+                  final advertBloc = BlocProvider.of<AdvertCubit>(context);
+                  widget.onAction.call();
+                  // snackBar(
+                  //   text: 'Deleting.......',
+                  //   context: context,
+                  //   duration: 300,
+                  //   color: kNewMainColor,
+                  // );
+                  try {
+                    await NetworkUtility.deleteImage(key: imageKey);
+                  } catch (e) {
+                    if (kDebugMode) {
+                      print(e);
+                    }
+                    //widget.onActionDone.call();
+                    // debugPrint('On delete image error');
+                    // if (context.mounted) {
+                    //   snackBar(
+                    //     text: e.toString(),
+                    //     context: context,
+                    //     color: kRedColor,
+                    //     duration: 300,
+                    //   );
+                    // }
+                  }
+                  final jWTToken = Hive.box('adminInfo').get('token');
+                  advertBloc.deleteAdvert(
+                      token: jWTToken, adId: widget.ads[itemIndex]['adId']);
+                  setState(() {
+                    currentEvent = AdsEvents.delete;
+                    deletedAdId = widget.ads[itemIndex]['adId'];
+                  });
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -318,7 +313,10 @@ Future<String> showSearchTermBox({required BuildContext context}) async {
       builder: (BuildContext bc) {
         return AlertDialog(
           backgroundColor: kBackgroundColor,
-          title: const Text('Enter Search Term', style: kProductNameStylePro,),
+          title: const Text(
+            'Enter Search Term',
+            style: kProductNameStylePro,
+          ),
           content: Container(
             height: 200,
             width: MediaQuery.of(bc).size.width * 0.7,

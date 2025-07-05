@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../../components/styles/colors.dart';
 
 class NotificationBell extends StatelessWidget {
-  const NotificationBell({this.onPressed});
+  const NotificationBell({super.key, this.onPressed});
   final void Function()? onPressed;
   @override
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: onPressed,
-      icon: Column(
-        children: const [
+      icon: const Column(
+        children: [
           CircleAvatar(
             backgroundColor: kRedColor,
             radius: 3.0,

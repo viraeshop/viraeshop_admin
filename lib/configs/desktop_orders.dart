@@ -14,21 +14,21 @@ class DesktopOrders extends StatelessWidget {
       backgroundColor: kScaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: kBackgroundColor,
-        title: Text('Orders'),
+        title: const Text('Orders'),
         titleTextStyle: kProductNameStyle,
         titleSpacing: 1.0,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             headerContainer(heading: 'Orders'),
-            SizedBox(
+            const SizedBox(
               height: 20.0,
             ),
-            OrderList(),
+            const OrderList(),
           ],
         ),
       ),

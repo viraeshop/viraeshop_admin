@@ -14,7 +14,7 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  TextEditingController _passwordController = TextEditingController();  
+  final TextEditingController _passwordController = TextEditingController();  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,16 +25,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ? MediaQuery.of(context).size.width * 0.40
                 : null,
             height: MediaQuery.of(context).size.height * 0.75,
-            margin: EdgeInsets.all(16),
+            margin: const EdgeInsets.all(16),
             decoration: kBoxDecoration,
             child: Column(
               // shrinkWrap: true,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Verify Administrator', style: kProductNameStylePro,),
-                SizedBox(height: 10.0,),
+                const Text('Verify Administrator', style: kProductNameStylePro,),
+                const SizedBox(height: 10.0,),
                 Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: myField(
                     hint: 'Secret Code',
                     input_type: 'password',
@@ -52,7 +52,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           color:
                               kSelectedTileColor, //Theme.of(context).accentColor,
                           borderRadius: BorderRadius.circular(15)),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -66,25 +66,19 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     ),
                     onTap: () {
                       String code = 'pAYdfxgi';
-                      if (_passwordController.text != null) {
-                        if (code == _passwordController.text) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SignupPage(),
-                            ),
-                          );
-                        } else {
-                          showDialogBox(
-                              buildContext: context,
-                              msg: 'Code entered Incorrectly');
-                        }
-                      }else{
+                      if (code == _passwordController.text) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignupPage(),
+                          ),
+                        );
+                      } else {
                         showDialogBox(
-                              buildContext: context,
-                              msg: 'Please enter yoursecret code');
+                            buildContext: context,
+                            msg: 'Code entered Incorrectly');
                       }
-                    },
+                                        },
                   ),
                 ),
               ],

@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
 class PhotoSlideShow extends StatefulWidget {
   final List images;
@@ -53,10 +52,10 @@ class _PhotoSlideShowState extends State<PhotoSlideShow> {
           Align(
             alignment: Alignment.topRight,
             child: Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: Icon(
+                icon: const Icon(
                   Icons.cancel,
                   size: 30.0,
                   color: kBackgroundColor,

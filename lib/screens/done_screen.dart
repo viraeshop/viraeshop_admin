@@ -4,13 +4,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/configs/invoice.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/screens/due/due_receipt.dart';
 import 'package:viraeshop_admin/screens/home_screen.dart';
-import 'package:viraeshop_admin/screens/reciept_screen.dart';
 
 class DoneScreen extends StatefulWidget {
   final Map info;

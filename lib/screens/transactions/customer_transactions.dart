@@ -7,22 +7,15 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:tuple/tuple.dart';
 import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
-import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
-import 'package:viraeshop_bloc/transactions/transactions_event.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/configs/generate_statement.dart';
-import 'package:viraeshop_admin/configs/invoices/customer_goods_invoice.dart';
-import 'package:viraeshop_admin/configs/invoices/print_customer_invoice.dart';
 import 'package:viraeshop_admin/configs/invoices/share_customer_statement.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
 import '../due/due_receipt.dart';
-import '../reciept_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CustomerTransactionScreen extends StatefulWidget {
@@ -350,7 +343,7 @@ class _CustomerTransactionScreenState extends State<CustomerTransactionScreen> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
+                          headingRowColor: WidgetStateColor.resolveWith(
                             (states) {
                               return kStrokeColor;
                             },

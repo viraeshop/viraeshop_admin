@@ -15,10 +15,10 @@ class _UserListState extends State<UserList> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          iconTheme: IconThemeData(color: kSelectedTileColor),
+          iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: Text(
+          title: const Text(
             'User List',
             style: kAppBarTitleTextStyle,
           ),
@@ -36,20 +36,20 @@ class _UserListState extends State<UserList> {
                 child: ListTile(
                   onTap: () {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => UserProfile()));
+                        MaterialPageRoute(builder: (context) => const UserProfile()));
                   },
-                  leading: CircleAvatar(
+                  leading: const CircleAvatar(
                     backgroundColor: kMainColor,
                     child: Icon(Icons.person, color: kBackgroundColor),
                   ),
                   title: Text(
                     'Name $i - (${(i % 2) == 0 ? ('Admin') : ('Staff')})',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(
+                  subtitle: const Text(
                     'user@mail.com',
                   ),
-                  trailing: Icon(Icons.arrow_right_sharp),
+                  trailing: const Icon(Icons.arrow_right_sharp),
                 ),
               );
             },

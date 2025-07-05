@@ -133,7 +133,7 @@ Future<void> generateCustomerStatement({
     int index = i + 1;
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
-        index >= 10 ? '${index.toString()}' : '0${index.toString()}';
+        index >= 10 ? index.toString() : '0${index.toString()}';
     row.cells[1].value = '${items[i]!['invoice_id']}';
     row.cells[2].value = '${items[i]!['paid']}';
     row.cells[3].value = '${items[i]!['due']}';

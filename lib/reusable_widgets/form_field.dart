@@ -8,7 +8,7 @@ class HeadingTextField extends StatefulWidget {
   final String? heading;
   final bool enable;
   final TextInputType keyboardType;
-  HeadingTextField({
+  const HeadingTextField({super.key, 
     required this.onMaxLine,
     required this.controller,
     this.heading,
@@ -30,7 +30,7 @@ class _HeadingTextFieldState extends State<HeadingTextField> {
       Container(
         height: 40.0,
         width: MediaQuery.of(context).size.width * 0.4,
-        margin: EdgeInsets.all(10.0),
+        margin: const EdgeInsets.all(10.0),
         child: Center(
           child: TextFormField(
             enabled: widget.enable,
@@ -40,7 +40,7 @@ class _HeadingTextFieldState extends State<HeadingTextField> {
             textInputAction: TextInputAction.done,
             keyboardType: widget.keyboardType,
             maxLines: widget.onMaxLine == true ? 3 : 1,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: kMainColor),
               ),

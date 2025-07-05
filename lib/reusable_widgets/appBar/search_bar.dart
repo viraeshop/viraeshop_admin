@@ -3,20 +3,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/screens/advert/ads_provider.dart';
 
 import '../../configs/boxes.dart';
 
 class SearchBar extends StatelessWidget {
-  SearchBar({this.onChange});
+  const SearchBar({super.key, this.onChange});
   final void Function(String value)? onChange;
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 250.0,
       height: 45.0,
-      padding: EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(10.0),
       //margin: EdgeInsets.all(10.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(13.0),
@@ -28,20 +27,20 @@ class SearchBar extends StatelessWidget {
             cursorColor: kNewMainColor,
             textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
-              contentPadding: EdgeInsets.all(10.0),
+              contentPadding: const EdgeInsets.all(10.0),
               hintText: 'Enter your search here...',
               hintStyle: kProductNameStylePro,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
-                borderSide: BorderSide(color: kBackgroundColor),
+                borderSide: const BorderSide(color: kBackgroundColor),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
-                borderSide: BorderSide(color: kBackgroundColor),
+                borderSide: const BorderSide(color: kBackgroundColor),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.0),
-                borderSide: BorderSide(color: kBackgroundColor),
+                borderSide: const BorderSide(color: kBackgroundColor),
               ),
             ),
             onTap: (){
@@ -52,7 +51,7 @@ class SearchBar extends StatelessWidget {
               print(value.length);
               List products = Hive.box(productsBox).get(productsKey);
               List tempStore = ads.products;
-              if (value.length == 0) {
+              if (value.isEmpty) {
                 ads.switchSearch(false);
                 ads.updateProductList(tempStore);                
               }

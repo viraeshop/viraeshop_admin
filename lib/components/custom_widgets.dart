@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
-Widget MyIcons({icon = Icons.add, onClick = null}) {
+Widget MyIcons({icon = Icons.add, onClick}) {
   return Expanded(
       flex: 1,
       child: GestureDetector(
@@ -28,8 +28,8 @@ Widget myLoader({text = 'Loading..', visibility = false}) {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(20.0),
+            const Padding(
+              padding: EdgeInsets.all(20.0),
               child: CircularProgressIndicator(),
             ),
             Text(text)
@@ -46,8 +46,8 @@ Future<void> showMyDialog(String text, BuildContext context) {
     barrierDismissible: true, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        contentPadding: EdgeInsets.all(12.0),
-        title: Text('Notice', style: kSourceSansStyle,),
+        contentPadding: const EdgeInsets.all(12.0),
+        title: const Text('Notice', style: kSourceSansStyle,),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
@@ -57,7 +57,7 @@ Future<void> showMyDialog(String text, BuildContext context) {
         ),
         actions: <Widget>[
           TextButton(
-            child: Text(
+            child: const Text(
               'OK',
               style: kSourceSansStyle,
             ),
@@ -99,9 +99,9 @@ myField(
       labelText: hint,
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(border_radius)),
-      enabledBorder: new OutlineInputBorder(
-        borderRadius: new BorderRadius.circular(10.0),
-        borderSide: BorderSide(color: kMainColor),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: const BorderSide(color: kMainColor),
       ),
       // focusedBorder: new OutlineInputBorder(
       //   borderRadius: new BorderRadius.circular(25.0),
@@ -118,7 +118,7 @@ Widget myChat({text = ''}) {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             backgroundImage: AssetImage('assets/default.jpg'),
           ),
           Container(
@@ -155,7 +155,7 @@ Widget guestChat({text = ''}) {
                   child: Text('$text'),
                 )),
           ),
-          CircleAvatar(
+          const CircleAvatar(
             backgroundImage: AssetImage('assets/default.jpg'),
           ),
         ],
@@ -173,17 +173,17 @@ Widget ProductWidget(
       ? Container(
           // color: kMainColor,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30)),
             image: DecorationImage(
-              image: NetworkImage('$image'),
+              image: NetworkImage(image),
             ),
           ),
         )
       : Container(
           // color: kMainColor,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(18),
                 bottomRight: Radius.circular(18)),
@@ -210,7 +210,7 @@ Widget ProductWidget(
                   imageUrl: image,
                   fit: BoxFit.cover,
                   placeholder: (context, url) {
-                    return Image(
+                    return const Image(
                       image: AssetImage('assets/default.jpg'),
                       fit: BoxFit.cover,
                     );
@@ -228,19 +228,19 @@ Widget ProductWidget(
                   children: [
                     Text(
                       '$name',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       '$category',
-                      style: TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 12),
                     ),
                     Text(
                       '\$$price',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       '$description',
-                      style: TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
@@ -267,7 +267,7 @@ Widget OrderWidget(
           // color: kMainColor,
           decoration: BoxDecoration(
               color: kMainColor, //Theme.of(context).accentColor,
-              image: DecorationImage(
+              image: const DecorationImage(
                   image: AssetImage('assets/default.jpg'), fit: BoxFit.cover),
               borderRadius: BorderRadius.circular(15)),
         )
@@ -305,7 +305,7 @@ Widget OrderWidget(
                   children: [
                     Text(
                       '$name',
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontWeight: FontWeight.normal, fontSize: 20),
                     ),
                     // Text(
@@ -313,7 +313,7 @@ Widget OrderWidget(
                     //   style: TextStyle(fontSize: 12),
                     // ),
                     Text('\$$price',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontWeight: FontWeight.normal,
                             color: Colors.black54)),
                     // Text(
@@ -336,7 +336,7 @@ Widget OrderWidget(
 }
 
 Future<void> popDialog({widget, context, title = ''}) async {
-  StateSetter _setState;
+  StateSetter setState;
 
   showDialog(
     context: context,
@@ -345,7 +345,7 @@ Future<void> popDialog({widget, context, title = ''}) async {
         content: StatefulBuilder(
           // You need this, notice the parameters below:
           builder: (BuildContext context, StateSetter setState) {
-            _setState = setState;
+            setState = setState;
             return widget;
           },
         ),
@@ -386,7 +386,7 @@ Widget bottomCard({context, text = 'Click Me', onTap}) {
         children: [
           Text(
             text,
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 20,
                 color: kBackgroundColor,
                 fontFamily: 'Montserrat',
@@ -414,7 +414,7 @@ TransBtn({context, text = 'Click Me', onTap}) {
         children: [
           Text(
             text,
-            style: TextStyle(fontSize: 20, color: kMainColor),
+            style: const TextStyle(fontSize: 20, color: kMainColor),
           )
         ],
       ),

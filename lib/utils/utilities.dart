@@ -21,7 +21,7 @@ uploadFile(String filePath) async {
         .ref('uploads/file-to-upload.png')
         .putFile(file);
     return true;
-  } on firebase_core.FirebaseException catch (e) {
+  } on firebase_core.FirebaseException {
     // e.g, e.code == 'canceled'
     return false;
   }

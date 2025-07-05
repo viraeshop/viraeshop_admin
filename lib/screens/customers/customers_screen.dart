@@ -3,9 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/customers/register_customer.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
 
 import 'customer_list.dart';
 

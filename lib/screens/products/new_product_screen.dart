@@ -1,7 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -19,16 +17,12 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/product_price.dart';
-import 'package:viraeshop_admin/reusable_widgets/desktop_product_cards2.dart';
-import 'package:viraeshop_admin/reusable_widgets/form_field.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:random_string/random_string.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 
 import '../../components/category_component/category.dart';
 import '../../components/category_component/sub-category.dart';

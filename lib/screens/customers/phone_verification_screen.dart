@@ -6,8 +6,6 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/screens/customers/preferences.dart';
-import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../../components/styles/text_styles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

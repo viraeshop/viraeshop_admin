@@ -12,13 +12,13 @@ import 'hive/cart_model.dart';
 class EditUnitPrice extends StatefulWidget {
   var keyStore;
   String name;
-  EditUnitPrice({required this.keyStore, required this.name});
+  EditUnitPrice({super.key, required this.keyStore, required this.name});
   @override
   _EditUnitPriceState createState() => _EditUnitPriceState();
 }
 
 class _EditUnitPriceState extends State<EditUnitPrice> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
   List<String> nums = [];
   @override
   Widget build(BuildContext context) {
@@ -30,13 +30,13 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
         title: Text(widget.name, style: kAppBarTitleTextStyle),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.chevronLeft,
             color: kSubMainColor,
             size: 20.0,
           ),
         ),
-        shape: Border(
+        shape: const Border(
           bottom: BorderSide(color: Colors.black12),
         ),
       ),
@@ -45,18 +45,18 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Edit unit price',
               style: kProductNameStylePro,
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width * 0.4,
               child: TextField(
                 style: kProductNameStyle,
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.none,
                 controller: _controller,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   border: UnderlineInputBorder(
                     borderSide: BorderSide(color: kMainColor),
                   ),
@@ -69,10 +69,10 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 50.0,
             ),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width,
               child: NumericKeyboard(
                 textColor: kSubMainColor,
@@ -90,7 +90,7 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
                     _controller.text = nums.join();
                   });
                 },
-                leftIcon: Icon(
+                leftIcon: const Icon(
                   Icons.backspace,
                   size: 30.0,
                   color: kSubMainColor,
@@ -107,7 +107,7 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
                   Hive.box<Cart>('cart').put(widget.keyStore, item);                  
                   Navigator.pop(context);                  
                 },
-                rightIcon: Icon(
+                rightIcon: const Icon(
                   Icons.done,
                   size: 30.0,
                   color: kSubMainColor,

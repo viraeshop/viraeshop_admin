@@ -72,7 +72,7 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
               final products = snapshot.data!.docs;
               List<String> productName = [];
               List productsList = [];
-              products.forEach((element) {
+              for (var element in products) {
                 productsList.add({
                   'docId': element.id,
                   'name': element.get('name'),
@@ -94,7 +94,7 @@ class _ArchitectProductsState extends State<ArchitectProducts> {
                     'isArchitectDiscount': element.get('isArchitectDiscount'),
                 });
                 productName.add(element.get('name'));
-              });
+              }
               print(productsList);
               return Container(
                 width: double.infinity,

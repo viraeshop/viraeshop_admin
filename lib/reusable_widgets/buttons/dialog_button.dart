@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 
 class DialogButton extends StatelessWidget {
@@ -9,7 +8,7 @@ class DialogButton extends StatelessWidget {
   bool isBorder;
   double? radius, width, height;
   DialogButton(
-      {required this.onTap,
+      {super.key, required this.onTap,
       required this.title,
       this.color = kSubMainColor,
       this.isBorder = false,
@@ -26,7 +25,7 @@ class DialogButton extends StatelessWidget {
       child: Container(
         width: width,
         height: height,
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(radius!),
           color: color,

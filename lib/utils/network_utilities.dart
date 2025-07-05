@@ -1,15 +1,11 @@
-import 'dart:io';
 
 import 'package:amplify_flutter/amplify_flutter.dart' hide QuerySnapshot;
-import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/foundation.dart';
-import 'package:viraeshop_admin/configs/functions.dart';
-import 'package:viraeshop_admin/reusable_widgets/hive/cart_model.dart';
 
 class NetworkUtility {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -4,15 +4,15 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import '../../components/styles/colors.dart';
 
 class CustomerPreferences {
-  List<TextEditingController> _controllers =
+  final List<TextEditingController> _controllers =
       List.generate(4, (index) => TextEditingController());
-  List<String> _hintTexts = [
+  final List<String> _hintTexts = [
     'Name',
     'Mobile',
     'Email',
     'Address',
   ];
-  List<IconData> _iconData = [
+  final List<IconData> _iconData = [
     Icons.person,
     Icons.phone_android,
     Icons.email,

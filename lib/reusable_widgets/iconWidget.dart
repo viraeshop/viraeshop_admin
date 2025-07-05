@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 
 class IconWidget extends StatelessWidget {
-  IconWidget({
+  const IconWidget({super.key, 
     required this.icon,
   });
   final IconData icon;

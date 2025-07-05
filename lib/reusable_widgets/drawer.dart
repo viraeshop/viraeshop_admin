@@ -27,7 +27,6 @@ import 'package:viraeshop_admin/screens/expense_history.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
 import 'package:viraeshop_admin/screens/messages_screen/users_screen.dart';
 import 'package:viraeshop_admin/screens/new_expense.dart';
-import 'package:viraeshop_admin/screens/products_screen.dart';
 import 'package:viraeshop_admin/screens/return_history.dart';
 import 'package:viraeshop_admin/screens/return_product.dart';
 import 'package:viraeshop_admin/screens/settings_screen.dart';
@@ -47,8 +46,7 @@ class AppDrawer extends StatefulWidget {
   String processingOrdersCount;
   String receivedOrdersCount;
   String assignedProcessingOrderCount;
-  AppDrawer({
-    Key? key,
+  AppDrawer({super.key,
     this.info,
     required this.isBigScreen,
     required this.totalMessages,
@@ -381,7 +379,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => UsersMessagesScreen(),
+                          builder: (context) => const UsersMessagesScreen(),
                         ),
                       );
                       //}
@@ -497,7 +495,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => NewNonInventoryProduct(),
+                          builder: (context) => const NewNonInventoryProduct(),
                         ),
                       );
                       //}

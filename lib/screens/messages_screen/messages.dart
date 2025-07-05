@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:hive/hive.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/components/styles/decoration.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/chat_image_preview.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/guest_chat_bubble.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/image_bubble.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/me_chat_bubble.dart';
-import 'package:viraeshop_admin/screens/messages_screen/widgets/message_text_field.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
@@ -25,7 +22,7 @@ class Message extends StatefulWidget {
   final String userId;
   final num totalUnreadMessages;
   final String customerToken;
-  Message({
+  const Message({super.key, 
     required this.name,
     required this.userId,
     required this.totalUnreadMessages,

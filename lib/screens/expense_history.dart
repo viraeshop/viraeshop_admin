@@ -9,7 +9,6 @@ import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
-import 'package:viraeshop_admin/screens/product_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_bloc/expense/expense_bloc.dart';
@@ -202,7 +201,7 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
   }
 
   // Dialog
-  Future<void> _showMyDialog({var title = "Error", var msg}) async {
+  Future<void> _showMyDialog({var title = "Error"}) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -232,11 +231,11 @@ class _ExpenseHistoryState extends State<ExpenseHistory> {
                         color:
                             kSelectedTileColor, //Theme.of(context).accentColor,
                         borderRadius: BorderRadius.circular(15)),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           "Return",
                           style: TextStyle(fontSize: 20, color: Colors.white),
                         )

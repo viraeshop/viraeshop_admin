@@ -1,20 +1,15 @@
-import 'dart:convert';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/components/styles/decoration.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/reusable_widgets/desktop_product_cards.dart';
 import 'package:viraeshop_admin/reusable_widgets/desktop_product_cards2.dart';
 import 'package:viraeshop_admin/reusable_widgets/form_field.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
 
 // class ProductInfo extends StatefulWidget {
 //   final Map<String, dynamic> product;
@@ -167,7 +162,7 @@ import 'package:viraeshop_admin/settings/general_crud.dart';
 // }
 
 class ProductInformation extends StatefulWidget {
-  ProductInformation({required this.productInfo});
+  const ProductInformation({super.key, required this.productInfo});
   final Map<String, dynamic> productInfo;
   @override
   _ProductInformationState createState() => _ProductInformationState();
@@ -180,15 +175,15 @@ class _ProductInformationState extends State<ProductInformation> {
   Widget build(BuildContext context) {
     final TextEditingController descController =
         TextEditingController(text: widget.productInfo['description']);
-    final TextEditingController _nameController =
+    final TextEditingController nameController =
         TextEditingController(text: widget.productInfo['name']);
-    final TextEditingController _priceController =
+    final TextEditingController priceController =
         TextEditingController(text: widget.productInfo['price'].toString());
-    final TextEditingController _costController =
+    final TextEditingController costController =
         TextEditingController(text: widget.productInfo['cost']);
-    final TextEditingController _quantityController =
+    final TextEditingController quantityController =
         TextEditingController(text: widget.productInfo['quantity'].toString());
-    final TextEditingController _minimumController =
+    final TextEditingController minimumController =
         TextEditingController(text: widget.productInfo['minimum'].toString());
     return Scaffold(
       backgroundColor: kScaffoldBackgroundColor,
@@ -197,7 +192,7 @@ class _ProductInformationState extends State<ProductInformation> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.chevronLeft,
             color: kSubMainColor,
           ),
@@ -210,7 +205,7 @@ class _ProductInformationState extends State<ProductInformation> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.all(40.0),
+          padding: const EdgeInsets.all(40.0),
           child: Row(
             // mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,12 +214,12 @@ class _ProductInformationState extends State<ProductInformation> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   DesktopProductCard2(
-                    costController: _costController,
-                    nameController: _nameController,
-                    priceController: _priceController,
+                    costController: costController,
+                    nameController: nameController,
+                    priceController: priceController,
                     fromInfo: true,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10.0,
                   ),
                   Container(
@@ -237,33 +232,33 @@ class _ProductInformationState extends State<ProductInformation> {
                     width: MediaQuery.of(context).size.width * 0.6,
                     child: Column(
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(left: 15.0, top: 15.0),
                           child: Text(
                             'Stocks',
                             style: kCategoryNameStyle,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: double.infinity,
                           child: Divider(
                             color: kScaffoldBackgroundColor,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 15.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 15.0),
                           child: Consumer<Configs>(
                             builder: (context, configs, childs) => Column(
                               children: [
                                 HeadingTextField(
                                   onMaxLine: false,
-                                  controller: _quantityController,
+                                  controller: quantityController,
                                   heading: 'Quantity: ',
                                   enable: configs.enableFields,
                                 ),
                                 HeadingTextField(
                                   onMaxLine: false,
-                                  controller: _minimumController,
+                                  controller: minimumController,
                                   heading: 'Minimum: ',
                                   enable: configs.enableFields,
                                 ),
@@ -276,7 +271,7 @@ class _ProductInformationState extends State<ProductInformation> {
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 width: 30.0,
               ),
               Column(
@@ -297,7 +292,7 @@ class _ProductInformationState extends State<ProductInformation> {
                               borderRadius: BorderRadius.circular(10.0),
                               color: kBackgroundColor,
                             ),
-                            child: Column(
+                            child: const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
@@ -321,7 +316,7 @@ class _ProductInformationState extends State<ProductInformation> {
                         Align(
                           alignment: Alignment.center,
                           child: Container(
-                            margin: EdgeInsets.all(10.0),
+                            margin: const EdgeInsets.all(10.0),
                             height: MediaQuery.of(context).size.height * 0.3,
                             width: MediaQuery.of(context).size.width * 0.25,
                             decoration: BoxDecoration(
@@ -337,7 +332,7 @@ class _ProductInformationState extends State<ProductInformation> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 10.0),
+                  const SizedBox(height: 10.0),
                   Container(
                     height: MediaQuery.of(context).size.height * 0.35,
                     width: MediaQuery.of(context).size.width * 0.25,
@@ -348,14 +343,14 @@ class _ProductInformationState extends State<ProductInformation> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.only(top: 15.0, left: 15.0),
                           child: Text(
                             'Description',
                             style: kCategoryNameStyle,
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: double.infinity,
                           child: Divider(
                             color: kScaffoldBackgroundColor,
@@ -365,8 +360,8 @@ class _ProductInformationState extends State<ProductInformation> {
                         //   height: 10.0,
                         // ),
                         Container(
-                          margin: EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
+                          margin: const EdgeInsets.all(10.0),
+                          decoration: const BoxDecoration(
                               // border: Border.all(
                               //   color: kScaffoldBackgroundColor,
                               // ),
@@ -383,7 +378,7 @@ class _ProductInformationState extends State<ProductInformation> {
                                 style: kProductNameStylePro,
                                 textInputAction: TextInputAction.done,
                                 maxLines: 10,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(color: kMainColor),
                                   ),
@@ -402,23 +397,8 @@ class _ProductInformationState extends State<ProductInformation> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20.0),
+                  const SizedBox(height: 20.0),
                   InkWell(
-                    child: Container(
-                      // padding: EdgeInsets.all(15),
-                      // margin: EdgeInsets.all(15.0),
-                      width: MediaQuery.of(context).size.width * 0.25,
-                      height: 35.0,
-                      decoration: BoxDecoration(
-                          color: kIconColor1, //Theme.of(context).accentColor,
-                          borderRadius: BorderRadius.circular(5)),
-                      child: Center(
-                        child: Text(
-                          "Edit",
-                          style: TextStyle(fontSize: 20, color: Colors.white),
-                        ),
-                      ),
-                    ),
                     onTap: isProduct == false ? null : () {
                       bool enable = false;
                       Provider.of<Configs>(context, listen: false)
@@ -427,8 +407,23 @@ class _ProductInformationState extends State<ProductInformation> {
                         enable = !enable;
                       });
                     },
+                    child: Container(
+                      // padding: EdgeInsets.all(15),
+                      // margin: EdgeInsets.all(15.0),
+                      width: MediaQuery.of(context).size.width * 0.25,
+                      height: 35.0,
+                      decoration: BoxDecoration(
+                          color: kIconColor1, //Theme.of(context).accentColor,
+                          borderRadius: BorderRadius.circular(5)),
+                      child: const Center(
+                        child: Text(
+                          "Edit",
+                          style: TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 20.0),
+                  const SizedBox(height: 20.0),
                   Consumer<Configs>(
                     builder: (context, configs, childs) => InkWell(
                       child: Container(
@@ -439,7 +434,7 @@ class _ProductInformationState extends State<ProductInformation> {
                         decoration: BoxDecoration(
                             color: kMainColor, //Theme.of(context).accentColor,
                             borderRadius: BorderRadius.circular(5)),
-                        child: Center(
+                        child: const Center(
                           child: Text(
                             "Save",
                             style: TextStyle(fontSize: 20, color: Colors.white),
@@ -450,19 +445,19 @@ class _ProductInformationState extends State<ProductInformation> {
                         final progress = ProgressHUD.of(context);
                         progress!.show();
                         Map<String, dynamic> fields = {
-                          'name': _nameController.text,
+                          'name': nameController.text,
                           'description': descController.text,
                           'category': 'Arcylic Sheets',
-                          'selling_price': _priceController.text,
-                          'cost_price': _costController.text,
-                          'quantity': _quantityController.text,
+                          'selling_price': priceController.text,
+                          'cost_price': costController.text,
+                          'quantity': quantityController.text,
                           'sell_by': configs.sellBy,
-                          'minimum': _minimumController.text,
+                          'minimum': minimumController.text,
                           'product_for': configs.productFor,
                           // 'image': productImage,
                         };
                         adminCrud
-                            .addProduct(fields, _nameController.text)
+                            .addProduct(fields, nameController.text)
                             .then((added) {
                           if (added) {
                             progress.dismiss();
@@ -498,7 +493,7 @@ class _ProductInformationState extends State<ProductInformation> {
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: kTextFieldHeadingStyle,
-        enabledBorder: UnderlineInputBorder(
+        enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: kMainColor),
         ),
         focusColor: kMainColor,

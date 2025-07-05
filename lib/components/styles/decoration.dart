@@ -23,7 +23,7 @@ const kSendButtonTextStyle = TextStyle(
 
 final BoxDecoration kBoxDecoration = BoxDecoration(
   borderRadius: BorderRadius.circular(10.0),
-  boxShadow: [
+  boxShadow: const [
     BoxShadow(
       offset: Offset(0, 0),
       color: Colors.black38,

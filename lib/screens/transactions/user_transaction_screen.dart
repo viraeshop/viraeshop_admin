@@ -10,15 +10,9 @@ import 'package:viraeshop_bloc/transactions/transactions_event.dart';
 import 'package:viraeshop_bloc/transactions/transactions_state.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
-import 'package:viraeshop_admin/configs/functions.dart';
-import 'package:viraeshop_admin/configs/generate_statement.dart';
-import 'package:viraeshop_admin/configs/pos_printer.dart';
-import 'package:viraeshop_admin/configs/print_statement.dart';
 import 'package:viraeshop_admin/configs/share_statement.dart';
-import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/transaction_details.dart';
-import 'package:viraeshop_admin/screens/transactions/non_inventory_transactions.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
 import 'customer_transactions.dart';
@@ -384,7 +378,7 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
+                          headingRowColor: WidgetStateColor.resolveWith(
                             (states) {
                               return kStrokeColor;
                             },
@@ -827,7 +821,7 @@ Widget dateWidget({
   Color borderColor = kMainColor,
   // ignore: avoid_init_to_null
   color = kNewTextColor,
-  dynamic onTap = null,
+  dynamic onTap,
 }) {
   return InkWell(
     onTap: onTap,

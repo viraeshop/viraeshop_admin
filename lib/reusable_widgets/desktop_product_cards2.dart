@@ -1,21 +1,15 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_progress_hud/flutter_progress_hud.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
-import 'package:viraeshop_admin/components/product_table.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'form_field.dart';
 
 class DesktopProductCard2 extends StatefulWidget {
   final TextEditingController nameController, priceController, costController;
   final bool fromInfo;
-  DesktopProductCard2({
+  const DesktopProductCard2({super.key, 
     required this.nameController,
     required this.costController,
     required this.priceController,
@@ -31,13 +25,13 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
     var categories =
         await FirebaseFirestore.instance.collection('products').get();
     final categoryName = categories.docs.toList();
-    categoryName.forEach((element) {
+    for (var element in categoryName) {
       if (element.id != categoryNames[0]) {
         setState(() {
           categoryNames.add(element.id);
         });
       }
-    });
+    }
     print('names: $categoryNames');
   }
 
@@ -63,22 +57,22 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
   List<DropdownMenuItem> userTypesDropdown = List.generate(
     userType.length,
     (index) => DropdownMenuItem(
+      value: userType[index],
       child: Text(
         userType[index],
         style: kCategoryNameStyle,
       ),
-      value: userType[index],
     ),
   );
 
   List<DropdownMenuItem> dropDownNames = List.generate(
     categoryNames.length,
     (index) => DropdownMenuItem(
+      value: categoryNames[index],
       child: Text(
         categoryNames[index],
         style: kCategoryNameStyle,
       ),
-      value: categoryNames[index],
     ),
   );
   @override
@@ -87,11 +81,11 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
     List<DropdownMenuItem> dropDownItem = List.generate(
       sellBy.length,
       (index) => DropdownMenuItem(
+        value: sellBy[index],
         child: Text(
           sellBy[index],
           style: kCategoryNameStyle,
         ),
-        value: sellBy[index],
       ),
     );
 
@@ -106,21 +100,21 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
       child: Column(
         // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          const Padding(
             padding: EdgeInsets.only(left: 15.0, top: 15.0),
             child: Text(
               'New Product',
               style: kCategoryNameStyle,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: double.infinity,
             child: Divider(
               color: kScaffoldBackgroundColor,
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15.0),
+            padding: const EdgeInsets.symmetric(horizontal: 15.0),
             child: Column(
               children: [
                 Consumer<Configs>(
@@ -153,21 +147,21 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Sell by: ',
                       style: kProductPriceStylePro,
                     ),
                     Container(
                       height: 46.0,
                       width: MediaQuery.of(context).size.width * 0.4,
-                      margin: EdgeInsets.all(10.0),
+                      margin: const EdgeInsets.all(10.0),
                       child: Center(
                         child: Consumer<Configs>(
                           builder: (context, configs, childs) =>
                               DropdownButtonFormField(
                             items: dropDownItem,
                             value: configs.sellBy,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: kMainColor),
                               ),
@@ -193,7 +187,7 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Product for: ',
                       style: kProductPriceStylePro,
                     ),
@@ -201,13 +195,13 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
                       child: Container(
                         height: 46.0,
                         width: MediaQuery.of(context).size.width * 0.4,
-                        margin: EdgeInsets.all(10.0),
+                        margin: const EdgeInsets.all(10.0),
                         child: Consumer<Configs>(
                           builder: (context, configs, childs) =>
                               DropdownButtonFormField(
                             items: userTypesDropdown,
                             value: configs.productFor,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               focusedBorder: OutlineInputBorder(
                                 borderSide: BorderSide(color: kMainColor),
                               ),
@@ -226,7 +220,7 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20.0,
                 ),
               ],
@@ -241,7 +235,7 @@ class _DesktopProductCard2State extends State<DesktopProductCard2> {
           //   height: 10.0,
           // ),
 
-          SizedBox(
+          const SizedBox(
             height: 10.0,
           ),
         ],

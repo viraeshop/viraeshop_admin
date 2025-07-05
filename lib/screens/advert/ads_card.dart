@@ -40,7 +40,7 @@ class AdsCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10.0),
             image: DecorationImage(
               image: imagePath.isNotEmpty
-                  ? FileImage(File(imagePath!))
+                  ? FileImage(File(imagePath))
                   : CachedNetworkImageProvider(image),
               fit: BoxFit.cover,
             ),

@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -22,7 +21,7 @@ import 'done_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final num paid, due, advance;
-  PaymentScreen({required this.paid, required this.due, required this.advance});
+  const PaymentScreen({super.key, required this.paid, required this.due, required this.advance});
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
 }

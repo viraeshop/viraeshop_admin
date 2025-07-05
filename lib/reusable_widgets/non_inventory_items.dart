@@ -1,7 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -23,7 +21,7 @@ class NonInventoryScreen extends StatefulWidget {
 
 class _NonInventoryScreenState extends State<NonInventoryScreen> {
   // String userId = Hive.box('userInfo').get('userId');
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
   TextEditingController descControl = TextEditingController();
   TextEditingController invoiceController = TextEditingController();
   List<String> nums = [];

@@ -15,7 +15,7 @@ class _UserProfileState extends State<UserProfile> {
     ListView(
       shrinkWrap: true,
       children: [
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         SizedBox(
             height: 170,
             width: 170,
@@ -28,14 +28,14 @@ class _UserProfileState extends State<UserProfile> {
                     // color: Colors.red,
                     width: 200,
                     height: 200,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         image: DecorationImage(
                             image: AssetImage('assets/default.jpg'),
                             fit: BoxFit.contain)),
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 30,
                   width: 30,
                   child: CircleAvatar(
@@ -60,11 +60,11 @@ class _UserProfileState extends State<UserProfile> {
                   onTap: () => print('Add wallet'),
                   child: Container(
                     width: 150.0,
-                    padding: EdgeInsets.symmetric(vertical: 5.0),
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
                     decoration: BoxDecoration(
                         color: kMainColor,
                         borderRadius: BorderRadius.circular(30.0)),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         '\$1000',
                         style: kDrawerTextStyle2,
@@ -97,7 +97,7 @@ class _UserProfileState extends State<UserProfile> {
                     borderRadius: BorderRadius.circular(15))),
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 15,
         ),
         Padding(
@@ -111,7 +111,7 @@ class _UserProfileState extends State<UserProfile> {
                     borderRadius: BorderRadius.circular(15))),
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 15,
         ),
         Padding(
@@ -125,7 +125,7 @@ class _UserProfileState extends State<UserProfile> {
                     borderRadius: BorderRadius.circular(15))),
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: 15,
         ),
         Padding(
@@ -137,7 +137,7 @@ class _UserProfileState extends State<UserProfile> {
               decoration: BoxDecoration(
                   color: kSelectedTileColor, //Theme.of(context).accentColor,
                   borderRadius: BorderRadius.circular(15)),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -167,10 +167,10 @@ class _UserProfileState extends State<UserProfile> {
     ))
   ];
   final _tabs = <Tab>[
-    Tab(
+    const Tab(
       text: 'Personal Info',
     ),
-    Tab(
+    const Tab(
       text: 'Order History',
     )
   ];
@@ -180,10 +180,10 @@ class _UserProfileState extends State<UserProfile> {
       length: _tabs.length,
       child: Scaffold(
           appBar: AppBar(
-            iconTheme: IconThemeData(color: kSelectedTileColor),
+            iconTheme: const IconThemeData(color: kSelectedTileColor),
             elevation: 0.0,
             backgroundColor: kBackgroundColor,
-            title: Text(
+            title: const Text(
               'User Profile',
               style: kAppBarTitleTextStyle,
             ),
@@ -202,7 +202,7 @@ class _UserProfileState extends State<UserProfile> {
                       // Navigator.push(context,
                       //     MaterialPageRoute(builder: (context) => NewProduct()));
                     },
-                    child: Icon(Icons.add)),
+                    child: const Icon(Icons.add)),
               )
             ],
           ),

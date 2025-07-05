@@ -10,10 +10,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   font_awesome_flutter: ^10.4.0
   image_picker:
-  firebase_auth: ^5.5.1
-  firebase_core: ^3.12.1
-  firebase_storage: ^12.4.4
-  cloud_firestore: ^5.6.5
+  firebase_auth: ^5.6.2
+  firebase_core: ^3.15.1
+  firebase_storage: ^12.4.9
+  cloud_firestore: ^5.6.11
   random_string:
   shared_preferences: ^2.0.7
   intl:
@@ -43,7 +43,7 @@ dependencies:
   tuple: ^2.0.0
   carousel_slider: ^5.0.0
   chat_bubbles: ^1.2.0
-  firebase_messaging: ^15.2.4
+  firebase_messaging: ^15.2.9
   flutter_local_notifications: ^19.0.0
 #  flutter_bluetooth_serial: ^0.4.0
   shimmer: ^2.0.0

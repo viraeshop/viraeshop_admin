@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -16,7 +15,7 @@ class ProductCards extends StatefulWidget {
   final String discountPercent;
   final bool isDiscount;
   final onTap;
-  ProductCards({
+  const ProductCards({super.key, 
     required this.image,
     required this.productName,
     required this.productCategory,
@@ -54,7 +53,7 @@ class _ProductCardsState extends State<ProductCards> {
           // shape: RoundedRectangleBorder(
           //   borderRadius: BorderRadius.circular(12.0),
           // ),
-          child: Container(
+          child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.35,
             width: constraints.maxWidth > 600
                 ? null
@@ -67,11 +66,11 @@ class _ProductCardsState extends State<ProductCards> {
               children: [
                 Align(
                   alignment: Alignment.topCenter,
-                  child: Container(
+                  child: SizedBox(
                     // height: 130.0,
                     width: double.infinity,
                     child: ClipRRect(
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(7.0),
                         topRight: Radius.circular(7.0),
                       ),
@@ -79,7 +78,7 @@ class _ProductCardsState extends State<ProductCards> {
                         imageUrl: widget.image,
                         fit: BoxFit.fill,
                         width: double.infinity,
-                        placeholder: (context, url) => LoadingIndicator(
+                        placeholder: (context, url) => const LoadingIndicator(
                           indicatorType: Indicator.ballScale,
                           colors: [kIconColor1, kIconColor2],
                           strokeWidth: 2,
@@ -101,15 +100,15 @@ class _ProductCardsState extends State<ProductCards> {
                   alignment: Alignment.topRight,
                   child: widget.isDiscount
                       ? discountPercentWidget(widget.discountPercent)
-                      : SizedBox(),
+                      : const SizedBox(),
                 ),
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: Container(
-                    padding: EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(10.0),
                     height: 140.0,
                     width: double.infinity,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: kBackgroundColor,
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(12.0),
@@ -143,14 +142,14 @@ class _ProductCardsState extends State<ProductCards> {
                         widget.isDiscount
                             ? Text(
                                 '${widget.discountPrice.toString()} BDT',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: kNewTextColor,
                                   fontFamily: 'Montserrat',
                                   fontSize: 17,
                                   letterSpacing: 1.3,
                                 ),
                               )
-                            : SizedBox(),
+                            : const SizedBox(),
                         Text(
                           widget.productDescription.toString(),
                           softWrap: true,

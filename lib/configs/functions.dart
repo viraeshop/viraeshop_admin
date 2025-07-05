@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -37,7 +36,7 @@ Future<void> updateProductInventory(String docPath, num productQuantity, [bool i
 initSearch({required String value, required BuildContext context,required List temps, reset, update}) {
   List products = Hive.box(productsBox).get(productsKey);
   List tempStore = temps;
-    if (value.length == 0) {
+    if (value.isEmpty) {
       Provider.of<AdsProvider>(context, listen: false).updateProductList(tempStore);
     }
     final filteredList = products.where((element) {

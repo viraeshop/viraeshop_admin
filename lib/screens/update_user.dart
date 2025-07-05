@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,9 +6,6 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/screens/customers/wallet_screen.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
-import 'package:viraeshop_bloc/customers/customers_bloc.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
-import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/components/ui_components/delete_popup.dart';
@@ -19,14 +13,11 @@ import 'package:viraeshop_admin/screens/customers/customer_info.dart';
 import 'package:viraeshop_admin/screens/customers/customer_provider.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/customers/tabWidgets.dart';
-import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:viraeshop_admin/utils/network_utilities.dart';
 
 import '../configs/configs.dart';
 import 'general_provider.dart';
-import 'home_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum Operation {

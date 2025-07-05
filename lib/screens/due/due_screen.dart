@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
@@ -14,7 +13,6 @@ import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/due/due_receipt.dart';
 import 'package:viraeshop_admin/screens/orders/order_tranz_card.dart';
-import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/transactions/transactions.dart';
 import 'package:viraeshop_api/utils/utils.dart';

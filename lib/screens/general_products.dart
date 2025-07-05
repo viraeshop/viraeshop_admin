@@ -245,7 +245,7 @@ class _GeneralProductsState extends State<GeneralProducts> {
                     : const Text('Loading'),
               );
             }
-            return const Center(child: const CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }),
     );
   }

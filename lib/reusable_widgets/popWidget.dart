@@ -203,9 +203,9 @@ class _PopWidgetState extends State<PopWidget> {
                       )),
             );
           },
-          child: IconWidget(icon: Icons.edit_outlined),
+          child: const IconWidget(icon: Icons.edit_outlined),
         ),
-        IconWidget(
+        const IconWidget(
           icon: Icons.share,
         ),
         Container(

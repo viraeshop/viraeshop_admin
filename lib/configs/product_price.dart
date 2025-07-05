@@ -9,7 +9,7 @@ class ProductPrice extends StatefulWidget {
   final String? Function(String?)? validator;
   final String title;
   const ProductPrice(
-      {required this.title,
+      {super.key, required this.title,
         this.validator,
       required this.isSelected,
       required this.controller,

@@ -18,8 +18,8 @@ class _ReturnInfoState extends State<ReturnInfo> {
   var default_status = '';
   var selected_status = '';
   var selected_refund = '';
-  var _statuses = ['Approved', 'Declined', 'Pending'];
-  var _refundStatuses = ['Refunded', 'Not-refunded'];
+  final _statuses = ['Approved', 'Declined', 'Pending'];
+  final _refundStatuses = ['Refunded', 'Not-refunded'];
   bool loadMe = false;
   @override
   void initState() {
@@ -32,10 +32,10 @@ class _ReturnInfoState extends State<ReturnInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Return Info',
           style: kAppBarTitleTextStyle,
         ),
@@ -43,7 +43,7 @@ class _ReturnInfoState extends State<ReturnInfo> {
         titleTextStyle: kTextStyle1,
       ),
       body: LayoutBuilder(
-        builder: (context, constraint) => Container(
+        builder: (context, constraint) => SizedBox(
           width: constraint.maxWidth > 600
               ? MediaQuery.of(context).size.width * 0.40
               : null,
@@ -61,70 +61,70 @@ class _ReturnInfoState extends State<ReturnInfo> {
                           // crossAxisAlignment: CrossAxisAlignment.center,
                           shrinkWrap: true,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             Center(
                                 child: Text(
                                     '${widget.returnedProd['quantity']} ${widget.returnedProd['name']} returned by ${widget.returnedProd['returned_by'].toString().toUpperCase()}')),
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             DropdownButtonFormField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15)),
                                   // labelText: "Quantity",
                                   // hintText: "Quantity",
                                   hintStyle: TextStyle(color: Colors.black87)),
-                              hint: Text(
+                              hint: const Text(
                                   'Select Status'), // Not necessary for Option 1
                               // value: default_status,
-                              onChanged: (change_val) {
-                                print(change_val);
+                              onChanged: (changeVal) {
+                                print(changeVal);
                                 setState(() {
                                   selected_status =
-                                      change_val.toString().toLowerCase();
+                                      changeVal.toString().toLowerCase();
                                   // print(selected_status);
                                 });
                               },
                               items: _statuses.map((itm) {
                                 return DropdownMenuItem(
-                                  child: new Text(itm),
                                   value: itm,
+                                  child: Text(itm),
                                 );
                               }).toList(),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 40,
                             ),
                             DropdownButtonFormField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15)
                                   //     ),
                                   // labelText: "Quantity",
                                   // hintText: "Quantity",
                                   hintStyle: TextStyle(color: Colors.black87)),
-                              hint: Text(
+                              hint: const Text(
                                   'Select Return Status'), // Not necessary for Option 1
                               // value: default_status,
-                              onChanged: (change_val) {
-                                print(change_val);
+                              onChanged: (changeVal) {
+                                print(changeVal);
                                 setState(() {
                                   selected_refund =
-                                      change_val.toString().toLowerCase();
+                                      changeVal.toString().toLowerCase();
                                   // print(selected_refund);
                                 });
                               },
                               items: _refundStatuses.map((itm) {
                                 return DropdownMenuItem(
-                                  child: new Text(itm),
                                   value: itm,
+                                  child: Text(itm),
                                 );
                               }).toList(),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             bottomCard(

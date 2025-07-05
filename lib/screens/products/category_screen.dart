@@ -7,8 +7,6 @@ import 'package:viraeshop_bloc/category/category_event.dart';
 import 'package:viraeshop_bloc/category/category_state.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/configs.dart';
-import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_api/models/products/product_category.dart';
 import 'add_category.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

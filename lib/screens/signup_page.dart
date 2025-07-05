@@ -19,18 +19,18 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _nameController = TextEditingController();
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   late UserCredential _userCredential;
   bool _isStart = false;
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
       inAsyncCall: _isStart,
-      progressIndicator: CircularProgressIndicator(
+      progressIndicator: const CircularProgressIndicator(
         color: kMainColor,
       ),
       child: Scaffold(
@@ -41,34 +41,34 @@ class _SignupPageState extends State<SignupPage> {
                   ? MediaQuery.of(context).size.width * 0.40
                   : null,
               height: MediaQuery.of(context).size.height * 0.8,
-              margin: EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
               decoration: kBoxDecoration,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: myField(
                         hint: 'Name',
                         input_type: 'text',
                         myController: _nameController),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: myField(
                         hint: 'username/ID',
                         input_type: 'text',
                         myController: _usernameController),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: myField(
                         hint: 'Email',
                         input_type: 'email',
                         myController: _emailController),
                   ),
                   Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: myField(
                       hint: 'Password',
                       input_type: 'password',
@@ -86,7 +86,7 @@ class _SignupPageState extends State<SignupPage> {
                             color:
                                 kSelectedTileColor, //Theme.of(context).accentColor,
                             borderRadius: BorderRadius.circular(15)),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -110,11 +110,22 @@ class _SignupPageState extends State<SignupPage> {
                           );
                           // _emailController.clear();
                           // _passwordController.clear();
-                          if (_userCredential != null) {
-                            FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(_usernameController.text)
-                                .set({
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(_usernameController.text)
+                              .set({
+                            'email': _emailController.text,
+                            'name': _nameController.text,
+                            'password': _passwordController.text,
+                            'adminId': _usernameController.text,
+                            'isAdmin': true,
+                            'isInventory': true,
+                            'isProducts': true,
+                            'isTransactions': true,
+                            'isMakeCustomer': true,
+                            'isMakeAdmin': true,
+                          }).then((value) {
+                            Hive.box('adminInfo').putAll({
                               'email': _emailController.text,
                               'name': _nameController.text,
                               'password': _passwordController.text,
@@ -125,39 +136,26 @@ class _SignupPageState extends State<SignupPage> {
                               'isTransactions': true,
                               'isMakeCustomer': true,
                               'isMakeAdmin': true,
-                            }).then((value) {
-                              Hive.box('adminInfo').putAll({
-                                'email': _emailController.text,
-                                'name': _nameController.text,
-                                'password': _passwordController.text,
-                                'adminId': _usernameController.text,
-                                'isAdmin': true,
-                                'isInventory': true,
-                                'isProducts': true,
-                                'isTransactions': true,
-                                'isMakeCustomer': true,
-                                'isMakeAdmin': true,
-                              });
-                              setState(() {
-                                _isStart = true;
-                              });
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomeScreen()));
-                              setState(() {
-                                _isStart = false;
-                              });
-                            }).catchError((error) {
-                              print(error);
-                              setState(() {
-                                _isStart = false;
-                              });
-                              showDialogBox(
-                                  buildContext: context, msg: 'failed');
                             });
-                          }
-                        } on FirebaseAuthException catch (e) {
+                            setState(() {
+                              _isStart = true;
+                            });
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const HomeScreen()));
+                            setState(() {
+                              _isStart = false;
+                            });
+                          }).catchError((error) {
+                            print(error);
+                            setState(() {
+                              _isStart = false;
+                            });
+                            showDialogBox(
+                                buildContext: context, msg: 'failed');
+                          });
+                                                } on FirebaseAuthException catch (e) {
                           if (e.code == 'weak-password') {
                             print('The password provided is too weak.');
                             setState(() {
@@ -185,19 +183,19 @@ class _SignupPageState extends State<SignupPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Have an account? '),
+                        const Text('Have an account? '),
                         InkWell(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) {
-                                  return LoginPage();
+                                  return const LoginPage();
                                 },
                               ),
                             );
                           },
-                          child: Text(
+                          child: const Text(
                             'Login',
                             style: TextStyle(color: kMainColor),
                           ),

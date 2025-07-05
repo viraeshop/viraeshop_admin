@@ -18,7 +18,7 @@ class _OrderListState extends State<OrderList> {
     return Container(
       height: MediaQuery.of(context).size.height,
       width: double.infinity,
-      padding: EdgeInsets.all(15.0),
+      padding: const EdgeInsets.all(15.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         color: kBackgroundColor,
@@ -27,17 +27,17 @@ class _OrderListState extends State<OrderList> {
           stream: FirebaseFirestore.instance.collection('order').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator(
+              return const CircularProgressIndicator(
                 color: kMainColor,
               );
             } else if (snapshot.hasData) {
               final data = snapshot.data!.docs;
               List orders = [];
-              data.forEach((element) {
+              for (var element in data) {
                 orders.add(
                   element.data(),
                 );
-              });
+              }
 
               print('order $orders');
               List<String> columns = [
@@ -53,11 +53,11 @@ class _OrderListState extends State<OrderList> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Orders',
                     style: kCategoryNameStylePro,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 20.0,
                   ),
                   // SizedBox(
@@ -69,13 +69,13 @@ class _OrderListState extends State<OrderList> {
                   DataTable(
                     // dataRowHeight: 30.0,
                     showCheckboxColumn: true,
-                    decoration: BoxDecoration(),
+                    decoration: const BoxDecoration(),
                     columnSpacing: 40,
                     columns: List.generate(columns.length, (i) {
                       return DataColumn(
                         label: Text(
                           columns[i],
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: kSubMainColor,
                             fontFamily: 'Montserrat',
                             fontSize: 12,
@@ -139,7 +139,7 @@ class _OrderListState extends State<OrderList> {
                                             ),
                                           );
                                         },
-                                        icon: Icon(
+                                        icon: const Icon(
                                           Icons.arrow_right,
                                           size: 30.0,
                                           color: kMainColor,
@@ -159,7 +159,7 @@ class _OrderListState extends State<OrderList> {
                 ],
               );
             } else {
-              return Text('Oop\'s Error Occured');
+              return const Text('Oop\'s Error Occured');
             }
           }),
     );
@@ -180,13 +180,13 @@ class _BigScreenOrderDetailsState extends State<BigScreenOrderDetails> {
       backgroundColor: kScaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: kBackgroundColor,
-        title: Text('Details'),
+        title: const Text('Details'),
         titleTextStyle: kProductNameStyle,
         titleSpacing: 1.0,
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-          padding: EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(15.0),
           child: Container(
             decoration: BoxDecoration(
               color: kBackgroundColor,
@@ -194,20 +194,20 @@ class _BigScreenOrderDetailsState extends State<BigScreenOrderDetails> {
             ),
             child: Column(
               children: [
-                Padding(
+                const Padding(
                   padding: EdgeInsets.all(15.0),
                   child: Text(
                     'Order Details',
                     style: kProductNameStyle,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: double.infinity,
                   child: Divider(
                     color: kScaffoldBackgroundColor,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 10.0,
                 ),
                 Row(
@@ -216,19 +216,19 @@ class _BigScreenOrderDetailsState extends State<BigScreenOrderDetails> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'Order Status',
                           style: kCategoryNameStyle,
                         ),
-                        Container(
+                        SizedBox(
                           height: 30.0,
                           width: MediaQuery.of(context).size.width * 0.2,
                           child: Center(
                             child: DropdownButtonFormField(
-                              items: [],
+                              items: const [],
                               value: '',
                               onChanged: (dynamic value) {},
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(color: kMainColor),
                                 ),

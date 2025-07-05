@@ -12,12 +12,8 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/filters/orderFilters.dart';
 import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
-import 'package:viraeshop_admin/screens/orders/orderRoutineReport.dart';
-import 'package:viraeshop_admin/screens/orders/order_info_view.dart';
 import 'package:viraeshop_admin/screens/orders/order_products.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
-import 'package:viraeshop_admin/screens/reciept_screen.dart';
-import 'package:viraeshop_api/apiCalls/orders.dart';
 import 'package:viraeshop_api/models/items/items.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
 import 'package:viraeshop_api/utils/utils.dart';
@@ -687,11 +683,11 @@ class FetchingMoreLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return const SizedBox(
       height: 50.0,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           LoadingWidget(),
           SizedBox(
             width: 5.0,

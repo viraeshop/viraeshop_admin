@@ -8,7 +8,7 @@ class Product extends StatefulWidget {
   final String productName;
   final String productDesc;
   final String productPrice;
-  Product({
+  const Product({super.key, 
     required this.image,
     required this.productDesc,
     required this.productName,
@@ -29,7 +29,7 @@ class _ProductState extends State<Product> {
       ),
       color: kBackgroundColor,
       child: Container(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         width: double.infinity,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -46,7 +46,7 @@ class _ProductState extends State<Product> {
                       imageUrl: widget.image,
                       fit: BoxFit.cover,
                       placeholder: (context, url) {
-                        return Image(
+                        return const Image(
                           image: AssetImage('assets/default.jpg'),
                           fit: BoxFit.cover,
                         );

@@ -7,7 +7,7 @@ class EditableTextField extends StatefulWidget {
   final bool onMaxLine;
   final TextEditingController controller;
   final String? heading;
-  EditableTextField({
+  const EditableTextField({super.key, 
     required this.textStyle,
     required this.onMaxLine,
     required this.controller,
@@ -46,14 +46,14 @@ class _EditableTextFieldState extends State<EditableTextField> {
                       style: kProductNameStylePro,
                       textInputAction: TextInputAction.done,
                       maxLines: widget.onMaxLine == true ? 3 : 1,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: kMainColor),
                         ),
                         focusColor: kMainColor,
                       ),
                       onFieldSubmitted: (value) {
-                        setState(() => {isEditable = false, title = value});
+                        setState(() {isEditable = false; title = value;});
                       }),
                 ),
           IconButton(
@@ -63,8 +63,8 @@ class _EditableTextFieldState extends State<EditableTextField> {
               color: kIconColor2,
             ),
             onPressed: () {
-              setState(() => {
-                    isEditable = !isEditable,
+              setState(() {
+                    isEditable = !isEditable;
                   });
             },
           )

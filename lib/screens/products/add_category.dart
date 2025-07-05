@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -19,13 +18,10 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/products/category_screen.dart';
-import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_bloc/category/category_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../components/category_component/category.dart';
 import '../../configs/boxes.dart';
-import 'new_product_screen.dart';
 
 class AddCategory extends StatefulWidget {
   final bool isEdit;
@@ -33,7 +29,7 @@ class AddCategory extends StatefulWidget {
   final bool isSubCategory;
   final Map<String, dynamic>? category;
   const AddCategory(
-      {this.isEdit = false,
+      {super.key, this.isEdit = false,
       this.category,
       this.isSubCategory = false,
       this.categoryId = 0});
@@ -294,7 +290,7 @@ class _AddCategoryState extends State<AddCategory> {
                         ),
                         TextFormField(
                           validator: (value) {
-                            if (value!.isEmpty || value == null) {
+                            if (value!.isEmpty) {
                               return 'enter category name';
                             }
                             return null;

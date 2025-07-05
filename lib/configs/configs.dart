@@ -1,15 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
 import 'package:viraeshop_bloc/adverts/adverts_state.dart';
-import 'package:viraeshop_bloc/category/category_bloc.dart';
-import 'package:viraeshop_bloc/category/category_state.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
@@ -17,18 +11,15 @@ import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/dialog_button.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/screens/layout_screen/modal_view.dart';
-import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
 import 'package:viraeshop_admin/screens/supplier/shops.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/login_preferences.dart';
-import 'package:viraeshop_api/apiCalls/suppliers.dart';
 
 import '../reusable_widgets/text_field.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/suppliers/suppliers.dart';
 
-import '../screens/products/add_category.dart';
 
 class Configs extends ChangeNotifier {
   Widget currentScreen = const ModalWidget();
@@ -186,7 +177,7 @@ Future<void> showDialogBox(
               child: const Center(
                 child: Text(
                   'OK',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15.0,
                     color: kBackgroundColor,
                     fontFamily: 'Montserrat',
@@ -277,22 +268,22 @@ Widget contains() {
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            items: <DropdownMenuItem>[
-              const DropdownMenuItem(
+            items: const <DropdownMenuItem>[
+              DropdownMenuItem(
                 value: 'agents',
-                child: const Text(
+                child: Text(
                   'Agent',
                   style: kProductNameStylePro,
                 ),
               ),
-              const DropdownMenuItem(
+              DropdownMenuItem(
                 value: 'general',
                 child: Text(
                   'General',
                   style: kProductNameStylePro,
                 ),
               ),
-              const DropdownMenuItem(
+              DropdownMenuItem(
                 value: 'architect',
                 child: Text(
                   'Architect',
@@ -688,7 +679,7 @@ Future<void> createCategoryDialog({
                 color: kMainColor,
               ),
               child: const Center(
-                child: const Text(
+                child: Text(
                   'Create',
                   style: TextStyle(
                     fontSize: 15.0,

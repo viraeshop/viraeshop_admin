@@ -42,16 +42,16 @@ class _AnimationTestState extends State<AnimationTest> {
             left: offset.dx,
             //right: rect.right,
             bottom: animation.addedToCart[index] ? 0 :  (size - (offset.dy.round() + (offset.dy.round()/2))).round().toDouble(),
+            duration: const Duration(milliseconds: 200),
             child: Container(
               color: kNewMainColor,
               height: 30,
               width: 30,
-            ),
-            duration: Duration(milliseconds: 200));
+            ));
       });
     });
     final overlay = Overlay.of(context);
-    overlay!.insert(entry!);
+    overlay.insert(entry!);
   }
 
   void unShowOverlay() {
@@ -62,7 +62,7 @@ class _AnimationTestState extends State<AnimationTest> {
   }
 
   Offset calculateWidgetPosition(GlobalKey? key) {
-    Offset? offset = Offset(0, 0);
+    Offset? offset = const Offset(0, 0);
     final RenderBox? box =
         key!.currentContext?.findRenderObject() as RenderBox?;
     //print('Render Box: $box');
@@ -82,7 +82,7 @@ class _AnimationTestState extends State<AnimationTest> {
     Provider.of<GeneralProvider>(context, listen: false)
         .animationTrigger(true, index);
     Future.delayed(
-      Duration(milliseconds: 200),
+      const Duration(milliseconds: 200),
       () {
         unShowOverlay();
         Provider.of<GeneralProvider>(context, listen: false)
@@ -132,15 +132,15 @@ class _AnimationTestState extends State<AnimationTest> {
                           .animationTracker(true);
                       Offset offset = calculateWidgetPosition(keys[index]);
                       showOverlay(rect, offset, index);
-                      Future.delayed(Duration(milliseconds: 20), () {
+                      Future.delayed(const Duration(milliseconds: 20), () {
                         cartAnimation(index);
                       });
                    }
                   },
                   child: AnimatedContainer(
                     key: keys[index],
-                    margin: EdgeInsets.all(10),
-                    duration: Duration(milliseconds: 20),
+                    margin: const EdgeInsets.all(10),
+                    duration: const Duration(milliseconds: 20),
                     color: kRedColor,
                     height: animation.addedToCart[index] ? 50.0 : 45,
                     width: animation.addedToCart[index] ? 100.0 : 95,

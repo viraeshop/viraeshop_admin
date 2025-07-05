@@ -1,16 +1,9 @@
-import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/customers/customer_list.dart';
-import 'package:viraeshop_admin/screens/product_info.dart';
-import 'package:viraeshop_admin/screens/update_user.dart';
-import 'package:viraeshop_admin/screens/user_profile_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:viraeshop_admin/settings/login_preferences.dart';
 
 class ArchitectsPage extends StatefulWidget {
   const ArchitectsPage({Key? key}) : super(key: key);

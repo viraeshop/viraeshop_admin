@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -9,10 +7,7 @@ import 'package:printing/printing.dart';
 import 'package:random_string/random_string.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'dart:js' as js;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:tuple/tuple.dart';
 
 Future<void> printPDF({
     required String totalItems,
@@ -47,35 +42,35 @@ Future<void> printPDF({
 
     /// Logo
     page.graphics
-        .drawImage(PdfBitmap(imageBytes), Rect.fromLTWH(0, 15, 100, 100));
+        .drawImage(PdfBitmap(imageBytes), const Rect.fromLTWH(0, 15, 100, 100));
 
     /// Mobile no.
     PdfTextElement element =
         PdfTextElement(text: 'Tel: $mobile', font: timesRoman);
     element.brush = brushColor;
     PdfLayoutResult result =
-        element.draw(page: page, bounds: Rect.fromLTWH(10, 115, 0, 0))!;
+        element.draw(page: page, bounds: const Rect.fromLTWH(10, 115, 0, 0))!;
 
     /// email address
     element =
         PdfTextElement(text: 'Email: viraeshop@gmail.com', font: timesRoman);
     element.brush = brushColor;
-    result = element.draw(page: page, bounds: Rect.fromLTWH(10, 130, 0, 0))!;
+    result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 130, 0, 0))!;
 
     /// Address
     element = PdfTextElement(
         text: 'H-65, New Airport, Amtoli,Mohakhali,', font: timesRoman);
     element.brush = brushColor;
-    result = element.draw(page: page, bounds: Rect.fromLTWH(10, 145, 0, 0))!;
+    result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 145, 0, 0))!;
     element = PdfTextElement(text: 'Dhaka-1212, Bangladesh.', font: timesRoman);
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 160, 0, 0),
+      bounds: const Rect.fromLTWH(10, 160, 0, 0),
     )!;
 
     /// date
-    String currentDate = 'Date: ' + DateFormat.yMMMd().format(DateTime.now());
+    String currentDate = 'Date: ${DateFormat.yMMMd().format(DateTime.now())}';
     // Measures the width of the text to place it in the correct location
     Size size = timesRoman.measureString(currentDate);
     element = PdfTextElement(text: currentDate, font: timesRoman);
@@ -97,7 +92,7 @@ Future<void> printPDF({
     /// Customer name
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 190, 0, 0),
+      bounds: const Rect.fromLTWH(10, 190, 0, 0),
     )!;
     element = PdfTextElement(
       text: name,
@@ -112,7 +107,7 @@ Future<void> printPDF({
     /// customer mobile
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 205, 0, 0),
+      bounds: const Rect.fromLTWH(10, 205, 0, 0),
     )!;
     element = PdfTextElement(
       text: mobile,
@@ -125,14 +120,14 @@ Future<void> printPDF({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 220, 0, 0),
+      bounds: const Rect.fromLTWH(10, 220, 0, 0),
     )!;
 
     /// items
     element = PdfTextElement(
         text: '$totalItems Items (QTY $totalQuantity)', font: timesRoman);
     element.brush = PdfSolidBrush(PdfColor(29, 233, 182));
-    result = element.draw(page: page, bounds: Rect.fromLTWH(10, 235, 0, 0))!;
+    result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 235, 0, 0))!;
 
     /// Horizontal Line
     // graphics.drawLine(
@@ -145,13 +140,13 @@ Future<void> printPDF({
     headerRow.cells[1].value = 'Name';
     headerRow.cells[2].value = 'Price(BDT)';
     headerRow.cells[3].value = 'Amount(BDT)';
-    items.forEach((element) {
+    for (var element in items) {
       PdfGridRow row = grid.rows.add();
       row.cells[0].value = '${element['quantity']} X';
       row.cells[1].value = '${element['product_name']}';
       row.cells[2].value = '${element['unit_price']}';
       row.cells[3].value = '${element['price']}';
-    });
+    }
     //Set padding for grid cells
     grid.style.cellPadding = PdfPaddings(left: 2, right: 2, top: 2, bottom: 2);
     PdfLayoutFormat layoutFormat =

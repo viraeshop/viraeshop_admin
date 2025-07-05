@@ -1,6 +1,4 @@
-import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,7 +6,6 @@ import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_bloc/return/return_event.dart';
 import 'package:viraeshop_bloc/return/return_state.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
@@ -144,29 +141,22 @@ class _ReturnProductState extends State<ReturnProduct> {
                     height: 20.0,
                   ),
                   sendButton(title: 'Return', onTap: () {
-                    if (controllers[0].text != null &&
-                        controllers[1].text != null &&
-                        controllers[2].text != null &&
-                        controllers[3].text != null) {
-                      setState(() {
-                        isLoading = true;
-                      });
-                      final returnBloc = BlocProvider.of<ReturnBloc>(context);
-                      Map<String, dynamic> data = {
-                        'customerId': controllers[0].text,
-                        'productName': controllers[1].text,
-                        'productPrice': num.parse(controllers[2].text),
-                        'reason': controllers[3].text,
-                        'image': productImage['url'] ?? '',
-                        'imageKey': productImage['key'] ?? '',
-                      };
-                      returnBloc.add(AddReturnEvent(
-                          token: jWTToken,
-                          returnModel: data));
-                      } else {
-                        showMyDialog('Fields can\'t be empty', context);
-                    }
-                  }),
+                    setState(() {
+                      isLoading = true;
+                    });
+                    final returnBloc = BlocProvider.of<ReturnBloc>(context);
+                    Map<String, dynamic> data = {
+                      'customerId': controllers[0].text,
+                      'productName': controllers[1].text,
+                      'productPrice': num.parse(controllers[2].text),
+                      'reason': controllers[3].text,
+                      'image': productImage['url'] ?? '',
+                      'imageKey': productImage['key'] ?? '',
+                    };
+                    returnBloc.add(AddReturnEvent(
+                        token: jWTToken,
+                        returnModel: data));
+                                      }),
                 ],
               ),
             ),

@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +7,7 @@ import 'package:random_string/random_string.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:tuple/tuple.dart';
 import 'package:pdf/pdf.dart' as pdf;
-import 'package:viraeshop_admin/reusable_widgets/transaction_functions/functions.dart';
 
 /// share statement
 Future<void> shareStatement({

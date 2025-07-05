@@ -15,10 +15,10 @@ class _UserRankingState extends State<UserRanking> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          iconTheme: IconThemeData(color: kSelectedTileColor),
+          iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: Text(
+          title: const Text(
             'User Rankings',
             style: kAppBarTitleTextStyle,
           ),
@@ -46,22 +46,22 @@ class _UserRankingState extends State<UserRanking> {
                 child: ListTile(
                   onTap: () {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => UserProfile()));
+                        MaterialPageRoute(builder: (context) => const UserProfile()));
                   },
-                  leading: CircleAvatar(
+                  leading: const CircleAvatar(
                     backgroundColor: kMainColor,
                     child: Icon(Icons.person, color: kBackgroundColor),
                   ),
                   title: Text(
                     'Name ${i + 1}',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(
+                  subtitle: const Text(
                     'user@mail.com',
                   ),
                   trailing: Text(
                     '($rank)',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               );

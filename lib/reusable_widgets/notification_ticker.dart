@@ -4,7 +4,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
 class NotificationTicker extends StatelessWidget {
   final String value;
-  NotificationTicker({required this.value});
+  const NotificationTicker({super.key, required this.value});
   @override
   Widget build(BuildContext context) {
     return Container(

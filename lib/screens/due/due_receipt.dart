@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -7,25 +6,19 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
-import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
-import 'package:viraeshop_bloc/transactions/transactions_event.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/functions.dart';
-import 'package:viraeshop_admin/configs/invoice.dart';
 import 'package:viraeshop_admin/configs/share_invoice.dart';
 import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
 import 'package:viraeshop_admin/reusable_widgets/buttons/round_button.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
-import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../components/ui_components/delete_popup.dart';
 import '../../configs/boxes.dart';
-import '../transactions/non_inventory_transaction_info.dart';
-import 'package:printing/printing.dart';
 
 class DueReceipt extends StatefulWidget {
   final Map data;

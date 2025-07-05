@@ -1,11 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/reusable_widgets/drawer.dart';
-import 'package:viraeshop_admin/screens/add_user.dart';
 
 class Orders extends StatefulWidget {
   const Orders({Key? key}) : super(key: key);
@@ -15,7 +11,7 @@ class Orders extends StatefulWidget {
 }
 
 class _OrdersState extends State<Orders> {
-  DataTableSource _data = MyData();
+  final DataTableSource _data = MyData();
 
   @override
   Widget build(BuildContext context) {
@@ -28,17 +24,17 @@ class _OrdersState extends State<Orders> {
           leading: Builder(
             builder: (BuildContext context) => IconButton(
               onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: Icon(
+              icon: const Icon(
                 Icons.menu,
                 color: kTextColor1,
               ),
             ),
           ),
-          title: Text(
+          title: const Text(
             'Orders',
             style: kAppBarTitleTextStyle,
           ),
-          actions: [
+          actions: const [
             // IconButton(
             //     color: kMainColor,
             //     onPressed: () {
@@ -58,8 +54,8 @@ class _OrdersState extends State<Orders> {
           // ),
           child: PaginatedDataTable(
             source: _data,
-            header: Text('My Products'),
-            columns: [
+            header: const Text('My Products'),
+            columns: const [
               DataColumn(label: Text('Name')),
               DataColumn(label: Text('Order ID')),
               DataColumn(label: Text('Customer')),
@@ -85,16 +81,20 @@ class MyData extends DataTableSource {
             "price": Random().nextInt(10000)
           });
 
+  @override
   bool get isRowCountApproximate => false;
+  @override
   int get rowCount => _data.length;
+  @override
   int get selectedRowCount => 0;
+  @override
   DataRow getRow(int index) {
     return DataRow(cells: [
       DataCell(Text('$index-01-21')),
       DataCell(Text(_data[index]['id'].toString())),
       DataCell(Text(_data[index]["title"])),
-      DataCell(Text('\$' + _data[index]["price"].toString())),
-      DataCell(Text(/*_data[index]["price"].toString()*/ 'Paid')),
+      DataCell(Text('\$${_data[index]["price"]}')),
+      const DataCell(Text(/*_data[index]["price"].toString()*/ 'Paid')),
     ]);
   }
 }

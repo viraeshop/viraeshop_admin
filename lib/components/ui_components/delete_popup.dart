@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/home_screen.dart';
 
 class DeletePopup extends StatelessWidget {
   const DeletePopup({Key? key, required this.onDelete}) : super(key: key);

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../components/styles/colors.dart';
 
 class TypableText extends StatelessWidget {
-  TypableText({
+  const TypableText({
     Key? key,
     required this.isDesc,
     required this.controller,
@@ -25,7 +25,7 @@ class TypableText extends StatelessWidget {
         onPressed: switchOn,
         child: Text(
           'Advance: ${controller.text}',
-          style: TextStyle(
+          style: const TextStyle(
             color: kSubMainColor,
             fontFamily: 'Montserrat',
             fontSize: 15,
@@ -35,11 +35,11 @@ class TypableText extends StatelessWidget {
         ),
       );
     } else {
-      return Container(
+      return SizedBox(
           width: MediaQuery.of(context).size.width * 0.5,
           child: TextField(
             cursorColor: kMainColor,
-            style: TextStyle(
+            style: const TextStyle(
               color: kSubMainColor,
               fontFamily: 'Montserrat',
               fontSize: 20,
@@ -50,17 +50,17 @@ class TypableText extends StatelessWidget {
             keyboardType: keyboardType,
             controller: controller,
             decoration: InputDecoration(
-              border: UnderlineInputBorder(
+              border: const UnderlineInputBorder(
                 borderSide: BorderSide(color: kMainColor),
               ),
-              focusedBorder: UnderlineInputBorder(
+              focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: kMainColor),
               ),
-              enabledBorder: UnderlineInputBorder(
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: kMainColor, width: 2.0),
               ),
               suffixIcon: IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.done,
                   color: kSubMainColor,
                   size: 20.0,

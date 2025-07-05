@@ -281,7 +281,7 @@ class _NonInventoryTransactionsState extends State<NonInventoryTransactions> {
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
+                          headingRowColor: WidgetStateColor.resolveWith(
                             (states) {
                               return kStrokeColor;
                             },

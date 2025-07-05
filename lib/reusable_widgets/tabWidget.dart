@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -41,7 +40,7 @@ extension GlobalKeyExtension on GlobalKey {
 class TabWidget extends StatefulWidget {
   final String category;
   final bool isAll;
-  TabWidget({this.category = '', this.isAll = true});
+  const TabWidget({super.key, this.category = '', this.isAll = true});
   @override
   _TabWidgetState createState() => _TabWidgetState();
 }

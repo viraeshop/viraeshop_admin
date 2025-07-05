@@ -8,15 +8,15 @@ import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
 class UsersMessagesScreen extends StatefulWidget {
-  static final String path = '/messages';
-  UsersMessagesScreen();
+  static const String path = '/messages';
+  const UsersMessagesScreen({super.key});
 
   @override
   _UsersMessagesScreenState createState() => _UsersMessagesScreenState();
 }
 
 class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
-  GeneralCrud _generalCrud = GeneralCrud();
+  final GeneralCrud _generalCrud = GeneralCrud();
   @override
   void initState() {
     // TODO: implement initState

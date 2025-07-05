@@ -7,7 +7,7 @@ import '../../components/styles/text_styles.dart';
 
 class EmailConfirmationScreen extends StatefulWidget {
   final String email;
-  const EmailConfirmationScreen({
+  const EmailConfirmationScreen({super.key, 
     required this.email,
   });
 

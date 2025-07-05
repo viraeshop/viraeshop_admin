@@ -5,7 +5,6 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/form_field.dart';
-import 'package:viraeshop_admin/screens/update_user.dart';
 import 'package:viraeshop_admin/settings/admin_CRUD.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 //
@@ -22,7 +21,7 @@ import 'package:viraeshop_admin/settings/general_crud.dart';
 class DesktopProfilePage extends StatefulWidget {
   final dynamic userInfo;
   final String docId;
-  DesktopProfilePage({required this.userInfo, required this.docId});
+  const DesktopProfilePage({super.key, required this.userInfo, required this.docId});
 
   @override
   _DesktopProfilePageState createState() => _DesktopProfilePageState();
@@ -574,17 +573,17 @@ class _DesktopProfilePageState extends State<DesktopProfilePage> {
                 borderRadius: BorderRadius.circular(10.0),
                 color: kBackgroundColor,
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(left: 15.0, top: 15.0),
                     child: Text(
                       'Profile Picture',
                       style: kCategoryNameStyle,
                     ),
                   ),
-                  const SizedBox(
+                  SizedBox(
                     width: double.infinity,
                     child: Divider(
                       color: kScaffoldBackgroundColor,

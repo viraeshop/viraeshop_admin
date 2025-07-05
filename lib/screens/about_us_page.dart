@@ -40,7 +40,7 @@ class AboutUsPage extends StatelessWidget {
               ),
               const Text(
                 'About Us',
-                style: const TextStyle(
+                style: TextStyle(
                   color: kSubMainColor,
                   fontFamily: 'Montserrat',
                   fontSize: 30,
@@ -55,7 +55,7 @@ class AboutUsPage extends StatelessWidget {
                 'Viraeshop is a subsidiary of Modernarc, a company that specializes in offering Architectural services. We sells different kinds of building materials such as Wall-panels, Interior designs, chairs and much more...',
                 softWrap: true,
                 textAlign: TextAlign.justify,
-                style: const TextStyle(
+                style: TextStyle(
                   color: kSubMainColor,
                   fontFamily: 'Montserrat',
                   fontSize: 20,

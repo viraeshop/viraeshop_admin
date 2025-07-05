@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,6 +25,8 @@ import 'package:viraeshop_api/utils/utils.dart';
 import 'transactions/user_transaction_screen.dart';
 
 class NewNonInventoryProduct extends StatefulWidget {
+  const NewNonInventoryProduct({super.key});
+
   @override
   _NewNonInventoryProductState createState() => _NewNonInventoryProductState();
 }

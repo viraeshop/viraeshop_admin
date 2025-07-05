@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -8,10 +6,8 @@ import 'package:random_string/random_string.dart';
 import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/edit_unit_price.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
-import 'package:viraeshop_admin/reusable_widgets/payment_checkout.dart';
 import 'package:viraeshop_admin/reusable_widgets/quantity.dart';
 import 'package:viraeshop_admin/screens/cart_payment_options/advance.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
@@ -167,11 +163,11 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                       color:
                                           kMainColor, //Theme.of(context).accentColor,
                                       borderRadius: BorderRadius.circular(15)),
-                                  child: Row(
+                                  child: const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
-                                    children: const [
+                                    children: [
                                       Text(
                                         "Clear Cart",
                                         style: TextStyle(

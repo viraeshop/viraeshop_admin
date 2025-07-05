@@ -459,9 +459,9 @@ class BigButton extends StatelessWidget {
       padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
           color: kBackgroundColor, borderRadius: BorderRadius.circular(10.0)),
-      child: Row(
+      child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: const [
+        children: [
           Text(
             'Details',
             style: kSansTextStyleBigBlack,

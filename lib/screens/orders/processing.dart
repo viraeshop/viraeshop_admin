@@ -1,9 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
-import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -13,9 +11,7 @@ import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/order_chips.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/totalOrderDetailsCard.dart';
 import 'package:dart_date/dart_date.dart';
-import 'package:viraeshop_admin/reusable_widgets/orders/userTotalOrdersDetailsCard.dart';
 import 'package:viraeshop_admin/screens/customers/tabWidgets.dart';
-import 'package:viraeshop_admin/screens/orders/customer_orders.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 

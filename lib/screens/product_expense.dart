@@ -1,10 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:viraeshop_admin/components/custom_widgets.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/product_info.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
 class ProductExpense extends StatefulWidget {
@@ -46,8 +43,7 @@ class _ProductExpenseState extends State<ProductExpense> {
             final expenses = snapshot.data!.docs;
             List<Map> expenseList = [];
             num totalExpense = 0.0;
-            expenses.forEach(
-              (element) {
+            for (var element in expenses) {
                 expenseList.add({
                   'id': element.id,
                   'cost': element.get('cost'),
@@ -56,8 +52,7 @@ class _ProductExpenseState extends State<ProductExpense> {
                   'added_on': element.get('added_on'),
                 });
                 totalExpense += element.get('cost');
-              },
-            );
+              }
             return Container(
               color: kScaffoldBackgroundColor,
               child: expenseList.isNotEmpty
@@ -76,8 +71,8 @@ class _ProductExpenseState extends State<ProductExpense> {
                                   onTap: () {},
                                   child: Container(
                                     color: kBackgroundColor,
-                                    padding: EdgeInsets.all(8.0),
-                                    margin: EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.all(8.0),
+                                    margin: const EdgeInsets.all(8.0),
                                     child: ListTile(
                                       leading: ClipRRect(
                                           child: Image.asset(
@@ -98,7 +93,7 @@ class _ProductExpenseState extends State<ProductExpense> {
                                               Expanded(
                                                 child: Text(
                                                   'BDT ${expenseList[i]['cost'].toString()}',
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     color: kMainColor,
                                                     fontSize: 15.0,
                                                     letterSpacing: 1.3,
@@ -108,18 +103,18 @@ class _ProductExpenseState extends State<ProductExpense> {
                                               ),
                                               Expanded(
                                                 child: Text(
-                                                  '${date.toString()}',
-                                                  style: TextStyle(
+                                                  date.toString(),
+                                                  style: const TextStyle(
                                                       color: kMainColor),
                                                 ),
                                               ),
                                             ],
                                           ),
                                           Text(
-                                            '${expenseList[i]['description'].toString()}',
+                                            expenseList[i]['description'].toString(),
                                             style: kProductNameStylePro,
                                           ),
-                                          SizedBox(height: 20)
+                                          const SizedBox(height: 20)
                                         ],
                                       ),
                                     ),
@@ -133,11 +128,11 @@ class _ProductExpenseState extends State<ProductExpense> {
                           child: Container(
                             color: kSubMainColor,
                             width: double.infinity,
-                            padding: EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(10.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'Total Expenses',
                                   style: TextStyle(
                                     color: kBackgroundColor,
@@ -148,7 +143,7 @@ class _ProductExpenseState extends State<ProductExpense> {
                                 ),
                                 Text(
                                   'BDT ${totalExpense.toString()}',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: kMainColor,
                                     fontSize: 15.0,
                                     letterSpacing: 1.3,
@@ -161,10 +156,10 @@ class _ProductExpenseState extends State<ProductExpense> {
                         ),
                       ],
                     )
-                  : Text('Loading'),
+                  : const Text('Loading'),
             );
           }
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(
               color: kMainColor,
             ),

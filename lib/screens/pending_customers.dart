@@ -1,13 +1,9 @@
-import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/add_user.dart';
 import 'package:viraeshop_admin/screens/admins/edit_employee.dart';
 
 import 'admins/new_admin_user.dart';
@@ -29,13 +25,13 @@ class _PendingCustomersState extends State<PendingCustomers> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(
+          icon: const Icon(
             FontAwesomeIcons.chevronLeft,
             color: kSubMainColor,
           ),
           iconSize: 15.0,
         ),
-        title: Text(
+        title: const Text(
           'Pending customer\'s',
           style: kProductNameStylePro,
         ),
@@ -50,7 +46,7 @@ class _PendingCustomersState extends State<PendingCustomers> {
                 },
               ),
             ),
-            icon: Icon(FontAwesomeIcons.userPlus),
+            icon: const Icon(FontAwesomeIcons.userPlus),
             color: kSubMainColor,
             iconSize: 20.0,
           ),
@@ -66,7 +62,7 @@ Widget architect() {
       stream: FirebaseFirestore.instance.collection('pending_cutomers').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: Text(
               'Loading Plaese wait.....',
               style: kProductNameStylePro,
@@ -75,11 +71,11 @@ Widget architect() {
         } else if (snapshot.hasData) {
           final data = snapshot.data!.docs;
           List users = [];
-          data.forEach((element) {
+          for (var element in data) {
             users.add(element.data());
-          });
+          }
           print(data.length);
-          return Container(
+          return SizedBox(
             height: double.infinity,
             width: double.infinity,
             child: SingleChildScrollView(
@@ -97,8 +93,8 @@ Widget architect() {
                               },),);
                             },
                             child: Container(
-                              padding: EdgeInsets.all(15.0),
-                              decoration: BoxDecoration(
+                              padding: const EdgeInsets.all(15.0),
+                              decoration: const BoxDecoration(
                                 color: kBackgroundColor,
                                 border: Border(
                                   bottom: BorderSide(color: Colors.black26),
@@ -114,14 +110,14 @@ Widget architect() {
                                   ),
                                 ),
                                 title: Text(
-                                  '${user.split(' ')[0]}',
+                                  user.split(' ')[0],
                                   style: kProductNameStylePro,
                                 ),
                                 subtitle: Text(
                                   '${users[i]['email']}',
                                   style: kProductNameStylePro,
                                 ),
-                                trailing: Column(
+                                trailing: const Column(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
@@ -142,7 +138,7 @@ Widget architect() {
                         },
                       ),
                     )
-                  : Center(
+                  : const Center(
                       child: Text(
                         'Failed to fetch customers',
                         style: kProductNameStylePro,
@@ -151,7 +147,7 @@ Widget architect() {
             ),
           );
         } else {
-          return Center(
+          return const Center(
             child: Text(
               'Failed to fetch customers',
               style: kProductNameStylePro,

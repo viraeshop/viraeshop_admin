@@ -54,7 +54,7 @@ import 'package:tuple/tuple.dart';
     element.brush = brushColor;
     PdfLayoutResult result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 115, 0, 0),
+      bounds: const Rect.fromLTWH(10, 115, 0, 0),
     )!;
 
 // if(isWithAddress){
@@ -93,7 +93,7 @@ import 'package:tuple/tuple.dart';
      element = PdfTextElement(text: 'Total Sales', font: PdfStandardFont(PdfFontFamily.timesRoman, 16,
       style: PdfFontStyle.bold,),);
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 135, 0, 0))!;
+  result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 135, 0, 0))!;
 
   /// Dates
   String beginDate = DateFormat.yMMMd().format(begin);
@@ -104,7 +104,7 @@ import 'package:tuple/tuple.dart';
   /// draw date
   element = PdfTextElement(text: beginDate, font: timesRoman);
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 155, 0, 0))!;
+  result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 155, 0, 0))!;
 
   /// to
   element = PdfTextElement(text: 'TO', font: timesRoman);
@@ -137,8 +137,8 @@ import 'package:tuple/tuple.dart';
     ++index;
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
-        index >= 10 ? '${index.toString()}' : '0${index.toString()}';
-    row.cells[1].value = '$element';
+        index >= 10 ? index.toString() : '0${index.toString()}';
+    row.cells[1].value = element;
     row.cells[2].value = '${items[element]!.item1}';
     row.cells[3].value = '${items[element]!.item2}';
     row.cells[4].value = '${items[element]!.item3}';

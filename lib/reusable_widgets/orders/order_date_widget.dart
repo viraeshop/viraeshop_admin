@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 
-import '../../components/styles/colors.dart';
 
 class OrderDateWidget extends StatelessWidget {
   const OrderDateWidget({Key? key, required this.date, required this.onTap, required this.color})

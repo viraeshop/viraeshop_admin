@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,7 +7,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
-import 'package:tuple/tuple.dart';
 import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_event.dart';
 import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_state.dart';
 import 'package:viraeshop_bloc/suppliers/suppliers_bloc.dart';
@@ -19,7 +16,6 @@ import 'package:viraeshop_admin/configs/image_picker.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/transactions/user_transaction_screen.dart';
-import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
 import '../components/styles/text_styles.dart';

@@ -1,6 +1,4 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:viraeshop_admin/components/product_table.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/editable_text_field.dart';
@@ -8,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DesktopProductCard1 extends StatefulWidget {
   final Map produtInfo;
-  DesktopProductCard1({required this.produtInfo});
+  const DesktopProductCard1({super.key, required this.produtInfo});
   @override
   State<DesktopProductCard1> createState() => _DesktopProductCard1State();
 }
@@ -19,11 +17,11 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
     var categories =
         await FirebaseFirestore.instance.collection('products').get();
     final categoryName = categories.docs.toList();
-    categoryName.forEach((element) {
+    for (var element in categoryName) {
       setState(() {
         categoryNames.add(element.id);
       });
-    });
+    }
   }
 
   @override
@@ -44,48 +42,48 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
   List<DropdownMenuItem> dropDownNames = List.generate(
     categoryNames.length,
     (index) => DropdownMenuItem(
+      value: categoryNames[index],
       child: Text(
        categoryNames.isEmpty ? '...' : categoryNames[index],
         style: kCategoryNameStyle,
       ),
-      value: categoryNames[index],
     ),
   );
   List<DropdownMenuItem> dropDownItems = List.generate(
     sellType.length,
     (index) => DropdownMenuItem(
+      value: sellType[index],
       child: Text(
         sellType[index],
         style: kCategoryNameStyle,
       ),
-      value: sellType[index],
     ),
   );
   @override
   Widget build(BuildContext context) {
-    String _sellBy = widget.produtInfo['sell_by'];
+    String sellBy = widget.produtInfo['sell_by'];
     String category = widget.produtInfo['category'];
-    final TextEditingController _nameController = TextEditingController(
+    final TextEditingController nameController = TextEditingController(
       text: widget.produtInfo['name'],
     );
-    final TextEditingController _categController =
+    final TextEditingController categController =
         TextEditingController(text: widget.produtInfo['category']);
-    final TextEditingController _priceController =
+    final TextEditingController priceController =
         TextEditingController(text: widget.produtInfo['price']);
-    final TextEditingController _descController =
+    final TextEditingController descController =
         TextEditingController(text: widget.produtInfo['description']);
-    final TextEditingController _costController =
+    final TextEditingController costController =
         TextEditingController(text: widget.produtInfo['cost']);
-    final TextEditingController _quantityController =
+    final TextEditingController quantityController =
         TextEditingController(text: widget.produtInfo['quantity']);
     bool isNotEmpty() {
-      if (_sellBy.isNotEmpty &&
-          _nameController.text.isNotEmpty &&
-          _categController.text.isNotEmpty &&
-          _priceController.text.isNotEmpty &&
-          _descController.text.isNotEmpty &&
-          _costController.text.isNotEmpty &&
-          _quantityController.text.isNotEmpty) {
+      if (sellBy.isNotEmpty &&
+          nameController.text.isNotEmpty &&
+          categController.text.isNotEmpty &&
+          priceController.text.isNotEmpty &&
+          descController.text.isNotEmpty &&
+          costController.text.isNotEmpty &&
+          quantityController.text.isNotEmpty) {
         return true;
       } else {
         return false;
@@ -104,47 +102,47 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          const Padding(
             padding: EdgeInsets.only(left: 15.0),
             child: Text(
               'Archtylic Sheets',
               style: kCategoryNameStyle,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10.0,
           ),
           EditableTextField(
             textStyle: kProductNameStylePro,
             onMaxLine: false,
-            controller: _nameController,
+            controller: nameController,
             heading: 'Product name: ',
           ),
           EditableTextField(
             textStyle: kProductNameStylePro,
-            controller: _priceController,
+            controller: priceController,
             onMaxLine: false,
             heading: 'Product price: ',
           ),
           // SizedBox(
           //   height: 10.0,
           // ),
-          Text(
+          const Text(
             'Details',
             style: kCategoryNameStylePro,
           ),
-          SizedBox(
+          const SizedBox(
             height: 10.0,
           ),
           EditableTextField(
             textStyle: kProductNameStylePro,
-            controller: _descController,
+            controller: descController,
             onMaxLine: true,
             heading: 'Description: ',
           ),
           Row(
             children: [
-              Text(
+              const Text(
                 'Category: ',
                 style: kProductPriceStylePro,
               ),
@@ -164,37 +162,37 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
           ),
           EditableTextField(
             textStyle: kProductNameStylePro,
-            controller: _costController,
+            controller: costController,
             onMaxLine: false,
             heading: 'Cost: ',
           ),
           Row(
             children: [
-              Text(
+              const Text(
                 'Sell by: ',
                 style: kProductPriceStylePro,
               ),
               Expanded(
                 child: DropdownButtonFormField(
                   items: dropDownItems,
-                  value: _sellBy,
-                  hint: Text(
+                  value: sellBy,
+                  hint: const Text(
                     'Sell by',
                     style: kCategoryNameStyle,
                   ),
                   onChanged: (dynamic value) {
                     setState(() {
-                      _sellBy = value;
+                      sellBy = value;
                     });
                   },
                 ),
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 20.0,
           ),
-          Text(
+          const Text(
             'Stocks',
             style: kCategoryNameStylePro,
           ),
@@ -202,7 +200,7 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
           //   height: 10.0,
           // ),
 
-          SizedBox(
+          const SizedBox(
             height: 10.0,
           ),
           Align(
@@ -211,11 +209,11 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
               padding: const EdgeInsets.all(8.0),
               child: InkWell(
                 child: Container(
-                  padding: EdgeInsets.all(15),
+                  padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
                       color: kMainColor, 
                       borderRadius: BorderRadius.circular(15)),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -234,13 +232,13 @@ class _DesktopProductCard1State extends State<DesktopProductCard1> {
                         .collection('products')
                         .doc(widget.produtInfo['docId'])
                         .update({
-                      'name': _nameController.text,
-                      'description': _descController.text,
-                      'category': _categController.text,
-                      'selling_price': _priceController.text,
-                      'cost_price': _costController.text,
-                      'quantity': _quantityController.text,
-                      'sell_by': _sellBy,
+                      'name': nameController.text,
+                      'description': descController.text,
+                      'category': categController.text,
+                      'selling_price': priceController.text,
+                      'cost_price': costController.text,
+                      'quantity': quantityController.text,
+                      'sell_by': sellBy,
                     });
                   } else {}
                 },

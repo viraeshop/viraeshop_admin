@@ -11,7 +11,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/text_field.dart';
 import 'package:viraeshop_admin/screens/admins/forgot_password.dart';
-import 'package:viraeshop_admin/screens/verification_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'home_screen.dart';
@@ -144,10 +143,10 @@ class _LoginPageState extends State<LoginPage> {
                                 color:
                                     kSelectedTileColor, //Theme.of(context).accentColor,
                                 borderRadius: BorderRadius.circular(15)),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              children: const [
+                              children: [
                                 Text(
                                   "Login",
                                   style: TextStyle(

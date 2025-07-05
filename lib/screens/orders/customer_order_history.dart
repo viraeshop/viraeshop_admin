@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/screens/orders/order_info.dart';
 import 'package:viraeshop_admin/screens/orders/order_tranz_card.dart';
 import 'package:viraeshop_admin/screens/reciept_screen.dart';
 import 'package:viraeshop_admin/settings/general_crud.dart';
 
-import 'order_info_view.dart';
 
 class CustomerOrderHistory extends StatefulWidget {
   final String customerId;
-  CustomerOrderHistory({required this.customerId});
+  const CustomerOrderHistory({super.key, required this.customerId});
 
   @override
   State<CustomerOrderHistory> createState() => _CustomerOrderHistoryState();

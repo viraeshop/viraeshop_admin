@@ -35,10 +35,10 @@ class _AgentProductsState extends State<AgentProducts> {
     bool isProducts = Hive.box('adminInfo').get('isProducts');
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: kSelectedTileColor),
+        iconTheme: const IconThemeData(color: kSelectedTileColor),
         elevation: 0.0,
         backgroundColor: kBackgroundColor,
-        title: Text(
+        title: const Text(
           'Agent Products',
           style: kAppBarTitleTextStyle,
         ),
@@ -61,7 +61,7 @@ class _AgentProductsState extends State<AgentProducts> {
                                   info: {},
                                 )));
                       },
-                child: Icon(Icons.add)),
+                child: const Icon(Icons.add)),
           ),
         ],
       ),
@@ -72,7 +72,7 @@ class _AgentProductsState extends State<AgentProducts> {
               final products = snapshot.data!.docs;
               List<String> productName = [];
               List productsList = [];
-              products.forEach((element) {
+              for (var element in products) {
                 productsList.add(
                   {
                     'docId': element.id,
@@ -96,12 +96,12 @@ class _AgentProductsState extends State<AgentProducts> {
                   },
                 );
                 productName.add(element.get('name'));
-              });
+              }
               print(productsList);
               return Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(20.0),
-                margin: EdgeInsets.all(40.0),
+                padding: const EdgeInsets.all(20.0),
+                margin: const EdgeInsets.all(40.0),
                 // decoration: BoxDecoration(
                 //   borderRadius: BorderRadius.circular(10.0),
                 //   boxShadow: [
@@ -121,12 +121,12 @@ class _AgentProductsState extends State<AgentProducts> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'All Products',
                             style: kTextStyle1,
                             textAlign: TextAlign.left,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10.0,
                           ),
                           Expanded(
@@ -134,10 +134,10 @@ class _AgentProductsState extends State<AgentProducts> {
                               builder: (context, constraints) {
                                 if (constraints.maxWidth > 600) {
                                   return GridView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
+                                    physics: const NeverScrollableScrollPhysics(),
                                     shrinkWrap: true,
                                     gridDelegate:
-                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 4,
                                       childAspectRatio: 1 / 1.5,
                                       mainAxisSpacing: 10.0,
@@ -148,7 +148,7 @@ class _AgentProductsState extends State<AgentProducts> {
                                       num currentPrice =
                                           productsList[i]['agentsPrice'];
                                       Tuple3<num, num, bool> discountData =
-                                          Tuple3<num, num, bool>(0, 0, false);
+                                          const Tuple3<num, num, bool>(0, 0, false);
                                       bool isDiscount =
                                           productsList[i]['isAgentDiscount'];
                                       if (isDiscount) {
@@ -194,7 +194,7 @@ class _AgentProductsState extends State<AgentProducts> {
                                       num currentPrice =
                                           productsList[i]['agentsPrice'];
                                       Tuple3<num, num, bool> discountData =
-                                          Tuple3<num, num, bool>(0, 0, false);
+                                          const Tuple3<num, num, bool>(0, 0, false);
                                       bool isDiscount =
                                           productsList[i]['isAgentDiscount'];
                                       if (isDiscount) {
@@ -241,10 +241,10 @@ class _AgentProductsState extends State<AgentProducts> {
                           ),
                         ],
                       )
-                    : Text('Loading'),
+                    : const Text('Loading'),
               );
             }
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }),
     );
   }

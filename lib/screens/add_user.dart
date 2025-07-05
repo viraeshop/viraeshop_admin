@@ -21,9 +21,9 @@ class CreateUser extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       if (constraints.maxWidth > 600) {
-        return UserRegistrationDesktop();
+        return const UserRegistrationDesktop();
       } else {
-        return NewUserMobile();
+        return const NewUserMobile();
       }
     });
   }
@@ -39,33 +39,33 @@ class NewUserMobile extends StatefulWidget {
 class _NewUserMobileState extends State<NewUserMobile> {
   var default_role = 'General';
   var selected_role = '';
-  List _myList = ['general', 'agents', 'architect'];
+  final List _myList = ['general', 'agents', 'architect'];
   bool showFields = true;
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _mobileController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _workPhoneController = TextEditingController();
-  TextEditingController _iDController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _notesController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _workPhoneController = TextEditingController();
+  final TextEditingController _iDController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
   Uint8List? images;
   File? _imageFile;
   String? profileImage;
   var currdate = DateTime.now();
   AdminCrud adminCrud = AdminCrud();
   GeneralCrud generalCrud = GeneralCrud();
-  String _uniqueCode = randomAlphaNumeric(10);
+  final String _uniqueCode = randomAlphaNumeric(10);
   bool isLoading = false;
   DecorationImage _imageBG() {
     if (kIsWeb) {
       return images == null
-          ? DecorationImage(
+          ? const DecorationImage(
               image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
           : DecorationImage(image: MemoryImage(images!), fit: BoxFit.cover);
     } else {
       return _imageFile == null
-          ? DecorationImage(
+          ? const DecorationImage(
               image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
           : DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover);
     }
@@ -98,7 +98,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
             .uploadImage(filePath: File(image.path), imageName: fullImage)
             .then((imageUrl) {
           setState(() {
-            this._imageFile = File(image.path);
+            _imageFile = File(image.path);
             profileImage = imageUrl;
           });
         });
@@ -115,10 +115,10 @@ class _NewUserMobileState extends State<NewUserMobile> {
       child: Scaffold(
         backgroundColor: kspareColor,
         appBar: AppBar(
-          iconTheme: IconThemeData(color: kSelectedTileColor),
+          iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: Text(
+          title: const Text(
             'New User',
             style: kAppBarTitleTextStyle,
           ),
@@ -145,7 +145,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
                       // crossAxisAlignment: CrossAxisAlignment.center,
                       shrinkWrap: true,
                       children: [
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         SizedBox(
                           height: 200,
                           width: 150,
@@ -185,7 +185,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
                                     Align(
                                       alignment: Alignment.bottomCenter,
                                       child: Container(
-                                        margin: EdgeInsets.all(10.0),
+                                        margin: const EdgeInsets.all(10.0),
                                         height: 200,
                                         width: 150,
                                         decoration: BoxDecoration(
@@ -206,7 +206,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
                                             selectImage();
                                           }
                                         },
-                                        child: Icon(Icons.add_a_photo, size: 30),
+                                        child: const Icon(Icons.add_a_photo, size: 30),
                                       ),
                                     ),
                                   ],
@@ -232,10 +232,10 @@ class _NewUserMobileState extends State<NewUserMobile> {
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                               children: [
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 TextField(
                                   controller: _nameController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: "Full Name",
                                     hintText: "",
                                     // border: OutlineInputBorder(
@@ -243,12 +243,12 @@ class _NewUserMobileState extends State<NewUserMobile> {
                                     //         BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 20,
                                 ),
                                 TextField(
                                   controller: _mobileController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: "mobile",
                                     hintText: "",
                                     // border: OutlineInputBorder(
@@ -256,12 +256,12 @@ class _NewUserMobileState extends State<NewUserMobile> {
                                     //         BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 20,
                                 ),
                                 TextField(
                                   controller: _addressController,
-                                  decoration: InputDecoration(
+                                  decoration: const InputDecoration(
                                     labelText: "Address",
                                     hintText: "",
                                     // border: OutlineInputBorder(
@@ -269,7 +269,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
                                     //         BorderRadius.circular(15))
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 20,
                                 ),
                               ],
@@ -278,7 +278,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
                         ),
                         // Last Part
 
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Card(
@@ -289,94 +289,94 @@ class _NewUserMobileState extends State<NewUserMobile> {
                               TextField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   labelText: "Email",
                                   hintText: "",
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15))
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               TextField(
                                 controller: _passwordController,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   labelText: "Password",
                                   hintText: "",
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15))
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               TextField(
                                 controller: _workPhoneController,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   labelText: "Work Phone",
                                   hintText: "",
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15))
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               DropdownButtonFormField(
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                     // border: OutlineInputBorder(
                                     //     borderRadius: BorderRadius.circular(15)),
                                     // labelText: "Quantity",
                                     // hintText: "Quantity",
                                     hintStyle:
                                         TextStyle(color: Colors.black87)),
-                                hint: Text(
+                                hint: const Text(
                                     'Select Role'), // Not necessary for Option 1
                                 // value: default_role,
-                                onChanged: (change_val) {
-                                  print(change_val);
+                                onChanged: (changeVal) {
+                                  print(changeVal);
                                   setState(() {
-                                    selected_role = change_val.toString();
+                                    selected_role = changeVal.toString();
                                     print(selected_role);
                                   });
                                 },
                                 items: _myList.map((itm) {
                                   return DropdownMenuItem(
-                                    child: new Text(itm),
                                     value: itm,
+                                    child: Text(itm),
                                   );
                                 }).toList(),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               TextField(
                                 controller: _iDController,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   labelText: "User Id",
                                   hintText: "",
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15))
                                 ),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 20,
                               ),
                               TextField(
                                 controller: _notesController,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   labelText: "notes",
                                   hintText: "",
                                   // border: OutlineInputBorder(
                                   //     borderRadius: BorderRadius.circular(15))
                                 ),
                               ),
-                              SizedBox(height: 10)
+                              const SizedBox(height: 10)
                             ],
                           ),
                         )),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         bottomCard(
                           context: context,
                           text: 'Save',
@@ -388,8 +388,7 @@ class _NewUserMobileState extends State<NewUserMobile> {
                                   _workPhoneController.text.isNotEmpty &&
                                   _iDController.text.isNotEmpty &&
                                   _passwordController.text.isNotEmpty &&
-                                  _emailController.text.isNotEmpty &&
-                                  selected_role != null) {
+                                  _emailController.text.isNotEmpty) {
                                 return true;
                               } else {
                                 return false;
@@ -496,28 +495,28 @@ class UserRegistrationDesktop extends StatefulWidget {
 
 class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
     with InputValidationMixin {
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _mobileController = TextEditingController();
-  TextEditingController _addressController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _workPhoneController = TextEditingController();
-  TextEditingController _iDController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _notesController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _workPhoneController = TextEditingController();
+  final TextEditingController _iDController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _notesController = TextEditingController();
   Uint8List? images;
   String? profileImage;
   File? _imageFile;
   AdminCrud adminCrud = AdminCrud();
-  String _uniqueCode = randomAlphaNumeric(10);
+  final String _uniqueCode = randomAlphaNumeric(10);
   DecorationImage _imageBG() {
     if (kIsWeb) {
       return images == null
-          ? DecorationImage(
+          ? const DecorationImage(
               image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
           : DecorationImage(image: MemoryImage(images!), fit: BoxFit.cover);
     } else {
       return _imageFile == null
-          ? DecorationImage(
+          ? const DecorationImage(
               image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
           : DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover);
     }
@@ -531,11 +530,11 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
   List<DropdownMenuItem> userTypesDropdown = List.generate(
     userType.length,
     (index) => DropdownMenuItem(
+      value: userType[index],
       child: Text(
         userType[index],
         style: kCategoryNameStyle,
       ),
-      value: userType[index],
     ),
   );
   String? selectedUserType;
@@ -549,10 +548,10 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: true,
-          iconTheme: IconThemeData(color: kSelectedTileColor),
+          iconTheme: const IconThemeData(color: kSelectedTileColor),
           elevation: 0.0,
           backgroundColor: kBackgroundColor,
-          title: Text(
+          title: const Text(
             'New User',
             style: kAppBarTitleTextStyle,
           ),
@@ -561,7 +560,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
         ),
         body: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.all(40.0),
+            padding: const EdgeInsets.all(40.0),
             child: Row(
               // mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -579,21 +578,21 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                       width: MediaQuery.of(context).size.width * 0.6,
                       child: Column(
                         children: [
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.only(left: 15.0, top: 15.0),
                             child: Text(
                               'User Info',
                               style: kCategoryNameStyle,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: double.infinity,
                             child: Divider(
                               color: kScaffoldBackgroundColor,
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Column(
                               children: [
                                 HeadingTextField(
@@ -620,7 +619,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                         ],
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 10.0,
                     ),
                     Container(
@@ -633,28 +632,28 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                       width: MediaQuery.of(context).size.width * 0.6,
                       child: Column(
                         children: [
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.only(left: 15.0, top: 15.0),
                             child: Text(
                               'Details',
                               style: kCategoryNameStyle,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: double.infinity,
                             child: Divider(
                               color: kScaffoldBackgroundColor,
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 15.0),
                             child: Column(
                               children: [
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Email:',
                                       style: kProductNameStylePro,
                                     ),
@@ -662,7 +661,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                       height: 40.0,
                                       width: MediaQuery.of(context).size.width *
                                           0.4,
-                                      margin: EdgeInsets.all(10.0),
+                                      margin: const EdgeInsets.all(10.0),
                                       child: Center(
                                         child: TextFormField(
                                           controller: _emailController,
@@ -677,7 +676,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                           //   else
                                           //     return 'Enter a valid email address';
                                           // },
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                             focusedBorder: OutlineInputBorder(
                                               borderSide:
                                                   BorderSide(color: kMainColor),
@@ -715,7 +714,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Password:',
                                       style: kProductNameStylePro,
                                     ),
@@ -723,7 +722,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                       height: 60.0,
                                       width: MediaQuery.of(context).size.width *
                                           0.4,
-                                      margin: EdgeInsets.all(10.0),
+                                      margin: const EdgeInsets.all(10.0),
                                       child: Center(
                                         child: TextFormField(
                                           controller: _passwordController,
@@ -739,7 +738,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                           //   }
                                           //   return null;
                                           // },
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                             focusedBorder: OutlineInputBorder(
                                               borderSide:
                                                   BorderSide(color: kMainColor),
@@ -766,7 +765,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'User Type: ',
                                       style: kProductPriceStylePro,
                                     ),
@@ -776,11 +775,11 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                         width:
                                             MediaQuery.of(context).size.width *
                                                 0.4,
-                                        margin: EdgeInsets.all(10.0),
+                                        margin: const EdgeInsets.all(10.0),
                                         child: DropdownButtonFormField(
                                           items: userTypesDropdown,
                                           value: selectedUserType,
-                                          decoration: InputDecoration(
+                                          decoration: const InputDecoration(
                                             focusedBorder: OutlineInputBorder(
                                               borderSide:
                                                   BorderSide(color: kMainColor),
@@ -809,14 +808,14 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 30.0,
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     imagePickerContainer(context),
-                    SizedBox(height: 10.0),
+                    const SizedBox(height: 10.0),
                     Container(
                       height: MediaQuery.of(context).size.height * 0.35,
                       width: MediaQuery.of(context).size.width * 0.25,
@@ -827,14 +826,14 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
+                          const Padding(
                             padding: EdgeInsets.only(top: 15.0, left: 15.0),
                             child: Text(
                               'Notes',
                               style: kCategoryNameStyle,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: double.infinity,
                             child: Divider(
                               color: kScaffoldBackgroundColor,
@@ -844,8 +843,8 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                           //   height: 10.0,
                           // ),
                           Container(
-                            margin: EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
+                            margin: const EdgeInsets.all(10.0),
+                            decoration: const BoxDecoration(
                                 // border: Border.all(
                                 //   color: kScaffoldBackgroundColor,
                                 // ),
@@ -859,7 +858,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                 style: kProductNameStylePro,
                                 textInputAction: TextInputAction.done,
                                 maxLines: 10,
-                                decoration: InputDecoration(
+                                decoration: const InputDecoration(
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(color: kMainColor),
                                   ),
@@ -877,7 +876,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                         ],
                       ),
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -891,7 +890,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                                 color:
                                     kMainColor, //Theme.of(context).accentColor,
                                 borderRadius: BorderRadius.circular(5)),
-                            child: Center(
+                            child: const Center(
                               child: Text(
                                 "Save",
                                 style: TextStyle(
@@ -1019,7 +1018,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                 borderRadius: BorderRadius.circular(10.0),
                 color: kBackgroundColor,
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
@@ -1042,7 +1041,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
           Align(
             alignment: Alignment.center,
             child: Container(
-              margin: EdgeInsets.all(10.0),
+              margin: const EdgeInsets.all(10.0),
               height: MediaQuery.of(context).size.height * 0.3,
               width: MediaQuery.of(context).size.width * 0.25,
               decoration: BoxDecoration(
@@ -1062,7 +1061,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
                   selectImage();
                 }
               },
-              child: Icon(Icons.add_a_photo, size: 30),
+              child: const Icon(Icons.add_a_photo, size: 30),
             ),
           ),
         ],
@@ -1083,7 +1082,7 @@ class _UserRegistrationDesktopState extends State<UserRegistrationDesktop>
             .uploadImage(filePath: File(image.path), imageName: fullImage)
             .then((imageUrl) {
           setState(() {
-            this._imageFile = File(image.path);
+            _imageFile = File(image.path);
             profileImage = imageUrl;
           });
         });

@@ -8,7 +8,6 @@ import 'package:viraeshop_bloc/products/barrel.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
-import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/login_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_api/models/products/product_category.dart';
@@ -62,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 });
                 print('Fetching products');
                 productBloc.add(GetProductsEvent(
-                  queryParameters:  {
+                  queryParameters:  const {
                     'queryType': 'admin',
                   }
                 ));

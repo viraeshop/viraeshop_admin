@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:esc_pos_utils/esc_pos_utils.dart';
@@ -13,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:image/image.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
-import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_api/utils/utils.dart';
 
 class BluetoothPrinter extends StatefulWidget {

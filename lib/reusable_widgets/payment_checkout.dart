@@ -23,18 +23,18 @@ class _PaymentCheckoutState extends State<PaymentCheckout> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        shape: Border(
+        shape: const Border(
           bottom: BorderSide(
             color: kStrokeColor,
           ),
         ),
-        title: Text(
+        title: const Text(
           'Payment',
           style: kAppBarTitleTextStyle,
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Icon(FontAwesomeIcons.chevronLeft),
+          icon: const Icon(FontAwesomeIcons.chevronLeft),
           color: kSubMainColor,
           iconSize: 20.0,
         ),
@@ -50,9 +50,9 @@ class _PaymentCheckoutState extends State<PaymentCheckout> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => CustomersScreen()));
+                              builder: (context) => const CustomersScreen()));
                     },
-                    icon: Icon(FontAwesomeIcons.userPlus),
+                    icon: const Icon(FontAwesomeIcons.userPlus),
                   );
                 }
                 return Padding(
@@ -62,26 +62,26 @@ class _PaymentCheckoutState extends State<PaymentCheckout> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CustomersScreen(),
+                          builder: (context) => const CustomersScreen(),
                         ),
                       );
                     },
                     child: Container(
-                      padding: EdgeInsets.all(6.0),
+                      padding: const EdgeInsets.all(6.0),
                       decoration: BoxDecoration(
                         border: Border.all(color: kSubMainColor),
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             FontAwesomeIcons.userPlus,
                             color: kSubMainColor,
                             size: 10.0,
                           ),
-                          SizedBox(width: 7.0),
+                          const SizedBox(width: 7.0),
                           Text(
                             username,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: kSubMainColor,
                               fontFamily: 'Montserrat',
                               fontSize: 10,
@@ -108,8 +108,8 @@ class _PaymentCheckoutState extends State<PaymentCheckout> {
               child: Container(
                 child: Center(
                   child: Text(
-                    '${totalPrice.toString()}',
-                    style: TextStyle(
+                    totalPrice.toString(),
+                    style: const TextStyle(
                       color: kBlackColor,
                       fontFamily: 'Montserrat',
                       fontSize: 30,
@@ -152,13 +152,13 @@ class _PaymentCheckoutState extends State<PaymentCheckout> {
                     child: Container(
                       height: 50.0,
                       width: double.infinity,
-                      margin: EdgeInsets.all(10.0),
-                      padding: EdgeInsets.all(10.0),
+                      margin: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(10.0),
                       decoration: BoxDecoration(
                         color: kMainColor,
                         borderRadius: BorderRadius.circular(7.0),
                       ),
-                      child: Center(
+                      child: const Center(
                         child: Text(
                           'Next',
                           style: kDrawerTextStyle2,
@@ -182,7 +182,7 @@ Widget rowContainer(
   return InkWell(
     onTap: onTap,
     child: Container(
-      padding: EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(10.0),
       color: color,
       child: Column(
         children: [

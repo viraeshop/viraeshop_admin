@@ -29,8 +29,8 @@ class ReusableTile extends StatelessWidget {
         child: ListTile(
           mouseCursor: MouseCursor.defer,
           contentPadding: padding == false
-              ? EdgeInsets.only(left: 25.0)
-              : EdgeInsets.fromLTRB(40.0, 0.0, 0.0, 0.0),
+              ? const EdgeInsets.only(left: 25.0)
+              : const EdgeInsets.fromLTRB(40.0, 0.0, 0.0, 0.0),
           selected: selected!,
           // onTap: onTap,
           leading: Icon(
@@ -43,12 +43,12 @@ class ReusableTile extends StatelessWidget {
               ? InkWell(
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.brightness_1,
                         color: kBackgroundColor,
                         size: 10.0,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 7.0,
                       ),
                       Text(

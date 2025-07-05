@@ -55,7 +55,7 @@ Future<void> printCustomerStatement({
   element.brush = brushColor;
   PdfLayoutResult result = element.draw(
     page: page,
-    bounds: Rect.fromLTWH(10, 115, 0, 0),
+    bounds: const Rect.fromLTWH(10, 115, 0, 0),
   )!;
     /// customer mobile    
     element = PdfTextElement(
@@ -65,7 +65,7 @@ Future<void> printCustomerStatement({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 130, 0, 0),
+      bounds: const Rect.fromLTWH(10, 130, 0, 0),
     )!;
 
     /// customer email    
@@ -76,7 +76,7 @@ Future<void> printCustomerStatement({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 145, 0, 0),
+      bounds: const Rect.fromLTWH(10, 145, 0, 0),
     )!;
 
     /// customer address
@@ -84,14 +84,14 @@ Future<void> printCustomerStatement({
     element.brush = brushColor;
     result = element.draw(
       page: page,
-      bounds: Rect.fromLTWH(10, 160, 0, 0),
+      bounds: const Rect.fromLTWH(10, 160, 0, 0),
     )!;
 
   /// designation
   element = PdfTextElement(text: 'Total Sales', font: PdfStandardFont(PdfFontFamily.timesRoman, 16,
       style: PdfFontStyle.bold,),);
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 180, 0, 0))!;
+  result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 180, 0, 0))!;
 
   /// Dates
   String beginDate = DateFormat.yMMMd().format(begin);
@@ -102,7 +102,7 @@ Future<void> printCustomerStatement({
   /// draw date
   element = PdfTextElement(text: beginDate, font: timesRoman);
   element.brush = brushColor;
-  result = element.draw(page: page, bounds: Rect.fromLTWH(10, 200, 0, 0))!;
+  result = element.draw(page: page, bounds: const Rect.fromLTWH(10, 200, 0, 0))!;
 
   /// to
   element = PdfTextElement(text: 'TO', font: timesRoman);
@@ -135,7 +135,7 @@ Future<void> printCustomerStatement({
     int index = i + 1;
     PdfGridRow row = grid.rows.add();
     row.cells[0].value =
-        index >= 10 ? '${index.toString()}' : '0${index.toString()}';
+        index >= 10 ? index.toString() : '0${index.toString()}';
     row.cells[1].value = '${items[i]!['invoice_id']}';
     row.cells[2].value = '${items[i]!['paid']}';
     row.cells[3].value = '${items[i]!['due']}';

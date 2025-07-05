@@ -7,25 +7,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:903623659021:android:8a243b5a85c1d9893d8f44",
+        "mobilesdk_app_id": "1:903623659021:android:6b63aef2f5c2b9d23d8f44",
         "android_client_info": {
-          "package_name": "com.viraeshop.admin"
+          "package_name": "com.customer.viraeshop"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "903623659021-odro092im7k5kvgbj9hd6e1qimi4spse.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.viraeshop.admin",
-            "certificate_hash": "dc0070413c569bf82ecb91d56faf40a9ad6063b1"
-          }
-        },
-        {
-          "client_id": "903623659021-h7tcr3iej50h0hpda2n1n42oq3t3shi1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyBN3-r6r-5IuDABAJG9xb0-rFXGe7hiKAY"
@@ -33,19 +20,45 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "903623659021-h7tcr3iej50h0hpda2n1n42oq3t3shi1.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "903623659021-9mtmuvq0kbp5k5vr2b95k9jo5nphjjiu.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.viraeshop.admin"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903623659021:android:8a243b5a85c1d9893d8f44",
+        "android_client_info": {
+          "package_name": "com.viraeshop.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBN3-r6r-5IuDABAJG9xb0-rFXGe7hiKAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903623659021:android:e46cf5e658dc06b33d8f44",
+        "android_client_info": {
+          "package_name": "com.viraeshop.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBN3-r6r-5IuDABAJG9xb0-rFXGe7hiKAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
         }
       }
     },
@@ -56,20 +69,7 @@
           "package_name": "com.viraeshop.vira_admin"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "903623659021-68d3aceb3rcu43vn5gujkgchkau4isbp.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.viraeshop.vira_admin",
-            "certificate_hash": "d9653136393f188d855618c9924a7087e5c57f0e"
-          }
-        },
-        {
-          "client_id": "903623659021-h7tcr3iej50h0hpda2n1n42oq3t3shi1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyBN3-r6r-5IuDABAJG9xb0-rFXGe7hiKAY"
@@ -77,19 +77,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "903623659021-h7tcr3iej50h0hpda2n1n42oq3t3shi1.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "903623659021-9mtmuvq0kbp5k5vr2b95k9jo5nphjjiu.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.viraeshop.admin"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
@@ -100,20 +88,7 @@
           "package_name": "com.virainfinity.vira_infinity_agent_app"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "903623659021-3hoqcrcc9atab8t3i282si16l6e9gmu6.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.virainfinity.vira_infinity_agent_app",
-            "certificate_hash": "d9653136393f188d855618c9924a7087e5c57f0e"
-          }
-        },
-        {
-          "client_id": "903623659021-h7tcr3iej50h0hpda2n1n42oq3t3shi1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyBN3-r6r-5IuDABAJG9xb0-rFXGe7hiKAY"
@@ -121,19 +96,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "903623659021-h7tcr3iej50h0hpda2n1n42oq3t3shi1.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "903623659021-9mtmuvq0kbp5k5vr2b95k9jo5nphjjiu.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.viraeshop.admin"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

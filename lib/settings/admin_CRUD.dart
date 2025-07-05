@@ -1,12 +1,8 @@
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:viraeshop_admin/settings/authentication.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
-import 'package:viraeshop_admin/settings/general_crud.dart';
 
 class AdminCrud {
   // Contains all admin operations like adding products, staffs, agents, etc

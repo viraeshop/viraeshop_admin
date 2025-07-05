@@ -130,6 +130,7 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           final adsProvider = Provider.of<AdsProvider>(context, listen: false);
           if (adsProvider.adCards.isNotEmpty) {
+            print('I am going to clear you Mr AdsCards hahh!');
             adsProvider.clearAdCards();
           }
           for (var ad in data) {

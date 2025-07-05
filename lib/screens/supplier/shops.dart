@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
@@ -222,8 +221,8 @@ class _ShopsState extends State<Shops> {
                       prefixIcon: Container(
                         padding: const EdgeInsets.all(10),
                         width: 100.0,
-                        child: Row(
-                          children: const [
+                        child: const Row(
+                          children: [
                             Icon(
                               Icons.phone_android,
                               color: kNewTextColor,
@@ -256,8 +255,8 @@ class _ShopsState extends State<Shops> {
                       prefixIcon: Container(
                         padding: const EdgeInsets.all(10),
                         width: 100.0,
-                        child: Row(
-                          children: const [
+                        child: const Row(
+                          children: [
                             Icon(
                               Icons.phone_android,
                               color: kNewTextColor,

@@ -7,7 +7,6 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/invoice.dart';
-import 'package:viraeshop_admin/configs/pos_printer.dart';
 import 'package:viraeshop_admin/configs/share_invoice.dart';
 import 'package:viraeshop_admin/printer/bluetooth_printer.dart';
 
@@ -17,7 +16,7 @@ import '../utils/network_utilities.dart';
 class ReceiptScreen extends StatefulWidget {
   final Map data;
   bool isFromOrder;
-  ReceiptScreen({required this.data, this.isFromOrder = false});
+  ReceiptScreen({super.key, required this.data, this.isFromOrder = false});
   @override
   _ReceiptScreenState createState() => _ReceiptScreenState();
 }
@@ -101,7 +100,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                       );
                     });
               },
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               color: kRedColor,
               iconSize: 30.0,
             )

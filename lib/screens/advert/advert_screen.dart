@@ -63,12 +63,12 @@ class _AdvertScreenState extends State<AdvertScreen> {
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: AdvertListWidget(
-                          onAction: (){
+                          onAction: () {
                             setState(() {
                               isLoading = true;
                             });
                           },
-                          onActionDone: (){
+                          onActionDone: () {
                             setState(() {
                               isLoading = false;
                             });
@@ -88,7 +88,11 @@ class _AdvertScreenState extends State<AdvertScreen> {
 }
 
 class AdvertListWidget extends StatefulWidget {
-  const AdvertListWidget({super.key, required this.onAction, required this.onActionDone,});
+  const AdvertListWidget({
+    super.key,
+    required this.onAction,
+    required this.onActionDone,
+  });
   final VoidCallback onAction;
   final VoidCallback onActionDone;
   @override
@@ -129,26 +133,28 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
         List<AdvertCategories> data = state.advertList.toList();
         SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
           final adsProvider = Provider.of<AdsProvider>(context, listen: false);
-          if (adsProvider.adCards.isNotEmpty) {
+          if (adsProvider.isAdFetching) {
             print('I am going to clear you Mr AdsCards hahh!');
             adsProvider.clearAdCards();
-          }
-          for (var ad in data) {
-            for (var element in ad.adverts!) {
-              Map advert = {
-                'image': element.image,
-                'imageKey': element.imageKey,
-                'adId': element.adId,
-                'adsCategory': element.advertsCategory,
-                'adCategoryId': element.adCategoryId,
-                'categoryId': element.categoryId,
-                'isEdit': false,
-                'imagePath': '',
-                'searchTermController': TextEditingController(text: element.searchTerm),
-                'searchTerm': element.searchTerm,
-              };
-              Provider.of<AdsProvider>(context, listen: false)
-                  .addAdCard(element.adId ?? '', advert);
+            adsProvider.switchAdFetching(false);
+            for (var ad in data) {
+              for (var element in ad.adverts!) {
+                Map advert = {
+                  'image': element.image,
+                  'imageKey': element.imageKey,
+                  'adId': element.adId,
+                  'adsCategory': element.advertsCategory,
+                  'adCategoryId': element.adCategoryId,
+                  'categoryId': element.categoryId,
+                  'isEdit': false,
+                  'imagePath': '',
+                  'searchTermController':
+                      TextEditingController(text: element.searchTerm),
+                  'searchTerm': element.searchTerm,
+                };
+                Provider.of<AdsProvider>(context, listen: false)
+                    .addAdCard(element.adId ?? '', advert);
+              }
             }
           }
         });

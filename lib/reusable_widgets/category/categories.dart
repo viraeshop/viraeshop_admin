@@ -45,6 +45,7 @@ class Categories extends StatelessWidget {
                       if(isAdvert){
                         final advertBloc = BlocProvider.of<AdvertsBloc>(context);
                         advertBloc.add(GetAdvertsEvent(categoryId: null));
+                        Provider.of<AdsProvider>(context, listen: false).switchAdFetching(true);
                       }
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCatg('All');
@@ -81,6 +82,7 @@ class Categories extends StatelessWidget {
                         print('adverting');
                         final advertBloc = BlocProvider.of<AdvertsBloc>(context);
                         advertBloc.add(GetAdvertsEvent(categoryId: categories[i - 1]['categoryId']));
+                        Provider.of<AdsProvider>(context, listen: false).switchAdFetching(true);
                       }
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateHasSubCatg(false);
@@ -100,9 +102,9 @@ class Categories extends StatelessWidget {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateCatg(categories[i - 1]['category'], id: categories[i - 1]['categoryId']);
                       if(isAdvert){
-                        print('adverting');
                         final advertBloc = BlocProvider.of<AdvertsBloc>(context);
                         advertBloc.add(GetAdvertsEvent(categoryId: categories[i - 1]['categoryId']));
+                        Provider.of<AdsProvider>(context, listen: false).switchAdFetching(true);
                       }
                     } else if (isSecondRow && ads.hasSubCatg) {
                       Provider.of<AdsProvider>(context, listen: false)

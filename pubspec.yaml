@@ -76,7 +76,7 @@ dependencies:
   printing: ^5.14.2
 dependency_overrides:
 #  xml: ^6.2.2
-  firebase_core_platform_interface: ^4.5.1
+#  firebase_core_platform_interface: ^4.5.1
   intl: ^0.17.0
   network_info_plus: ^6.0.0
 

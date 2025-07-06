@@ -14,6 +14,7 @@ class AdsProvider extends ChangeNotifier {
   String drawerWidget = 'Tab Widget';
   bool isSearch = false;
   bool isAnimationStarted = false;
+  bool isAdFetching = false;
   void updateAddedToCart(List<bool> values){
     addedToCart = values;
     notifyListeners();
@@ -78,6 +79,11 @@ class AdsProvider extends ChangeNotifier {
       adCards.add(newEntry);
       print('adsLengthAfterAdding: ${adCards.length}');
     }
+    notifyListeners();
+  }
+
+  void switchAdFetching (bool value){
+    isAdFetching = value;
     notifyListeners();
   }
 

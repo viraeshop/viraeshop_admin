@@ -642,9 +642,9 @@ void getCategoryProducts({
   blocInstance.add(GetProductsEvent(queryParameters: {
     'queryType': 'customer',
     'filterType': isSubCategory ? 'bySubCategory' : 'byCategory',
-    if (!isSubCategory) 'categoryId': categoryId,
-    if (isSubCategory) 'subCategoryId': subCategoryId,
-    'page': 0,
+    if (!isSubCategory) 'categoryId': categoryId ?? '',
+    if (isSubCategory) 'subCategoryId': subCategoryId ?? '',
+    'page': 0.toString(),
   }));
 }
 

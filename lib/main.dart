@@ -71,71 +71,63 @@ import 'apmplify_configs/amplifyconfiguration.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try{
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.android,
-    );
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    if (kDebugMode) {
-      print('User granted permission: ${settings.authorizationStatus}');
-    }
-// for ios notification priority
-    await messaging.setForegroundNotificationPresentationOptions(
-      alert: true, // Required to display a heads up notification
-      badge: true,
-      sound: true,
-    );
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'high_importance_channel', // id
-      'High Importance Notifications', // title
-      // 'This channel is used for important notifications.', // description
-      importance: Importance.max,
-    );
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-
-      // If `onMessage` is triggered with a notification, construct our own
-      // local notification to show to users using the created channel.
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                // channel.description,
-                icon: android.smallIcon,
-                // other properties...
-              ),
-            ));
-      }
-    });
-  } catch (e){
-    print('!!!!!!!!!!!!!! Firebase initialization failed !!!!!!!!!!!!!!');
-    print(e.toString());
-    // Potentially, you might want to display an error to the user here
-    // or prevent the app from running further if Firebase is critical.
-    // For now, we'll let it procee
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  if (kDebugMode) {
+    print('User granted permission: ${settings.authorizationStatus}');
   }
+// for ios notification priority
+  await messaging.setForegroundNotificationPresentationOptions(
+    alert: true, // Required to display a heads up notification
+    badge: true,
+    sound: true,
+  );
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'high_importance_channel', // id
+    'High Importance Notifications', // title
+    // 'This channel is used for important notifications.', // description
+    importance: Importance.max,
+  );
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    RemoteNotification? notification = message.notification;
+    AndroidNotification? android = message.notification?.android;
+
+    // If `onMessage` is triggered with a notification, construct our own
+    // local notification to show to users using the created channel.
+    if (notification != null && android != null) {
+      flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              // channel.description,
+              icon: android.smallIcon,
+              // other properties...
+            ),
+          ));
+    }
+  });
   Hive.registerAdapter<Cart>(CartAdapter());
   Hive.registerAdapter<Shop>(ShopAdapter());
   await Hive.initFlutter();
@@ -234,7 +226,7 @@ void main() async {
         ),
         BlocProvider(
           create: (BuildContext context) => ProductsBloc(
-            productCalls: const ProductCalls(),
+            productCalls: const ProductCalls(allow: true),
           ),
         ),
         BlocProvider(

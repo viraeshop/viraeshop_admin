@@ -167,16 +167,17 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                           children: [
                             IdImageWidget(
                               height: screenSize.height * 0.23,
-                              image: strings['binImage']!,
-                              isAgent: true,
+                              images: [strings['binImage']!, strings['tinImage']!,],
                             ),
                             const SizedBox(
                                   height: 10.0,
                                 ),
                             IdImageWidget(
-                              isAgent: true,
                               height: screenSize.height * 0.23,
-                              image: strings['tinImage']!,
+                              images: [
+                                strings['tinImage']!,
+                                strings['binImage']!,
+                              ],
                             ),
                           ],
                         )
@@ -186,16 +187,14 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                           children: [
                             IdImageWidget(
                               height: screenSize.height * 0.23,
-                              image: strings['idFrontImage']!,
-                              isAgent: true,
+                              images: [strings['idFrontImage']!, strings['idBackImage']!,],
                             ),
                             const SizedBox(
                                   height: 10.0,
                                 ),
                             IdImageWidget(
-                              isAgent: true,
                               height: screenSize.height * 0.23,
-                              image: strings['idBackImage']!,
+                              images: [strings['idBackImage']!, strings['idFrontImage']!,],
                             ),
                           ],
                         )
@@ -417,59 +416,48 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
 class IdImageWidget extends StatelessWidget {
   const IdImageWidget({
     super.key,
-    required this.isAgent,
     required this.height,
-    required this.image,
+    required this.images,
   });
 
   final double height;
-  final String image;
-  final bool isAgent;
+  final List<String> images;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.all(10.0),
-            height: height,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(
-                color: kSubMainColor,
+    return Container(
+      margin: const EdgeInsets.all(10.0),
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(
+          color: kSubMainColor,
+        ),
+        image: DecorationImage(
+          image: CachedNetworkImageProvider(images[0]),
+          fit: BoxFit.fill,
+        ),
+      ),
+      child:  Align(
+        alignment: Alignment.topRight,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  return PhotoSlideShow(images: images);
+                },
               ),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(100.0),
-              child: CachedNetworkImage(
-                imageUrl: image,
-                fit: BoxFit.fill,
-              ),
-            ),
+            );
+          },
+          child: const Icon(
+            Icons.crop_free,
+            color: kNewMainColor,
+            size: 30.0,
           ),
         ),
-        Align(
-          alignment: Alignment.center,
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) {
-                    return PhotoSlideShow(images: [image]);
-                  },
-                ),
-              );
-            },
-            child: const Icon(
-              Icons.crop_free,
-              color: kNewMainColor,
-              size: 30.0,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ class AdsCard extends StatelessWidget {
       children: [
         Container(
           height: 150.0,
-          width: 250.0,
+          width: MediaQuery.of(context).size.width * 0.7,
           margin: const EdgeInsets.all(10.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
@@ -141,7 +142,7 @@ class CustomTextField extends StatelessWidget {
         borderRadius: BorderRadius.circular(10.0),
       ),
       height: height,
-      width: width,
+      //width: width,
       child: TextField(
         enabled: enabled,
         controller: title1Controller,

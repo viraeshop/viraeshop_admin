@@ -14,7 +14,7 @@ class AdsProvider extends ChangeNotifier {
   String drawerWidget = 'Tab Widget';
   bool isSearch = false;
   bool isAnimationStarted = false;
-  bool isAdFetching = false;
+  bool isAdFetching = true;
   void updateAddedToCart(List<bool> values){
     addedToCart = values;
     notifyListeners();

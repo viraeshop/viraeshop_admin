@@ -136,7 +136,6 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
           if (adsProvider.isAdFetching) {
             print('I am going to clear you Mr AdsCards hahh!');
             adsProvider.clearAdCards();
-            adsProvider.switchAdFetching(false);
             for (var ad in data) {
               for (var element in ad.adverts!) {
                 Map advert = {
@@ -152,8 +151,8 @@ class _AdvertListWidgetState extends State<AdvertListWidget> {
                       TextEditingController(text: element.searchTerm),
                   'searchTerm': element.searchTerm,
                 };
-                Provider.of<AdsProvider>(context, listen: false)
-                    .addAdCard(element.adId ?? '', advert);
+                adsProvider.addAdCard(element.adId ?? '', advert);
+                adsProvider.switchAdFetching(false);
               }
             }
           }

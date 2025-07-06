@@ -119,7 +119,7 @@ class Categories extends StatelessWidget {
                           .updateHasSubCatg(false);
                     }
                   },
-                  onLongPress: () {
+                  onLongPress: isAdvert ? null : () {
                     showMenu(
                       context: context,
                       color: kBackgroundColor,

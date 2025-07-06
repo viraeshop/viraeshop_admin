@@ -710,149 +710,151 @@ class _DueReceiptState extends State<DueReceipt> {
               ],
             ),
           ),
-          bottomNavigationBar: Container(
-            color: kSubMainColor,
-            child: Padding(
-              padding: const EdgeInsets.all(18.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: IconButton(
-                      onPressed: () async {
-                        try {
-                          await shareInvoice(
-                            isSave: true,
-                            totalItems: items.length.toString(),
-                            totalQuantity: quantity,
-                            subTotal: subTotal.toString(),
-                            total: total,
-                            items: items,
-                            mobile: widget.data['customerInfo']['mobile'],
-                            address: widget.data['customerInfo']['address'],
-                            name: role == 'general'
-                                ? widget.data['customerInfo']['name']
-                                : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
-                            advance: widget.data['advance'].toString(),
-                            due: due.toString(),
-                            paid: paid.toString(),
-                            discountAmount: discount.toString(),
-                            invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
-                            date: DateFormat.yMMMd().format(date),
-                            payList: payList,
-                          );
-                          toast(context: context, title: 'Saved');
-                        } catch (e) {
-                          if (kDebugMode) {
-                            print(e);
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.save),
-                      color: Colors.white,
-                      iconSize: 40,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: IconButton(
-                      onPressed: () async {
-                        try {
-                          await shareInvoice(
-                            totalItems: items.length.toString(),
-                            totalQuantity: quantity,
-                            subTotal: subTotal.toString(),
-                            total: total,
-                            items: items,
-                            mobile: widget.data['customerInfo']['mobile'],
-                            address: widget.data['customerInfo']['address'],
-                            name: role == 'general'
-                                ? widget.data['customerInfo']['name']
-                                : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
-                            advance: widget.data['advance'].toString(),
-                            due: due.toString(),
-                            paid: paid.toString(),
-                            discountAmount: discount.toString(),
-                            invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
-                            date: DateFormat.yMMMd().format(date),
-                            payList: payList,
-                          );
-
-                        } catch (e) {
-                          debugPrint(e.toString());
-                        }
-                      },
-                      icon: const Icon(Icons.share),
-                      color: Colors.white,
-                      iconSize: 40,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: IconButton(
-                      onPressed: isManageDue
-                          ? () {
-                              setState(() {
-                                isLoading = true;
-                                onEdit = true;
-                              });
-                              debugPrint(editedInvoice.toString());
-                              final transacBloc =
-                                  BlocProvider.of<TransactionsBloc>(context);
-                              transacBloc.add(
-                                UpdateTransactionEvent(
-                                  token: jWTToken,
-                                  transactionModel: editedInvoice,
-                                  invoiceNo:
-                                      widget.data['invoiceNo'].toString(),
-                                ),
-                              );
+          bottomNavigationBar: SafeArea(
+            child: Container(
+              color: kSubMainColor,
+              child: Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: IconButton(
+                        onPressed: () async {
+                          try {
+                            await shareInvoice(
+                              isSave: true,
+                              totalItems: items.length.toString(),
+                              totalQuantity: quantity,
+                              subTotal: subTotal.toString(),
+                              total: total,
+                              items: items,
+                              mobile: widget.data['customerInfo']['mobile'],
+                              address: widget.data['customerInfo']['address'],
+                              name: role == 'general'
+                                  ? widget.data['customerInfo']['name']
+                                  : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
+                              advance: widget.data['advance'].toString(),
+                              due: due.toString(),
+                              paid: paid.toString(),
+                              discountAmount: discount.toString(),
+                              invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
+                              date: DateFormat.yMMMd().format(date),
+                              payList: payList,
+                            );
+                            toast(context: context, title: 'Saved');
+                          } catch (e) {
+                            if (kDebugMode) {
+                              print(e);
                             }
-                          : null,
-                      icon: const Icon(Icons.update),
-                      iconSize: 40.0,
-                      color: kBackgroundColor,
+                          }
+                        },
+                        icon: const Icon(Icons.save),
+                        color: Colors.white,
+                        iconSize: 40,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return BluetoothPrinter(
-                                date: DateFormat.yMMMd().format(date),
-                                payList: payList,
-                                isWithBusinessName: role != 'general',
-                                businessName: widget.data['customerInfo']
-                                        ['businessName'] ??
-                                    '',
-                                quantity: quantity,
-                                subTotal: subTotal.toString(),
-                                total: widget.data['price'].toString(),
-                                items: items,
-                                mobile: widget.data['customerInfo']['mobile'],
-                                address: widget.data['customerInfo']['address'],
-                                name: widget.data['customerInfo']['name'],
-                                advance: widget.data['advance'].toString(),
-                                due: widget.data['due'].toString(),
-                                paid: widget.data['paid'].toString(),
-                                discountAmount:
-                                    widget.data['discount'].toString(),
-                                invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.print),
-                      color: Colors.white,
-                      iconSize: 40,
+                    Expanded(
+                      flex: 1,
+                      child: IconButton(
+                        onPressed: () async {
+                          try {
+                            await shareInvoice(
+                              totalItems: items.length.toString(),
+                              totalQuantity: quantity,
+                              subTotal: subTotal.toString(),
+                              total: total,
+                              items: items,
+                              mobile: widget.data['customerInfo']['mobile'],
+                              address: widget.data['customerInfo']['address'],
+                              name: role == 'general'
+                                  ? widget.data['customerInfo']['name']
+                                  : '${widget.data['customerInfo']['businessName']}(${widget.data['customerInfo']['name']})',
+                              advance: widget.data['advance'].toString(),
+                              due: due.toString(),
+                              paid: paid.toString(),
+                              discountAmount: discount.toString(),
+                              invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
+                              date: DateFormat.yMMMd().format(date),
+                              payList: payList,
+                            );
+
+                          } catch (e) {
+                            debugPrint(e.toString());
+                          }
+                        },
+                        icon: const Icon(Icons.share),
+                        color: Colors.white,
+                        iconSize: 40,
+                      ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      flex: 1,
+                      child: IconButton(
+                        onPressed: isManageDue
+                            ? () {
+                                setState(() {
+                                  isLoading = true;
+                                  onEdit = true;
+                                });
+                                debugPrint(editedInvoice.toString());
+                                final transacBloc =
+                                    BlocProvider.of<TransactionsBloc>(context);
+                                transacBloc.add(
+                                  UpdateTransactionEvent(
+                                    token: jWTToken,
+                                    transactionModel: editedInvoice,
+                                    invoiceNo:
+                                        widget.data['invoiceNo'].toString(),
+                                  ),
+                                );
+                              }
+                            : null,
+                        icon: const Icon(Icons.update),
+                        iconSize: 40.0,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return BluetoothPrinter(
+                                  date: DateFormat.yMMMd().format(date),
+                                  payList: payList,
+                                  isWithBusinessName: role != 'general',
+                                  businessName: widget.data['customerInfo']
+                                          ['businessName'] ??
+                                      '',
+                                  quantity: quantity,
+                                  subTotal: subTotal.toString(),
+                                  total: widget.data['price'].toString(),
+                                  items: items,
+                                  mobile: widget.data['customerInfo']['mobile'],
+                                  address: widget.data['customerInfo']['address'],
+                                  name: widget.data['customerInfo']['name'],
+                                  advance: widget.data['advance'].toString(),
+                                  due: widget.data['due'].toString(),
+                                  paid: widget.data['paid'].toString(),
+                                  discountAmount:
+                                      widget.data['discount'].toString(),
+                                  invoiceId: widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'].toString() : widget.data['invoiceNo'].toString(),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.print),
+                        color: Colors.white,
+                        iconSize: 40,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

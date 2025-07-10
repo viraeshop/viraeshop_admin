@@ -11,8 +11,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:viraeshop_api/apiCalls/home_ads.dart';
 import 'package:viraeshop_bloc/admin/admin_bloc.dart';
 import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
+import 'package:viraeshop_bloc/adverts/barrel.dart';
 import 'package:viraeshop_bloc/category/category_bloc.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
 import 'package:viraeshop_bloc/expense/expense_bloc.dart';
@@ -252,6 +254,11 @@ void main() async {
         BlocProvider(
           create: (BuildContext context) => TokensBloc(
             tokenCalls: TokenCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => HomeAdsBloc(
+            homeAdsCalls: HomeAdsCalls(),
           ),
         ),
       ], child: const MyApp()),

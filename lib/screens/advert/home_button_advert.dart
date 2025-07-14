@@ -1,8 +1,3 @@
-import 'dart:io';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_native_type_patch.dart';
-
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,7 +26,15 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
   final String folder = 'home_ads';
   final token = Hive.box('adminInfo').get('token');
   final ImagePickerService imagePickerService = ImagePickerService();
-  List<HomeAdsModel> adverts = [];
+  HomeAdsModel? homeButton;
+  HomeAdsModel? productCampaign;
+  HomeAdsModel? onlineShopping;
+  @override
+  void initState() {
+    // TODO: implement initState
+    BlocProvider.of<HomeAdsBloc>(context).add(GetHomeAdvertsEvent());
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return ModalProgressHUD(
@@ -64,9 +67,21 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
               });
             } else if (state is HomeAdvertsFetchedState) {
               final advertsList = state.adverts.toList();
+              HomeAdsModel? home, product, online;
+              for (var ad in advertsList) {
+                if (ad.adImageType == 'homeButton') {
+                  home = ad;
+                } else if (ad.adImageType == 'productCampaign') {
+                  product = ad;
+                } else if (ad.adImageType == 'onlineShopping') {
+                  online = ad;
+                }
+              }
               setState(() {
                 isLoading = false;
-                adverts = advertsList;
+                homeButton = home;
+                productCampaign = product;
+                onlineShopping = online;
               });
             } else if (state is HomeAdRequestFinishedState) {
               setState(() {
@@ -92,19 +107,11 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               HomeAdsWidget(
-                adId: adverts.isNotEmpty
-                    ? adverts
-                        .firstWhere((ad) => ad.adImageType == 'homeButton')
-                        .id
-                    : null,
+                adId: homeButton?.id,
                 imagePickerService: imagePickerService,
                 title: 'Home Button Advert',
-                imagePath: adverts.isNotEmpty
-                    ? adverts
-                        .firstWhere((ad) => ad.adImageType == 'homeButton')
-                        .adImage
-                    : 'https://via.placeholder.com/150',
-                isPlaceHolder: adverts.isEmpty,
+                imagePath: homeButton?.adImage ?? '',
+                isPlaceHolder: homeButton == null,
                 onAction: () {
                   setState(() {
                     isLoading = true;
@@ -119,19 +126,11 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
               ),
               const SizedBox(height: 20),
               HomeAdsWidget(
-                adId: adverts.isNotEmpty
-                    ? adverts
-                        .firstWhere((ad) => ad.adImageType == 'productCampaign')
-                        .id
-                    : null,
+                adId: productCampaign?.id,
                 imagePickerService: imagePickerService,
                 title: 'Free Shipping Advert',
-                imagePath: adverts.isNotEmpty
-                    ? adverts
-                        .firstWhere((ad) => ad.adImageType == 'productCampaign')
-                        .adImage
-                    : 'https://via.placeholder.com/150',
-                isPlaceHolder: adverts.isEmpty,
+                imagePath: productCampaign?.adImage ?? '',
+                isPlaceHolder: productCampaign == null,
                 onAction: () {
                   setState(() {
                     isLoading = true;
@@ -145,6 +144,26 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
                 adImageType: 'productCampaign',
               ),
               const SizedBox(height: 20),
+              HomeAdsWidget(
+                adId: productCampaign?.id,
+                imagePickerService: imagePickerService,
+                title: 'Online Shopping Advert',
+                imagePath: productCampaign?.adImage ?? '',
+                isPlaceHolder: productCampaign == null,
+                onAction: () {
+                  setState(() {
+                    isLoading = true;
+                  });
+                },
+                onActionError: () {
+                  setState(() {
+                    isLoading = false;
+                  });
+                },
+                adImageType: 'onlineShopping',
+              ),
+              const SizedBox(height: 20),
+
             ],
           ),
         ),

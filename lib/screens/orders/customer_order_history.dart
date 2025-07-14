@@ -22,6 +22,7 @@ class _CustomerOrderHistoryState extends State<CustomerOrderHistory>
   bool isAlive = true;
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       child: FutureBuilder<QuerySnapshot>(
           future: generalCrud.getCustomerOrder(widget.customerId),

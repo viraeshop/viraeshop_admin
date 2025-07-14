@@ -7,6 +7,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
+import 'package:viraeshop_admin/screens/advert/home_button_advert.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
 import 'package:viraeshop_admin/screens/orders/processing.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
@@ -398,24 +399,29 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.pop(context);
                       //}
                     },
-                    icon: FontAwesomeIcons.ad,
+                    icon: FontAwesomeIcons.rectangleAd,
                     title: 'Advertisements',
                   ),
                   ReusableTile(
                     onTap: () {
-                      // if (widget.isBigScreen == true) {
-                      //   Provider.of<Configs>(context, listen: false)
-                      //       .updateWidget(
-                      //     ReturnHistory(),
-                      //   );
-                      // } else {
                       Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeButtonAdvert()
+                        ),
+                      );
+                    },
+                    icon: Icons.inventory,
+                    title: 'Home Adverts',
+                  ),
+                  ReusableTile(
+                    onTap: () {
+                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ReturnHistory(),
                         ),
                       );
-                      //}
                     },
                     icon: Icons.inventory,
                     title: 'Returns',

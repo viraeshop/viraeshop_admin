@@ -139,7 +139,7 @@ class NetworkUtility {
       };
     } on StorageException catch (e) {
       safePrint('Error uploading file: $e');
-      //throw StorageException(e.message);
+      throw Exception(e.message);
     }
     return image;
   }

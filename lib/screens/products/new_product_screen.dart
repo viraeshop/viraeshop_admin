@@ -87,7 +87,7 @@ class _NewProductState extends State<NewProduct>
     'Kilo',
     'Kg',
     'CM',
-    'Pisce'
+    'Pisce',
   ];
   TextEditingController descController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -122,6 +122,7 @@ class _NewProductState extends State<NewProduct>
   void initState() {
     // TODO: implement initState
     _tabController = TabController(length: 2, vsync: this);
+    
     if (widget.isUpdateProduct) {
       currentEvent = Events.onUpdate;
       descController.text = widget.info['description'];

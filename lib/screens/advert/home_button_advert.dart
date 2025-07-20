@@ -131,6 +131,8 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
                 title: 'Free Shipping Advert',
                 imagePath: productCampaign?.adImage ?? '',
                 isPlaceHolder: productCampaign == null,
+                height: 30,
+                width: 92,
                 onAction: () {
                   setState(() {
                     isLoading = true;
@@ -145,11 +147,13 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
               ),
               const SizedBox(height: 20),
               HomeAdsWidget(
-                adId: productCampaign?.id,
+                adId: onlineShopping?.id,
                 imagePickerService: imagePickerService,
                 title: 'Online Shopping Advert',
-                imagePath: productCampaign?.adImage ?? '',
-                isPlaceHolder: productCampaign == null,
+                imagePath: onlineShopping?.adImage ?? '',
+                isPlaceHolder: onlineShopping == null,
+                height: 30,
+                width: 92,
                 onAction: () {
                   setState(() {
                     isLoading = true;
@@ -176,6 +180,8 @@ class HomeAdsWidget extends StatelessWidget {
   const HomeAdsWidget({
     super.key,
     this.adId,
+    this.height = 150,
+    this.width = 100,
     required this.imagePickerService,
     required this.title,
     required this.imagePath,
@@ -192,7 +198,8 @@ class HomeAdsWidget extends StatelessWidget {
   final bool isPlaceHolder;
   final VoidCallback onAction;
   final VoidCallback onActionError;
-
+  final double height;
+  final double width;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -207,6 +214,8 @@ class HomeAdsWidget extends StatelessWidget {
           child: returnImageWidget(
             isPlaceHolder: isPlaceHolder,
             imagePath: imagePath,
+            height: height,
+            width: width,
           ),
         ),
         const SizedBox(height: 10),
@@ -268,6 +277,8 @@ class HomeAdsWidget extends StatelessWidget {
 Widget returnImageWidget({
   required bool isPlaceHolder,
   required String imagePath,
+  double height = 150,
+  double width = 100,
 }) {
   if (isPlaceHolder) {
     return Image.asset(
@@ -280,8 +291,8 @@ Widget returnImageWidget({
     return CachedNetworkImage(
       imageUrl: imagePath,
       fit: BoxFit.cover,
-      height: 150,
-      width: 100,
+      height: height,
+      width: width,
     );
   }
 }

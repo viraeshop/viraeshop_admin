@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
+import 'package:viraeshop_admin/utils/product_helper.dart';
 import 'package:viraeshop_bloc/category/category_bloc.dart';
 import 'package:viraeshop_bloc/category/category_event.dart';
 import 'package:viraeshop_bloc/products/barrel.dart';
@@ -89,7 +90,7 @@ class _NewProductState extends State<NewProduct>
     'CM',
     'Pisce',
   ];
-  TextEditingController descController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _productCodeController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -120,51 +121,69 @@ class _NewProductState extends State<NewProduct>
   Events currentEvent = Events.onCreate;
   @override
   void initState() {
-    // TODO: implement initState
+    // Initialize the tab controller with 2 tabs
     _tabController = TabController(length: 2, vsync: this);
-    
+    // Initialize fields map
     if (widget.isUpdateProduct) {
+      // Initialize form fields with existing data
       currentEvent = Events.onUpdate;
-      descController.text = widget.info['description'];
-      _nameController.text = widget.info['name'];
-      _generalController.text = widget.info['generalPrice'].toString();
-      _agentController.text = widget.info['agentsPrice'].toString();
-      _architectController.text = widget.info['architectPrice'].toString();
-      _generalDiscountCont.text = widget.info['generalDiscount'].toString();
-      _agentsDiscountCont.text = widget.info['agentsDiscount'].toString();
-      _productCodeController.text = widget.info['productCode'];
-      _architectDiscountCont.text = widget.info['architectDiscount'].toString();
-      _costController.text = widget.info['costPrice'].toString();
-      _quantityController.text = widget.info['quantity'].toString();
-      widget.info['minimum'] != null
-          ? _minimumController.text = widget.info['minimum'].toString()
-          : '0';
-      isGeneralDiscount = widget.info['isGeneralDiscount'];
-      isAgentDiscount = widget.info['isAgentDiscount'];
-      isArchitectDiscount = widget.info['isArchitectDiscount'];
-      selectedSellBy = widget.info['sellBy'];
-      isInfinity = widget.info['isInfinity'];
-      isNonInventory = widget.info['isNonInventory'] ?? false;
-      topDiscount = widget.info['topDiscount'] ?? false;
-      comingSoon = widget.info['comingSoon'] ?? false;
-      freeShipping = widget.info['freeShipping'] ?? false;
-      Hive.box('category').putAll({
-        'name': widget.info['category'] ?? '',
-        'categoryId': widget.info['categoryId'] ?? '',
-      });
-      Hive.box('subCategory').putAll({
-        'name': widget.info['subCategory'] ?? '',
-        'subCategoryId': widget.info['subCategoryId'] ?? '',
-        'categoryId': widget.info['categoryId'] ?? '',
-      });
-      Hive.box('images').put('productImages', widget.info['images'] ?? []);
-      Hive.box('images').put('thumbnailImage', {
-        'thumbnailLink': widget.info['thumbnail'] ?? '',
-        'thumbnailKey': widget.info['thumbnailKey'] ?? '',
-      });
-      Hive.box('suppliers').putAll(widget.info['supplier']);
+      _initializeFormFields();
+      // Initialize product images using ProductHelper
+      ProductHelper.initializeProductForEditing(widget.info);
     }
+
     super.initState();
+  }
+
+  // Initialize form fields from product data
+  void _initializeFormFields() {
+    final info = widget.info;
+
+    // Set text fields
+    _nameController.text = info['name'] ?? '';
+    _productCodeController.text = info['productCode'] ?? '';
+    _descController.text = info['description'] ?? '';
+    _costController.text = info['costPrice']?.toString() ?? '0';
+    _quantityController.text = info['quantity']?.toString() ?? '0';
+    _minimumController.text = info['minimum']?.toString() ?? '0';
+
+    // Set price fields
+    _generalController.text = info['generalPrice']?.toString() ?? '0';
+    _agentController.text = info['agentsPrice']?.toString() ?? '0';
+    _architectController.text = info['architectPrice']?.toString() ?? '0';
+
+    // Set discount fields
+    _generalDiscountCont.text = info['generalDiscount']?.toString() ?? '0';
+    _agentsDiscountCont.text = info['agentsDiscount']?.toString() ?? '0';
+    _architectDiscountCont.text = info['architectDiscount']?.toString() ?? '0';
+
+    // Set boolean values
+    isGeneralDiscount = info['isGeneralDiscount'] ?? false;
+    isAgentDiscount = info['isAgentDiscount'] ?? false;
+    isArchitectDiscount = info['isArchitectDiscount'] ?? false;
+    isInfinity = info['isInfinity'] ?? false;
+    isNonInventory = info['isNonInventory'] ?? false;
+    topDiscount = info['topDiscount'] ?? false;
+    freeShipping = info['freeShipping'] ?? false;
+    comingSoon = info['comingSoon'] ?? false;
+
+    // Set dropdown values
+    selectedSellBy = info['sellBy'] ?? 'Unit';
+
+    // Set category and subcategory
+    Hive.box('category').putAll({
+      'name': info['category'] ?? '',
+      'categoryId': info['categoryId'] ?? '',
+    });
+    Hive.box('subCategory').putAll({
+      'name': info['subCategory'] ?? '',
+      'subCategoryId': info['subCategoryId'] ?? '',
+      'categoryId': info['categoryId'] ?? '',
+    });
+
+    // Set supplier information
+    Hive.box('suppliers').putAll(info['supplier'] ?? {});
+    // Set fields map
   }
 
   @override
@@ -172,47 +191,6 @@ class _NewProductState extends State<NewProduct>
     _tabController.dispose();
     // TODO: implement dispose
     super.dispose();
-  }
-
-  DecorationImage _imageBG() {
-    return images.isEmpty
-        ? const DecorationImage(
-            image: AssetImage('assets/default.jpg'), fit: BoxFit.cover)
-        : DecorationImage(image: MemoryImage(images[0]), fit: BoxFit.cover);
-  }
-
-  Widget imageProduct(List images, Map thumbnailImage) {
-    print(thumbnailImage);
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ImageCarousel(
-            isUpdate: true,
-            images: images,
-            thumbnail: thumbnailImage['thumbnailLink'],
-            thumbnailKey: thumbnailImage['thumbnailKey'],
-          ),
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10.0),
-        child: CachedNetworkImage(
-          height: 150.0,
-          width: 150.0,
-          fit: BoxFit.cover,
-          imageUrl:
-              thumbnailImage.isNotEmpty ? thumbnailImage['thumbnailLink'] : '',
-          errorWidget: (context, url, childs) {
-            return Image.asset(
-              'assets/default.jpg',
-              height: 100.0,
-              width: 100.0,
-            );
-          },
-        ),
-      ),
-    );
   }
 
   @override
@@ -417,6 +395,89 @@ class _NewProductState extends State<NewProduct>
     );
   }
 
+// Build the image section
+  Widget _buildImageSection() {
+    return ValueListenableBuilder(
+      valueListenable: Hive.box('images').listenable(),
+      builder: (context, Box box, child) {
+        // Get image data using our helper
+        final imageData = ProductHelper.getProductImageData();
+
+        return Column(
+          children: [
+            GestureDetector(
+              onTap: () => ProductHelper.navigateToImageCarousel(context),
+              child: Container(
+                height: 160,
+                width: 160,
+                decoration: BoxDecoration(
+                  color: kProductCardColor,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: kMainColor.withOpacity(0.2)),
+                  image: _buildBackgroundImage(imageData),
+                ),
+                child: imageData['thumbnail'].isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_a_photo,
+                                size: 40, color: kSubMainColor),
+                            SizedBox(height: 8),
+                            Text(
+                              'Add Product Images',
+                              style: TextStyle(
+                                color: kSubMainColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : null,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Show image count if images exist
+            if (imageData['images'].isNotEmpty)
+              Text(
+                '${imageData['images'].length} product image${imageData['images'].length != 1 ? 's' : ''}',
+                style: const TextStyle(
+                  color: kSubMainColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Build background image for the image container
+  DecorationImage? _buildBackgroundImage(Map<String, dynamic> imageData) {
+    if (imageData['thumbnail'].isEmpty) {
+      return null;
+    }
+
+    // For network images
+    if (imageData['thumbnail'].startsWith('http')) {
+      return DecorationImage(
+        image: NetworkImage(imageData['thumbnail']),
+        fit: BoxFit.cover,
+      );
+    }
+
+    // For data URLs (web)
+    if (imageData['thumbnail'].startsWith('data:')) {
+      return DecorationImage(
+        image: NetworkImage(imageData['thumbnail']),
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
   // Products and stock
   addProduct() {
     bool isProducts = Hive.box('adminInfo').get('isProducts');
@@ -427,101 +488,8 @@ class _NewProductState extends State<NewProduct>
           ListView(
             //shrinkWrap: true,
             children: [
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ValueListenableBuilder(
-                      valueListenable: Hive.box('images').listenable(),
-                      builder: (context, Box box, childs) {
-                        List imagesPath =
-                            box.get('imagesPath', defaultValue: []);
-                        List images =
-                            box.get('productImages', defaultValue: []);
-                        Map thumbnailImage =
-                            box.get('thumbnailImage', defaultValue: {});
-                        if (widget.isUpdateProduct) {
-                          return imageProduct(images, thumbnailImage);
-                        } else {
-                          return SizedBox(
-                            height: 100,
-                            width: 120,
-                            child: GestureDetector(
-                              onTap: isProducts == false
-                                  ? null
-                                  : () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => ImageCarousel(
-                                            images: images,
-                                            thumbnail: thumbnailImage.isNotEmpty
-                                                ? thumbnailImage[
-                                                    'thumbnailLink']
-                                                : '',
-                                            thumbnailKey: thumbnailImage
-                                                    .isNotEmpty
-                                                ? thumbnailImage['thumbnailKey']
-                                                : '',
-                                          ),
-                                        ),
-                                      );
-                                    },
-                              child: Container(
-                                height: 100.0,
-                                width: 100.0,
-                                decoration: BoxDecoration(
-                                  color: kProductCardColor,
-                                  image: imageBG(
-                                    imagePath: thumbnailImage.isNotEmpty
-                                        ? thumbnailImage['thumbnailLink']
-                                        : '',
-                                  ),
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                child: Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: const BoxDecoration(
-                                      color: kSubMainColor,
-                                      borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(10),
-                                        bottomRight: Radius.circular(10),
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: ListView(
-                                        shrinkWrap: true,
-                                        children: const [
-                                          Text(
-                                            'Upload Image',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: kBackgroundColor,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            '+',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: kBackgroundColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-                      }),
-                ],
-              ),
+              // Product image section (using our improved components)
+              _buildImageSection(),
               const SizedBox(height: 20),
               Container(
                 color: kBackgroundColor,
@@ -828,7 +796,7 @@ class _NewProductState extends State<NewProduct>
                         // ),
                         TextFieldWidget(
                           maxLines: 2,
-                          controller: descController,
+                          controller: _descController,
                           labelText: 'Description',
                           keyboardType: isProducts == true
                               ? TextInputType.text
@@ -1115,151 +1083,7 @@ class _NewProductState extends State<NewProduct>
                     ),
                     bottomCard(
                       context: context,
-                      onTap: () async {
-                        setState(() {
-                          loading = true;
-                          showFields = false;
-                        });
-                        final productBloc =
-                            BlocProvider.of<ProductsBloc>(context);
-                        bool isNotEmpty() {
-                          if (_nameController.text.isNotEmpty &&
-                              _categoryController.text.isNotEmpty &&
-                              _generalController.text.isNotEmpty &&
-                              _agentController.text.isNotEmpty &&
-                              _architectController.text.isNotEmpty &&
-                              _costController.text.isNotEmpty &&
-                              _productCodeController.text.isNotEmpty &&
-                              _supplierController.text.isNotEmpty) {
-                            return true;
-                          } else {
-                            return false;
-                          }
-                        }
-
-                        if (isNotEmpty()) {
-                          List imagesList =
-                              Hive.box('images').get('productImages') ?? [];
-                          Map thumbnail = Hive.box('images')
-                              .get('thumbnailImage', defaultValue: {});
-                          if (imagesList.isNotEmpty) {
-                            List newList = [];
-                            for (var image in imagesList) {
-                              if (widget.isUpdateProduct) {
-                                for (var existingImage
-                                    in widget.info['images']) {
-                                  if (image['imageKey'] !=
-                                      existingImage['imageKey']) {
-                                    newList.add(image);
-                                  }
-                                }
-                              } else {
-                                newList.add(image);
-                              }
-                            }
-                            imagesList = newList;
-                          }
-                          List deletedImages =
-                              Hive.box('images').get('deletedImages') ?? [];
-                          if (deletedImages.isNotEmpty) {
-                            List newList = [];
-                            for (var image in deletedImages) {
-                              newList.add({
-                                //'productId': num.parse(widget.info['productId']),
-                                'imageLink': image['imageLink'],
-                              });
-                            }
-                            deletedImages = newList;
-                          }
-                          Map supplier = Hive.box('suppliers').toMap();
-                          setState(() {
-                            fields = {
-                              'supplierId': supplier['supplierId'],
-                              'category': _categoryController.text,
-                              'categoryId':
-                                  Hive.box('category').get('categoryId'),
-                              'sellBy': selectedSellBy,
-                              'minimum': isInfinity
-                                  ? 0
-                                  : num.tryParse(
-                                      _minimumController.text.isNotEmpty
-                                          ? _minimumController.text
-                                          : '0'),
-                              'name': _nameController.text,
-                              'quantity': isInfinity
-                                  ? 0
-                                  : num.parse(
-                                      _quantityController.text.isNotEmpty
-                                          ? _quantityController.text
-                                          : '0'),
-                              'costPrice': _costController.text.isNotEmpty ? num.parse(_costController.text) : 0,
-                              'generalPrice': isGeneral
-                                  ? num.parse(_generalController.text)
-                                  : 0,
-                              'agentsPrice': isAgent
-                                  ? num.parse(_agentController.text)
-                                  : 0,
-                              'architectPrice': isArchitect
-                                  ? num.parse(_architectController.text)
-                                  : 0,
-                              'description': descController.text,
-                              'productCode': _productCodeController.text,
-                              'images': imagesList,
-                              'generalDiscount': isGeneralDiscount
-                                  ? num.tryParse(_generalDiscountCont.text)
-                                  : 0,
-                              'agentsDiscount': isAgentDiscount
-                                  ? num.tryParse(_agentsDiscountCont.text)
-                                  : 0,
-                              'architectDiscount': isArchitectDiscount
-                                  ? num.tryParse(_architectDiscountCont.text)
-                                  : 0,
-                              'isGeneralDiscount': isGeneralDiscount,
-                              'isAgentDiscount': isAgentDiscount,
-                              'isArchitectDiscount': isArchitectDiscount,
-                              'isInfinity': isInfinity,
-                              'isNonInventory': isNonInventory,
-                              'topDiscount': topDiscount,
-                              'freeShipping': freeShipping,
-                              'comingSoon': comingSoon,
-                              'totalSales': 0,
-                              'subCategory': _subCategoryController.text,
-                              'thumbnail': thumbnail['thumbnailLink'],
-                              'thumbnailKey': thumbnail['thumbnailKey'],
-                              'subCategoryId':
-                                  Hive.box('subCategory').get('subCategoryId'),
-                              if (widget.isUpdateProduct)
-                                'deletedImages': deletedImages,
-                            };
-                          });
-                          if (widget.isUpdateProduct) {
-                            productBloc.add(
-                              UpdateProductEvent(
-                                token: jWTToken ?? '',
-                                productId: widget.info['productId'],
-                                productModel: fields,
-                              ),
-                            );
-                          } else {
-                            productBloc.add(
-                              AddProductEvent(
-                                token: jWTToken ?? '',
-                                productModel: fields,
-                              ),
-                            );
-                          }
-                        } else {
-                          setState(() {
-                            loading = false;
-                            showFields = true;
-                          });
-                          showDialogBox(
-                            buildContext: context,
-                            msg:
-                                'Fields can\'t be empty!, please check and add any missing field',
-                          );
-                        }
-                      },
+                      onTap: _saveProduct(),
                       text: widget.isUpdateProduct ? 'Update' : 'Add products',
                     ),
                   ],
@@ -1271,408 +1095,94 @@ class _NewProductState extends State<NewProduct>
       ]),
     );
   }
-// DESKTOP BODY
-//   desktopBody() {
-//     return SingleChildScrollView(
-//       child: Container(
-//         padding: const EdgeInsets.all(40.0),
-//         child: Row(
-//           // mainAxisAlignment: MainAxisAlignment.start,
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Column(
-//               crossAxisAlignment: CrossAxisAlignment.end,
-//               children: [
-//                 DesktopProductCard2(
-//                   costController: _costController,
-//                   nameController: _nameController,
-//                   priceController: _priceController,
-//                 ),
-//                 const SizedBox(
-//                   height: 10.0,
-//                 ),
-//                 Container(
-//                   decoration: BoxDecoration(
-//                     color: kBackgroundColor,
-//                     borderRadius: BorderRadius.circular(10.0),
-//                   ),
-//                   // margin: EdgeInsets.all(10.0),
-//                   height: MediaQuery.of(context).size.height * 0.5,
-//                   width: MediaQuery.of(context).size.width * 0.6,
-//                   child: Column(
-//                     children: [
-//                       const Padding(
-//                         padding: EdgeInsets.only(left: 15.0, top: 15.0),
-//                         child: Text(
-//                           'Stocks',
-//                           style: kCategoryNameStyle,
-//                         ),
-//                       ),
-//                       const SizedBox(
-//                         width: double.infinity,
-//                         child: Divider(
-//                           color: kScaffoldBackgroundColor,
-//                         ),
-//                       ),
-//                       Padding(
-//                         padding: const EdgeInsets.symmetric(horizontal: 15.0),
-//                         child: Column(
-//                           children: [
-//                             HeadingTextField(
-//                               onMaxLine: false,
-//                               controller: _quantityController,
-//                               heading: 'Quantity: ',
-//                             ),
-//                             HeadingTextField(
-//                               onMaxLine: false,
-//                               controller: _minimumController,
-//                               heading: 'Minimum: ',
-//                             ),
-//                             const SizedBox(
-//                               height: 10.0,
-//                             ),
-//                             Row(
-//                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                               children: [
-//                                 const Text(
-//                                   'Category: ',
-//                                   style: kProductPriceStylePro,
-//                                 ),
-//                                 Center(
-//                                   child: Container(
-//                                     height: 46.0,
-//                                     width:
-//                                         MediaQuery.of(context).size.width * 0.4,
-//                                     margin: const EdgeInsets.all(10.0),
-//                                     child: ValueListenableBuilder(
-//                                         valueListenable:
-//                                             Hive.box('category').listenable(),
-//                                         builder: (context, Box box, childs) {
-//                                           String category = box.get('name',
-//                                               defaultValue: 'Category');
-//                                           _categoryController.text = category;
-//                                           return TextFormField(
-//                                             readOnly: true,
-//                                             controller: _categoryController,
-//                                             style: kCategoryNameStyle,
-//                                             onTap: () {
-//                                               getCategoryDialog(
-//                                                   buildContext: context);
-//                                             },
-//                                             decoration: const InputDecoration(
-//                                               focusedBorder: OutlineInputBorder(
-//                                                 borderSide: BorderSide(
-//                                                     color: kMainColor),
-//                                               ),
-//                                               border: OutlineInputBorder(
-//                                                 borderSide: BorderSide(
-//                                                     color: kMainColor),
-//                                               ),
-//                                               focusColor: kMainColor,
-//                                             ),
-//                                             onChanged: (dynamic value) {
-//                                               Provider.of<Configs>(context)
-//                                                   .updateCategory(value);
-//                                             },
-//                                           );
-//                                         }),
-//                                   ),
-//                                 ),
-//                               ],
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ],
-//             ),
-//             const SizedBox(
-//               width: 30.0,
-//             ),
-//             Column(
-//               mainAxisAlignment: MainAxisAlignment.start,
-//               children: [
-//                 imagePickerContainer(context),
-//                 const SizedBox(height: 10.0),
-//                 Container(
-//                   height: MediaQuery.of(context).size.height * 0.35,
-//                   width: MediaQuery.of(context).size.width * 0.25,
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(10.0),
-//                     color: kBackgroundColor,
-//                   ),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       const Padding(
-//                         padding: EdgeInsets.only(top: 15.0, left: 15.0),
-//                         child: Text(
-//                           'Description',
-//                           style: kCategoryNameStyle,
-//                         ),
-//                       ),
-//                       const SizedBox(
-//                         width: double.infinity,
-//                         child: Divider(
-//                           color: kScaffoldBackgroundColor,
-//                         ),
-//                       ),
-//                       // SizedBox(
-//                       //   height: 10.0,
-//                       // ),
-//                       Container(
-//                         margin: const EdgeInsets.all(10.0),
-//                         decoration: const BoxDecoration(
-//                             // border: Border.all(
-//                             //   color: kScaffoldBackgroundColor,
-//                             // ),
-//                             ),
-//                         height: MediaQuery.of(context).size.height * 0.20,
-//                         width: MediaQuery.of(context).size.width * 0.25,
-//                         child: Center(
-//                           child: TextFormField(
-//                             controller: descController,
-//                             cursorColor: kMainColor,
-//                             style: kProductNameStylePro,
-//                             textInputAction: TextInputAction.done,
-//                             maxLines: 10,
-//                             decoration: const InputDecoration(
-//                               focusedBorder: OutlineInputBorder(
-//                                 borderSide: BorderSide(color: kMainColor),
-//                               ),
-//                               border: OutlineInputBorder(
-//                                 borderSide: BorderSide(color: kMainColor),
-//                               ),
-//                               focusColor: kMainColor,
-//                             ),
-//                             // onFieldSubmitted: (value) {
-//                             //   setState(() => {isEditable = false, title = value});
-//                             // }
-//                           ),
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//                 const SizedBox(height: 20.0),
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.end,
-//                   children: [
-//                     Consumer<Configs>(
-//                       builder: (context, configs, childs) => InkWell(
-//                         child: Container(
-//                           // padding: EdgeInsets.all(15),
-//                           // margin: EdgeInsets.all(15.0),
-//                           width: MediaQuery.of(context).size.width * 0.25,
-//                           height: 30.0,
-//                           decoration: BoxDecoration(
-//                               color:
-//                                   kMainColor, //Theme.of(context).accentColor,
-//                               borderRadius: BorderRadius.circular(5)),
-//                           child: const Center(
-//                             child: Text(
-//                               "Save",
-//                               style:
-//                                   TextStyle(fontSize: 20, color: Colors.white),
-//                             ),
-//                           ),
-//                         ),
-//                         onTap: () {
-//                           bool isNotEmpty() {
-//                             if (configs.sellBy != null &&
-//                                 _nameController.text != null &&
-//                                 _categoryController != null &&
-//                                 _priceController.text != null &&
-//                                 descController.text != null &&
-//                                 _costController.text != null &&
-//                                 _quantityController.text != null &&
-//                                 configs.productFor != null &&
-//                                 _minimumController != null) {
-//                               return true;
-//                             } else {
-//                               return false;
-//                             }
-//                           }
-//
-//                           bool isClear = true;
-//                           print('bool: $isClear');
-//                           final progress = ProgressHUD.of(context);
-//                           if (isNotEmpty()) {
-//                             if (productImage != null) {
-//                               progress!.show();
-//                               Map<String, dynamic> fields = {
-//                                 'name': _nameController.text,
-//                                 'description': descController.text,
-//                                 'category': _categoryController,
-//                                 'selling_price': _priceController.text,
-//                                 'costPrice': _costController.text,
-//                                 'quantity': _quantityController.text,
-//                                 'sellBy': configs.sellBy,
-//                                 'minimum': _minimumController.text,
-//                                 'product_for': configs.productFor,
-//                                 'image': productImage,
-//                               };
-//                               adminCrud
-//                                   .addProduct(fields, _nameController.text)
-//                                   .then((added) {
-//                                 if (added) {
-//                                   progress.dismiss();
-//                                   showDialogBox(
-//                                     buildContext: context,
-//                                     msg: 'Product Created',
-//                                   );
-//                                 } else {
-//                                   progress.dismiss();
-//                                   showDialogBox(
-//                                     buildContext: context,
-//                                     msg: 'An error occured please try again',
-//                                   );
-//                                 }
-//                               });
-//                             } else {
-//                               progress!.dismiss();
-//                               showDialogBox(
-//                                 buildContext: context,
-//                                 msg: 'Sorry Product Image is Missing',
-//                               );
-//                             }
-//                             // ignore: dead_code
-//                           } else {
-//                             progress!.dismiss();
-//                             showDialogBox(
-//                               buildContext: context,
-//                               msg: 'Fields can\'t be empty!',
-//                             );
-//                           }
-//                         },
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Container imagePickerContainer(BuildContext context) {
-//     return Container(
-//       height: MediaQuery.of(context).size.height * 0.5,
-//       width: MediaQuery.of(context).size.width * 0.25,
-//       decoration: BoxDecoration(
-//         borderRadius: BorderRadius.circular(10.0),
-//       ),
-//       child: Stack(
-//         children: [
-//           Align(
-//             alignment: Alignment.center,
-//             child: Container(
-//               decoration: BoxDecoration(
-//                 borderRadius: BorderRadius.circular(10.0),
-//                 color: kBackgroundColor,
-//               ),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: const [
-//                   Padding(
-//                     padding: EdgeInsets.only(left: 15.0, top: 15.0),
-//                     child: Text(
-//                       'Pick Product Image',
-//                       style: kCategoryNameStyle,
-//                     ),
-//                   ),
-//                   SizedBox(
-//                     width: double.infinity,
-//                     child: Divider(
-//                       color: kScaffoldBackgroundColor,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//           Align(
-//             alignment: Alignment.center,
-//             child: Container(
-//               margin: const EdgeInsets.all(10.0),
-//               height: MediaQuery.of(context).size.height * 0.3,
-//               width: MediaQuery.of(context).size.width * 0.25,
-//               decoration: BoxDecoration(
-//                 shape: BoxShape.rectangle,
-//                 image: _imageBG(),
-//                 borderRadius: BorderRadius.circular(3.0),
-//               ),
-//             ),
-//           ),
-//           Align(
-//             alignment: Alignment.center,
-//             child: InkWell(
-//               onTap: () {
-//                 if (kIsWeb) {
-//                   getImageWeb();
-//                 } else {
-//                   selectImage();
-//                 }
-//               },
-//               child: const Icon(Icons.add_a_photo, size: 30),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// Future selectImage() async {
-//   try {
-//     final image = await ImagePicker().pickImage(
-  //         source: ImageSource.gallery,
-  //         imageQuality: 50,
-  //         maxHeight: 480,
-  //         maxWidth: 640);
-  //     if (image != null) {
-  //       var fullImage = 'images/product_$_uniqueCode.jpg';
-  //       adminCrud
-  //           .uploadImage(filePath: File(image.path), imageName: fullImage)
-  //           .then((imageUrl) {
-  //         setState(() {
-  //           this._imageFile = File(image.path);
-  //           productImage = imageUrl;
-  //         });
-  //       });
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
-  //
-  // void getImageWeb() async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles();
-  //   if (result != null) {
-  //     Uint8List imageBytes = result.files.first.bytes ?? Uint8List(0);
-  //     List<PlatformFile> filePath = result.files.toList();
-  //     setState(() {
-  //       loading = true;
-  //     });
-  //     filePath.forEach((fileName) async {
-  //       await adminCrud
-  //           .uploadWebImage(imageBytes, fileName.path!, '')
-  //           .then((imageUrl) {
-  //         setState(() {
-  //           images.add(result.files.first.bytes);
-  //           productImage.add(imageUrl);
-  //           loading = false;
-  //         });
-  //       }).catchError((error) {
-  //         setState(() {
-  //           loading = false;
-  //         });
-  //       });
-  //     });
-  //   }
-  // } //
+
+  // Save the product
+  Future<void> _saveProduct() async {
+    // Validate form
+    setState(() {
+      loading = true;
+      showFields = false;
+    });
+    bool isNotEmpty() {
+      if (_nameController.text.isNotEmpty &&
+          _categoryController.text.isNotEmpty &&
+          _generalController.text.isNotEmpty &&
+          _agentController.text.isNotEmpty &&
+          _architectController.text.isNotEmpty &&
+          _costController.text.isNotEmpty &&
+          _productCodeController.text.isNotEmpty &&
+          _supplierController.text.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    if (isNotEmpty()) {
+      Map<String, dynamic> productData = ProductHelper.collectProductFormData(
+        name: _nameController.text,
+        productCode: _productCodeController.text,
+        description: _descController.text,
+        generalPrice: _generalController.text,
+        agentsPrice: _agentController.text,
+        architectPrice: _architectController.text,
+        costPrice: _costController.text,
+        quantity: _quantityController.text,
+        minimum: _minimumController.text,
+        isGeneralDiscount: isGeneralDiscount,
+        isAgentDiscount: isAgentDiscount,
+        isArchitectDiscount: isArchitectDiscount,
+        generalDiscount: _generalDiscountCont.text,
+        agentsDiscount: _agentsDiscountCont.text,
+        architectDiscount: _architectDiscountCont.text,
+        isInfinity: isInfinity,
+        isNonInventory: isNonInventory,
+        freeShipping: freeShipping,
+        comingSoon: comingSoon,
+        sellBy: selectedSellBy,
+      );
+
+      // Prepare images
+      final imageData = await ProductHelper.prepareProductImagesForSaving();
+
+      // Combine data
+      productData = {
+        ...productData,
+        'images': imageData['allImages'],
+        'thumbnail': imageData['thumbnail'],
+        'thumbnailKey': imageData['thumbnailKey'],
+        if (widget.isUpdateProduct) 'deletedImages': imageData['deletedImages'],
+      };
+
+      setState(() {
+        fields = productData;
+      });
+      // Save product
+      final productBloc = BlocProvider.of<ProductsBloc>(context);
+
+      if (widget.isUpdateProduct) {
+        productBloc.add(UpdateProductEvent(
+          token: jWTToken ?? '',
+          productId: widget.info['productId'],
+          productModel: productData,
+        ));
+      } else {
+        productBloc.add(AddProductEvent(
+          token: jWTToken ?? '',
+          productModel: productData,
+        ));
+      }
+    } else {
+      setState(() {
+        loading = false;
+        showFields = true;
+      });
+      showDialogBox(
+        buildContext: context,
+        msg: 'Fields can\'t be empty!, please check and add any missing field',
+      );
+    }
+  }
 }
 
 class TextFieldWidget extends StatefulWidget {

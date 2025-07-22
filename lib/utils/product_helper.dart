@@ -414,7 +414,6 @@ class ProductHelper {
     required String architectDiscount,
     required bool isInfinity,
     required bool isNonInventory,
-    required bool topDiscount,
     required bool freeShipping,
     required bool comingSoon,
     required String sellBy,
@@ -423,8 +422,8 @@ class ProductHelper {
     final categoryData = Hive.box('category').toMap();
     final subCategoryData = Hive.box('subCategory').toMap();
     final supplierData = Hive.box('suppliers').toMap();
-    
     return {
+      'supplierId': supplierData['supplierId'] ?? '',
       'name': name,
       'productCode': productCode,
       'description': description,
@@ -442,7 +441,6 @@ class ProductHelper {
       'architectDiscount': isArchitectDiscount ? _parseNumOrZero(architectDiscount) : 0,
       'isInfinity': isInfinity,
       'isNonInventory': isNonInventory,
-      'topDiscount': topDiscount,
       'freeShipping': freeShipping,
       'comingSoon': comingSoon,
       'category': categoryData['name'] ?? '',

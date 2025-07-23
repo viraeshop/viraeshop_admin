@@ -415,7 +415,13 @@ class _TabWidgetState extends State<TabWidget> {
                                   productPrice: price,
                                   quantity: 1,
                                   unitPrice: price,
-                                  isInventory: productsList[index - 1]['isNonInventory'] ? false : true,
+                                  isInfinity: productsList[index - 1]
+                                          ['isInfinity'] ??
+                                      false,
+                                  isInventory: productsList[index - 1]
+                                          ['isNonInventory']
+                                      ? false
+                                      : true,
                                   buyPrice: productsList[index - 1]['costPrice']
                                               .runtimeType ==
                                           String
@@ -633,9 +639,10 @@ class _TabWidgetState extends State<TabWidget> {
                                   ? deviceSize.width - 20
                                   : deviceSize.width - 30,
                               decoration: BoxDecoration(
-                                border: Border.all(color: kMainColor, width: 2.0),
-                                borderRadius:
-                                    BorderRadius.circular(addedToCart ? 10 : 7.0),
+                                border:
+                                    Border.all(color: kMainColor, width: 2.0),
+                                borderRadius: BorderRadius.circular(
+                                    addedToCart ? 10 : 7.0),
                                 color: isAdded != true
                                     ? kBackgroundColor
                                     : kMainColor,

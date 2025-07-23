@@ -497,7 +497,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
             iconSize: 20.0,
           ),
         ),
-        body: _buildBody(),
+        body: SafeArea(child: _buildBody()),
       ),
     );
   }
@@ -524,7 +524,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
           // Save button (12% of screen at bottom)
           FractionallySizedBox(
-            heightFactor: 0.12,
+            heightFactor: 0.08,
             alignment: Alignment.bottomCenter,
             child: _buildSaveButton(),
           ),

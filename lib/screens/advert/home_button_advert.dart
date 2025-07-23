@@ -112,6 +112,8 @@ class _HomeButtonAdvertState extends State<HomeButtonAdvert> {
                 title: 'Home Button Advert',
                 imagePath: homeButton?.adImage ?? '',
                 isPlaceHolder: homeButton == null,
+                height: 100,
+                width: 100,
                 onAction: () {
                   setState(() {
                     isLoading = true;

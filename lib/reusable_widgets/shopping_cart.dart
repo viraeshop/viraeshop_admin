@@ -195,235 +195,139 @@ class _ShoppingCartState extends State<ShoppingCart> {
             ),
           ],
         ),
-        body: ValueListenableBuilder(
-            valueListenable: Hive.box<Cart>('cart').listenable(),
-            builder: (context, Box<Cart> box, childs) {
-              List<Cart> carts = box.values.toList();
-              List keys = box.keys.toList();
-              if (carts.isNotEmpty) {
-                return Container(
-                  color: kStrokeColor,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      FractionallySizedBox(
-                        heightFactor: 0.9,
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          // height: MediaQuery.of(context).size.height * 0.8,
-                          width: double.infinity,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Column(
-                                  children: List.generate(
-                                    carts.length,
-                                    (int i) {
-                                      return Container(
-                                        decoration: const BoxDecoration(
-                                          color: kBackgroundColor,
-                                          border: Border(
-                                            bottom: BorderSide(
-                                              color: Color(0xffF7F7F7),
+        body: SafeArea(
+          child: ValueListenableBuilder(
+              valueListenable: Hive.box<Cart>('cart').listenable(),
+              builder: (context, Box<Cart> box, childs) {
+                List<Cart> carts = box.values.toList();
+                List keys = box.keys.toList();
+                if (carts.isNotEmpty) {
+                  return Container(
+                    color: kStrokeColor,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        FractionallySizedBox(
+                          heightFactor: 0.9,
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                            // height: MediaQuery.of(context).size.height * 0.8,
+                            width: double.infinity,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Column(
+                                    children: List.generate(
+                                      carts.length,
+                                      (int i) {
+                                        return Container(
+                                          decoration: const BoxDecoration(
+                                            color: kBackgroundColor,
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Color(0xffF7F7F7),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        child: CollapsableWidget(
-                                          quantity:
-                                              carts[i].quantity.toString(),
-                                          name: carts[i].productName,
-                                          code: carts[i].productCode,
-                                          price: carts[i].productPrice.toString(),
-                                          keyStore: keys[i],
-                                          unitPrice:
-                                              carts[i].unitPrice.toString(),
-                                        ),
-                                      );
-                                    },
+                                          child: CollapsableWidget(
+                                            quantity:
+                                                carts[i].quantity.toString(),
+                                            name: carts[i].productName,
+                                            code: carts[i].productCode,
+                                            price: carts[i].productPrice.toString(),
+                                            keyStore: keys[i],
+                                            unitPrice:
+                                                carts[i].unitPrice.toString(),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 10.0, top: 10.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      ValueListenableBuilder(
-                                          valueListenable:
-                                              Hive.box('cartDetails')
-                                                  .listenable(),
-                                          builder: (context, Box box, childs) {
-                                            num prices = box.get('totalPrice',
-                                                defaultValue: 0);
-                                            totalPrice = prices;
-                                            num discounts = box.get(
-                                                'discountAmount',
-                                                defaultValue: 0);
-                                            num discountPercent = box.get(
-                                                'discountPercent',
-                                                defaultValue: 0);
-                                            return Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                discounts != null
-                                                    ? Text(
-                                                        'Total: ${prices.toString()}',
-                                                        style: const TextStyle(
-                                                          color: kSubMainColor,
-                                                          fontFamily:
-                                                              'Montserrat',
-                                                          fontSize: 15,
-                                                          letterSpacing: 1.3,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      )
-                                                    : const SizedBox(),
-                                                const SizedBox(height: 3.0),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.push(context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) {
-                                                      return const DiscountScreen();
-                                                    }));
-                                                  },
-                                                  child: Text(
-                                                    box.containsKey(
-                                                            'discountAmount')
-                                                        ? 'Discount(${discountPercent.round().toString()}%): -${discounts.toString()}৳'
-                                                        : 'Add Discount',
-                                                    style: const TextStyle(
-                                                      color: kIconColor1,
-                                                      fontFamily: 'Montserrat',
-                                                      fontSize: 14,
-                                                      letterSpacing: 1.3,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: 10.0, top: 10.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ValueListenableBuilder(
+                                            valueListenable:
+                                                Hive.box('cartDetails')
+                                                    .listenable(),
+                                            builder: (context, Box box, childs) {
+                                              num prices = box.get('totalPrice',
+                                                  defaultValue: 0);
+                                              totalPrice = prices;
+                                              num discounts = box.get(
+                                                  'discountAmount',
+                                                  defaultValue: 0);
+                                              num discountPercent = box.get(
+                                                  'discountPercent',
+                                                  defaultValue: 0);
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  discounts != null
+                                                      ? Text(
+                                                          'Total: ${prices.toString()}',
+                                                          style: const TextStyle(
+                                                            color: kSubMainColor,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                            fontSize: 15,
+                                                            letterSpacing: 1.3,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        )
+                                                      : const SizedBox(),
+                                                  const SizedBox(height: 3.0),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.push(context,
+                                                          MaterialPageRoute(
+                                                              builder: (context) {
+                                                        return const DiscountScreen();
+                                                      }));
+                                                    },
+                                                    child: Text(
+                                                      box.containsKey(
+                                                              'discountAmount')
+                                                          ? 'Discount(${discountPercent.round().toString()}%): -${discounts.toString()}৳'
+                                                          : 'Add Discount',
+                                                      style: const TextStyle(
+                                                        color: kIconColor1,
+                                                        fontFamily: 'Montserrat',
+                                                        fontSize: 14,
+                                                        letterSpacing: 1.3,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            );
-                                          }),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 3.0),
-                                Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      ValueListenableBuilder(
-                                          valueListenable:
-                                              Hive.box('cartDetails')
-                                                  .listenable(),
-                                          builder: (context, Box box, childs) {
-                                            var totalPrice =
-                                                box.get('totalPrice') -
-                                                    box.get('discountAmount',
-                                                        defaultValue: 0);
-                                            return Text(
-                                              'Sub-Total: ${totalPrice.toString()}',
-                                              style: const TextStyle(
-                                                color: kSubMainColor,
-                                                fontFamily: 'Montserrat',
-                                                fontSize: 15,
-                                                letterSpacing: 1.3,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            );
-                                          }),
-                                    ],
-                                  ),
-                                ),
-                                //SizedBox(height: 3.0),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: ValueListenableBuilder(
-                                          valueListenable:
-                                              Hive.box('cartDetails')
-                                                  .listenable(),
-                                          builder: (context, Box box, childs) {
-                                            num discount = box.get(
-                                                'discountAmount',
-                                                defaultValue: 0);
-                                            if (advance != 0) {
-                                              due = totalPrice -
-                                                  advance -
-                                                  discount;
-                                            }
-                                            return TypableText(
-                                              isDesc: isDesc,
-                                              controller: descController,
-                                              switchOn: () {
-                                                setState(() {
-                                                  isDesc = true;
-                                                  selected = '';
-                                                  due = 0;
-                                                  paid = 0;
-                                                  // paid = 0;
-                                                });
-                                              },
-                                              switchOff: () {
-                                                setState(() {
-                                                  isDesc = false;
-                                                });
-                                              },
-                                              onChanged: (e) {
-                                                setState(() {
-                                                  due = totalPrice -
-                                                      num.parse(e) -
-                                                      discount;
-                                                  advance = num.parse(e);
-                                                  paid = advance;
-                                                });
-                                              },
-                                              keyboardType:
-                                                  TextInputType.number,
-                                            );
-                                          }),
+                                                ],
+                                              );
+                                            }),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      ValueListenableBuilder(
-                                        valueListenable: Hive.box('cartDetails')
-                                            .listenable(),
-                                        builder: (context, Box box, childs) {
-                                          num totalPrice =
-                                              box.get('totalPrice');
-                                          num discount = box.get(
-                                              'discountAmount',
-                                              defaultValue: 0);
-                                          if (selected == 'due') {
-                                            // selected = 'due';
-                                            paid = 0;
-                                            advance = 0;
-                                            due = totalPrice - discount;
-                                            descController.text = '0';
-                                          }
-                                          return TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  selected = 'due';
-                                                  paid = 0;
-                                                  advance = 0;
-                                                  due = totalPrice - discount;
-                                                  descController.text = '0';
-                                                });
-                                              },
-                                              child: Text(
-                                                'Due: ${due.toString()}',
+                                  ),
+                                  const SizedBox(height: 3.0),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ValueListenableBuilder(
+                                            valueListenable:
+                                                Hive.box('cartDetails')
+                                                    .listenable(),
+                                            builder: (context, Box box, childs) {
+                                              var totalPrice =
+                                                  box.get('totalPrice') -
+                                                      box.get('discountAmount',
+                                                          defaultValue: 0);
+                                              return Text(
+                                                'Sub-Total: ${totalPrice.toString()}',
                                                 style: const TextStyle(
                                                   color: kSubMainColor,
                                                   fontFamily: 'Montserrat',
@@ -431,163 +335,261 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                   letterSpacing: 1.3,
                                                   fontWeight: FontWeight.bold,
                                                 ),
-                                              ));
-                                        },
+                                              );
+                                            }),
+                                      ],
+                                    ),
+                                  ),
+                                  //SizedBox(height: 3.0),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: ValueListenableBuilder(
+                                            valueListenable:
+                                                Hive.box('cartDetails')
+                                                    .listenable(),
+                                            builder: (context, Box box, childs) {
+                                              num discount = box.get(
+                                                  'discountAmount',
+                                                  defaultValue: 0);
+                                              if (advance != 0) {
+                                                due = totalPrice -
+                                                    advance -
+                                                    discount;
+                                              }
+                                              return TypableText(
+                                                isDesc: isDesc,
+                                                controller: descController,
+                                                switchOn: () {
+                                                  setState(() {
+                                                    isDesc = true;
+                                                    selected = '';
+                                                    due = 0;
+                                                    paid = 0;
+                                                    // paid = 0;
+                                                  });
+                                                },
+                                                switchOff: () {
+                                                  setState(() {
+                                                    isDesc = false;
+                                                  });
+                                                },
+                                                onChanged: (e) {
+                                                  setState(() {
+                                                    due = totalPrice -
+                                                        num.parse(e) -
+                                                        discount;
+                                                    advance = num.parse(e);
+                                                    paid = advance;
+                                                  });
+                                                },
+                                                keyboardType:
+                                                    TextInputType.number,
+                                              );
+                                            }),
                                       ),
                                     ],
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      ValueListenableBuilder(
-                                          valueListenable:
-                                              Hive.box('cartDetails')
-                                                  .listenable(),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ValueListenableBuilder(
+                                          valueListenable: Hive.box('cartDetails')
+                                              .listenable(),
                                           builder: (context, Box box, childs) {
                                             num totalPrice =
                                                 box.get('totalPrice');
                                             num discount = box.get(
                                                 'discountAmount',
                                                 defaultValue: 0);
-                                            if (selected == 'paid') {
+                                            if (selected == 'due') {
                                               // selected = 'due';
-
-                                              paid = totalPrice - discount;
+                                              paid = 0;
                                               advance = 0;
-                                              due = 0;
+                                              due = totalPrice - discount;
                                               descController.text = '0';
                                             }
                                             return TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  selected = 'paid';
-                                                  paid = totalPrice - discount;
-                                                  advance = 0;
-                                                  due = 0;
-                                                  descController.text = '0';
-                                                });
-                                              },
-                                              child: Text(
-                                                'Paid: ${paid.toString()}',
+                                                onPressed: () {
+                                                  setState(() {
+                                                    selected = 'due';
+                                                    paid = 0;
+                                                    advance = 0;
+                                                    due = totalPrice - discount;
+                                                    descController.text = '0';
+                                                  });
+                                                },
+                                                child: Text(
+                                                  'Due: ${due.toString()}',
+                                                  style: const TextStyle(
+                                                    color: kSubMainColor,
+                                                    fontFamily: 'Montserrat',
+                                                    fontSize: 15,
+                                                    letterSpacing: 1.3,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ));
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ValueListenableBuilder(
+                                            valueListenable:
+                                                Hive.box('cartDetails')
+                                                    .listenable(),
+                                            builder: (context, Box box, childs) {
+                                              num totalPrice =
+                                                  box.get('totalPrice');
+                                              num discount = box.get(
+                                                  'discountAmount',
+                                                  defaultValue: 0);
+                                              if (selected == 'paid') {
+                                                // selected = 'due';
+
+                                                paid = totalPrice - discount;
+                                                advance = 0;
+                                                due = 0;
+                                                descController.text = '0';
+                                              }
+                                              return TextButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    selected = 'paid';
+                                                    paid = totalPrice - discount;
+                                                    advance = 0;
+                                                    due = 0;
+                                                    descController.text = '0';
+                                                  });
+                                                },
+                                                child: Text(
+                                                  'Paid: ${paid.toString()}',
+                                                  style: const TextStyle(
+                                                    color: kSubMainColor,
+                                                    fontFamily: 'Montserrat',
+                                                    fontSize: 15,
+                                                    letterSpacing: 1.3,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        FractionallySizedBox(
+                          heightFactor: 0.1,
+                          alignment: Alignment.bottomCenter,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Container(
+                                  color: kBackgroundColor,
+                                  child: InkWell(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(15),
+                                      margin: const EdgeInsets.all(8.0),
+                                      decoration: BoxDecoration(
+                                          color:
+                                              kMainColor, //Theme.of(context).accentColor,
+                                          borderRadius: BorderRadius.circular(7)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          ValueListenableBuilder(
+                                            valueListenable:
+                                                Hive.box('cartDetails')
+                                                    .listenable(),
+                                            builder: (context, Box box, childs) {
+                                              var totalPrice =
+                                                  box.get('totalPrice') -
+                                                      box.get('discountAmount',
+                                                          defaultValue: 0);
+                                              int totalItems =
+                                                  box.get('totalItems');
+                                              return Text(
+                                                'Order ${totalItems.toString()} Items at ${totalPrice.toString()}৳',
                                                 style: const TextStyle(
-                                                  color: kSubMainColor,
+                                                  color: kBackgroundColor,
                                                   fontFamily: 'Montserrat',
-                                                  fontSize: 15,
+                                                  fontSize: 20.0,
                                                   letterSpacing: 1.3,
                                                   fontWeight: FontWeight.bold,
                                                 ),
-                                              ),
-                                            );
-                                          }),
-                                    ],
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      final customer = Hive.box('customer');
+                                      if (paid == 0 && due == 0 && advance == 0) {
+                                        toast(
+                                          context: context,
+                                          title:
+                                              'You have not complete the payment status!',
+                                          color: kRedColor,
+                                        );
+                                      } else if (customer.values.isEmpty) {
+                                        toast(
+                                          context: context,
+                                          title:
+                                              'You have not selected a customer!',
+                                          color: kRedColor,
+                                        );
+                                      } else {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => PaymentScreen(
+                                              paid: paid,
+                                              due: due,
+                                              advance: advance,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                      ),
-                      FractionallySizedBox(
-                        heightFactor: 0.1,
-                        alignment: Alignment.bottomCenter,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Container(
-                                color: kBackgroundColor,
-                                child: InkWell(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(15),
-                                    margin: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                        color:
-                                            kMainColor, //Theme.of(context).accentColor,
-                                        borderRadius: BorderRadius.circular(7)),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        ValueListenableBuilder(
-                                          valueListenable:
-                                              Hive.box('cartDetails')
-                                                  .listenable(),
-                                          builder: (context, Box box, childs) {
-                                            var totalPrice =
-                                                box.get('totalPrice') -
-                                                    box.get('discountAmount',
-                                                        defaultValue: 0);
-                                            int totalItems =
-                                                box.get('totalItems');
-                                            return Text(
-                                              'Order ${totalItems.toString()} Items at ${totalPrice.toString()}৳',
-                                              style: const TextStyle(
-                                                color: kBackgroundColor,
-                                                fontFamily: 'Montserrat',
-                                                fontSize: 20.0,
-                                                letterSpacing: 1.3,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    final customer = Hive.box('customer');
-                                    if (paid == 0 && due == 0 && advance == 0) {
-                                      toast(
-                                        context: context,
-                                        title:
-                                            'You have not complete the payment status!',
-                                        color: kRedColor,
-                                      );
-                                    } else if (customer.values.isEmpty) {
-                                      toast(
-                                        context: context,
-                                        title:
-                                            'You have not selected a customer!',
-                                        color: kRedColor,
-                                      );
-                                    } else {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PaymentScreen(
-                                            paid: paid,
-                                            due: due,
-                                            advance: advance,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                return Center(
-                  child: Container(
-                    color: const Color(0xfff7f7f7),
-                    child: const Text(
-                      'Cart is empty',
-                      style: kProductNameStyle,
+                      ],
                     ),
-                  ),
-                );
-              }
-            }),
+                  );
+                } else {
+                  return Center(
+                    child: Container(
+                      color: const Color(0xfff7f7f7),
+                      child: const Text(
+                        'Cart is empty',
+                        style: kProductNameStyle,
+                      ),
+                    ),
+                  );
+                }
+              }),
+        ),
       ),
     );
   }
@@ -713,7 +715,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                 thickness: 2.0,
               ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(4.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

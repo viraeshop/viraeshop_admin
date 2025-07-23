@@ -205,41 +205,41 @@ class _PaymentScreenState extends State<PaymentScreen> {
               bottom: BorderSide(color: kStrokeColor),
             ),
           ),
-          body: Container(
-            color: kBackgroundColor,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                FractionallySizedBox(
-                  heightFactor: 0.8,
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'AMOUNT RECEIVED',
-                        style: kCategoryNameStyle,
-                      ),
-                      const SizedBox(
-                        height: 20.0,
-                      ),
-                      Text(
-                        '${amountReceived.toString()}৳',
-                        style: const TextStyle(
-                          color: kMainColor,
-                          fontFamily: 'Montserrat',
-                          fontSize: 30,
-                          letterSpacing: 1.3,
+          body: SafeArea(
+            child: Container(
+              color: kBackgroundColor,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  FractionallySizedBox(
+                    heightFactor: 0.8,
+                    alignment: Alignment.topCenter,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'AMOUNT RECEIVED',
+                          style: kCategoryNameStyle,
                         ),
-                      ),
-                      const SizedBox(
-                        height: 20.0,
-                      ),
-                    ],
+                        const SizedBox(
+                          height: 20.0,
+                        ),
+                        Text(
+                          '${amountReceived.toString()}৳',
+                          style: const TextStyle(
+                            color: kMainColor,
+                            fontFamily: 'Montserrat',
+                            fontSize: 30,
+                            letterSpacing: 1.3,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20.0,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                SafeArea(
-                  child: FractionallySizedBox(
+                  FractionallySizedBox(
                     heightFactor: 0.12,
                     alignment: Alignment.bottomCenter,
                     child: InkWell(
@@ -314,8 +314,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

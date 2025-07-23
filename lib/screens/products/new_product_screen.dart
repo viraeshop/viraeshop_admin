@@ -78,17 +78,16 @@ class _NewProductState extends State<NewProduct>
   bool topDiscount = false;
   bool freeShipping = false;
   bool comingSoon = false;
-  //var selected_category = '';
-  // final List _pr_user_List = ['general', 'agents', 'architect'];
-  // final List _category_List = [];
-  final List<String> _sell_by = [
+  final List<String> sellBy = [
     'Unit',
+    'Pcs',
+    'Pair',
+    'Set',
     'Sft',
     'Rft',
     'Kilo',
     'Kg',
     'CM',
-    'Pisce',
   ];
   final TextEditingController _descController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -791,9 +790,6 @@ class _NewProductState extends State<NewProduct>
                             return null;
                           },
                         ),
-                        // const SizedBox(
-                        //   height: 10,
-                        // ),
                         TextFieldWidget(
                           maxLines: 2,
                           controller: _descController,
@@ -802,9 +798,6 @@ class _NewProductState extends State<NewProduct>
                               ? TextInputType.text
                               : TextInputType.none,
                         ),
-                        // const SizedBox(
-                        //   height: 10,
-                        // ),
                         ValueListenableBuilder(
                             valueListenable: Hive.box('suppliers').listenable(),
                             builder: (context, Box box, childs) {
@@ -835,39 +828,44 @@ class _NewProductState extends State<NewProduct>
                                 },
                               );
                             }),
-                        DropdownButtonFormField(
-                          value: selectedSellBy,
-                          decoration: const InputDecoration(
-                            focusedBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: kBlackColor),
-                            ),
-                            border: UnderlineInputBorder(
-                              borderSide: BorderSide(color: kBlackColor),
-                            ),
-                            focusColor: kBlackColor,
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                color: kBlackColor,
+                        ValueListenableBuilder(
+                          valueListenable: Hive.box('suppliers').listenable(),
+                          builder: (context, aBox, childs) {
+                            String selectedSellBy =
+                                aBox.get('sellBy', defaultValue: 'Unit');
+                            return DropdownButtonFormField(
+                              value: selectedSellBy,
+                              decoration: const InputDecoration(
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: kBlackColor),
+                                ),
+                                border: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: kBlackColor),
+                                ),
+                                focusColor: kBlackColor,
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: kBlackColor,
+                                  ),
+                                ),
+                                hintStyle: TextStyle(
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            hintStyle: TextStyle(
-                              color: Colors.black87,
-                            ),
-                          ),
-                          hint: const Text('Sell By'),
-                          onChanged: isProducts == false
-                              ? null
-                              : (String? changedValue) {
-                                  setState(() {
-                                    selectedSellBy = changedValue!;
-                                  });
-                                },
-                          items: _sell_by.map((itm) {
-                            return DropdownMenuItem(
-                              value: itm,
-                              child: Text(itm),
+                              hint: const Text('Sell By'),
+                              onChanged: isProducts == false
+                                  ? null
+                                  : (String? changedValue) {
+                                      Hive.box('suppliers').put('sellBy', changedValue);
+                                    },
+                              items: sellBy.map((itm) {
+                                return DropdownMenuItem(
+                                  value: itm,
+                                  child: Text(itm),
+                                );
+                              }).toList(),
                             );
-                          }).toList(),
+                          }
                         ),
                         const SizedBox(height: 5),
                       ],
@@ -944,20 +942,6 @@ class _NewProductState extends State<NewProduct>
             });
           },
         ),
-        SwitchListTile(
-          activeColor: kNewMainColor,
-          tileColor: kBackgroundColor,
-          title: const Text(
-            'Top Discount',
-            style: kTableCellStyle,
-          ),
-          value: topDiscount,
-          onChanged: (value) {
-            setState(() {
-              topDiscount = value;
-            });
-          },
-        ),
         const Expanded(
           flex: 1,
           child: Text('-'),
@@ -967,9 +951,8 @@ class _NewProductState extends State<NewProduct>
           child: Align(
               alignment: Alignment.center,
               child: Padding(
-                padding: const EdgeInsets.all(18.0),
+                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 10,),
                 child: Column(
-                  // shrinkWrap: true,
                   children: [
                     const Text(
                       'On hand',
@@ -1083,7 +1066,9 @@ class _NewProductState extends State<NewProduct>
                     ),
                     bottomCard(
                       context: context,
-                      onTap: _saveProduct(),
+                      onTap: (){
+                        _saveProduct();
+                      },
                       text: widget.isUpdateProduct ? 'Update' : 'Add products',
                     ),
                   ],

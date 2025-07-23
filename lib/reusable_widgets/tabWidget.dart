@@ -322,7 +322,7 @@ class _TabWidgetState extends State<TabWidget> {
                         Tuple3<num, num, bool> discountData =
                             computeDiscountData(productsList[index - 1],
                                 ads.dropdownValue, originalPrice);
-                        print(productsList[0]);
+                        //print(productsList[0]);
                         return InkWell(
                           key: globalKeys[index - 1],
                           onLongPress: () {

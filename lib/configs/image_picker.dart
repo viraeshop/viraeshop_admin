@@ -36,6 +36,8 @@ Widget imagePickerWidget({
           ? Align(
               alignment: Alignment.bottomCenter,
               child: Container(
+                height: 50,
+                width: double.infinity,
                 decoration: const BoxDecoration(
                   color: kSubMainColor,
                   borderRadius: BorderRadius.only(
@@ -44,8 +46,7 @@ Widget imagePickerWidget({
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(5.0),
-                  child: ListView(
-                    shrinkWrap: true,
+                  child: Column(
                     children: const [
                       Text('Upload Image',
                           textAlign: TextAlign.center,

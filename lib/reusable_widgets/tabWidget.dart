@@ -509,7 +509,7 @@ class _TabWidgetState extends State<TabWidget> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                '${productsList[index - 1]['name']} (${productsList[index - 1]['productCode']})',
+                                                '${productsList[index - 1]['name']}',
                                                 style: const TextStyle(
                                                   color: kBackgroundColor,
                                                   fontSize: 12.0,

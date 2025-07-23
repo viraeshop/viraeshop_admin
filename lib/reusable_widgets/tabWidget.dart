@@ -322,6 +322,7 @@ class _TabWidgetState extends State<TabWidget> {
                         Tuple3<num, num, bool> discountData =
                             computeDiscountData(productsList[index - 1],
                                 ads.dropdownValue, originalPrice);
+                        print(productsList[0]);
                         return InkWell(
                           key: globalKeys[index - 1],
                           onLongPress: () {
@@ -414,6 +415,7 @@ class _TabWidgetState extends State<TabWidget> {
                                   productPrice: price,
                                   quantity: 1,
                                   unitPrice: price,
+                                  isInventory: productsList[index - 1]['isNonInventory'] ? false : true,
                                   buyPrice: productsList[index - 1]['costPrice']
                                               .runtimeType ==
                                           String

@@ -30,6 +30,8 @@ class Cart {
   String productImage;
   @HiveField(12)
   num originalPrice;
+  @HiveField(13)
+  bool isInfinity;
 
 
 
@@ -47,6 +49,7 @@ class Cart {
     this.discountPercent = 0,
     this.discount = 0,
     this.isInventory = true,
+    this.isInfinity = false,
     this.supplierId = 0,
   });
 }

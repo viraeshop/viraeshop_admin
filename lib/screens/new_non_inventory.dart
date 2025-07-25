@@ -247,6 +247,7 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                         width: 10.0,
                       ),
                       Expanded(
+                        flex: 2,
                         child: DropdownButtonFormField(
                           decoration: InputDecoration(
                             border: OutlineInputBorder(

@@ -51,14 +51,16 @@ class _PhotoSlideShowState extends State<PhotoSlideShow> {
           ),
           Align(
             alignment: Alignment.topRight,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.cancel,
-                  size: 30.0,
-                  color: kBackgroundColor,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.cancel,
+                    size: 30.0,
+                    color: kBackgroundColor,
+                  ),
                 ),
               ),
             ),

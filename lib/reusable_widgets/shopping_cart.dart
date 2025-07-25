@@ -234,7 +234,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                 carts[i].quantity.toString(),
                                             name: carts[i].productName,
                                             code: carts[i].productCode,
-                                            price: carts[i].productPrice.toString(),
+                                            price: carts[i]
+                                                .productPrice
+                                                .toString(),
                                             keyStore: keys[i],
                                             unitPrice:
                                                 carts[i].unitPrice.toString(),
@@ -253,7 +255,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                             valueListenable:
                                                 Hive.box('cartDetails')
                                                     .listenable(),
-                                            builder: (context, Box box, childs) {
+                                            builder:
+                                                (context, Box box, childs) {
                                               num prices = box.get('totalPrice',
                                                   defaultValue: 0);
                                               totalPrice = prices;
@@ -270,8 +273,10 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                   discounts != null
                                                       ? Text(
                                                           'Total: ${prices.toString()}',
-                                                          style: const TextStyle(
-                                                            color: kSubMainColor,
+                                                          style:
+                                                              const TextStyle(
+                                                            color:
+                                                                kSubMainColor,
                                                             fontFamily:
                                                                 'Montserrat',
                                                             fontSize: 15,
@@ -286,7 +291,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                     onPressed: () {
                                                       Navigator.push(context,
                                                           MaterialPageRoute(
-                                                              builder: (context) {
+                                                              builder:
+                                                                  (context) {
                                                         return const DiscountScreen();
                                                       }));
                                                     },
@@ -297,7 +303,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                           : 'Add Discount',
                                                       style: const TextStyle(
                                                         color: kIconColor1,
-                                                        fontFamily: 'Montserrat',
+                                                        fontFamily:
+                                                            'Montserrat',
                                                         fontSize: 14,
                                                         letterSpacing: 1.3,
                                                         fontWeight:
@@ -321,11 +328,13 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                             valueListenable:
                                                 Hive.box('cartDetails')
                                                     .listenable(),
-                                            builder: (context, Box box, childs) {
-                                              num totalPrice =
-                                                  box.get('totalPrice') -
-                                                      box.get('discountAmount',
-                                                          defaultValue: 0);
+                                            builder:
+                                                (context, Box box, childs) {
+                                              num totalPrice = box.get(
+                                                      'totalPrice',
+                                                      defaultValue: 0) -
+                                                  box.get('discountAmount',
+                                                      defaultValue: 0);
                                               return Text(
                                                 'Sub-Total: ${totalPrice.toString()}',
                                                 style: const TextStyle(
@@ -350,7 +359,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                             valueListenable:
                                                 Hive.box('cartDetails')
                                                     .listenable(),
-                                            builder: (context, Box box, childs) {
+                                            builder:
+                                                (context, Box box, childs) {
                                               num discount = box.get(
                                                   'discountAmount',
                                                   defaultValue: 0);
@@ -398,8 +408,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         ValueListenableBuilder(
-                                          valueListenable: Hive.box('cartDetails')
-                                              .listenable(),
+                                          valueListenable:
+                                              Hive.box('cartDetails')
+                                                  .listenable(),
                                           builder: (context, Box box, childs) {
                                             num totalPrice =
                                                 box.get('totalPrice');
@@ -447,7 +458,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                             valueListenable:
                                                 Hive.box('cartDetails')
                                                     .listenable(),
-                                            builder: (context, Box box, childs) {
+                                            builder:
+                                                (context, Box box, childs) {
                                               num totalPrice =
                                                   box.get('totalPrice');
                                               num discount = box.get(
@@ -465,7 +477,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                 onPressed: () {
                                                   setState(() {
                                                     selected = 'paid';
-                                                    paid = totalPrice - discount;
+                                                    paid =
+                                                        totalPrice - discount;
                                                     advance = 0;
                                                     due = 0;
                                                     descController.text = '0';
@@ -506,7 +519,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                       decoration: BoxDecoration(
                                           color:
                                               kMainColor, //Theme.of(context).accentColor,
-                                          borderRadius: BorderRadius.circular(7)),
+                                          borderRadius:
+                                              BorderRadius.circular(7)),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
@@ -517,7 +531,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                             valueListenable:
                                                 Hive.box('cartDetails')
                                                     .listenable(),
-                                            builder: (context, Box box, childs) {
+                                            builder:
+                                                (context, Box box, childs) {
                                               var totalPrice =
                                                   box.get('totalPrice') -
                                                       box.get('discountAmount',
@@ -541,7 +556,9 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                     ),
                                     onTap: () {
                                       final customer = Hive.box('customer');
-                                      if (paid == 0 && due == 0 && advance == 0) {
+                                      if (paid == 0 &&
+                                          due == 0 &&
+                                          advance == 0) {
                                         toast(
                                           context: context,
                                           title:
@@ -733,15 +750,7 @@ class _CollapsableWidgetState extends State<CollapsableWidget> {
                                 Box box = Hive.box('cartDetails');
                                 Cart? item =
                                     Hive.box<Cart>('cart').get(widget.keyStore);
-                                num totalDiscountVal =
-                                    box.get('discountAmount', defaultValue: 0);
-                                num totalDiscountPer =
-                                    box.get('discountPercent', defaultValue: 0);
-                                box.put('discountAmount',
-                                    totalDiscountVal - item!.discount);
-                                box.put('discountPercent',
-                                    totalDiscountPer - item.discountPercent);
-                                item.discount = 0;
+                                item!.discount = 0;
                                 item.discountPercent = 0;
                                 Hive.box<Cart>('cart')
                                     .put(widget.keyStore, item);

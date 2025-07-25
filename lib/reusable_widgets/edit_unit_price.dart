@@ -3,9 +3,12 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
+import 'package:tuple/tuple.dart';
+import 'package:viraeshop_admin/components/home_screen_components/decision_components.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:numeric_keyboard/numeric_keyboard.dart';
+import 'package:viraeshop_admin/configs/configs.dart';
 
 import 'hive/cart_model.dart';
 
@@ -102,6 +105,8 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
                 totalPrice -= item!.productPrice;
                 item.unitPrice = newUnitPrice;
                 item.productPrice = item.quantity * newUnitPrice;
+                item.discount = item.originalPrice - newUnitPrice;
+                item.discountPercent = percent(item.discount, item.originalPrice);
                 box.put('totalPrice', totalPrice + item.productPrice);
                 Hive.box<Cart>('cart').put(widget.keyStore, item);
                 Navigator.pop(context);

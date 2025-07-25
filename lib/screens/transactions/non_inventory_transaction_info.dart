@@ -139,19 +139,22 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                           width: MediaQuery.of(context).size.width * 0.7,
                         )
                       : Stack(
-                          fit: StackFit.expand,
+                          //fit: StackFit.expand,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(5.0),
-                              clipBehavior: Clip.hardEdge,
-                              child: CachedNetworkImage(
-                                imageUrl: images[imageIndex]['imageLink'],
-                                errorWidget: (context, url, childs) {
-                                  return Image.asset('assets/default.jpg');
-                                },
-                                height: MediaQuery.of(context).size.height * 0.45,
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                fit: BoxFit.cover,
+                            Align(
+                              alignment: Alignment.center,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(5.0),
+                                clipBehavior: Clip.hardEdge,
+                                child: CachedNetworkImage(
+                                  imageUrl: images[imageIndex]['imageLink'],
+                                  errorWidget: (context, url, childs) {
+                                    return Image.asset('assets/default.jpg');
+                                  },
+                                  height: MediaQuery.of(context).size.height * 0.45,
+                                  width: MediaQuery.of(context).size.width * 0.7,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                             Align(
@@ -162,7 +165,7 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => PhotoSlideShow(
-                                        images: images,
+                                        images: images.map((e) => e['imageLink']).toList(),
                                         initialPage: imageIndex,
                                       ),
                                     ),
@@ -177,6 +180,9 @@ class _NonInventoryInfoState extends State<NonInventoryInfo> {
                             ),
                           ],
                         ),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     buttons(
                         title: 'Previous',

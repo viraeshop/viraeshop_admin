@@ -7,6 +7,7 @@ class CustomerProvider extends ChangeNotifier {
   num alertLimit = 0;
   num accountLimit = 0;
   num placeholderAmount = 0;
+  num dueBalance = 0;
   bool isLoading = false;
 
   void updateAmounts(
@@ -14,36 +15,40 @@ class CustomerProvider extends ChangeNotifier {
       required num creditBalance,
       required num alertLimit,
       required num accountLimit,
+      required num dueBalance,
       bool add = false}) {
     this.wallet = wallet;
     this.creditBalance = creditBalance;
     this.alertLimit = alertLimit;
     this.accountLimit = accountLimit;
+    this.dueBalance = dueBalance;
     notifyListeners();
   }
-  void updateAmount (num value, Amount amount){
-    if(amount == Amount.wallet){
-     wallet = value;
-    } else if (amount == Amount.credit){
+
+  void updateAmount(num value, Amount amount) {
+    if (amount == Amount.wallet) {
+      wallet = value;
+    } else if (amount == Amount.credit) {
       creditBalance = value;
-    } else if (amount == Amount.alert){
+    } else if (amount == Amount.alert) {
       alertLimit = value;
     } else {
       accountLimit = value;
     }
     notifyListeners();
   }
-  void changeAmountType (Amount amount){
+
+  void changeAmountType(Amount amount) {
     defaultAmount = amount;
     notifyListeners();
   }
 
-  void switchLoading (bool value){
+  void switchLoading(bool value) {
     isLoading = value;
     notifyListeners();
   }
 
-  void updatePlaceHolderAmount (num value){
+  void updatePlaceHolderAmount(num value) {
     placeholderAmount = value;
     notifyListeners();
   }

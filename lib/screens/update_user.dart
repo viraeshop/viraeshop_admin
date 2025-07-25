@@ -112,6 +112,7 @@ class _UpdateUserState extends State<UpdateUser> {
         creditBalance: widget.userInfo['creditBalance'] ?? 0,
         alertLimit: widget.userInfo['alertLimit'] ?? 0,
         accountLimit: widget.userInfo['accountLimit'] ?? 0,
+        dueBalance: widget.userInfo['dueBalance'] ?? 0,
       );
     });
     default_role = widget.userInfo['role'];

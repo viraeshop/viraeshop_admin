@@ -344,6 +344,7 @@ void onCustomerTap(BuildContext context, Map customersList, String role) {
     userInfo['creditBalance'] = customersList['creditBalance'];
     userInfo['alertLimit'] = customersList['alertLimit'];
     userInfo['accountLimit'] = customersList['accountLimit'];
+    userInfo['dueBalance'] = customersList['dueBalance'];
   }
   Navigator.push(
     context,
@@ -374,6 +375,7 @@ void onSelectCustomer(BuildContext context, Map customersList) {
     info['creditBalance'] = customersList['creditBalance'];
     info['alertBalance'] = customersList['alertLimit'];
     info['accountBalance'] = customersList['accountLimit'];
+    info['dueBalance'] = customersList['dueBalance'];
   }
   Hive.box('customer').putAll(info);
   Navigator.pop(context);

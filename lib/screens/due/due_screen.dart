@@ -121,6 +121,7 @@ class _DueScreenState extends State<DueScreen> {
                         String date =
                             DateFormat.yMMMd().format(timestamp.toDate());
                         return OrderTranzCard(
+                          key: ValueKey(customerInvoices[i]['invoiceNo']),
                           price: customerInvoices[i]['price'].toString(),
                           employeeName: customerInvoices[i]['adminInfo']
                               ['name'],

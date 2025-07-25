@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +20,11 @@ import 'done_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final num paid, due, advance;
-  const PaymentScreen({super.key, required this.paid, required this.due, required this.advance});
+  const PaymentScreen(
+      {super.key,
+      required this.paid,
+      required this.due,
+      required this.advance});
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
@@ -45,6 +48,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String customerId = customerBox.isEmpty ? '' : customerBox.get('id') ?? '';
   String customerRole = customerBox.isEmpty ? '' : customerBox.get('role');
   String invoiceNo = generateInvoiceNumber().toString();
+  num walletBalance = 0;
+  num newDueBalance = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -76,13 +81,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
         isWithNonInventory = true;
       }
     }
-    if(isWithNonInventory){
+    if (isWithNonInventory) {
       for (var element in shops) {
-        if (!supplierShops.any((item) => element.supplierId == item['supplierId'])) {
+        if (!supplierShops
+            .any((item) => element.supplierId == item['supplierId'])) {
           List<Cart> nonInventoryItems = cartItems
               .where((cartItem) =>
-          !cartItem.isInventory &&
-              element.supplierId == cartItem.supplierId)
+                  !cartItem.isInventory &&
+                  element.supplierId == cartItem.supplierId)
               .toList();
           Map<String, dynamic> shopItem = {};
           for (var item in nonInventoryItems) {
@@ -94,7 +100,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               shopItem['paid'] += 0;
               shopItem['due'] += 0;
               shopItem['description'] +=
-              ' ,${item.productName}(${item.quantity} Items)';
+                  ' ,${item.productName}(${item.quantity} Items)';
             } else {
               shopItem['supplierId'] = item.supplierId;
               shopItem['price'] = item.productPrice;
@@ -103,7 +109,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               shopItem['paid'] = 0;
               shopItem['due'] = 0;
               shopItem['description'] =
-              '${item.productName}(${item.quantity} Items)';
+                  '${item.productName}(${item.quantity} Items)';
             }
           }
           supplierShops.add(shopItem);
@@ -138,7 +144,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
               setState(() {
                 isLoading = false;
               });
-              debugPrint(state.response.result.toString());
 
               ///Todo: Implement product update here also...
               transInfo['invoiceNo'] = state.response.result?['invoiceNo'];
@@ -173,6 +178,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
               duration: 50,
             );
           } else if (state is RequestFinishedCustomerState) {
+            customerBox.put('wallet', walletBalance);
+            customerBox.put('dueBalance', newDueBalance);
             transacBloc.add(AddTransactionEvent(
                 token: jWTToken, transactionModel: transInfo));
           }
@@ -263,22 +270,33 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           'profit': profit,
                           'channel': 'in_store',
                         };
-                        if (isWithNonInventory) transInfo['shops'] = supplierShops;
+                        if (isWithNonInventory) {
+                          transInfo['shops'] = supplierShops;
+                        }
                         if (customerRole == 'agents' && widget.paid == 0) {
-                          num wallet = customerBox.get('wallet', defaultValue: 0);
+                          num wallet =
+                              customerBox.get('wallet', defaultValue: 0);
+                          num dueBalance =
+                              customerBox.get('dueBalance', defaultValue: 0);
                           num balanceToPay = totalPrice - discount;
                           if (kDebugMode) {
                             print(wallet);
                           }
                           if (wallet >= balanceToPay) {
-                            num balance = wallet - balanceToPay;
-                            customerBox.put('wallet', balance);
-                            customerBloc.add(UpdateCustomerEvent(
+                            setState(() {
+                              walletBalance = wallet - balanceToPay;
+                              newDueBalance = dueBalance + balanceToPay;
+                            });
+                            customerBloc.add(
+                              UpdateCustomerEvent(
                                 token: jWTToken,
                                 customerId: customerId,
                                 customerModel: {
-                                  'wallet': balance,
-                                }));
+                                  'wallet': walletBalance,
+                                  'dueBalance': newDueBalance,
+                                },
+                              ),
+                            );
                           } else {
                             toast(
                               context: context,

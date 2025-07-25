@@ -25,13 +25,21 @@ class WalletScreen extends StatelessWidget {
         child: BlocListener<CustomersBloc, CustomerState>(
           listener: (context, state) {
             if (state is RequestFinishedCustomerState) {
+              final response = state.response.result ?? {};
+              final wallet = response['wallet'] ?? 0;
+              final creditBalance = response['creditBalance'] ?? 0;
+              final alertLimit = response['alertLimit'] ?? 0;
+              final accountLimit = response['accountLimit'] ?? 0;
+              final dueBalance = response['dueBalance'] ?? 0;
               final customerProvider =
                   Provider.of<CustomerProvider>(context, listen: false);
               customerProvider.switchLoading(false);
-              customerProvider.updateAmount(
-                customerProvider.placeholderAmount,
-                customerProvider.defaultAmount,
-              );
+              customerProvider.updateAmounts(
+                  wallet: wallet,
+                  creditBalance: creditBalance,
+                  alertLimit: alertLimit,
+                  accountLimit: accountLimit,
+                  dueBalance: dueBalance);
               snackBar(
                 text: 'Amount added',
                 context: context,
@@ -130,8 +138,7 @@ class WalletScreen extends StatelessWidget {
                         ),
                         WalletRow(
                           title: 'USED BALANCE: ',
-                          value: (customer.creditBalance - customer.wallet)
-                              .toString(),
+                          value: (customer.dueBalance).toString(),
                           amount: Amount.wallet,
                           customerId: customerId,
                           isEditable: false,

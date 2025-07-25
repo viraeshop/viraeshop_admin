@@ -110,6 +110,7 @@ class _DueReceiptState extends State<DueReceipt> {
   Map<String, dynamic> editedInvoice = {};
   @override
   Widget build(BuildContext context) {
+    print(customerInfo);
     return BlocListener<CustomersBloc, CustomerState>(
       listener: (context, state) {
         if (state is RequestFinishedCustomerState) {
@@ -154,6 +155,11 @@ class _DueReceiptState extends State<DueReceipt> {
         },
         listener: (context, state) {
           if (state is RequestFinishedTransactionState) {
+            if(walletAction == WalletAction.none){
+              setState(() {
+                isLoading = false;
+              });
+            }
             List deletedItems = editedInvoice['deletedItems'] ?? [];
             if (deletedItems.isNotEmpty) {
               List products = Hive.box(productsBox).get(productsKey);
@@ -776,8 +782,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                                     isEditing = false;
                                                   });
                                                   // Add the payment to the payList and update the invoice
-                                                  List newPayList =
-                                                      payList.toList();
+                                                  List newPayList = [];
                                                   setState(() {
                                                     due -= pay;
                                                     payList.add({
@@ -809,6 +814,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                                     walletAction =
                                                         WalletAction.add;
                                                     isEditing = false;
+                                                    payController.clear();
                                                   });
                                                 } else {
                                                   // Show a toast if the pay is greater than due

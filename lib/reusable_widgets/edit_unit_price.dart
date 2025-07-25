@@ -40,82 +40,80 @@ class _EditUnitPriceState extends State<EditUnitPrice> {
           bottom: BorderSide(color: Colors.black12),
         ),
       ),
-      body: Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Edit unit price',
-              style: kProductNameStylePro,
-            ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: TextField(
-                style: kProductNameStyle,
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.none,
-                controller: _controller,
-                decoration: const InputDecoration(
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kMainColor),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kMainColor),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: kMainColor, width: 2.0),
-                  ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Edit unit price',
+            style: kProductNameStylePro,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.4,
+            child: TextField(
+              style: kProductNameStyle,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.none,
+              controller: _controller,
+              decoration: const InputDecoration(
+                border: UnderlineInputBorder(
+                  borderSide: BorderSide(color: kMainColor),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: kMainColor),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: kMainColor, width: 2.0),
                 ),
               ),
             ),
-            const SizedBox(
-              height: 50.0,
-            ),
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: NumericKeyboard(
-                textColor: kSubMainColor,
-                onKeyboardTap: (value) {
-                  setState(
-                    () {
-                      nums.add(value);
-                      _controller.text = nums.join();
-                    },
-                  );
-                },
-                leftButtonFn: () {
-                  setState(() {
-                    nums.removeLast();
+          ),
+          const SizedBox(
+            height: 50.0,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: NumericKeyboard(
+              textColor: kSubMainColor,
+              onKeyboardTap: (value) {
+                setState(
+                  () {
+                    nums.add(value);
                     _controller.text = nums.join();
-                  });
-                },
-                leftIcon: const Icon(
-                  Icons.backspace,
-                  size: 30.0,
-                  color: kSubMainColor,
-                ),
-                rightButtonFn: () {
-                  num newUnitPrice = num.parse(_controller.text);
-                  Box box = Hive.box('cartDetails');
-                  num totalPrice = box.get('totalPrice', defaultValue: 0.0);
-                  Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
-                  totalPrice -= item!.productPrice;
-                  item.unitPrice = newUnitPrice;
-                  item.productPrice = item.quantity * newUnitPrice;
-                  box.put('totalPrice', totalPrice + item.productPrice);
-                  Hive.box<Cart>('cart').put(widget.keyStore, item);                  
-                  Navigator.pop(context);                  
-                },
-                rightIcon: const Icon(
-                  Icons.done,
-                  size: 30.0,
-                  color: kSubMainColor,
-                ),
+                  },
+                );
+              },
+              leftButtonFn: () {
+                setState(() {
+                  nums.removeLast();
+                  _controller.text = nums.join();
+                });
+              },
+              leftIcon: const Icon(
+                Icons.backspace,
+                size: 30.0,
+                color: kSubMainColor,
               ),
-            )
-          ],
-        ),
+              rightButtonFn: () {
+                num newUnitPrice = num.parse(_controller.text);
+                Box box = Hive.box('cartDetails');
+                num totalPrice = box.get('totalPrice', defaultValue: 0.0);
+                Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
+                totalPrice -= item!.productPrice;
+                item.unitPrice = newUnitPrice;
+                item.productPrice = item.quantity * newUnitPrice;
+                box.put('totalPrice', totalPrice + item.productPrice);
+                Hive.box<Cart>('cart').put(widget.keyStore, item);
+                Navigator.pop(context);
+              },
+              rightIcon: const Icon(
+                Icons.done,
+                size: 30.0,
+                color: kSubMainColor,
+              ),
+            ),
+          )
+        ],
       ),
     );
   }

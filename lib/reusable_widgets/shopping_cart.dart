@@ -322,7 +322,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                                                 Hive.box('cartDetails')
                                                     .listenable(),
                                             builder: (context, Box box, childs) {
-                                              var totalPrice =
+                                              num totalPrice =
                                                   box.get('totalPrice') -
                                                       box.get('discountAmount',
                                                           defaultValue: 0);

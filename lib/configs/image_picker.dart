@@ -44,10 +44,10 @@ Widget imagePickerWidget({
                       bottomLeft: Radius.circular(10),
                       bottomRight: Radius.circular(10)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
+                child: const Padding(
+                  padding: EdgeInsets.all(5.0),
                   child: Column(
-                    children: const [
+                    children: [
                       Text('Upload Image',
                           textAlign: TextAlign.center,
                           style: TextStyle(

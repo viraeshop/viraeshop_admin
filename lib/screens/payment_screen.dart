@@ -62,6 +62,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'productId': element.productId,
         'buyPrice': element.buyPrice,
         'isInventory': element.isInventory,
+        'isInfinity': element.isInfinity,
         'productName': element.productName,
         'productPrice': element.productPrice,
         'unitPrice': element.unitPrice,

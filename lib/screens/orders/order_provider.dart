@@ -53,6 +53,11 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateReceiveStatus (String status, int index){
+    orderProducts[index].receiveStatus = status;
+    notifyListeners();
+  }
+
   void updateOrderInfo(String key,dynamic value){
     orderInfo[key] = value;
     notifyListeners();

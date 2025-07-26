@@ -170,18 +170,21 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 );
               }
             }
-            if (currentStage == OrderStages.receiving &&
-                status[statusIndex] == 'Failed') {
-              orderUpdate(
-                context: context,
-                data: const {
-                  'receiveStatus': 'failed',
-                  'notificationType': 'employee2Admin',
-                  'orderStage': 'receiving',
-                },
-                orderId: widget.orderId,
-                token: jWTToken,
-              );
+            if (currentStage == OrderStages.receiving) {
+              Provider.of<OrderProvider>(context, listen: false)
+                  .updateReceiveStatus(status[statusIndex].toLowerCase(), widget.index);
+              if (status[statusIndex] == 'Failed') {
+                orderUpdate(
+                  context: context,
+                  data: const {
+                    'receiveStatus': 'failed',
+                    'notificationType': 'employee2Admin',
+                    'orderStage': 'receiving',
+                  },
+                  orderId: widget.orderId,
+                  token: jWTToken,
+                );
+            }
             }
             if (currentStage == OrderStages.processing) {
               orderUpdate(
@@ -239,7 +242,6 @@ class _OrderProductCardState extends State<OrderProductCard> {
                   token: jWTToken,
                 );
               } else {
-                print(dropdownValue);
                 setState(() {
                   newQuantity =
                       (widget.orderInfo['quantity'] - widget.product.quantity) +

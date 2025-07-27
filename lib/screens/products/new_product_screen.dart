@@ -217,7 +217,7 @@ class _NewProductState extends State<NewProduct>
           Map supplier = Hive.box('suppliers').toMap();
           if (currentEvent == Events.onUpdate) {
             List deletedImages = Hive.box('images').get('deletedImages') ?? [];
-            List img = widget.info['images'] ?? [];
+            List<Map<String, dynamic>> img = widget.info['images'].cast<Map<String, dynamic>>();
             if (deletedImages.isNotEmpty && img.isNotEmpty) {
               for (var image in deletedImages) {
                 img.removeWhere(

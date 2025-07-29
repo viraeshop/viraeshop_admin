@@ -284,20 +284,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             print(wallet);
                           }
                           if (wallet >= balanceToPay) {
-                            setState(() {
-                              walletBalance = wallet - balanceToPay;
-                              newDueBalance = dueBalance + balanceToPay;
-                            });
-                            customerBloc.add(
-                              UpdateCustomerEvent(
+                            transacBloc.add(
+                              AddTransactionEvent(
                                 token: jWTToken,
-                                customerId: customerId,
-                                customerModel: {
-                                  'wallet': walletBalance,
-                                  'dueBalance': newDueBalance,
-                                },
+                                transactionModel: transInfo,
                               ),
                             );
+                            // setState(() {
+                            //   walletBalance = wallet - balanceToPay;
+                            //   newDueBalance = dueBalance + balanceToPay;
+                            // });
+                            // customerBloc.add(
+                            //   UpdateCustomerEvent(
+                            //     token: jWTToken,
+                            //     customerId: customerId,
+                            //     customerModel: {
+                            //       'wallet': walletBalance,
+                            //       'dueBalance': newDueBalance,
+                            //     },
+                            //   ),
+                            // );
                           } else {
                             toast(
                               context: context,
@@ -307,6 +313,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             setState(() {
                               isLoading = false;
                             });
+                            return;
                           }
                         } else {
                           transacBloc.add(

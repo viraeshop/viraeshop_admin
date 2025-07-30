@@ -513,7 +513,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${items[i]['productName']} (${items[i]['productId']})',
+                                    '${items[i]['productName']} (${items[i]['productCode']})',
                                     style: kProductNameStylePro,
                                     softWrap: true,
                                   ),

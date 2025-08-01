@@ -1,4 +1,3 @@
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +28,8 @@ class AddCategory extends StatefulWidget {
   final bool isSubCategory;
   final Map<String, dynamic>? category;
   const AddCategory(
-      {super.key, this.isEdit = false,
+      {super.key,
+      this.isEdit = false,
       this.category,
       this.isSubCategory = false,
       this.categoryId = 0});
@@ -53,9 +53,8 @@ class _AddCategoryState extends State<AddCategory> {
   void initState() {
     print(widget.category);
     if (widget.isEdit == true) {
-      setState(() {
-        nameController.text = widget.category!['category'] ?? '';
-      });
+      imagePath = widget.category!['image'] ?? '';
+      nameController.text = widget.category!['category'] ?? '';
     }
     super.initState();
   }
@@ -127,7 +126,6 @@ class _AddCategoryState extends State<AddCategory> {
           } else {
             nameController.clear();
             toast(context: context, title: 'Category created successfully');
-            print('This is category creation');
             if (!widget.isSubCategory) {
               categories.add({
                 'category': nameController.text,
@@ -137,7 +135,6 @@ class _AddCategoryState extends State<AddCategory> {
             } else {
               for (int i = 0; i < categories.length; i++) {
                 if (categories[i]['categoryId'] == widget.categoryId) {
-                  print('This is sub category creation');
                   categories[i]['subCategories'] = [
                     {
                       'category': nameController.text,
@@ -150,7 +147,6 @@ class _AddCategoryState extends State<AddCategory> {
               }
             }
           }
-          print(categories);
           Hive.box(productsBox).put(catKey, categories);
           setState(() {
             onDelete = false;
@@ -262,7 +258,7 @@ class _AddCategoryState extends State<AddCategory> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         imagePickerWidget(
-                          onTap: () async{
+                          onTap: () async {
                             try {
                               PlatformFile? imageResult =
                                   await imagePickerService.pickImage(context);
@@ -274,7 +270,6 @@ class _AddCategoryState extends State<AddCategory> {
                               setState(() {
                                 imagePath = imageResult.path ?? '';
                                 this.imageData = imageData;
-                                
                               });
                             } catch (e) {
                               if (kDebugMode) {
@@ -284,6 +279,9 @@ class _AddCategoryState extends State<AddCategory> {
                             }
                           },
                           imagePath: imagePath,
+                          showBottomCard: !widget.isEdit,
+                          height: 70,
+                          width: 150,
                         ),
                         const SizedBox(
                           height: 10.0,
@@ -341,55 +339,58 @@ class _AddCategoryState extends State<AddCategory> {
               ),
             ),
           ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.all(10),
-            child: bottomCard(
-              context: context,
-              text: 'Add Category',
-              onTap: () {
-                final categoryBloc = BlocProvider.of<CategoryBloc>(context);
-                if (_formKey.currentState!.validate()) {
-                  setState(() {
-                    load = true;
-                  });
-                  if (widget.isEdit) {
-                    categoryBloc.add(UpdateCategoryEvent(
-                        token: jWTToken,
-                        categoryId: widget.category![widget.isSubCategory
-                                    ? 'subCategoryId'
-                                    : 'categoryId']
-                                .toString() ??
-                            '',
-                        categoryModel: {
-                          'category': nameController.text,
-                          'image': imageData['url'],
-                          'imageKey': imageData['key'],
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: bottomCard(
+                context: context,
+                text: 'Add Category',
+                onTap: () {
+                  final categoryBloc = BlocProvider.of<CategoryBloc>(context);
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      load = true;
+                    });
+                    if (widget.isEdit) {
+                      categoryBloc.add(UpdateCategoryEvent(
+                          token: jWTToken,
+                          categoryId: widget.category![widget.isSubCategory
+                                      ? 'subCategoryId'
+                                      : 'categoryId']
+                                  .toString() ??
+                              '',
+                          categoryModel: {
+                            'category': nameController.text,
+                            'image': imageData['url'],
+                            'imageKey': imageData['key'],
+                            'categoryId': widget.categoryId,
+                            if (widget.isSubCategory) 'isSubCategory': true,
+                          }));
+                    } else {
+                      Map<String, dynamic> data = {
+                        'category': nameController.text,
+                        'image': imageData['url'] ?? '',
+                        'imageKey': imageData['key'] ?? '',
+                        if (widget.isSubCategory)
                           'categoryId': widget.categoryId,
-                          if (widget.isSubCategory) 'isSubCategory': true,
-                        }));
-                  } else {
-                    Map<String, dynamic> data = {
-                      'category': nameController.text,
-                      'image': imageData['url'] ?? '',
-                      'imageKey': imageData['key'] ?? '',
-                      if (widget.isSubCategory) 'categoryId': widget.categoryId,
-                      if (widget.isSubCategory) 'isSubCategory': true,
-                    };
-                    if (kDebugMode) {
-                      print('data to go: $data');
+                        if (widget.isSubCategory) 'isSubCategory': true,
+                      };
+                      if (kDebugMode) {
+                        print('data to go: $data');
+                      }
+                      categoryBloc.add(
+                        AddCategoryEvent(
+                          token: jWTToken,
+                          categoryModel: data,
+                        ),
+                      );
                     }
-                    categoryBloc.add(
-                      AddCategoryEvent(
-                        token: jWTToken,
-                        categoryModel: data,
-                      ),
-                    );
+                  } else {
+                    showDialogBox(
+                        buildContext: context, msg: 'Fields Cannot Be Empty');
                   }
-                } else {
-                  showDialogBox(
-                      buildContext: context, msg: 'Fields Cannot Be Empty');
-                }
-              },
+                },
+              ),
             ),
           ),
         ),

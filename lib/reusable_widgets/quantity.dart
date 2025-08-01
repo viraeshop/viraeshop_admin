@@ -167,10 +167,13 @@ class _QuantityScreenState extends State<QuantityScreen> {
                 int totalItems = box.get('totalItems', defaultValue: 0);
                 num totalPrice = box.get('totalPrice', defaultValue: 0.0);
                 Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
-                totalItems -= item!.quantity;
+                num discountPerUnit = item!.discount / item.quantity;
+                num pricePerUnit = item.productPrice / item.quantity;
+                totalItems -= item.quantity;
                 totalPrice -= item.productPrice;
                 item.quantity = quantity;
-                item.productPrice = item.unitPrice * quantity;
+                item.productPrice = pricePerUnit * quantity;
+                item.discount = discountPerUnit * quantity;
                 if (kDebugMode) {
                   print(item.productPrice);
                 }

@@ -75,162 +75,164 @@ class _MessageState extends State<Message> {
           )
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: kBackgroundColor,
-        ),
-        child: Stack(
-          children: [
-            FractionallySizedBox(
-              heightFactor: 0.9,
-              alignment: Alignment.topCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: _generalCrud.getChatMessages(widget.userId),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      if (kDebugMode) {
-                        print(snapshot.error);
-                      }
-                      return const Center(
-                        child: Text(
-                          'Failed to Fetch messages',
-                          style: kBigErrorTextStyle,
-                        ),
-                      );
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.active) {
-                      final messages = snapshot.data?.docs ?? [];
-                      if (messages.isNotEmpty) {
-                        return ListView.builder(
-                          itemCount: messages.length,
-                          //shrinkWrap: true,
-                          reverse: true,
-                          itemBuilder: (context, i) {
-                            Timestamp timestamp = messages[i].get('date');
-                            String time = GetTimeAgo.parse(timestamp.toDate());
-                            Map<String, dynamic> data =
-                                messages[i].data() as Map<String, dynamic>;
-                            bool isImage = data['isImage'] ?? false;
-                            if (messages[i].get('sender') == userAuthInfo.uid) {
-                              if (isImage) {
-                                return ChatImageWidget(
-                                  profileImage: adminInfo['profileImage'] ??
-                                      placeholderImage,
-                                  isGuest: false,
-                                  url: data['imageLink'],
-                                  time: time,
-                                );
-                              } else {
-                                return MeChatBubble(
-                                  profileImage: adminInfo['profileImage'] ??
-                                      placeholderImage,
-                                  message: messages[i].get('message') ?? '',
-                                  time: time,
-                                );
-                              }
-                            } else {
-                              if (isImage) {
-                                return ChatImageWidget(
-                                  isGuest: true,
-                                  url: data['imageLink'],
-                                  time: time,
-                                  profileImage:
-                                      data['profileImage'] ?? placeholderImage,
-                                );
-                              } else {
-                                return GuestMessage(
-                                  profileImage:
-                                      data['profileImage'] ?? placeholderImage,
-                                  message: messages[i].get('message'),
-                                  time: time,
-                                  customerName: widget.name,
-                                );
-                              }
-                            }
-                          },
-                        );
-                      } else {
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: kBackgroundColor,
+          ),
+          child: Stack(
+            children: [
+              FractionallySizedBox(
+                heightFactor: 0.9,
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: _generalCrud.getChatMessages(widget.userId),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        if (kDebugMode) {
+                          print(snapshot.error);
+                        }
                         return const Center(
                           child: Text(
-                            'No messages yet',
-                            style: kProductNameStylePro,
+                            'Failed to Fetch messages',
+                            style: kBigErrorTextStyle,
+                          ),
+                        );
+                      } else if (snapshot.connectionState ==
+                          ConnectionState.active) {
+                        final messages = snapshot.data?.docs ?? [];
+                        if (messages.isNotEmpty) {
+                          return ListView.builder(
+                            itemCount: messages.length,
+                            //shrinkWrap: true,
+                            reverse: true,
+                            itemBuilder: (context, i) {
+                              Timestamp timestamp = messages[i].get('date');
+                              String time = GetTimeAgo.parse(timestamp.toDate());
+                              Map<String, dynamic> data =
+                                  messages[i].data() as Map<String, dynamic>;
+                              bool isImage = data['isImage'] ?? false;
+                              if (messages[i].get('sender') == userAuthInfo.uid) {
+                                if (isImage) {
+                                  return ChatImageWidget(
+                                    profileImage: adminInfo['profileImage'] ??
+                                        placeholderImage,
+                                    isGuest: false,
+                                    url: data['imageLink'],
+                                    time: time,
+                                  );
+                                } else {
+                                  return MeChatBubble(
+                                    profileImage: adminInfo['profileImage'] ??
+                                        placeholderImage,
+                                    message: messages[i].get('message') ?? '',
+                                    time: time,
+                                  );
+                                }
+                              } else {
+                                if (isImage) {
+                                  return ChatImageWidget(
+                                    isGuest: true,
+                                    url: data['imageLink'],
+                                    time: time,
+                                    profileImage:
+                                        data['profileImage'] ?? placeholderImage,
+                                  );
+                                } else {
+                                  return GuestMessage(
+                                    profileImage:
+                                        data['profileImage'] ?? placeholderImage,
+                                    message: messages[i].get('message'),
+                                    time: time,
+                                    customerName: widget.name,
+                                  );
+                                }
+                              }
+                            },
+                          );
+                        } else {
+                          return const Center(
+                            child: Text(
+                              'No messages yet',
+                              style: kProductNameStylePro,
+                            ),
+                          );
+                        }
+                      } else {
+                        return Center(
+                          child: LoadingAnimationWidget.bouncingBall(
+                            color: kNewMainColor,
+                            size: 40,
                           ),
                         );
                       }
-                    } else {
-                      return Center(
-                        child: LoadingAnimationWidget.bouncingBall(
-                          color: kNewMainColor,
-                          size: 40,
-                        ),
-                      );
-                    }
-                  },
+                    },
+                  ),
                 ),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: MessageBar(
-                sendButtonColor: kNewMainColor,
-                onTextChanged: null,
-                onSend: (_) async {
-                  String message = _;
-                  await FirebaseFirestore.instance
-                      .collection('messages')
-                      .doc(widget.userId)
-                      .collection('messages')
-                      .add({
-                    'message': message,
-                    'sender': userAuthInfo.uid,
-                    'date': Timestamp.now(),
-                    'isFromCustomer': false,
-                    'isInitialMessage': false,
-                    'tokens': widget.customerToken,
-                    'adminName': adminInfo['name'],
-                    'profileImage':
-                        adminInfo['profileImage'] ?? placeholderImage,
-                  });
-                  try {
-                    await MessageCalls().sendNotificationFromCustomer({
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: MessageBar(
+                  sendButtonColor: kNewMainColor,
+                  onTextChanged: null,
+                  onSend: (_) async {
+                    String message = _;
+                    await FirebaseFirestore.instance
+                        .collection('messages')
+                        .doc(widget.userId)
+                        .collection('messages')
+                        .add({
                       'message': message,
+                      'sender': userAuthInfo.uid,
+                      'date': Timestamp.now(),
+                      'isFromCustomer': false,
+                      'isInitialMessage': false,
+                      'tokens': widget.customerToken,
+                      'adminName': adminInfo['name'],
+                      'profileImage':
+                          adminInfo['profileImage'] ?? placeholderImage,
                     });
-                  } catch (e) {
-                    debugPrint(e.toString());
-                  }
-                },
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8, right: 8),
-                    child: InkWell(
-                      child: const Icon(
-                        Icons.camera_alt,
-                        color: kNewMainColor,
-                        size: 24,
+                    try {
+                      await MessageCalls().sendNotificationFromCustomer({
+                        'message': message,
+                      });
+                    } catch (e) {
+                      debugPrint(e.toString());
+                    }
+                  },
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8, right: 8),
+                      child: InkWell(
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: kNewMainColor,
+                          size: 24,
+                        ),
+                        onTap: () {
+                          pickFile().then((image) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ChatImagePreview(
+                                    image: image!,
+                                    customerId: widget.userId,
+                                  );
+                                },
+                              ),
+                            );
+                          });
+                        },
                       ),
-                      onTap: () {
-                        pickFile().then((image) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return ChatImagePreview(
-                                  image: image!,
-                                  customerId: widget.userId,
-                                );
-                              },
-                            ),
-                          );
-                        });
-                      },
                     ),
-                  ),
-                ],
-              ),
-            )
-          ],
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

@@ -23,6 +23,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   static Box box = Hive.box('cartDetails');
   num discountAmount = 0.0;
   static num originalTotalPrice = 0;
+  int productQuantity = 0;
   num currentTotalPrice = 0;
   num discountPercent = 0;
   String cashHint = '';
@@ -36,10 +37,11 @@ class _DiscountScreenState extends State<DiscountScreen> {
       Cart? item = Hive.box<Cart>('cart').get(widget.keyStore);
       totalPrice -= item!.productPrice;
       item.productPrice = item.unitPrice * item.quantity;
-      cashHint = item.discount.toString();
+      cashHint = (item.discount/item.quantity).toString();
       percentHint = item.discountPercent.toString();
       originalTotalPrice = item.productPrice;
       currentTotalPrice = originalTotalPrice;
+      productQuantity = item.quantity;
     } else {
       originalTotalPrice = box.get('totalPrice', defaultValue: 0.0);
       currentTotalPrice = originalTotalPrice;
@@ -138,13 +140,14 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                     if (kDebugMode) {
                                       print(characters.join());
                                     }
+                                    final num newDiscount = num.parse(characters.join());
                                     setState(() {
-                                      discountAmount =
-                                          num.parse(characters.join());
+                                      discountAmount = widget.isItems ? newDiscount * productQuantity : newDiscount;
                                       if (discountAmount <= originalTotalPrice) {
                                         currentTotalPrice =
                                             (originalTotalPrice - discountAmount)
                                                 .round();
+                                        print(currentTotalPrice);
                                         discountPercent = (discountAmount /
                                                 originalTotalPrice) *
                                             100;
@@ -198,10 +201,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                         .where((p0) =>
                                             numbers.contains(p0) || p0 == '.')
                                         .toList();
-                                    //print(characters.join());
+                                    final num newDiscount = num.parse(characters.join());
                                     setState(() {
-                                      discountPercent =
-                                          num.parse(characters.join());
+                                      discountPercent = widget.isItems ? newDiscount * productQuantity : newDiscount;
                                       discountAmount =
                                           (discountPercent * originalTotalPrice) /
                                               100.round();
@@ -286,8 +288,9 @@ class _DiscountScreenState extends State<DiscountScreen> {
                                   item.discount = discountAmount;
                                   Hive.box<Cart>('cart')
                                       .put(widget.keyStore, item);
+                                  print('New Total price: ${currentTotalPrice + totalPrice}');
                                   box.put('totalPrice',
-                                      totalPrice + currentTotalPrice);
+                                      currentTotalPrice + totalPrice);
                                 } else {
                                   box.put('discountAmount', discountAmount);
                                   box.put('discountPercent', discountPercent);

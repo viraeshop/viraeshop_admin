@@ -23,11 +23,11 @@ class _CustomerRequestsState extends State<CustomerRequests> {
     // TODO: implement initState
     final customerBloc = BlocProvider.of<CustomersBloc>(context);
     final jWTToken = Hive.box('adminInfo').get('token');
-    customerBloc.add(GetCustomersEvent(
-        token: jWTToken,
-        query: 'all', isNewRequest: 'true'));
+    customerBloc.add(
+        GetCustomersEvent(token: jWTToken, query: 'all', isNewRequest: 'true'));
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -53,136 +53,135 @@ class _CustomerRequestsState extends State<CustomerRequests> {
         margin: const EdgeInsets.all(7.0),
         child: BlocBuilder<CustomersBloc, CustomerState>(
             builder: (context, state) {
-              if (state is FetchedCustomersState) {
-                final data = state.customerList;
-                int index = 0;
-                List requests = [];
-                for (var element in data) {
-                  requests.add(element.toJson());
-                }
-                return ListView.builder(
-                  itemCount: requests.length,
-                  itemBuilder: (context, i) {
-                    return Padding(
+          if (state is FetchedCustomersState) {
+            final data = state.customerList;
+            List requests = [];
+            for (var element in data) {
+              requests.add(element.toJson());
+            }
+            return ListView.builder(
+              itemCount: requests.length,
+              itemBuilder: (context, i) {
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Card(
+                    elevation: 5.0,
+                    color: kBackgroundColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: Card(
-                        elevation: 5.0,
-                        color: kBackgroundColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.person,
-                                  color: kNewTextColor,
-                                  size: 45.0,
-                                ),
-                                title: Text(
-                                  '${requests[i]['name']}',
-                                  style: kProductNameStylePro,
-                                ),
-                              ),
-                              // SizedBox(
-                              //   height: 10.0,
-                              // ),
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.call,
-                                  size: 20.0,
-                                  color: kSubMainColor,
-                                ),
-                                title: Text(
-                                  '${requests[i]['mobile']}',
-                                  style: kProductNameStylePro,
-                                ),
-                              ),
-                              // SizedBox(
-                              //   height: 10.0,
-                              // ),
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.mail,
-                                  size: 20.0,
-                                  color: kSubMainColor,
-                                ),
-                                title: Text(
-                                  '${requests[i]['email']}',
-                                  style: kProductNameStylePro,
-                                ),
-                              ),
-                              // SizedBox(
-                              //   height: 10.0,
-                              // ),
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.supervisor_account_outlined,
-                                  size: 20.0,
-                                  color: kSubMainColor,
-                                ),
-                                title: Text(
-                                  '${requests[i]['role']}',
-                                  style: kProductNameStylePro,
-                                ),
-                              ),
-                              // SizedBox(
-                              //   height: 10.0,
-                              // ),
-                              ListTile(
-                                leading: const Icon(
-                                  Icons.place,
-                                  size: 20.0,
-                                  color: kSubMainColor,
-                                ),
-                                title: Text(
-                                  '${requests[i]['address']}',
-                                  style: kProductNameStylePro,
-                                ),
-                              ),
-                              // SizedBox(
-                              //   height: 10.0,
-                              // ),
-                              DialogButton(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => NewCustomerInfoScreen(
-                                        info: requests[i],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                title: 'Review',
-                                width: double.infinity,
-                                color: kNewTextColor,
-                              )
-                            ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            leading: const Icon(
+                              Icons.person,
+                              color: kNewTextColor,
+                              size: 45.0,
+                            ),
+                            title: Text(
+                              '${requests[i]['name']}',
+                              style: kProductNameStylePro,
+                            ),
                           ),
-                        ),
+                          // SizedBox(
+                          //   height: 10.0,
+                          // ),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.call,
+                              size: 20.0,
+                              color: kSubMainColor,
+                            ),
+                            title: Text(
+                              '${requests[i]['mobile']}',
+                              style: kProductNameStylePro,
+                            ),
+                          ),
+                          // SizedBox(
+                          //   height: 10.0,
+                          // ),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.mail,
+                              size: 20.0,
+                              color: kSubMainColor,
+                            ),
+                            title: Text(
+                              '${requests[i]['email']}',
+                              style: kProductNameStylePro,
+                            ),
+                          ),
+                          // SizedBox(
+                          //   height: 10.0,
+                          // ),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.supervisor_account_outlined,
+                              size: 20.0,
+                              color: kSubMainColor,
+                            ),
+                            title: Text(
+                              '${requests[i]['role']}',
+                              style: kProductNameStylePro,
+                            ),
+                          ),
+                          // SizedBox(
+                          //   height: 10.0,
+                          // ),
+                          ListTile(
+                            leading: const Icon(
+                              Icons.place,
+                              size: 20.0,
+                              color: kSubMainColor,
+                            ),
+                            title: Text(
+                              '${requests[i]['address']}',
+                              style: kProductNameStylePro,
+                            ),
+                          ),
+                          // SizedBox(
+                          //   height: 10.0,
+                          // ),
+                          DialogButton(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NewCustomerInfoScreen(
+                                    info: requests[i],
+                                  ),
+                                ),
+                              );
+                            },
+                            title: 'Review',
+                            width: double.infinity,
+                            color: kNewTextColor,
+                          )
+                        ],
                       ),
-                    );
-                  },
-                );
-              } else if (state is OnErrorCustomerState) {
-                return Center(
-                  child: Text(
-                    state.message,
-                    style: kProductNameStylePro,
+                    ),
                   ),
                 );
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: kMainColor,
-                  ),
-                );
-              }
-            }),
+              },
+            );
+          } else if (state is OnErrorCustomerState) {
+            return Center(
+              child: Text(
+                state.message,
+                style: kProductNameStylePro,
+              ),
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: kMainColor,
+              ),
+            );
+          }
+        }),
       ),
     );
   }

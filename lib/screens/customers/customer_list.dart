@@ -324,60 +324,21 @@ class _CustomersState extends State<Customers> {
   }
 }
 
-void onCustomerTap(BuildContext context, Map customersList, String role) {
-  Map<String, dynamic> userInfo = {
-    'name': customersList['name'],
-    'mobile': customersList['mobile'],
-    'address': customersList['address'],
-    'customerId': customersList['customerId'],
-    'email': customersList['email'],
-    'role': customersList['role'],
-    'idType': customersList['idType'],
-    'idImage': customersList['idImage'],
-    'idNumber': customersList['idNumber'],
-  };
-  if (customersList['role'] != 'general') {
-    userInfo['businessName'] = customersList['businessName'];
-  }
-  if (customersList['role'] == 'agents') {
-    userInfo['wallet'] = customersList['wallet'];
-    userInfo['creditBalance'] = customersList['creditBalance'];
-    userInfo['alertLimit'] = customersList['alertLimit'];
-    userInfo['accountLimit'] = customersList['accountLimit'];
-    userInfo['dueBalance'] = customersList['dueBalance'];
-  }
+void onCustomerTap(BuildContext context, Map<String, dynamic> customerInfo, String role) {
   Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => UpdateUser(
-        userInfo: userInfo,
-        userId: userInfo['customerId'],
+        userInfo: customerInfo,
+        userId: customerInfo['customerId'],
         role: role,
       ),
     ),
   );
 }
 
-void onSelectCustomer(BuildContext context, Map customersList) {
-  Map info = {
-    'id': customersList['customerId'],
-    'role': customersList['role'],
-    'name': customersList['name'],
-    'address': customersList['address'],
-    'mobile': customersList['mobile'],
-    'email': customersList['email'],
-    'search_keywords': customersList['search_keywords'],
-    'businessName': customersList['businessName'],
-  };
-  if (customersList['role'] == 'agents') {
-    info['wallet'] = customersList['wallet'];
-    info['wallet'] = customersList['wallet'];
-    info['creditBalance'] = customersList['creditBalance'];
-    info['alertBalance'] = customersList['alertLimit'];
-    info['accountBalance'] = customersList['accountLimit'];
-    info['dueBalance'] = customersList['dueBalance'];
-  }
-  Hive.box('customer').putAll(info);
+void onSelectCustomer(BuildContext context, Map<String, dynamic> customerInfo) {
+  Hive.box('customer').putAll(customerInfo);
   Navigator.pop(context);
   snackBar(
     text: 'Customer info added',

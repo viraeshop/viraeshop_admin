@@ -581,7 +581,7 @@ class _TextRowState extends State<TextRow> {
                                     'due': due,
                                   });
                               provider.updateOrderInfo('advance', advance);
-                              provider.updateOrderInfo('subTotal', due);
+                              provider.updateOrderInfo('due', due);
                               break;
                           }
                         }

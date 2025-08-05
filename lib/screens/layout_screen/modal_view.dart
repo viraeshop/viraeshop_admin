@@ -27,6 +27,7 @@ class _ModalWidgetState extends State<ModalWidget> {
   String processingOrdersCount = '';
   String receivedOrdersCount = '';
   String assignedAdminOrderCount = '';
+  String customerAccountUpgradeRequests = '';
   final adminId = Hive.box('adminInfo').get('adminId', defaultValue: '');
   @override
   void initState() {
@@ -55,6 +56,11 @@ class _ModalWidgetState extends State<ModalWidget> {
         assignedAdminOrderCount = event.get('totalOrder').toString();
       });
     });
+    GeneralCrud().getNotifyInfo('customerAccountUpgradeRequests').listen((event) {
+      setState(() {
+        customerAccountUpgradeRequests = event.get('totalRequest').toString();
+      });
+    });
     super.initState();
   }
 
@@ -79,6 +85,7 @@ class _ModalWidgetState extends State<ModalWidget> {
                   processingOrdersCount: processingOrdersCount,
                   receivedOrdersCount: receivedOrdersCount,
                   assignedProcessingOrderCount: assignedAdminOrderCount,
+                  customerAccountUpgradeRequests: customerAccountUpgradeRequests,
                 ),
           appBar: myAppBar(
             notifyOnPress: () {

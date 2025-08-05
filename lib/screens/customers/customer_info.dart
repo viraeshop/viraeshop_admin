@@ -37,13 +37,13 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
   final _formKey = GlobalKey<FormState>();
   Map<String, String> strings = {};
   Map userInfo = {};
+
+  bool warningNotification = false;
   @override
   void initState() {
 // TODO: implement initState
     userInfo = widget.info;
-    if (kDebugMode) {
-      print('userId: ${userInfo['userId']}');
-    }
+    warningNotification = userInfo['warningNotification'] ?? false;
     strings['currentEmail'] = userInfo['email'];
     strings['currentName'] = userInfo['name'];
     strings['currentAddress'] = userInfo['address'];
@@ -159,6 +159,31 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                       );
                     }),
                   ),
+                  SwitchListTile(
+                    title: const Text(
+                      'Turn on warning notification',
+                      style: kProductNameStylePro,
+                    ),
+                    value: warningNotification,
+                    onChanged: (value) {
+                      final customerBloc =
+                          BlocProvider.of<CustomersBloc>(context);
+                      final jWTToken = Hive.box('adminInfo').get('token');
+                      customerBloc.add(
+                        UpdateCustomerEvent(
+                          token: jWTToken,
+                          customerId: widget.info['customerId'],
+                          customerModel: {
+                            'warningNotification': value,
+                          },
+                        ),
+                      );
+                      setState(() {
+                        isLoading = true;
+                        warningNotification = value;
+                      });
+                    },
+                  ),
                   const SizedBox(
                     height: 20.0,
                   ),
@@ -167,11 +192,14 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                           children: [
                             IdImageWidget(
                               height: screenSize.height * 0.23,
-                              images: [strings['binImage']!, strings['tinImage']!,],
+                              images: [
+                                strings['binImage']!,
+                                strings['tinImage']!,
+                              ],
                             ),
                             const SizedBox(
-                                  height: 10.0,
-                                ),
+                              height: 10.0,
+                            ),
                             IdImageWidget(
                               height: screenSize.height * 0.23,
                               images: [
@@ -184,20 +212,26 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                       : userInfo['role'] == 'architect' &&
                               userInfo['idType'] != null
                           ? Column(
-                          children: [
-                            IdImageWidget(
-                              height: screenSize.height * 0.23,
-                              images: [strings['idFrontImage']!, strings['idBackImage']!,],
-                            ),
-                            const SizedBox(
+                              children: [
+                                IdImageWidget(
+                                  height: screenSize.height * 0.23,
+                                  images: [
+                                    strings['idFrontImage']!,
+                                    strings['idBackImage']!,
+                                  ],
+                                ),
+                                const SizedBox(
                                   height: 10.0,
                                 ),
-                            IdImageWidget(
-                              height: screenSize.height * 0.23,
-                              images: [strings['idBackImage']!, strings['idFrontImage']!,],
-                            ),
-                          ],
-                        )
+                                IdImageWidget(
+                                  height: screenSize.height * 0.23,
+                                  images: [
+                                    strings['idBackImage']!,
+                                    strings['idFrontImage']!,
+                                  ],
+                                ),
+                              ],
+                            )
                           : const SizedBox(),
                   const SizedBox(
                     height: 20.0,
@@ -215,7 +249,7 @@ class _CustomerInfoScreenState extends State<CustomerInfoScreen> {
                               'role': widget.info['newRole'],
                               'isNewRequest': false,
                               'accepted': true,
-                              'wallet': 10000,
+                              'wallet': 20000,
                             };
                             final customerBloc =
                                 BlocProvider.of<CustomersBloc>(context);
@@ -438,7 +472,7 @@ class IdImageWidget extends StatelessWidget {
           fit: BoxFit.fill,
         ),
       ),
-      child:  Align(
+      child: Align(
         alignment: Alignment.topRight,
         child: InkWell(
           onTap: () {

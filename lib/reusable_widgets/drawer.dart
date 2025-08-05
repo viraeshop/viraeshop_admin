@@ -47,6 +47,7 @@ class AppDrawer extends StatefulWidget {
   String processingOrdersCount;
   String receivedOrdersCount;
   String assignedProcessingOrderCount;
+  String customerAccountUpgradeRequests;
   AppDrawer({super.key,
     this.info,
     required this.isBigScreen,
@@ -55,6 +56,7 @@ class AppDrawer extends StatefulWidget {
     required this.receivedOrdersCount,
     required this.processingOrdersCount,
     required this.assignedProcessingOrderCount,
+    required this.customerAccountUpgradeRequests
   });
 
   @override
@@ -242,7 +244,7 @@ class _AppDrawerState extends State<AppDrawer> {
                             widget.receivedOrdersCount.isNotEmpty
                         ? NotificationTicker(value: widget.receivedOrdersCount)
                         : const SizedBox(),
-                    icon: FontAwesomeIcons.shoppingBag,
+                    icon: FontAwesomeIcons.bagShopping,
                     title: 'Delivery',
                     onTap: () {
                       Provider.of<OrderProvider>(context, listen: false)
@@ -352,6 +354,10 @@ class _AppDrawerState extends State<AppDrawer> {
                     title: 'Architects',
                   ),
                   ReusableTile(
+                    ticker: widget.customerAccountUpgradeRequests != '0' &&
+                            widget.customerAccountUpgradeRequests.isNotEmpty
+                        ? NotificationTicker(value: widget.customerAccountUpgradeRequests)
+                        : const SizedBox(),
                     onTap: !isMakeCustomer
                         ? null
                         : () => Navigator.push(

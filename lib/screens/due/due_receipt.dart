@@ -110,6 +110,7 @@ class _DueReceiptState extends State<DueReceipt> {
   Map<String, dynamic> editedInvoice = {};
   @override
   Widget build(BuildContext context) {
+    print(widget.data['customerInfo']);
     return BlocListener<CustomersBloc, CustomerState>(
       listener: (context, state) {
         if (state is RequestFinishedCustomerState) {
@@ -154,6 +155,11 @@ class _DueReceiptState extends State<DueReceipt> {
         },
         listener: (context, state) {
           if (state is RequestFinishedTransactionState) {
+            if(walletAction == WalletAction.none){
+              setState(() {
+                isLoading = false;
+              });
+            }
             List deletedItems = editedInvoice['deletedItems'] ?? [];
             if (deletedItems.isNotEmpty) {
               List products = Hive.box(productsBox).get(productsKey);
@@ -246,6 +252,8 @@ class _DueReceiptState extends State<DueReceipt> {
                                   onDelete: () async {
                                     setState(() {
                                       isLoading = true;
+                                      walletAction = WalletAction.add;
+                                      walletActionAmount = subTotal;
                                     });
                                     Navigator.pop(context);
                                     final transactionBloc =
@@ -326,7 +334,7 @@ class _DueReceiptState extends State<DueReceipt> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        'Invoice No ${widget.data['channel'] == 'mobile_app' && widget.data['orderId'] != null ? widget.data['orderId'] : widget.data['invoiceNo']}',
+                        'Invoice No: #${widget.data['invoiceNo']}',
                         style: kProductNameStyle,
                       ),
                     ],
@@ -390,11 +398,6 @@ class _DueReceiptState extends State<DueReceipt> {
                                               WalletAction.none) {
                                             setState(() {
                                               isEditItem[i] = !isEditItem[i];
-                                              if (!isEditItem[i]) {
-                                                walletAction =
-                                                    WalletAction.none;
-                                                walletActionAmount = 0;
-                                              }
                                             });
                                           } else {
                                             showToast(
@@ -422,9 +425,11 @@ class _DueReceiptState extends State<DueReceipt> {
                                             subTotal += unitPrice;
                                             total += unitPrice;
                                             due += unitPrice;
-                                            walletActionAmount += unitPrice;
-                                            walletAction =
-                                                WalletAction.subtract;
+                                            if(widget.data['role'] == 'agents'){
+                                              walletActionAmount += unitPrice;
+                                              walletAction =
+                                                  WalletAction.subtract;
+                                            }
                                             if (editedInvoice['editedItems'] ==
                                                 null) {
                                               editedInvoice['editedItems'] = [
@@ -460,8 +465,10 @@ class _DueReceiptState extends State<DueReceipt> {
                                                   unitPrice;
                                               subTotal -= unitPrice;
                                               total -= unitPrice;
-                                              walletActionAmount += unitPrice;
-                                              walletAction = WalletAction.add;
+                                              if(widget.data['role'] == 'agents'){
+                                                walletActionAmount += unitPrice;
+                                                walletAction = WalletAction.add;
+                                              }
                                               if (due != 0) {
                                                 due -= unitPrice;
                                               } else if (due - unitPrice < 0) {
@@ -506,7 +513,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${items[i]['productName']} (${items[i]['productId']})',
+                                    '${items[i]['productName']} (${items[i]['productCode']})',
                                     style: kProductNameStylePro,
                                     softWrap: true,
                                   ),
@@ -560,9 +567,11 @@ class _DueReceiptState extends State<DueReceipt> {
                                               }
                                               editedInvoice['due'] = due;
                                               editedInvoice['price'] = subTotal;
-                                              walletActionAmount =
-                                                  items[i]['productPrice'];
-                                              walletAction = WalletAction.add;
+                                              if(widget.data['role'] == 'agents'){
+                                                walletActionAmount =
+                                                items[i]['productPrice'];
+                                                walletAction = WalletAction.add;
+                                              }
                                               items.removeAt(i);
                                             });
                                           } else {
@@ -619,7 +628,6 @@ class _DueReceiptState extends State<DueReceipt> {
                                   decoration: InputDecoration(
                                     suffixIcon: IconButton(
                                       onPressed: () {
-                                        if (walletAction == WalletAction.none) {
                                           setState(() {
                                             discount = discountController
                                                     .text.isNotEmpty
@@ -635,17 +643,12 @@ class _DueReceiptState extends State<DueReceipt> {
                                             editedInvoice['discount'] =
                                                 discount;
                                             editedInvoice['due'] = due;
-                                            walletActionAmount = discount;
-                                            walletAction = WalletAction.add;
+                                            if(widget.data['role'] == 'agents'){
+                                              walletActionAmount = discount;
+                                              walletAction = WalletAction.add;
+                                            }
                                             isDiscount = false;
                                           });
-                                        } else {
-                                          showToast(
-                                            'Please update the invoice first, you have not completed the previous action.',
-                                            context: context,
-                                            backgroundColor: kRedColor,
-                                          );
-                                        }
                                       },
                                       icon: const Icon(
                                         Icons.done,
@@ -776,8 +779,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                                     isEditing = false;
                                                   });
                                                   // Add the payment to the payList and update the invoice
-                                                  List newPayList =
-                                                      payList.toList();
+                                                  List newPayList = [];
                                                   setState(() {
                                                     due -= pay;
                                                     payList.add({
@@ -805,10 +807,13 @@ class _DueReceiptState extends State<DueReceipt> {
                                                     editedInvoice['payList'] =
                                                         newPayList;
                                                     editedInvoice['due'] = due;
-                                                    walletActionAmount = pay;
-                                                    walletAction =
-                                                        WalletAction.add;
+                                                    if(widget.data['role'] == 'agents'){
+                                                      walletActionAmount = pay;
+                                                      walletAction =
+                                                          WalletAction.add;
+                                                    }
                                                     isEditing = false;
+                                                    payController.clear();
                                                   });
                                                 } else {
                                                   // Show a toast if the pay is greater than due

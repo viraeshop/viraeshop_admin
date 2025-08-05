@@ -609,6 +609,7 @@ class _OrdersTabState extends State<OrdersTab> {
               return const FetchingMoreLoadingIndicator();
             }
             return OrderTranzCard(
+              key: ValueKey(orders[i].orderId),
               onTap: () {
                 Navigator.push(
                   context,

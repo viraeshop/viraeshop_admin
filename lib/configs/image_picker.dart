@@ -13,8 +13,8 @@ import 'package:viraeshop_admin/utils/network_utilities.dart';
 Widget imagePickerWidget({
   void Function()? onTap,
   required String imagePath,
-  width = 150.0,
-  height = 150.0,
+  double width = 150.0,
+  double height = 150.0,
   showBottomCard = true,
   backgroundColor = kProductCardColor,
 }) {
@@ -26,11 +26,7 @@ Widget imagePickerWidget({
       decoration: BoxDecoration(
         color: backgroundColor,
         image: imageBG(imagePath: imagePath),
-        borderRadius: showBottomCard
-            ? BorderRadius.circular(10.0)
-            : const BorderRadius.only(
-                topRight: Radius.circular(10.0),
-                bottomRight: Radius.circular(10.0)),
+        borderRadius: BorderRadius.circular(10.0),
       ),
       child: showBottomCard
           ? Align(
@@ -44,10 +40,10 @@ Widget imagePickerWidget({
                       bottomLeft: Radius.circular(10),
                       bottomRight: Radius.circular(10)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
+                child: const Padding(
+                  padding: EdgeInsets.all(5.0),
                   child: Column(
-                    children: const [
+                    children: [
                       Text('Upload Image',
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -65,7 +61,7 @@ Widget imagePickerWidget({
                 ),
               ),
             )
-          : const SizedBox(),
+          : null,
     ),
   );
 }

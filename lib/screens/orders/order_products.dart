@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/screens/orders/details.dart';
@@ -195,6 +196,13 @@ class _OrderProductsState extends State<OrderProducts> {
           },
           listener: (context, state) {
             if (state is RequestFinishedOrderState) {
+              if ((currentStage == OrderStages.receiving || currentStage == OrderStages.admin) && isLoading) {
+                toast(
+                  context: context,
+                  title: 'Successfully updated',
+                  color: kNewMainColor,
+                );
+              }
               setState(() {
                 isLoading = false;
               });
@@ -226,6 +234,7 @@ class _OrderProductsState extends State<OrderProducts> {
                       itemCount: products.length,
                       itemBuilder: (context, i) {
                         return OrderProductCard(
+                          key: ValueKey(products[i].productId),
                           orderId: widget.orderInfo['orderId'].toString(),
                           orderInfo: widget.orderInfo,
                           product: provider.orderProducts[i],
@@ -263,13 +272,15 @@ class _OrderProductsState extends State<OrderProducts> {
                                   currentStage == OrderStages.admin) {
                                 bool adminItemsConfirmed = order.orderProducts
                                     .every((element) =>
-                                        element.processingStatus ==
+                                (element.processingStatus ==
                                             'confirmed' ||
-                                        element.processingStatus == 'failed');
+                                        element.processingStatus == 'failed') && currentStage == OrderStages.admin);
                                 bool receiveItemsConfirmed = order.orderProducts
-                                    .every((item) =>
-                                        item.receiveStatus == 'confirmed' ||
-                                        item.receiveStatus == 'failed');
+                                    .every((item) {
+                                print(item.receiveStatus);
+                                      return (item.receiveStatus == 'confirmed' ||
+                                        item.receiveStatus == 'failed') && currentStage == OrderStages.receiving;
+                                    });
                                 return Center(
                                   child: SendButton(
                                     onTap: () {

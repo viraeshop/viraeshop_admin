@@ -62,6 +62,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'productId': element.productId,
         'buyPrice': element.buyPrice,
         'isInventory': element.isInventory,
+        'isInfinity': element.isInfinity,
         'productName': element.productName,
         'productPrice': element.productPrice,
         'unitPrice': element.unitPrice,
@@ -283,20 +284,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             print(wallet);
                           }
                           if (wallet >= balanceToPay) {
-                            setState(() {
-                              walletBalance = wallet - balanceToPay;
-                              newDueBalance = dueBalance + balanceToPay;
-                            });
-                            customerBloc.add(
-                              UpdateCustomerEvent(
+                            transacBloc.add(
+                              AddTransactionEvent(
                                 token: jWTToken,
-                                customerId: customerId,
-                                customerModel: {
-                                  'wallet': walletBalance,
-                                  'dueBalance': newDueBalance,
-                                },
+                                transactionModel: transInfo,
                               ),
                             );
+                            // setState(() {
+                            //   walletBalance = wallet - balanceToPay;
+                            //   newDueBalance = dueBalance + balanceToPay;
+                            // });
+                            // customerBloc.add(
+                            //   UpdateCustomerEvent(
+                            //     token: jWTToken,
+                            //     customerId: customerId,
+                            //     customerModel: {
+                            //       'wallet': walletBalance,
+                            //       'dueBalance': newDueBalance,
+                            //     },
+                            //   ),
+                            // );
                           } else {
                             toast(
                               context: context,
@@ -306,6 +313,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             setState(() {
                               isLoading = false;
                             });
+                            return;
                           }
                         } else {
                           transacBloc.add(

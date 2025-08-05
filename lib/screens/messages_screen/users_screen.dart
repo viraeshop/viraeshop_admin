@@ -39,90 +39,89 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
         ),
         centerTitle: false,
       ),
-      body: Container(
-        color: kBackgroundColor,
-        child: StreamBuilder<QuerySnapshot>(
-            stream:
-                FirebaseFirestore.instance.collection('messages').snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: kMainColor,
-                  ),
-                );
-              } else if (snapshot.hasError) {
-                print('error: ${snapshot.error}');
-                return const Center(
-                  child: Text(
-                    'No messages',
-                    style: kProductNameStyle,
-                  ),
-                );
-              } else {
-                final data = snapshot.data!.docs;
-                List chatsList = [];
-                for (var element in data) {
-                  chatsList.add(element.data());
-                }
-                return ListView.builder(
-                  itemCount: chatsList.length,
-                  itemBuilder: (context, i) {
-                    num totalMessage = chatsList[i]['totalUnread'];
-                    String name = chatsList[i]['name'];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.all(10.0),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Message(
-                              name: chatsList[i]['name'],
-                              userId: chatsList[i]['userId'],
-                              totalUnreadMessages: totalMessage,
-                              customerToken: chatsList[i]['customerToken'],
+      body: SafeArea(
+        child: Container(
+          color: kBackgroundColor,
+          child: StreamBuilder<QuerySnapshot>(
+              stream:
+                  FirebaseFirestore.instance.collection('messages').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: kMainColor,
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  print('error: ${snapshot.error}');
+                  return const Center(
+                    child: Text(
+                      'No messages',
+                      style: kProductNameStyle,
+                    ),
+                  );
+                } else {
+                  final data = snapshot.data!.docs;
+                  List chatsList = [];
+                  for (var element in data) {
+                    chatsList.add(element.data());
+                  }
+                  return ListView.builder(
+                    reverse: true,
+                    itemCount: chatsList.length,
+                    itemBuilder: (context, i) {
+                      num totalMessage = chatsList[i]['totalUnread'];
+                      String name = chatsList[i]['name'];
+                      return ListTile(
+                        contentPadding: const EdgeInsets.all(10.0),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Message(
+                                name: chatsList[i]['name'],
+                                userId: chatsList[i]['userId'],
+                                totalUnreadMessages: totalMessage,
+                                customerToken: chatsList[i]['customerToken'],
+                              ),
                             ),
+                          );
+                        },
+                        leading: CircleAvatar(
+                          backgroundColor: kSubMainColor,
+                          child: Text(
+                            name.characters.first,
+                            style: kDrawerTextStyle2,
                           ),
-                        );
-                      },
-                      leading: CircleAvatar(
-                        backgroundColor: kSubMainColor,
-                        child: Text(
-                          name.characters.first,
-                          style: kDrawerTextStyle2,
                         ),
-                      ),
-                      trailing: Column(
-                        children: [
-                          totalMessage != 0
-                              ? NotificationTicker(
-                                  value: totalMessage.toString())
-                              : const SizedBox(),
-                          const Icon(Icons.arrow_right),
-                        ],
-                      ),
-                      title: Text(
-                        '${chatsList[i]['name']}',
-                        style: kProductNameStylePro,
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${chatsList[i]['userId']}',
-                            style: kProductNameStylePro,
-                          ),
-                          const Text(
-                            'Tap to send message',
-                            style: kProductNameStylePro,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              }
-            }),
+                        trailing: Column(
+                          children: [
+                            totalMessage != 0
+                                ? NotificationTicker(
+                                    value: totalMessage.toString())
+                                : const SizedBox(),
+                            const Icon(Icons.arrow_right),
+                          ],
+                        ),
+                        title: Text(
+                          '${chatsList[i]['name']}',
+                          style: kProductNameStylePro,
+                        ),
+                        subtitle: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tap to send message',
+                              style: kProductNameStylePro,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }
+              }),
+        ),
       ),
     );
   }

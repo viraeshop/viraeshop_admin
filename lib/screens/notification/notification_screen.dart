@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
+import 'package:viraeshop_admin/utils/network_utilities.dart';
 import 'package:viraeshop_bloc/notifications/notifications_bloc.dart';
 import 'package:viraeshop_bloc/notifications/notifications_event.dart';
 import 'package:viraeshop_bloc/notifications/notifications_state.dart';
@@ -215,6 +217,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
 
   Map<String, dynamic> imageLinkData = {};
   final jWTToken = Hive.box('adminInfo').get('token');
+  final ImagePickerService _imagePickerService = ImagePickerService();
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -298,21 +301,19 @@ class _NotificationMakerState extends State<NotificationMaker> {
                         width: 10.0,
                       ),
                       InkWell(
-                        onTap: () {
-                          if (kIsWeb) {
-                            // getImageWeb('notifications').then((value) {
-                            //   setState(() {
-                            //     imageBytes = value.item1!;
-                            //     imageLink = value.item2!;
-                            //   });
-                            // });
-                          } else {
-                            getImageNative('notifications').then((value) {
-                              setState(() {
-                                imagePath = value['path'];
-                                imageLinkData = value['imageData'];
-                              });
+                        onTap: () async {
+                          try{
+                            final pickerResult = await _imagePickerService.pickImage(context);
+                            if(pickerResult == null) return;
+                            final imageResult = await NetworkUtility.uploadImageFromNative(file: pickerResult, folder: 'notifications',);
+                            setState(() {
+                              imageLinkData = imageResult;
+                              imagePath = pickerResult.path ?? '';
                             });
+                          } catch (e) {
+                            if (kDebugMode) {
+                              print(e);
+                            }
                           }
                         },
                         child: Container(

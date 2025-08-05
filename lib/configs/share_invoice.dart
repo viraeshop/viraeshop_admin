@@ -245,7 +245,7 @@ Future<pw.Document> _generateInvoicePdf({
                                       ),
                                     ),
                                     pw.Text(
-                                      item['productId'].toString(),
+                                      item['productCode'].toString(),
                                       style: const pw.TextStyle(
                                         fontSize: 12,
                                       ),

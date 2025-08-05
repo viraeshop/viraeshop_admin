@@ -69,12 +69,39 @@ class BulkEditProvider with ChangeNotifier {
             'agentsDiscount': products[index].agentsDiscount,
             'generalDiscount': products[index].generalDiscount,
             'architectDiscount': products[index].architectDiscount,
-            'cost': products[index].cost,
+            'costPrice': products[index].cost,
           },
         },
       );
     } else {
       bulkEdit.removeWhere((element) => element.containsKey(productId));
+    }
+    notifyListeners();
+  }
+
+  void selectAllProducts(bool selected) {
+    bulkEdit.clear();
+    if(selected){
+      for (var element in products) {
+        element.isSelected = true;
+        bulkEdit.add(
+          {
+            element.productId: {
+              'agentsPrice': element.agentsPrice,
+              'generalPrice': element.generalPrice,
+              'architectPrice': element.architectPrice,
+              'agentsDiscount': element.agentsDiscount,
+              'generalDiscount': element.generalDiscount,
+              'architectDiscount': element.architectDiscount,
+              'costPrice': element.cost,
+            },
+          },
+        );
+      }
+    } else {
+      for (var element in products) {
+        element.isSelected = false;
+      }
     }
     notifyListeners();
   }

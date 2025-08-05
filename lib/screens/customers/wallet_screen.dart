@@ -264,7 +264,7 @@ class _WalletRowState extends State<WalletRow> {
                                   if (widget.amount == Amount.credit)
                                     'creditBalance': newBalance,
                                   if (widget.amount == Amount.credit)
-                                    'wallet': newBalance,
+                                    'wallet': newBalance - customerProvider.dueBalance,
                                   if (widget.amount == Amount.alert)
                                     'alertLimit': newBalance,
                                   if (widget.amount == Amount.account)

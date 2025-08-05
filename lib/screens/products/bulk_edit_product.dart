@@ -158,21 +158,28 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                       .read<BulkEditProvider>()
                       .setProducts(getProductEntities(state.productList));
                 } else if (state is RequestFinishedProductsState) {
-                  setState(() {
-                    isLoading = false;
-                  });
                   if (editedProducts.isNotEmpty) {
                     context
                         .read<BulkEditProvider>()
                         .updateProduct(editedProducts);
                   }
-                  if (isLoading) {
+                  if(isLoading) {
                     snackBar(
                       text: state.response.message,
                       context: context,
-                      duration: 400,
+                      duration: 600,
                     );
                   }
+                  setState(() {
+                    isLoading = false;
+                    cost.clear();
+                    general.clear();
+                    agent.clear();
+                    architect.clear();
+                    generalDiscount.clear();
+                    agentDiscount.clear();
+                    architectDiscount.clear();
+                  });
                 } else if (state is OnErrorProductsState) {
                   if (isLoading) {
                     snackBar(
@@ -246,12 +253,6 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                         general: general,
                                         agent: agent,
                                         architect: architect,
-                                        // validator: (value) {
-                                        //   if (value == null || value.isEmpty) {
-                                        //     return 'Please enter val';
-                                        //   }
-                                        //   return null;
-                                        // },
                                         onSelected: (value) {
                                           setState(() {
                                             selectedIcon = value['icon'];
@@ -341,7 +342,9 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                                   .read<BulkEditProvider>();
                                               if (bulk.bulkEdit.isNotEmpty) {
                                                 //&& _key.currentState!.validate()
-                                                print(bulk.bulkEdit);
+                                                if (kDebugMode) {
+                                                  print(bulk.bulkEdit);
+                                                }
                                                 final token =
                                                     Hive.box('adminInfo')
                                                         .get('token');
@@ -425,12 +428,12 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                                             ),
                                                           if (cost
                                                               .text.isNotEmpty)
-                                                            'cost': num.parse(
+                                                            'costPrice': num.parse(
                                                                 cost.text),
                                                         })
                                                     .toList();
                                                 if (kDebugMode) {
-                                                  print(editedProducts);
+                                                  print('editedProducts: $editedProducts');
                                                 }
                                                 setState(() {
                                                   isLoading = true;
@@ -493,6 +496,9 @@ class _BulkEditProductState extends State<BulkEditProduct> {
                                         SingleChildScrollView(
                                           scrollDirection: Axis.horizontal,
                                           child: DataTable(
+                                            onSelectAll: (bool? selected) {
+                                              bulk.selectAllProducts(selected ?? false);
+                                            },
                                             columns: const [
                                               //DataColumn(label: Text("Select")),
                                               DataColumn(label: Text("ID")),

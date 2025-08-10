@@ -1,4 +1,3 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,9 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
 import 'package:viraeshop_admin/utils/network_utilities.dart';
-import 'package:viraeshop_bloc/notifications/notifications_bloc.dart';
-import 'package:viraeshop_bloc/notifications/notifications_event.dart';
-import 'package:viraeshop_bloc/notifications/notifications_state.dart';
+import 'package:viraeshop_bloc/notifications/notifications.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/configs/image_picker.dart';
@@ -34,8 +31,7 @@ class _NotificationScreenState extends State<NotificationScreen>
   bool isLoading = false;
   @override
   void initState() {
-    // TODO: implement initState
-    final notificationBloc = BlocProvider.of<NotificationsBloc>(context);
+    final notificationBloc = BlocProvider.of<PromotionsBloc>(context);
     notificationBloc.add(GetNotificationsEvent());
     super.initState();
   }
@@ -105,32 +101,32 @@ class _NotificationScreenState extends State<NotificationScreen>
                       borderRadius: BorderRadius.circular(10.0),
                       color: kBackgroundColor,
                     ),
-                    child: BlocConsumer<NotificationsBloc, NotificationsState>(
+                    child: BlocConsumer<PromotionsBloc, PromotionsState>(
                         listener: (context, state) {
-                          if (state is AddedNotificationState) {
-                            setState(() {
-                              isLoading = false;
-                              items.add(state.response.result);
-                            });
-                          } else if (state is OnAddedErrorNotificationState) {
-                            snackBar(
-                              text: state.message,
-                              context: context,
-                              duration: 500,
-                              color: kRedColor,
-                            );
-                          }
-                        },
-                    // }, buildWhen: (context, state) {
-                    //   if (state is FetchedNotificationsState ||
-                    //       state is OnErrorNotificationState) {
-                    //     return true;
-                    //   } else {
-                    //     return false;
-                    //   }
-                    // },
-                    builder: (context, state) {
-                      if (state is OnErrorNotificationState) {
+                      if (state is AddedPromotionState) {
+                        setState(() {
+                          isLoading = false;
+                          items.add(state.response.result);
+                        });
+                      } else if (state is OnAddedErrorPromotionState) {
+                        snackBar(
+                          text: state.message,
+                          context: context,
+                          duration: 500,
+                          color: kRedColor,
+                        );
+                      }
+                    },
+                        // }, buildWhen: (context, state) {
+                        //   if (state is FetchedNotificationsState ||
+                        //       state is OnErrorNotificationState) {
+                        //     return true;
+                        //   } else {
+                        //     return false;
+                        //   }
+                        // },
+                        builder: (context, state) {
+                      if (state is OnErrorPromotionState) {
                         return Text(
                           state.message,
                           style: const TextStyle(
@@ -147,7 +143,7 @@ class _NotificationScreenState extends State<NotificationScreen>
                           ),
                         );
                       } else {
-                        if (state is FetchedNotificationsState) {
+                        if (state is FetchedPromotionsState) {
                           items.clear();
                           final data = state.notifications;
                           if (data.isNotEmpty) {
@@ -176,7 +172,7 @@ class _NotificationScreenState extends State<NotificationScreen>
                     heightFactor: 0.2,
                     alignment: Alignment.bottomCenter,
                     child: NotificationMaker(
-                      onSend: (){
+                      onSend: () {
                         setState(() {
                           isLoading = true;
                         });
@@ -221,9 +217,9 @@ class _NotificationMakerState extends State<NotificationMaker> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return BlocListener<NotificationsBloc, NotificationsState>(
+    return BlocListener<PromotionsBloc, PromotionsState>(
       listener: (context, state) {
-        if (state is AddedNotificationState) {
+        if (state is AddedPromotionState) {
           setState(() {
             titleController.clear();
             subTitleController.clear();
@@ -242,7 +238,6 @@ class _NotificationMakerState extends State<NotificationMaker> {
               children: [
                 Container(
                   margin: const EdgeInsets.all(10),
-                  //height: 150.0,
                   width: size.width * 0.7,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
@@ -250,7 +245,6 @@ class _NotificationMakerState extends State<NotificationMaker> {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10.0),
@@ -302,10 +296,15 @@ class _NotificationMakerState extends State<NotificationMaker> {
                       ),
                       InkWell(
                         onTap: () async {
-                          try{
-                            final pickerResult = await _imagePickerService.pickImage(context);
-                            if(pickerResult == null) return;
-                            final imageResult = await NetworkUtility.uploadImageFromNative(file: pickerResult, folder: 'notifications',);
+                          try {
+                            final pickerResult =
+                                await _imagePickerService.pickImage(context);
+                            if (pickerResult == null) return;
+                            final imageResult =
+                                await NetworkUtility.uploadImageFromNative(
+                              file: pickerResult,
+                              folder: 'notifications',
+                            );
                             setState(() {
                               imageLinkData = imageResult;
                               imagePath = pickerResult.path ?? '';
@@ -350,7 +349,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                             subTitleController.text.isNotEmpty &&
                             bodyController.text.isNotEmpty) {
                           final notificationBloc =
-                              BlocProvider.of<NotificationsBloc>(context);
+                              BlocProvider.of<PromotionsBloc>(context);
                           final notification = {
                             'title': titleController.text,
                             'subTitle': subTitleController.text,
@@ -360,8 +359,9 @@ class _NotificationMakerState extends State<NotificationMaker> {
                           };
                           notificationBloc.add(
                             AddNotificationEvent(
-                                token: jWTToken,
-                                notificationModel: notification),
+                              token: jWTToken,
+                              notificationModel: notification,
+                            ),
                           );
                           widget.onSend();
                         }

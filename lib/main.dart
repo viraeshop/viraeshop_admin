@@ -12,6 +12,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:viraeshop_api/apiCalls/home_ads.dart';
+import 'package:viraeshop_api/apiCalls/notifications/barrel.dart';
 import 'package:viraeshop_bloc/admin/admin_bloc.dart';
 import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
 import 'package:viraeshop_bloc/adverts/barrel.dart';
@@ -19,6 +20,8 @@ import 'package:viraeshop_bloc/category/category_bloc.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
 import 'package:viraeshop_bloc/expense/expense_bloc.dart';
 import 'package:viraeshop_bloc/items/barrel.dart';
+import 'package:viraeshop_bloc/notifications/notifications.dart';
+import 'package:viraeshop_bloc/notifications/promotions_bloc.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_bloc/products/barrel.dart';
 import 'package:viraeshop_bloc/return/return_bloc.dart';
@@ -63,9 +66,6 @@ import 'configs/configs.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'screens/orders/order_configs.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:viraeshop_bloc/notifications/notifications_bloc.dart';
-import 'package:viraeshop_api/apiCalls/notifications.dart';
-import 'package:viraeshop_bloc/adverts/advert_cubit.dart';
 import 'package:viraeshop_bloc/tokens/tokens_bloc.dart';
 import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
@@ -102,11 +102,11 @@ void main() async {
     importance: Importance.max,
   );
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     RemoteNotification? notification = message.notification;
@@ -247,8 +247,18 @@ void main() async {
           ),
         ),
         BlocProvider(
-          create: (BuildContext context) => NotificationsBloc(
+          create: (BuildContext context) => NotificationBloc(
             notificationCalls: NotificationCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => PromotionsBloc(
+            promotionCalls: PromotionCalls(),
+          ),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => ScheduleBloc(
+            scheduleCalls: ScheduleCalls(),
           ),
         ),
         BlocProvider(

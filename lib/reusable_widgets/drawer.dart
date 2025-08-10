@@ -422,6 +422,22 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   ReusableTile(
                     onTap: () {
+                      // if (widget.isBigScreen == true) {
+                      //   Provider.of<Configs>(context, listen: false)
+                      //       .updateWidget(
+                      //     AdvertScreen(),
+                      //   );
+                      // } else {
+                      Provider.of<AdsProvider>(context, listen: false)
+                          .updateDrawerWidget('Advert');
+                      Navigator.pop(context);
+                      //}
+                    },
+                    icon: FontAwesomeIcons.message,
+                    title: 'Messaging',
+                  ),
+                  ReusableTile(
+                    onTap: () {
                        Navigator.push(
                         context,
                         MaterialPageRoute(

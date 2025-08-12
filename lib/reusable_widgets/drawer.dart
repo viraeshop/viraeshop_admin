@@ -9,6 +9,7 @@ import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/screens/advert/home_button_advert.dart';
 import 'package:viraeshop_admin/screens/general_provider.dart';
+import 'package:viraeshop_admin/screens/messaging/messaging_screen.dart';
 import 'package:viraeshop_admin/screens/orders/processing.dart';
 import 'package:viraeshop_admin/reusable_widgets/resusable_tile.dart';
 import 'package:viraeshop_admin/screens/customers/all_customers.dart';
@@ -48,16 +49,16 @@ class AppDrawer extends StatefulWidget {
   String receivedOrdersCount;
   String assignedProcessingOrderCount;
   String customerAccountUpgradeRequests;
-  AppDrawer({super.key,
-    this.info,
-    required this.isBigScreen,
-    required this.totalMessages,
-    required this.newOrders,
-    required this.receivedOrdersCount,
-    required this.processingOrdersCount,
-    required this.assignedProcessingOrderCount,
-    required this.customerAccountUpgradeRequests
-  });
+  AppDrawer(
+      {super.key,
+      this.info,
+      required this.isBigScreen,
+      required this.totalMessages,
+      required this.newOrders,
+      required this.receivedOrdersCount,
+      required this.processingOrdersCount,
+      required this.assignedProcessingOrderCount,
+      required this.customerAccountUpgradeRequests});
 
   @override
   State<AppDrawer> createState() => _AppDrawerState();
@@ -174,7 +175,8 @@ class _AppDrawerState extends State<AppDrawer> {
                                 style: kDrawerTextStyle2,
                               ),
                               if (widget.assignedProcessingOrderCount != '0' &&
-                                  widget.assignedProcessingOrderCount.isNotEmpty)
+                                  widget
+                                      .assignedProcessingOrderCount.isNotEmpty)
                                 NotificationTicker(
                                   value: widget.assignedProcessingOrderCount,
                                 ),
@@ -356,7 +358,8 @@ class _AppDrawerState extends State<AppDrawer> {
                   ReusableTile(
                     ticker: widget.customerAccountUpgradeRequests != '0' &&
                             widget.customerAccountUpgradeRequests.isNotEmpty
-                        ? NotificationTicker(value: widget.customerAccountUpgradeRequests)
+                        ? NotificationTicker(
+                            value: widget.customerAccountUpgradeRequests)
                         : const SizedBox(),
                     onTap: !isMakeCustomer
                         ? null
@@ -413,8 +416,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const HomeButtonAdvert()
-                        ),
+                            builder: (context) => const HomeButtonAdvert()),
                       );
                     },
                     icon: Icons.inventory,
@@ -422,23 +424,19 @@ class _AppDrawerState extends State<AppDrawer> {
                   ),
                   ReusableTile(
                     onTap: () {
-                      // if (widget.isBigScreen == true) {
-                      //   Provider.of<Configs>(context, listen: false)
-                      //       .updateWidget(
-                      //     AdvertScreen(),
-                      //   );
-                      // } else {
-                      Provider.of<AdsProvider>(context, listen: false)
-                          .updateDrawerWidget('Advert');
-                      Navigator.pop(context);
-                      //}
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MessagingScreen(),
+                        ),
+                      );
                     },
                     icon: FontAwesomeIcons.message,
                     title: 'Messaging',
                   ),
                   ReusableTile(
                     onTap: () {
-                       Navigator.push(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const ReturnHistory(),

@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
+import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_api/models/notifications/schedule/schedule.dart';
 import 'package:viraeshop_bloc/notifications/notifications.dart';
 
 class RoleSchedulePage extends StatefulWidget {
-  const RoleSchedulePage({super.key, required this.onStart, required this.onDone, required this.role});
+  const RoleSchedulePage(
+      {super.key,
+      required this.onStart,
+      required this.onDone,
+      required this.role});
   final VoidCallback onStart;
   final VoidCallback onDone;
   final String role;
@@ -22,17 +28,20 @@ class _RoleSchedulePageState extends State<RoleSchedulePage> {
   @override
   void initState() {
     super.initState();
-    widget.onStart.call();
     BlocProvider.of<ScheduleBloc>(context).add(
       GetScheduledEvents(token: token, role: widget.role),
     );
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      widget.onStart.call();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ScheduleBloc, ScheduleState>(
       listener: (context, state) {
-        if(state is FetchedSchedulesState){
+        if (state is FetchedSchedulesState) {
+          print(state.notifications.result.length);
           widget.onDone.call();
           setState(() {
             schedules = state.notifications.result;
@@ -45,6 +54,8 @@ class _RoleSchedulePageState extends State<RoleSchedulePage> {
           widget.onDone.call();
           snackBar(
             text: state.message,
+            color: Colors.red,
+            duration: 600,
             context: context,
           );
         }
@@ -53,7 +64,7 @@ class _RoleSchedulePageState extends State<RoleSchedulePage> {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         color: Colors.white,
-        child: Column(
+        child: ListView(
           children: [
             for (var schedule in schedules)
               ScheduleWidget(
@@ -70,50 +81,60 @@ class _RoleSchedulePageState extends State<RoleSchedulePage> {
 
 class ScheduleWidget extends StatelessWidget {
   const ScheduleWidget(
-      {super.key, required this.schedule, required this.token, required this.onStart});
+      {super.key,
+      required this.schedule,
+      required this.token,
+      required this.onStart});
   final Schedule schedule;
   final String token;
+
   final VoidCallback onStart;
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
       isThreeLine: true,
       secondary: Icon(
-        schedule.isEnabled ? Icons.notifications_active : Icons.notifications_off,
-        color: schedule.isEnabled ? Colors.green : Colors.red,
+        schedule.isEnabled
+            ? Icons.notifications_active
+            : Icons.notifications_off,
+        color: schedule.isEnabled ? kNewMainColor : Colors.red,
       ),
-      contentPadding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
       title: Text(
         schedule.dayOfWeek,
         style: kProductNameStylePro,
       ),
-      subtitle: TextFormField(
-        initialValue: schedule.message,
-        decoration: InputDecoration(
-          hintText: 'Enter message here',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-        ),
-        onFieldSubmitted: (value) {
-          if (value.isEmpty) {
-            snackBar(
-              text: 'Message cannot be empty',
-              context: context,
-            );
-            return;
-          }
-          onStart.call();
-          BlocProvider.of<ScheduleBloc>(context).add(
-            UpdateScheduledEvent(
-              notificationId: schedule.id.toString(),
-              notificationModel: {
-                'message': value,
-              },
-              token: token,
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: TextFormField(
+          initialValue: schedule.message,
+          decoration: InputDecoration(
+            hintText: 'Enter message here',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
             ),
-          );
-        },
+          ),
+          onFieldSubmitted: (value) {
+            if (value.isEmpty) {
+              snackBar(
+                text: 'Message cannot be empty',
+                context: context,
+              );
+              return;
+            }
+            onStart.call();
+            BlocProvider.of<ScheduleBloc>(context).add(
+              UpdateScheduledEvent(
+                notificationId: schedule.id.toString(),
+                notificationModel: {
+                  'message': value,
+                },
+                token: token,
+              ),
+            );
+          },
+        ),
       ),
       value: schedule.isEnabled,
       onChanged: (value) {

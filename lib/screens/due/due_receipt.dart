@@ -643,6 +643,7 @@ class _DueReceiptState extends State<DueReceipt> {
                                             editedInvoice['discount'] =
                                                 discount;
                                             editedInvoice['due'] = due;
+                                            editedInvoice['price'] = subTotal;
                                             if(widget.data['role'] == 'agents'){
                                               walletActionAmount = discount;
                                               walletAction = WalletAction.add;

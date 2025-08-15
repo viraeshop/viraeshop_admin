@@ -340,7 +340,10 @@ class _OrderProductsState extends State<OrderProducts> {
                               } else {
                                 bool orderItemsConfirmed = order.orderProducts
                                     .any((element) =>
-                                        element.availability ?? false);
+                                        element.availability == true);
+                                SchedulerBinding.instance.addPostFrameCallback((f){
+                                  order.recalculateTotals();
+                                });
                                 return Column(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,

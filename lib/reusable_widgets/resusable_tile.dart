@@ -30,7 +30,7 @@ class ReusableTile extends StatelessWidget {
           mouseCursor: MouseCursor.defer,
           contentPadding: padding == false
               ? const EdgeInsets.only(left: 25.0)
-              : const EdgeInsets.fromLTRB(40.0, 0.0, 0.0, 0.0),
+              : const EdgeInsets.only(left: 30.0,),
           selected: selected!,
           // onTap: onTap,
           leading: Icon(

@@ -111,13 +111,13 @@ class OrderProvider extends ChangeNotifier {
 
   void onUpdateProducts(List<Items> value) {
     orderProducts = value.toList();
-    _recalculateTotals();
     for (var e in orderProducts) {
       e.editableQuantity = e.quantity;
       e.editableProductPrice = e.productPrice;
       e.editableOriginalPrice = e.originalPrice;
       e.editableDiscount = e.discount;
     }
+    _recalculateTotals();
     notifyListeners();
   }
 
@@ -167,6 +167,7 @@ class OrderProvider extends ChangeNotifier {
       deliveryFee = values['deliveryFee'];
       total = values['total'];
       subTotal = values['subTotal'];
+      due = values['due'];
     } else if (updatingValue == Values.advance) {
       advance = values['advance'];
       due = values['due'];
@@ -174,7 +175,7 @@ class OrderProvider extends ChangeNotifier {
       discount = values['discount'];
       total = values['total'];
       subTotal = values['subTotal'];
-      //due = values['due'];
+      due = values['due'];
     }
     notifyListeners();
   }

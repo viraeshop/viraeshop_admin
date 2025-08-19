@@ -572,6 +572,7 @@ class _OrderRoutineReportState extends State<OrderRoutineReport> {
                                           ? customersTotalOrdersInfo.length + 1
                                           : customersTotalOrdersInfo.length,
                                       controller: _scrollController,
+                                      //reverse: true,
                                       itemBuilder: (context, i) {
                                         if ((isLoading &&
                                                 currentEvent ==

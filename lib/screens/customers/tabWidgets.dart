@@ -587,16 +587,24 @@ class _OrdersTabState extends State<OrdersTab> {
             OrderStages currentStage =
                 Provider.of<OrderProvider>(context, listen: false).currentStage;
             bool processorSeen = true;
-            for (var a in orders[i].admin) {
-              if (kDebugMode) {
-                print(a);
-              }
-              if (a['adminId'] == widget.userId) {
-                processorSeen = a['OrderProcessors']['seen'];
+            if(currentStage == OrderStages.admin) {
+              for (var a in orders[i].admin) {
                 if (kDebugMode) {
-                  print(processorSeen);
+                  print(a);
+                }
+                if (a['adminId'] == widget.userId) {
+                  processorSeen = a['OrderProcessors']['seen'];
+                  if (kDebugMode) {
+                    print(processorSeen);
+                  }
                 }
               }
+            } else if(currentStage == OrderStages.processing) {
+              processorSeen =  orders[i].processed;
+            } else if(currentStage == OrderStages.receiving) {
+              processorSeen =  orders[i].received;
+            } else if (currentStage == OrderStages.order){
+              processorSeen =  orders[i].seen;
             }
             List<Items> items = orders[i].items;
             String description = '';
@@ -631,14 +639,8 @@ class _OrdersTabState extends State<OrdersTab> {
               employeeName: 'Riyadh',
               customerName: orders[i].customer.name,
               isTransaction: false,
-              isAdmin: currentStage == OrderStages.admin,
-              processingStatus: !processorSeen
-                  ? 'New'
-                  : orders[i].processingStatus == 'confirmed'
-                      ? 'Confirmed'
-                      : orders[i].orderStatus == 'failed'
-                          ? 'Failed'
-                          : 'Pending',
+              isAdmin: currentStage != OrderStages.delivery,
+              processingStatus: getStatusMessage(currentStage, orders[i], processorSeen),
               desc: description,
               id: orders[i].orderId,
               status: orders[i].delayDelivery &&
@@ -674,6 +676,37 @@ class _OrdersTabState extends State<OrdersTab> {
       }
       return const LoadingWidget();
     });
+  }
+  String getStatusMessage (OrderStages currentStage, Orders order, bool processed) {
+    if(!processed) {
+      return 'New';
+    } else {
+      if(currentStage == OrderStages.admin || currentStage == OrderStages.processing) {
+        if(order.processingStatus == 'confirmed'){
+          return 'Confirmed';
+        } else if(order.processingStatus == 'failed') {
+          return 'Failed';
+        } else {
+          return 'Pending';
+        }
+      } else if(currentStage == OrderStages.order){
+        if(order.orderStatus == 'confirmed'){
+          return 'Confirmed';
+        } else if(order.orderStatus == 'failed') {
+          return 'Failed';
+        } else {
+          return 'Pending';
+        }
+      } else {
+        if(order.receiveStatus == 'completed'){
+          return 'Completed';
+        } else if(order.receiveStatus == 'failed') {
+          return 'Failed';
+        } else {
+          return 'Pending';
+        }
+      }
+    }
   }
 }
 

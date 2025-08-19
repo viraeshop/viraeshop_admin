@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 
 import '../../../configs/image_picker.dart';
+import '../../../reusable_widgets/image/image_picker_service.dart';
 import 'chat_image_preview.dart';
 
 class MessageTextField extends StatelessWidget {
@@ -30,18 +31,21 @@ class MessageTextField extends StatelessWidget {
               size: 24,
             ),
             onTap: () {
-              pickFile().then((image) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return ChatImagePreview(
-                        image: image!,
-                        customerId: customerId,
-                      );
-                    },
-                  ),
-                );
+              ImagePickerService imagePickerService = ImagePickerService();
+              imagePickerService.pickImage(context).then((image) {
+                if(image != null){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return ChatImagePreview(
+                          image: image,
+                          customerId: customerId,
+                        );
+                      },
+                    ),
+                  );
+                }
               });
             },
           ),

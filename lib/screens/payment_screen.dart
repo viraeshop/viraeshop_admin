@@ -45,7 +45,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       Hive.box('adminInfo').get('adminId', defaultValue: 'adminId');
   final String adminName = Hive.box('adminInfo').get('name', defaultValue: '');
   List<Map> transDesc = [];
-  String customerId = customerBox.isEmpty ? '' : customerBox.get('id') ?? '';
+  String customerId = customerBox.isEmpty ? '' : customerBox.get('customerId') ?? '';
   String customerRole = customerBox.isEmpty ? '' : customerBox.get('role');
   String invoiceNo = generateInvoiceNumber().toString();
   num walletBalance = 0;

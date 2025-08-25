@@ -318,7 +318,8 @@ class _NotificationMakerState extends State<NotificationMaker> {
                           if (kDebugMode) {
                             print(e);
                           }
-                        }
+                        } /// The problem is that there is a particular product supplier
+                        /// that you have not assigned employee to it yet, that's why when you sent his
                       },
                       child: Container(
                         width: size.width * 0.21,

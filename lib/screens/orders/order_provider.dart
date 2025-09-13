@@ -8,18 +8,9 @@ enum Values {
   discount,
 }
 
-enum OrderStages {
-  order,
-  processing,
-  receiving,
-  delivery,
-  admin
-}
+enum OrderStages { order, processing, receiving, delivery, admin }
 
-enum EditingOperation {
-  all,
-  supplyAdmins
-}
+enum EditingOperation { all, supplyAdmins }
 
 class OrderProvider extends ChangeNotifier {
   List<bool> isChangeQuantity = [];
@@ -32,33 +23,88 @@ class OrderProvider extends ChangeNotifier {
       discount = 0,
       deliveryFee = 0,
       subTotal = 0,
+      quantity = 0,
       total = 0;
   void onChangeQuantity(bool value, int index) {
     isChangeQuantity[index] = value;
     notifyListeners();
   }
 
-  void updateItemAvailability (bool availability, int index){
+  void updateItemAvailability(bool availability, int index) {
+    // Validate index bounds
+    if (index < 0 || index >= orderProducts.length) {
+      return;
+    }
+
+    // Update the specific product's availability
     orderProducts[index].availability = availability;
-    if(availability) {
-      subTotal += orderProducts[index].editableProductPrice;
-      total += orderProducts[index].editableOriginalPrice;
-      discount += orderProducts[index].editableDiscount;
+
+    // Recalculate all totals from scratch to ensure accuracy
+    _recalculateTotals();
+
+    notifyListeners();
+  }
+
+// Alternative: Recalculate totals from scratch (more reliable)
+  void updateItemAvailabilityWithRecalculation(bool availability, int index) {
+    // Validate index bounds
+    if (index < 0 || index >= orderProducts.length) {
+      return;
+    }
+
+    // Update the specific product's availability
+    orderProducts[index].availability = availability;
+
+    // Recalculate all totals from scratch
+    _recalculateTotals();
+
+    notifyListeners();
+  }
+
+  void _recalculateTotals() {
+    subTotal = 0;
+    total = 0;
+    discount = 0;
+    quantity = 0;
+
+    for (var product in orderProducts) {
+      if (product.availability == true) {
+        subTotal += product.editableProductPrice;
+        total += product.editableOriginalPrice;
+        discount += product.editableDiscount;
+        quantity += product.editableQuantity;
+      }
+    }
+  }
+
+  void recalculateTotals() {
+    subTotal = 0;
+    total = 0;
+    discount = 0;
+    quantity = 0;
+
+    for (var product in orderProducts) {
+      if (product.availability == true) {
+        subTotal += product.editableProductPrice;
+        total += product.editableOriginalPrice;
+        discount += product.editableDiscount;
+        quantity += product.editableQuantity;
+      }
     }
     notifyListeners();
   }
 
-  void updateProcessingStatus (String status, int index){
+  void updateProcessingStatus(String status, int index) {
     orderProducts[index].processingStatus = status;
     notifyListeners();
   }
 
-  void updateReceiveStatus (String status, int index){
+  void updateReceiveStatus(String status, int index) {
     orderProducts[index].receiveStatus = status;
     notifyListeners();
   }
 
-  void updateOrderInfo(String key,dynamic value){
+  void updateOrderInfo(String key, dynamic value) {
     orderInfo[key] = value;
     notifyListeners();
   }
@@ -71,71 +117,75 @@ class OrderProvider extends ChangeNotifier {
       e.editableOriginalPrice = e.originalPrice;
       e.editableDiscount = e.discount;
     }
+    _recalculateTotals();
     notifyListeners();
   }
 
-  void updateEditableProductsFields (int index, EditingOperation op, Map<String, dynamic> data) {
-    if(op == EditingOperation.all){
+  void updateEditableProductsFields(
+      int index, EditingOperation op, Map<String, dynamic> data) {
+    if (op == EditingOperation.all) {
       orderProducts[index].editableQuantity = data['quantity'];
       orderProducts[index].editableProductPrice = data['discountedPrice'];
       orderProducts[index].editableOriginalPrice = data['originalPrice'];
       orderProducts[index].editableDiscount = data['discount'];
-    } else if (op == EditingOperation.supplyAdmins){
+    } else if (op == EditingOperation.supplyAdmins) {
       orderProducts[index].supplyAdmins = data['supplyAdmins'];
     }
     notifyListeners();
   }
 
-  void resetValues (){
+  void resetValues() {
     orderProducts.clear();
     total = 0;
     deliveryFee = 0;
     subTotal = 0;
     discount = 0;
-    advance =  0;
+    advance = 0;
     due = 0;
     notifyListeners();
   }
 
-  void deleteProduct (int index){
+  void deleteProduct(int index) {
     orderProducts.removeAt(index);
     notifyListeners();
   }
 
-  void updateOrderValues({
-     required num advance, discount, deliveryFee, subTotal, total, due}) {
+  void updateOrderValues(
+      {required num advance, discount, deliveryFee, subTotal, total, due}) {
     this.total = total;
     this.deliveryFee = deliveryFee;
     this.subTotal = subTotal;
     this.discount = discount;
-    this.advance =  advance;
+    this.advance = advance;
     this.due = due;
     notifyListeners();
   }
 
-  void updateValue({required Values updatingValue,required Map<String, dynamic> values}){
-    if(updatingValue == Values.deliveryFee){
+  void updateValue(
+      {required Values updatingValue, required Map<String, dynamic> values}) {
+    if (updatingValue == Values.deliveryFee) {
       deliveryFee = values['deliveryFee'];
       total = values['total'];
       subTotal = values['subTotal'];
-    } else if (updatingValue == Values.advance){
+      due = values['due'];
+    } else if (updatingValue == Values.advance) {
       advance = values['advance'];
       due = values['due'];
-    } else if (updatingValue ==  Values.discount){
+    } else if (updatingValue == Values.discount) {
       discount = values['discount'];
       total = values['total'];
       subTotal = values['subTotal'];
-      //due = values['due'];
+      due = values['due'];
     }
     notifyListeners();
   }
 
-  void updateOrderStage(OrderStages stage){
+  void updateOrderStage(OrderStages stage) {
     currentStage = stage;
     notifyListeners();
   }
 
-  void updateFilterInfo (Map<String, dynamic> filterInfo){
+  void updateFilterInfo(Map<String, dynamic> filterInfo) {
     this.filterInfo = filterInfo;
     notifyListeners();
   }

@@ -55,8 +55,6 @@ class _OrderProductsState extends State<OrderProducts> {
     currentStage =
         Provider.of<OrderProvider>(context, listen: false).currentStage;
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      Provider.of<OrderProvider>(context, listen: false)
-          .onUpdateProducts(widget.orderInfo['items'] ?? []);
       Provider.of<OrderProvider>(context, listen: false).updateOrderValues(
         due: widget.orderInfo['due'],
         advance: widget.orderInfo['advance'],
@@ -71,6 +69,8 @@ class _OrderProductsState extends State<OrderProducts> {
             ? widget.orderInfo['total']
             : 0,
       );
+      Provider.of<OrderProvider>(context, listen: false)
+          .onUpdateProducts(widget.orderInfo['items'] ?? []);
     });
     // if (widget.onGetAdmins) {
     //   final adminBloc = BlocProvider.of<AdminBloc>(context);
@@ -340,7 +340,10 @@ class _OrderProductsState extends State<OrderProducts> {
                               } else {
                                 bool orderItemsConfirmed = order.orderProducts
                                     .any((element) =>
-                                        element.availability ?? false);
+                                        element.availability == true);
+                                // SchedulerBinding.instance.addPostFrameCallback((f){
+                                //   order.recalculateTotals();
+                                // });
                                 return Column(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,

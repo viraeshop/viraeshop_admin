@@ -135,8 +135,6 @@ class _RegisterCustomerState extends State<RegisterCustomer> {
               setState(() {
                 isLoading = false;
               });
-              userInfo['id'] = userInfo['customerId'];
-              userInfo.remove('customerId');
               Hive.box('customer').putAll(userInfo);
               Navigator.popUntil(context, ModalRoute.withName(HomeScreen.path));
               // try {

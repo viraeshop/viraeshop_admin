@@ -57,7 +57,7 @@ class OrderTranzCard extends StatelessWidget {
                       style: TextStyle(
                         color: processingStatus == 'New'
                             ? kLightGreen
-                            : processingStatus == 'Confirmed'
+                            : processingStatus == 'Confirmed' || processingStatus == 'Completed'
                                 ? kNewMainColor
                                 : processingStatus == 'failed' ? kRedColor : kBrownColorAccent,
                         fontFamily: 'Montserrat',

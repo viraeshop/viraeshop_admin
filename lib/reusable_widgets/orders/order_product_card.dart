@@ -520,7 +520,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            widget.product.productName,
+                            '${widget.product.productName} (${widget.product.productCode})',
                             style: kSansTextStyleSmallBlack,
                           ),
                           Row(

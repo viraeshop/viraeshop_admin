@@ -44,7 +44,7 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
           color: kBackgroundColor,
           child: StreamBuilder<QuerySnapshot>(
               stream:
-                  FirebaseFirestore.instance.collection('messages').snapshots(),
+                  FirebaseFirestore.instance.collection('messages').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -67,7 +67,7 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                     chatsList.add(element.data());
                   }
                   return ListView.builder(
-                    reverse: true,
+                    //reverse: true,
                     itemCount: chatsList.length,
                     itemBuilder: (context, i) {
                       num totalMessage = chatsList[i]['totalUnread'];

@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
+import 'package:viraeshop_admin/reusable_widgets/image/image_picker_service.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/chat_image_preview.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/guest_chat_bubble.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/image_bubble.dart';
@@ -212,18 +213,21 @@ class _MessageState extends State<Message> {
                           size: 24,
                         ),
                         onTap: () {
-                          pickFile().then((image) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) {
-                                  return ChatImagePreview(
-                                    image: image!,
-                                    customerId: widget.userId,
-                                  );
-                                },
-                              ),
-                            );
+                          ImagePickerService imagePickerService = ImagePickerService();
+                          imagePickerService.pickImage(context).then((image) {
+                            if(image != null){
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return ChatImagePreview(
+                                      image: image!,
+                                      customerId: widget.userId,
+                                    );
+                                  },
+                                ),
+                              );
+                            }
                           });
                         },
                       ),

@@ -125,7 +125,7 @@ class _MessagingScreenState extends State<MessagingScreen>
                     isLoading = false;
                   });
                 },
-                role: 'agent',
+                role: 'agents',
               ),
             ],
           ),

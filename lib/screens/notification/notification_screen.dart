@@ -248,13 +248,13 @@ class _NotificationMakerState extends State<NotificationMaker> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10.0),
-                        width: size.width * 0.43,
+                        width: size.width * 0.7,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CustomTextField(
                               hintText: 'Title',
-                              width: size.width * 0.4,
+                              width: size.width * 0.6,
                               title1Controller: titleController,
                               textStyle: const TextStyle(
                                 color: kSubMainColor,
@@ -265,7 +265,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                             const SizedBox(),
                             CustomTextField(
                               height: 40,
-                              width: size.width * 0.4,
+                              width: size.width * 0.7,
                               hintText: 'Sub-title',
                               title1Controller: subTitleController,
                               textStyle: const TextStyle(
@@ -277,7 +277,7 @@ class _NotificationMakerState extends State<NotificationMaker> {
                             const SizedBox(),
                             CustomTextField(
                               lines: 3,
-                              width: size.width * 0.4,
+                              width: size.width * 0.7,
                               height: 70.0,
                               hintText: 'Description',
                               title1Controller: bodyController,
@@ -291,82 +291,88 @@ class _NotificationMakerState extends State<NotificationMaker> {
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        width: 10.0,
-                      ),
-                      InkWell(
-                        onTap: () async {
-                          try {
-                            final pickerResult =
-                                await _imagePickerService.pickImage(context);
-                            if (pickerResult == null) return;
-                            final imageResult =
-                                await NetworkUtility.uploadImageFromNative(
-                              file: pickerResult,
-                              folder: 'notifications',
-                            );
-                            setState(() {
-                              imageLinkData = imageResult;
-                              imagePath = pickerResult.path ?? '';
-                            });
-                          } catch (e) {
-                            if (kDebugMode) {
-                              print(e);
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: size.width * 0.2,
-                          height: 120.0,
-                          margin: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: kNewYellowColor,
-                            image: imageBG(imagePath: imagePath),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Center(
-                            child: imageBytes.isEmpty
-                                ? const Icon(
-                                    Icons.add_a_photo,
-                                    size: 30.0,
-                                    color: kBackgroundColor,
-                                  )
-                                : const SizedBox(),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: sendButton(
-                      color: kNewMainColor,
-                      width: 70.0,
-                      title: 'Send',
-                      onTap: () {
-                        if (titleController.text.isNotEmpty &&
-                            subTitleController.text.isNotEmpty &&
-                            bodyController.text.isNotEmpty) {
-                          final notificationBloc =
-                              BlocProvider.of<PromotionsBloc>(context);
-                          final notification = {
-                            'title': titleController.text,
-                            'subTitle': subTitleController.text,
-                            'body': bodyController.text,
-                            'image': imageLinkData['url'],
-                            'imageKey': imageLinkData['key'],
-                          };
-                          notificationBloc.add(
-                            AddNotificationEvent(
-                              token: jWTToken,
-                              notificationModel: notification,
-                            ),
+                Column(
+                  children: [
+                    const SizedBox(
+                      height: 10.0,
+                    ),
+                    InkWell(
+                      onTap: () async {
+                        try {
+                          final pickerResult =
+                          await _imagePickerService.pickImage(context);
+                          if (pickerResult == null) return;
+                          final imageResult =
+                          await NetworkUtility.uploadImageFromNative(
+                            file: pickerResult,
+                            folder: 'notifications',
                           );
-                          widget.onSend();
-                        }
-                      }),
-                )
+                          setState(() {
+                            imageLinkData = imageResult;
+                            imagePath = pickerResult.path ?? '';
+                          });
+                        } catch (e) {
+                          if (kDebugMode) {
+                            print(e);
+                          }
+                        } /// The problem is that there is a particular product supplier
+                        /// that you have not assigned employee to it yet, that's why when you sent his
+                      },
+                      child: Container(
+                        width: size.width * 0.21,
+                        height: 100.0,
+                        margin: const EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: kNewYellowColor,
+                          image: imageBG(imagePath: imagePath),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Center(
+                          child: imageBytes.isEmpty
+                              ? const Icon(
+                            Icons.add_a_photo,
+                            size: 30.0,
+                            color: kBackgroundColor,
+                          )
+
+                              : const SizedBox(),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0.0, bottom: 5.0, left: 10.0, right: 10.0),
+                      child: sendButton(
+                          color: kNewMainColor,
+                          width: 70.0,
+                          title: 'Send',
+                          onTap: () {
+                            if (titleController.text.isNotEmpty &&
+                                subTitleController.text.isNotEmpty &&
+                                bodyController.text.isNotEmpty) {
+                              final notificationBloc =
+                              BlocProvider.of<PromotionsBloc>(context);
+                              final notification = {
+                                'title': titleController.text,
+                                'subTitle': subTitleController.text,
+                                'body': bodyController.text,
+                                'image': imageLinkData['url'],
+                                'imageKey': imageLinkData['key'],
+                              };
+                              notificationBloc.add(
+                                AddNotificationEvent(
+                                  token: jWTToken,
+                                  notificationModel: notification,
+                                ),
+                              );
+                              widget.onSend();
+                            }
+                          }),
+                    ),
+                  ],
+                ),
               ],
             ),
           ],

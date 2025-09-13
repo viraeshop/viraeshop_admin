@@ -10,7 +10,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import '../../../configs/image_picker.dart';
 
 class ChatImagePreview extends StatefulWidget {
-  final FilePickerResult image;
+  final PlatformFile image;
   final String customerId;
   const ChatImagePreview(
       {super.key, required this.image, required this.customerId});
@@ -41,7 +41,7 @@ class _ChatImagePreviewState extends State<ChatImagePreview> {
                   child: Image.file(
                     // width: size.width,
                     // fit: BoxFit.cover,
-                    File(widget.image.files.first.path!),
+                    File(widget.image.path!),
                   ),
                 ),
               ),
@@ -71,8 +71,8 @@ class _ChatImagePreviewState extends State<ChatImagePreview> {
                   isLoading = true;
                 });
                 final uploadedImage = await uploadFile(
-                  file: widget.image.files.single,
-                  fileName: widget.image.files.single.name,
+                  file: widget.image,
+                  fileName: widget.image.name,
                   folder: 'messageImages/${widget.customerId}',
                 );
                 await FirebaseFirestore.instance

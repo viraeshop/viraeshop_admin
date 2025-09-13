@@ -1,4 +1,3 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -99,6 +98,11 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
         } else if (state is RequestFinishedShopState) {
           setState(() {
             isLoading = false;
+            for (int i = 0; i < controllers.length; i++) {
+              if (i > 0) {
+                controllers[i].clear();
+              }
+            }
           });
           toast(context: context, title: state.response.message);
         }
@@ -160,16 +164,17 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                           imagePath: imagePath,
                         )
                       : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GestureDetector(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GestureDetector(
                               onTap: () async {
                                 try {
                                   PlatformFile? imageResult =
-                                      await imagePickerService.pickImage(context);
+                                      await imagePickerService
+                                          .pickImage(context);
                                   if (imageResult == null) return;
-                                  final imageData =
-                                      await NetworkUtility.uploadImageFromNative(
+                                  final imageData = await NetworkUtility
+                                      .uploadImageFromNative(
                                           file: imageResult,
                                           folder: 'product_expense_images');
                                   setState(() {
@@ -181,7 +186,8 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                   if (kDebugMode) {
                                     print(e);
                                   }
-                                  showToast('msg: $e', backgroundColor: kRedColor);
+                                  showToast('msg: $e',
+                                      backgroundColor: kRedColor);
                                 }
                               },
                               child: ClipRRect(
@@ -202,16 +208,17 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                                 ),
                               ),
                             ),
-                        const SizedBox(
-                          width: 10.0,
+                            const SizedBox(
+                              width: 10.0,
+                            ),
+                            Text(
+                              currentShop.images.length > 1
+                                  ? '${currentShop.images.length} receipts paid'
+                                  : '',
+                              style: kTableCellStyle,
+                            ),
+                          ],
                         ),
-                        Text(currentShop.images.length > 1
-                            ? '${currentShop.images.length} receipts paid'
-                            : '',
-                          style: kTableCellStyle,
-                        ),
-                        ],
-                      ),
                   const SizedBox(
                     height: 20.0,
                   ),
@@ -362,6 +369,14 @@ class _NewNonInventoryProductState extends State<NewNonInventoryProduct> {
                           title: 'Update',
                           width: 150.0,
                           onTap: () {
+                            if (controllers[7].text.isEmpty) {
+                              toast(
+                                title: 'Please enter paid amount',
+                                context: context,
+                                color: kRedColor,
+                              );
+                              return;
+                            }
                             num totalPaid =
                                 num.parse(controllers[7].text) + paid;
                             String updatingShopId = '';

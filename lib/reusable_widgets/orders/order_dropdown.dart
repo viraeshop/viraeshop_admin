@@ -58,7 +58,7 @@ List<DropdownMenuItem<String>>? dropdownItemsGenerator(OrderStages stages) {
     List<String> itemsTitle = [
       'All',
       'Pending',
-      'Completed',
+      'Confirmed',
       'Canceled',
     ];
     List<DropdownMenuItem<String>>? dropdownItems = itemsTitle.map((e) {

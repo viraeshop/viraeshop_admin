@@ -18,6 +18,7 @@ import 'package:viraeshop_admin/screens/home_screen.dart';
 import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/reusable_widgets/category/special_category_models.dart';
 import 'package:dart_date/dart_date.dart';
+import '../screens/products/product_share_dialog.dart';
 
 import '../components/home_screen_components/decision_components.dart';
 import '../screens/advert/ads_provider.dart';
@@ -358,6 +359,18 @@ class _TabWidgetState extends State<TabWidget> {
                                 discountPrice: discountData.item1,
                                 sellBy: productsList[index - 1]['sellBy'],
                               ),
+                            );
+                          },
+                          onDoubleTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return ProductShareDialog(
+                                  productId: productsList[index - 1]['productId'],
+                                  productName: productsList[index - 1]['name'],
+                                  productImageUrl: productsList[index - 1]['thumbnail'],
+                                );
+                              },
                             );
                           },
                           onTap: () {

@@ -1,4 +1,10 @@
+import 'dart:io';
+
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:clipboard/clipboard.dart';
@@ -23,6 +29,7 @@ class ProductShareDialog extends StatefulWidget {
 class _ProductShareDialogState extends State<ProductShareDialog>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+
   String get productUrl => 'https://viraeshop.com/products/${widget.productId}';
 
   @override
@@ -42,16 +49,16 @@ class _ProductShareDialogState extends State<ProductShareDialog>
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        constraints: BoxConstraints(maxWidth: 400),
+        constraints: const BoxConstraints(maxWidth: 400),
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Share ${widget.productName}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Tab bar for switching between sharing methods
             Container(
               decoration: BoxDecoration(
@@ -62,20 +69,22 @@ class _ProductShareDialogState extends State<ProductShareDialog>
                 controller: _tabController,
                 indicator: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Theme.of(context).primaryColor,
+                  color: Theme
+                      .of(context)
+                      .primaryColor,
                 ),
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.black,
-                tabs: [
+                tabs: const [
                   Tab(text: 'Share Link'),
                   Tab(text: 'QR Code'),
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Tab content
-            Container(
-              height: 220,
+            SizedBox(
+              height: 300,
               child: TabBarView(
                 controller: _tabController,
                 children: [
@@ -86,13 +95,13 @@ class _ProductShareDialogState extends State<ProductShareDialog>
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Close button
             SizedBox(
               width: double.infinity,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
+                child: const Text('Close'),
               ),
             ),
           ],
@@ -112,9 +121,9 @@ class _ProductShareDialogState extends State<ProductShareDialog>
           ),
           title: Text(widget.productName,
               maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text('Share this product with others'),
+          subtitle: const Text('Share this product with others'),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         // Share options
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -125,15 +134,15 @@ class _ProductShareDialogState extends State<ProductShareDialog>
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.blue.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.link, size: 28, color: Colors.blue),
+                    child: const Icon(Icons.link, size: 28, color: Colors.blue),
                   ),
-                  SizedBox(height: 8),
-                  Text('Copy Link', style: TextStyle(fontSize: 12)),
+                  const SizedBox(height: 8),
+                  const Text('Copy Link', style: TextStyle(fontSize: 12)),
                 ],
               ),
             ),
@@ -143,15 +152,15 @@ class _ProductShareDialogState extends State<ProductShareDialog>
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.green.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.share, size: 28, color: Colors.green),
+                    child: const Icon(Icons.share, size: 28, color: Colors.green),
                   ),
-                  SizedBox(height: 8),
-                  Text('Share via Apps', style: TextStyle(fontSize: 12)),
+                  const SizedBox(height: 8),
+                  const Text('Share via Apps', style: TextStyle(fontSize: 12)),
                 ],
               ),
             ),
@@ -161,15 +170,15 @@ class _ProductShareDialogState extends State<ProductShareDialog>
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.purple.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.message, size: 28, color: Colors.purple),
+                    child: const Icon(Icons.message, size: 28, color: Colors.purple),
                   ),
-                  SizedBox(height: 8),
-                  Text('Share as Message', style: TextStyle(fontSize: 12)),
+                  const SizedBox(height: 8),
+                  const Text('Share as Message', style: TextStyle(fontSize: 12)),
                 ],
               ),
             ),
@@ -182,10 +191,10 @@ class _ProductShareDialogState extends State<ProductShareDialog>
   Widget _buildQrCodeTab() {
     return Column(
       children: [
-        Text('Scan this QR code to view the product'),
-        SizedBox(height: 12),
+        const Text('Scan this QR code to view the product'),
+        const SizedBox(height: 12),
         Container(
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(12),
@@ -196,25 +205,27 @@ class _ProductShareDialogState extends State<ProductShareDialog>
             size: 150.0,
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // Share QR Code
             ElevatedButton.icon(
               onPressed: _shareQrCode,
-              icon: Icon(Icons.share, size: 18),
-              label: Text('Share QR Code'),
+              icon: const Icon(Icons.share, size: 18),
+              label: const Text('Share QR Code'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Theme
+                    .of(context)
+                    .primaryColor,
                 foregroundColor: Colors.white,
               ),
             ),
             // Save QR Code
             OutlinedButton.icon(
               onPressed: _saveQrCode,
-              icon: Icon(Icons.download, size: 18),
-              label: Text('Save QR Code'),
+              icon: const Icon(Icons.download, size: 18),
+              label: const Text('Save QR Code'),
             ),
           ],
         ),
@@ -257,7 +268,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
       final screenshotController = ScreenshotController();
       final image = await screenshotController.captureFromWidget(
         Container(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           color: Colors.white,
           child: QrImageView(
             data: productUrl,
@@ -274,8 +285,8 @@ class _ProductShareDialogState extends State<ProductShareDialog>
       Navigator.pop(context);
 
       // Share the image
-      await Share.shareFiles(
-        [imagePath.path],
+      await Share.shareXFiles(
+        [XFile(imagePath.path)],
         text: 'Scan this QR code to view ${widget.productName}',
         subject: 'QR Code for ${widget.productName}',
       );
@@ -307,7 +318,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
       final screenshotController = ScreenshotController();
       final image = await screenshotController.captureFromWidget(
         Container(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           color: Colors.white,
           child: QrImageView(
             data: productUrl,
@@ -318,7 +329,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
       );
 
       // Save to gallery
-      await ImageGallerySaver.saveImage(image);
+      await FileSaver.instance.saveFile(name: 'qrcode.png', bytes: image);
 
       Navigator.pop(context);
       Fluttertoast.showToast(
@@ -335,3 +346,4 @@ class _ProductShareDialogState extends State<ProductShareDialog>
       );
     }
   }
+}

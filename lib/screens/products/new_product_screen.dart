@@ -1124,7 +1124,7 @@ class _NewProductState extends State<NewProduct>
         isNonInventory: isNonInventory,
         freeShipping: freeShipping,
         comingSoon: comingSoon,
-        sellBy: selectedSellBy,
+        sellBy: Hive.box('suppliers').get('sellBy'),
       );
 
       // Prepare images

@@ -361,18 +361,6 @@ class _TabWidgetState extends State<TabWidget> {
                               ),
                             );
                           },
-                          onDoubleTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return ProductShareDialog(
-                                  productId: productsList[index - 1]['productId'],
-                                  productName: productsList[index - 1]['name'],
-                                  productImageUrl: productsList[index - 1]['thumbnail'],
-                                );
-                              },
-                            );
-                          },
                           onTap: () {
                             if (!ads.isAnimationStarted) {
                               cartAnimation();

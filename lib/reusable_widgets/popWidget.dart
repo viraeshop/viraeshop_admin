@@ -5,6 +5,7 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/products/new_product_screen.dart';
 import 'package:viraeshop_admin/screens/photoslide_show.dart';
+import '../screens/products/product_share_dialog.dart';
 import 'iconWidget.dart';
 
 class PopWidget extends StatefulWidget {
@@ -205,7 +206,19 @@ class _PopWidgetState extends State<PopWidget> {
           },
           child: const IconWidget(icon: Icons.edit_outlined),
         ),
-        const IconWidget(
+        IconWidget(
+          onTap: (){
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return ProductShareDialog(
+                  productId: widget.info['productId'].toString(),
+                  productName: widget.productName,
+                  productImageUrl: widget.info['thumbnail'],
+                );
+              },
+            );
+          },
           icon: Icons.share,
         ),
         Container(

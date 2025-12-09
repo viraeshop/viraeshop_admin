@@ -193,7 +193,6 @@ class _PopWidgetState extends State<PopWidget> {
       actions: [
         InkWell(
           onTap: () {
-            print(widget.info);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -207,12 +206,12 @@ class _PopWidgetState extends State<PopWidget> {
           child: const IconWidget(icon: Icons.edit_outlined),
         ),
         IconWidget(
-          onTap: (){
+          onTap: () {
             showDialog(
               context: context,
               builder: (BuildContext context) {
                 return ProductShareDialog(
-                  productId: widget.info['productId'].toString(),
+                  productCode: widget.info['productCode'],
                   productName: widget.productName,
                   productImageUrl: widget.info['thumbnail'],
                 );

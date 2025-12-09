@@ -11,13 +11,13 @@ import 'package:clipboard/clipboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ProductShareDialog extends StatefulWidget {
-  final String productId;
+  final String productCode;
   final String productName;
   final String productImageUrl;
 
   const ProductShareDialog({
     Key? key,
-    required this.productId,
+    required this.productCode,
     required this.productName,
     required this.productImageUrl,
   }) : super(key: key);
@@ -30,7 +30,8 @@ class _ProductShareDialogState extends State<ProductShareDialog>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  String get productUrl => 'https://viraeshop.com/products/${widget.productId}';
+  String get productUrl =>
+      'https://viraeshop.com/products/${widget.productName}/${widget.productCode}';
 
   @override
   void initState() {
@@ -69,9 +70,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
                 controller: _tabController,
                 indicator: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Theme
-                      .of(context)
-                      .primaryColor,
+                  color: Theme.of(context).primaryColor,
                 ),
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.black,
@@ -157,7 +156,8 @@ class _ProductShareDialogState extends State<ProductShareDialog>
                       color: Colors.green.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.share, size: 28, color: Colors.green),
+                    child:
+                        const Icon(Icons.share, size: 28, color: Colors.green),
                   ),
                   const SizedBox(height: 8),
                   const Text('Share via Apps', style: TextStyle(fontSize: 12)),
@@ -175,10 +175,12 @@ class _ProductShareDialogState extends State<ProductShareDialog>
                       color: Colors.purple.shade50,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.message, size: 28, color: Colors.purple),
+                    child: const Icon(Icons.message,
+                        size: 28, color: Colors.purple),
                   ),
                   const SizedBox(height: 8),
-                  const Text('Share as Message', style: TextStyle(fontSize: 12)),
+                  const Text('Share as Message',
+                      style: TextStyle(fontSize: 12)),
                 ],
               ),
             ),
@@ -215,9 +217,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
               icon: const Icon(Icons.share, size: 18),
               label: const Text('Share QR Code'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme
-                    .of(context)
-                    .primaryColor,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
               ),
             ),

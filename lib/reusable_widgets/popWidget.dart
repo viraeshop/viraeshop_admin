@@ -211,7 +211,7 @@ class _PopWidgetState extends State<PopWidget> {
               context: context,
               builder: (BuildContext context) {
                 return ProductShareDialog(
-                  productCode: widget.info['productCode'],
+                  productId: widget.info['productId'  ].toString(),
                   productName: widget.productName,
                   productImageUrl: widget.info['thumbnail'],
                 );

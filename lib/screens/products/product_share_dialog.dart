@@ -11,13 +11,13 @@ import 'package:clipboard/clipboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ProductShareDialog extends StatefulWidget {
-  final String productCode;
+  final String productId;
   final String productName;
   final String productImageUrl;
 
   const ProductShareDialog({
     Key? key,
-    required this.productCode,
+    required this.productId,
     required this.productName,
     required this.productImageUrl,
   }) : super(key: key);
@@ -31,7 +31,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
   late TabController _tabController;
 
   String get productUrl =>
-      'https://viraeshop.com/products/${widget.productName}/${widget.productCode}';
+      'https://viraeshop.com/products/${widget.productId}';
 
   @override
   void initState() {

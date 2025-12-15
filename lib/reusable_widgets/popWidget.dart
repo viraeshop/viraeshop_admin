@@ -207,13 +207,65 @@ class _PopWidgetState extends State<PopWidget> {
         ),
         IconWidget(
           onTap: () {
-            showDialog(
+            showModalBottomSheet(
               context: context,
-              builder: (BuildContext context) {
-                return ProductShareDialog(
-                  productId: widget.info['productId'  ].toString(),
-                  productName: widget.productName,
-                  productImageUrl: widget.info['thumbnail'],
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              builder: (context) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Share via',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ListTile(
+                        leading: const Icon(Icons.link),
+                        title: const Text('Product Link'),
+                        subtitle: const Text('Share using product ID'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return ProductShareDialog(
+                                shareUrl:
+                                    'https://viraeshop.com/products/${widget.info['productId']}',
+                                productName: widget.productName,
+                                productImageUrl: widget.info['thumbnail'],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.qr_code),
+                        title: const Text('Product Name & Code'),
+                        subtitle: const Text('Share using name and code'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return ProductShareDialog(
+                                shareUrl:
+                                    'https://viraeshop.com/products/${widget.productName}/${widget.productCode}',
+                                productName: widget.productName,
+                                productImageUrl: widget.info['thumbnail'],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 );
               },
             );

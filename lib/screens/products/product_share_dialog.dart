@@ -11,13 +11,13 @@ import 'package:clipboard/clipboard.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ProductShareDialog extends StatefulWidget {
-  final String productId;
+  final String shareUrl;
   final String productName;
   final String productImageUrl;
 
   const ProductShareDialog({
     Key? key,
-    required this.productId,
+    required this.shareUrl,
     required this.productName,
     required this.productImageUrl,
   }) : super(key: key);
@@ -29,9 +29,6 @@ class ProductShareDialog extends StatefulWidget {
 class _ProductShareDialogState extends State<ProductShareDialog>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  String get productUrl =>
-      'https://viraeshop.com/products/${widget.productId}';
 
   @override
   void initState() {
@@ -202,7 +199,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
             borderRadius: BorderRadius.circular(12),
           ),
           child: QrImageView(
-            data: productUrl,
+            data: widget.shareUrl,
             version: QrVersions.auto,
             size: 150.0,
           ),
@@ -234,7 +231,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
   }
 
   void _copyLinkToClipboard() {
-    FlutterClipboard.copy(productUrl).then((value) {
+    FlutterClipboard.copy(widget.shareUrl).then((value) {
       Navigator.pop(context);
       Fluttertoast.showToast(
         msg: "Product link copied to clipboard",
@@ -247,7 +244,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
   void _shareDirectly() {
     Navigator.pop(context);
     Share.share(
-      'Check out this product: ${widget.productName}\n$productUrl',
+      'Check out this product: ${widget.productName}\n${widget.shareUrl}',
       subject: 'Look at this product!',
     );
   }
@@ -255,7 +252,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
   void _shareAsMessage() {
     Navigator.pop(context);
     Share.share(
-      'I found this amazing product: ${widget.productName} - $productUrl',
+      'I found this amazing product: ${widget.productName} - ${widget.shareUrl}',
       subject: 'Product recommendation',
     );
   }
@@ -271,7 +268,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
           padding: const EdgeInsets.all(20),
           color: Colors.white,
           child: QrImageView(
-            data: productUrl,
+            data: widget.shareUrl,
             version: QrVersions.auto,
             size: 300.0,
           ),
@@ -294,7 +291,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
       Navigator.pop(context);
       // Fallback to sharing the link if image sharing fails
       Share.share(
-        'Scan this QR code to view ${widget.productName}\n$productUrl',
+        'Scan this QR code to view ${widget.productName}\n${widget.shareUrl}',
         subject: 'QR Code for ${widget.productName}',
       );
     }
@@ -321,7 +318,7 @@ class _ProductShareDialogState extends State<ProductShareDialog>
           padding: const EdgeInsets.all(20),
           color: Colors.white,
           child: QrImageView(
-            data: productUrl,
+            data: widget.shareUrl,
             version: QrVersions.auto,
             size: 300.0,
           ),

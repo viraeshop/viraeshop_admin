@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Super Admin Dashboard Updated - Viraeshop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8b",
+                        "background-light": "#e6e9ee",
+                        "background-dark": "#102215",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #0cbb8b;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(12, 187, 139, 0.1) 0%, rgba(12, 187, 139, 0) 100%);
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen pb-24">
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">shield_person</span>
+</div>
+<div>
+<h1 class="text-sm font-bold leading-none">Viraeshop</h1>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Super Admin</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-background-dark"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</header>
+<main class="p-4 space-y-6 max-w-md mx-auto">
+<div class="grid grid-cols-2 gap-3">
+<div class="col-span-2 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-red-500">shopping_bag</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 font-medium">New Orders</p>
+<h3 class="text-xl font-bold">5 Orders</h3>
+</div>
+</div>
+<span class="px-2.5 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full">URGENT</span>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+<p class="text-xs text-slate-500 font-medium mb-1">Total Sales</p>
+<h3 class="text-lg font-bold">67,500 <span class="text-xs font-normal">BDT</span></h3>
+<div class="mt-2 flex items-center text-xs text-primary font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+12.5%</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+<p class="text-xs text-slate-500 font-medium mb-1">COD Pending</p>
+<h3 class="text-lg font-bold">700 <span class="text-xs font-normal">BDT</span></h3>
+<div class="mt-2 flex items-center text-xs text-amber-500 font-bold">
+<span class="material-symbols-outlined text-xs">schedule</span>
+<span>Pending</span>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">inbox</span>
+<span>View New Incoming Orders</span>
+</button>
+<section>
+<h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Active Operations</h2>
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-center">
+<span class="material-symbols-outlined text-blue-500 mb-1">sync</span>
+<h4 class="text-xl font-black">3</h4>
+<p class="text-[10px] text-slate-500 font-medium">Processing</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-center">
+<span class="material-symbols-outlined text-primary mb-1">local_shipping</span>
+<h4 class="text-xl font-black">5</h4>
+<p class="text-[10px] text-slate-500 font-medium">On Delivery</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-800 text-center">
+<span class="material-symbols-outlined text-red-500 mb-1">warning</span>
+<h4 class="text-xl font-black text-red-500">2</h4>
+<p class="text-[10px] text-slate-500 font-medium">Delayed</p>
+</div>
+</div>
+</section>
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Staff Performance</h2>
+<button class="text-xs text-primary font-bold">View All</button>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+<div class="p-4 flex items-center gap-4 border-b border-slate-50 dark:border-slate-800">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Rafiq Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbh0Tv-8T4RKBSjU7WR_1oogRpx6A1hA6fJjHzmQ7gkizbEpy_m5V9L67lKnADeAQhAJJBspBjJHvFgrH8t827fmYjeXA67Ohi9ov68KiCYNx0DbzfnCU0syYqc4J-W1zGa30t2cHDmFLaJvcntcxpbGxHww8yZ1h2bfCNFt178_S4ej30FIMawWKnYKwZQKErzdOlYi3MA1Ks5UT_8p46pC87A_O-5HPA_2ws9v4G_2_H1bKnCqVriFpM9nVsMWMtmJa3R21B1F_2"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-sm font-bold">Rafiq Ahmed</h4>
+<span class="text-xs font-bold text-primary">98%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[98%] rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="p-4 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Karim Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjGyN0LN8xP2kzZs__52hpOJPgqlHxK_k5S2zKqsJubPbi3G0l02jdWXiwPNxdY_M4JkUXVWrE_S12kXyJJQizf8IzPrR-_FBCHea2tyMQQ-h86G7eem170nNxUwC2ktxXIszr0JahNZRxMt79fj-18N7FIZr6zeFh1wejHVfsfiI36rAiDFEXGL4_1jqSTGJvZlowPkRboHSgM8_4lNao8AOeSJa4CrDmcD_mS-Gc4tIdnz6vQHorsLZkR5pB2AjUJXXJgdZNXivv"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<h4 class="text-sm font-bold">Karim Ullah</h4>
+<span class="text-xs font-bold text-amber-500">87%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full w-[87%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 px-1">Daily Performance</h2>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex justify-between items-end h-32 gap-2 pb-2">
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-t-sm relative h-16">
+<div class="absolute bottom-0 w-full bg-primary/20 h-1/2"></div>
+</div>
+<span class="text-[8px] font-bold text-slate-400">MON</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-t-sm relative h-20">
+<div class="absolute bottom-0 w-full bg-primary/20 h-2/3"></div>
+</div>
+<span class="text-[8px] font-bold text-slate-400">TUE</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-t-sm relative h-24">
+<div class="absolute bottom-0 w-full bg-primary/40 h-3/4"></div>
+</div>
+<span class="text-[8px] font-bold text-slate-400">WED</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-t-sm relative h-28">
+<div class="absolute bottom-0 w-full bg-primary/60 h-[85%]"></div>
+</div>
+<span class="text-[8px] font-bold text-slate-400">THU</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-t-sm relative h-20">
+<div class="absolute bottom-0 w-full bg-primary/30 h-1/2"></div>
+</div>
+<span class="text-[8px] font-bold text-slate-400">FRI</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-slate-50 dark:bg-slate-800/50 rounded-t-sm relative h-16">
+<div class="absolute bottom-0 w-full bg-primary/20 h-1/3"></div>
+</div>
+<span class="text-[8px] font-bold text-slate-400">SAT</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2">
+<div class="w-full bg-primary/10 dark:bg-primary/20 border-x border-t border-primary/30 rounded-t-sm relative h-32">
+<div class="absolute bottom-0 w-full bg-primary h-[95%]"></div>
+</div>
+<span class="text-[8px] font-bold text-primary">SUN</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-background-dark/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-6 py-2 flex justify-between items-center pb-8 lg:pb-4">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="text-[10px] font-bold">Orders</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[10px] font-bold">Staff</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-bold">Report</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold">Setup</span>
+</a>
+</nav>
+
+</body></html>

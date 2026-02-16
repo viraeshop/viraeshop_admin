@@ -38,7 +38,18 @@ import 'package:viraeshop_admin/settings/login_preferences.dart';
 import '../screens/about_us_page.dart';
 import '../screens/new_non_inventory.dart';
 import '../screens/orders/delivery_screen.dart';
+import '../screens/orders/delivery_screen.dart';
 import '../screens/products/category_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/active_delivery_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/delivery_manager_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/order_acceptance_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/order_tracking_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/payment_collection_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/processing_timer_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/super_admin_dashboard.dart';
+import 'package:viraeshop_admin/utils/role_permissions.dart';
 
 class AppDrawer extends StatefulWidget {
   var info;
@@ -191,6 +202,94 @@ class _AppDrawerState extends State<AppDrawer> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  ExpansionTile(
+                    title: const Text('Order Management'),
+                    leading:
+                        const Icon(Icons.shopping_cart, color: kNewMainColor),
+                    children: [
+                      if (RolePermissions.canAccessSuperAdminDashboard(
+                          'super_admin')) // Replace with actual role check
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.dashboard, size: 20),
+                          title: const Text('Super Admin Dashboard'),
+                          onTap: () => Navigator.pushNamed(
+                              context, SuperAdminDashboard.path),
+                        ),
+                      if (RolePermissions.canAccessOrderAcceptance(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading:
+                              const Icon(Icons.check_circle_outline, size: 20),
+                          title: const Text('Order Acceptance'),
+                          onTap: () => Navigator.pushNamed(
+                              context, OrderAcceptanceScreen.path),
+                        ),
+                      if (RolePermissions.canAccessProcessingManager(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.precision_manufacturing,
+                              size: 20),
+                          title: const Text('Processing Manager'),
+                          onTap: () => Navigator.pushNamed(
+                              context, ProcessingManagerScreen.path),
+                        ),
+                      if (RolePermissions.canAccessDeliveryManager(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.local_shipping, size: 20),
+                          title: const Text('Delivery Manager'),
+                          onTap: () => Navigator.pushNamed(
+                              context, DeliveryManagerScreen.path),
+                        ),
+                      if (RolePermissions.canAccessProcessingTimer(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.timer, size: 20),
+                          title: const Text('Processing Timer'),
+                          onTap: () => Navigator.pushNamed(
+                              context, ProcessingTimerScreen.path),
+                        ),
+                      if (RolePermissions.canAccessActiveDelivery(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.navigation, size: 20),
+                          title: const Text('Active Delivery'),
+                          onTap: () => Navigator.pushNamed(
+                              context, ActiveDeliveryScreen.path),
+                        ),
+                      if (RolePermissions.canAccessPaymentCollection(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.attach_money, size: 20),
+                          title: const Text('Payment Collection'),
+                          onTap: () => Navigator.pushNamed(
+                              context, PaymentCollectionScreen.path),
+                        ),
+                      if (RolePermissions.canAccessAgentSettlement(
+                          'super_admin'))
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(left: 30),
+                          leading: const Icon(Icons.account_balance, size: 20),
+                          title: const Text('Agent Settlement'),
+                          onTap: () => Navigator.pushNamed(
+                              context, AgentSettlementScreen.path),
+                        ),
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 30),
+                        leading: const Icon(Icons.track_changes, size: 20),
+                        title: const Text('Order Tracking'),
+                        onTap: () => Navigator.pushNamed(
+                            context, OrderTrackingScreen.path),
+                      ),
+                    ],
+                  ),
                   ReusableTile(
                     icon: Icons.dashboard_outlined,
                     // selected: true,

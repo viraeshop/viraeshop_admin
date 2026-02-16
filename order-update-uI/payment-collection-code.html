@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payment Collection COD - Viraeshop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8b",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#10221f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                font-family: 'Inter', sans-serif;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+        .ios-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d1b19] dark:text-white antialiased min-h-screen">
+<div class="max-w-[480px] mx-auto min-h-screen flex flex-col relative pb-32">
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-gray-200 dark:border-white/10">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<div>
+<h1 class="text-lg font-bold leading-tight tracking-tight text-[#0d1b19] dark:text-white">Payment Collection</h1>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Order #78291 • Tanvir Ahmed</p>
+</div>
+</div>
+<button class="flex items-center justify-center size-10 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">help</span>
+</button>
+</header>
+<main class="flex-1 px-4 py-6 space-y-6">
+<div class="bg-white dark:bg-white/5 p-5 rounded-xl ios-shadow border border-gray-100 dark:border-white/5">
+<div class="flex items-start gap-4">
+<div class="mt-1">
+<input checked="" class="size-6 rounded-md border-gray-300 dark:border-white/20 text-primary focus:ring-primary focus:ring-offset-0 bg-transparent cursor-pointer transition-all" id="handover" type="checkbox"/>
+</div>
+<label class="flex-1 cursor-pointer" for="handover">
+<p class="text-base font-bold leading-tight mb-1">Product Handover Confirmed</p>
+<p class="text-sm text-gray-500 dark:text-gray-400">Confirm you have handed the items to the customer before collecting payment.</p>
+</label>
+</div>
+</div>
+<div class="space-y-4">
+<h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-1">Payment Details</h3>
+<div class="bg-primary/5 dark:bg-primary/10 p-6 rounded-xl border border-primary/20">
+<div class="flex items-center justify-between mb-2">
+<p class="text-sm font-semibold text-gray-600 dark:text-primary/80">Expected Amount</p>
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<p class="text-4xl font-black text-[#0d1b19] dark:text-white">570 <span class="text-lg font-bold">BDT</span></p>
+</div>
+<div class="space-y-2">
+<label class="block text-sm font-bold px-1 text-gray-700 dark:text-gray-300">Amount Received</label>
+<div class="relative">
+<input class="w-full h-16 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-5 text-2xl font-black focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-gray-300 dark:placeholder:text-white/10 text-[#0d1b19] dark:text-white" placeholder="0.00" type="number" value="500"/>
+<div class="absolute right-5 top-1/2 -translate-y-1/2 font-bold text-gray-400">BDT</div>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl border border-amber-100 dark:border-amber-900/30 text-amber-800 dark:text-amber-400">
+<span class="material-symbols-outlined text-xl">warning</span>
+<div class="text-sm">
+<p class="font-bold leading-tight">Partial Payment Detected</p>
+<p class="font-medium opacity-90">Remaining <span class="underline decoration-2">70 BDT</span> will be marked as Due.</p>
+</div>
+</div>
+<div class="space-y-2 pt-2">
+<label class="block text-sm font-bold px-1 text-gray-700 dark:text-gray-300">Payment Method</label>
+<div class="grid grid-cols-3 gap-2 bg-gray-100 dark:bg-white/5 p-1 rounded-lg">
+<button class="flex flex-col items-center justify-center py-3 rounded-md bg-white dark:bg-white/10 shadow-sm border border-primary text-primary font-bold transition-all">
+<span class="material-symbols-outlined mb-1">payments</span>
+<span class="text-[11px]">Cash</span>
+</button>
+<button class="flex flex-col items-center justify-center py-3 rounded-md text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined mb-1">account_balance_wallet</span>
+<span class="text-[11px]">bKash</span>
+</button>
+<button class="flex flex-col items-center justify-center py-3 rounded-md text-gray-500 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined mb-1">smartphone</span>
+<span class="text-[11px]">Nagad</span>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-4">
+<div class="h-32 w-full rounded-xl bg-gray-200 dark:bg-white/5 relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-70" data-alt="Simplified city map" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAbYr9k09uo6MgARSkgWKETPHbFGaDu6HPpRR68vVHQuKago01I5lH3hQ9E1bt_Ssd9sQAdLBJbQAqwnZo-SrU27daP3xj_YOGNXZ4ECMQEz7nYQyurEEo0cm-Y-goRgZMAjpmBrvq3_mmmTHboU06NdaVCikTATezAKhrIHLwbN7sRX-EFz3AMcmC7jRVqmvkrDV_x4nGuXjo8NpAJTNvq7HCSkhl7ZoBY9_8zduZ2xrVGO1YrciWVNFVbM0ayBPHBtKOuItlU1XHI');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-3 left-4 flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs font-bold">Delivery Location: Sector 10, Uttara</span>
+</div>
+</div>
+</div>
+</main>
+<footer class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white/90 dark:bg-background-dark/90 backdrop-blur-xl p-4 border-t border-gray-200 dark:border-white/10">
+<button class="w-full h-14 bg-primary text-white font-black text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg shadow-primary/25 active:scale-[0.98] transition-all">
+                Complete Delivery
+                <span class="material-symbols-outlined font-bold">check_circle</span>
+</button>
+</footer>
+</div>
+
+</body></html>

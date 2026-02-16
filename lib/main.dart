@@ -29,6 +29,16 @@ import 'package:viraeshop_bloc/shops/barrel.dart';
 import 'package:viraeshop_bloc/supplier_invoice/supplier_invoice_bloc.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
 import 'package:viraeshop_bloc/transactions/barrel.dart';
+import 'package:viraeshop_bloc/dashboard/dashboard_bloc.dart';
+import 'package:viraeshop_admin/features/order_management/screens/super_admin_dashboard.dart';
+import 'package:viraeshop_admin/features/order_management/screens/order_acceptance_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/delivery_manager_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/processing_timer_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/active_delivery_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/payment_collection_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/order_tracking_screen.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
@@ -271,6 +281,11 @@ void main() async {
             homeAdsCalls: HomeAdsCalls(),
           ),
         ),
+        BlocProvider(
+          create: (BuildContext context) => DashboardBloc(
+            orderCalls: const OrderCalls(),
+          ),
+        ),
       ], child: const MyApp()),
     ),
   );
@@ -344,6 +359,17 @@ class _MyAppState extends State<MyApp> {
         ShoppingCart.path: (context) => const ShoppingCart(),
         NotificationScreen.path: (context) => const NotificationScreen(),
         AllUserScreen.path: (context) => const AllUserScreen(),
+        SuperAdminDashboard.path: (context) => const SuperAdminDashboard(),
+        OrderAcceptanceScreen.path: (context) => const OrderAcceptanceScreen(),
+        ProcessingManagerScreen.path: (context) =>
+            const ProcessingManagerScreen(),
+        DeliveryManagerScreen.path: (context) => const DeliveryManagerScreen(),
+        ProcessingTimerScreen.path: (context) => const ProcessingTimerScreen(),
+        ActiveDeliveryScreen.path: (context) => const ActiveDeliveryScreen(),
+        PaymentCollectionScreen.path: (context) =>
+            const PaymentCollectionScreen(),
+        AgentSettlementScreen.path: (context) => const AgentSettlementScreen(),
+        OrderTrackingScreen.path: (context) => const OrderTrackingScreen(),
       },
     );
   }

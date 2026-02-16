@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Delivery Manager Dashboard Updated</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8b",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#10221f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center p-4 justify-between">
+<div class="flex items-center gap-3">
+<div class="text-slate-900 dark:text-white flex items-center" data-icon="menu">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</div>
+<h1 class="text-lg font-bold leading-tight tracking-tight">Delivery Manager</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative flex items-center justify-center size-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>
+</button>
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30">
+<img alt="Manager profile" class="size-full object-cover" data-alt="Avatar of a professional delivery manager" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0DhoJGQDkVd05rFXd7JJG9f4BAcNld8aHJzerLFLrfKU-sDdALbUuNB7pqfRT5218rDgnlllUeIWKTTHNb5xc1qkPs-JtjnbY4YHXWOhvtU7Q_JgLHiu6fKENthXT7X-vzL7WVTBcMt1TelTbd_Wp83XSHAa1fY2r1C6JsKn67HJNxYl2oMBS2eRSH1Dt957WiLESBGuyPmUVXEgAseKrCdBVrTIIecq-ErvCPdAFFEylGThA2YRIoEgrmNN95RMgHz9W7atmhEWO"/>
+</div>
+</div>
+</div>
+<div class="px-4 overflow-x-auto no-scrollbar">
+<div class="flex gap-6 border-b border-slate-200 dark:border-slate-800">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 whitespace-nowrap" href="#">
+<p class="text-sm font-semibold tracking-wide">Pending</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-slate-900 dark:text-white pb-3 pt-2 whitespace-nowrap" href="#">
+<p class="text-sm font-bold tracking-wide">Ready</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 whitespace-nowrap" href="#">
+<p class="text-sm font-semibold tracking-wide">In Transit</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-slate-400 pb-3 pt-2 whitespace-nowrap" href="#">
+<p class="text-sm font-semibold tracking-wide">Delivered</p>
+</a>
+</div>
+</div>
+</header>
+<main class="p-4 max-w-md mx-auto space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-slate-900 dark:text-white text-xl font-bold">Ready for Delivery</h3>
+<span class="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">3 Orders</span>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800 @container">
+<div class="relative">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover" data-alt="Modern retail packaging with shipping label" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBVjf3P5I1ejZ9780YnRtIUVetzA8oh-SM5fKJXehJeUUr47ZS0j-OyDccVMPkzlXQ3Z3a8cthbt4i53vY7GQncx6n5xg62ZE2WbOIvOcadpwkn7AMKzTYKTTlWzDtIhsSFSUCf2HRFCmn8neGovCoJB0P0CbVKJqQWPNO6xRnLyOb5k1l5EbMhMKlDdaiifl1OWTwZ8nhT0SdytOWtUEsL07GnsO-rJxwQW_ojE_S-Ghr0_XvxE1Tp9KgQDwY6ykH-SAxtgdYVVpsZ");'>
+</div>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> READY
+                    </span>
+<span class="bg-slate-900/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">priority_high</span> HIGH
+                    </span>
+</div>
+</div>
+<div class="p-5 space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Order #1234</h4>
+<div class="flex items-center text-slate-500 dark:text-slate-400 mt-1 gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+<p class="text-sm font-medium">Dhanmondi 32, Dhaka</p>
+</div>
+</div>
+<div class="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold px-2 py-1 rounded border border-emerald-100 dark:border-emerald-800">
+                        Processing Complete
+                    </div>
+</div>
+<div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg space-y-4">
+<div class="grid grid-cols-1 gap-4">
+<div class="space-y-1.5">
+<label class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Select Delivery Person</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">person</span>
+<select class="form-select w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:ring-primary focus:border-primary transition-colors">
+<option selected="" value="rafiq">Rafiq (Active)</option>
+<option value="karim">Karim (Busy)</option>
+<option value="sakib">Sakib (Offline)</option>
+</select>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Expected Delivery Time</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">schedule</span>
+<input class="form-input w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:ring-primary focus:border-primary transition-colors" type="text" value="3 Hours"/>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-[#0aa67b] text-white font-bold py-4 rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-transform active:scale-[0.98]">
+<span class="material-symbols-outlined">local_shipping</span>
+                        Start Delivery Run
+                    </button>
+</div>
+</div>
+</div>
+<div class="space-y-4 opacity-60">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl flex items-center justify-between border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">package_2</span>
+</div>
+<div>
+<p class="text-sm font-bold">Order #1235</p>
+<p class="text-xs text-slate-500">Banani Road 11</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300">chevron_right</span>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl flex items-center justify-between border border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">package_2</span>
+</div>
+<div>
+<p class="text-sm font-bold">Order #1236</p>
+<p class="text-xs text-slate-500">Gulshan 2</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300">chevron_right</span>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-6 pt-3 px-6 flex justify-between items-center z-50">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-bold">Orders</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">map</span>
+<span class="text-[10px] font-bold">Fleet</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold">Setup</span>
+</button>
+</nav>
+<div class="h-24"></div>
+
+</body></html>

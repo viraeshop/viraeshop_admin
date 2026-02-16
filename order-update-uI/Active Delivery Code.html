@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Active Rider Delivery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8b",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#11211d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0e1b18] dark:text-white min-h-screen flex flex-col">
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-[#d0e7e1] dark:border-[#2a3d38]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-2xl cursor-pointer">arrow_back</span>
+<h1 class="text-lg font-bold tracking-tight">Active Delivery</h1>
+</div>
+<div class="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+            In Transit
+        </div>
+</header>
+<main class="flex-1 overflow-y-auto pb-32">
+<div class="p-4">
+<div class="bg-white dark:bg-[#1a2e29] rounded-xl p-4 shadow-sm border border-[#d0e7e1] dark:border-[#2a3d38] flex items-center justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-primary font-semibold text-xs font-medium uppercase tracking-wider">Current Trip</p>
+<p class="text-xl font-bold">Delivery #1234</p>
+</div>
+<div class="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">package_2</span>
+</div>
+</div>
+</div>
+<div class="px-4 pb-4 @container">
+<div class="flex flex-col gap-4 rounded-xl border-2 border-primary bg-primary/5 p-5 dark:bg-primary/10 @[480px]:flex-row @[480px]:items-center justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-2xl font-black text-primary">570 BDT</p>
+<p class="text-[#0e1b18] dark:text-gray-300 text-sm font-semibold uppercase tracking-tight">To Collect</p>
+<p class="text-[#4d9986] dark:text-[#8cb3aa] text-xs">Cash on delivery payment required</p>
+</div>
+<div class="flex items-center gap-2 text-primary font-bold">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm">COD</span>
+</div>
+</div>
+</div>
+<div class="px-4 pb-4">
+<div class="bg-white dark:bg-[#1a2e29] rounded-xl p-4 shadow-sm border border-[#d0e7e1] dark:border-[#2a3d38]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="h-14 w-14 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="Portrait of the customer John Doe" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDxrhz9u530w5IX0B2TIFRnJ_BZ8bQHPCg1gPlKWDoINQzwhfr8d-GXLdKUztH6JprnTsvi_qigOr6lAavKaKT3a6UTRE6Yq8UcPSpy9sRK13asQAVe6tku9eAmmKIm81P3ryO7BBrMV-L6LwmQG_FXq-BOe-UWFrPBhqDkMm_2yZntovmeXgHnpVoWoeHSNlH3gYJxxiWJvJX7pwBMxG3bRG2Ls-giqkhxv5LwltGl5YNiFTiHLioYU9OMQYifk_hpAjwpolwCCArf')"></div>
+<div class="flex flex-col">
+<p class="font-bold text-lg">John Doe</p>
+<p class="text-[#4d9986] dark:text-[#8cb3aa] text-sm">Customer • Dhaka, Bangladesh</p>
+</div>
+</div>
+<a class="h-12 w-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform" href="tel:000">
+<span class="material-symbols-outlined">call</span>
+</a>
+</div>
+<div class="mt-4 pt-4 border-t border-[#d0e7e1] dark:border-[#2a3d38] flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<p class="text-sm text-[#0e1b18] dark:text-gray-300 leading-relaxed">
+                        House 24, Road 7, Block D, Banani,<br/>Dhaka 1213, Bangladesh
+                    </p>
+</div>
+</div>
+</div>
+<div class="px-4 pb-4">
+<div class="relative w-full aspect-video rounded-xl overflow-hidden border border-[#d0e7e1] dark:border-[#2a3d38] shadow-sm">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Map view showing delivery route in Dhaka city" data-location="Dhaka City Map" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAbYr9k09uo6MgARSkgWKETPHbFGaDu6HPpRR68vVHQuKago01I5lH3hQ9E1bt_Ssd9sQAdLBJbQAqwnZo-SrU27daP3xj_YOGNXZ4ECMQEz7nYQyurEEo0cm-Y-goRgZMAjpmBrvq3_mmmTHboU06NdaVCikTATezAKhrIHLwbN7sRX-EFz3AMcmC7jRVqmvkrDV_x4nGuXjo8NpAJTNvq7HCSkhl7ZoBY9_8zduZ2xrVGO1YrciWVNFVbM0ayBPHBtKOuItlU1XHI')">
+</div>
+<div class="absolute top-4 right-4 flex flex-col gap-2">
+<button class="bg-white dark:bg-[#1a2e29] p-2 rounded-lg shadow-md text-[#0e1b18] dark:text-white">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<button class="bg-white dark:bg-[#1a2e29] p-2 rounded-lg shadow-md text-[#0e1b18] dark:text-white">
+<span class="material-symbols-outlined">layers</span>
+</button>
+</div>
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-[#1a2e29] px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border-2 border-primary">
+<span class="text-xs font-bold text-primary">8 mins away</span>
+<div class="w-1 h-1 rounded-full bg-gray-300"></div>
+<span class="text-xs font-bold text-gray-500">1.2 km</span>
+</div>
+</div>
+</div>
+<div class="px-4">
+<p class="text-sm font-bold mb-3 px-1 uppercase tracking-wider text-[#4d9986]">Order Summary</p>
+<div class="bg-white dark:bg-[#1a2e29] rounded-xl overflow-hidden border border-[#d0e7e1] dark:border-[#2a3d38]">
+<div class="p-3 flex items-center gap-3 border-b border-[#f0f4f3] dark:border-[#2a3d38]">
+<div class="h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 bg-cover bg-center" data-alt="Food order item image" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDWjyJFR3zx7E1JUwZ6i7S5pGIzYnSCT1xmiujAlSIFuhlpjbtPxzDpeedCnoTJESrug4SSbOJu8hMWQZnM4cjrq10yij1ppbm0vMXppkeo18A9G52GqxnheTLwVHSHmJLFhZEaSf6_tzOb1ZHPbm00KSulclSUQIut8r6VRU-MJ-kyMnXyyDjR7BzQ3WkqcYnTq_ktTtc7aE60A0OYvXEfmB2W1IWKLOWDA8pV2dyMlEo0ZlTVY8KjhxOHJo7ewxgfzLmKVM2TiYHy')"></div>
+<div class="flex-1">
+<p class="text-sm font-medium">Chicken Biryani Large</p>
+<p class="text-xs text-primary font-medium">Quantity: 1</p>
+</div>
+</div>
+<div class="p-3 flex items-center gap-3">
+<div class="h-10 w-10 rounded bg-gray-100 dark:bg-gray-800 bg-cover bg-center" data-alt="Beverage order item image" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAcN6WccQCEjml1AAutHt7gllLQ-y8RnheB0HfjVM6xjqj6Yd-hMejK904G2z_5kbTjbs1guPoHH6CAcKAruSpjDSXLPAPbOOJqYuxhA6kRlXaRl6UeIsuRh8NJex8gGa8EH9I0-hJF3JSo2iFAKjMEXaqtbGQ0Yi0em_w9iZwjHQiLS0l4Ong6uNMiV1fulKaCHB4ZAD7LTDhCK-tkAS1CYTvRFv_ReFjVR64S5LuZnTN_KqwwaRXPdiNsHCRIpMACoN_GRCJUh4y-')"></div>
+<div class="flex-1">
+<p class="text-sm font-medium">Fresh Lime Soda</p>
+<p class="text-xs text-primary font-medium">Quantity: 2</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-[#11211d]/90 backdrop-blur-lg border-t border-[#d0e7e1] dark:border-[#2a3d38]">
+<button class="w-full h-14 bg-primary text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_rgba(12,187,139,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+            Reached Customer
+        </button>
+<div class="h-1 w-32 bg-gray-300 dark:bg-gray-700 mx-auto mt-4 rounded-full"></div> 
+</div>
+
+</body></html>

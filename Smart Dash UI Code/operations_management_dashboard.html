@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Operations Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8c",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen">
+<!-- Sticky Header -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 ios-blur border-b border-slate-200 dark:border-slate-800">
+<div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+<button class="w-10 h-10 flex items-center justify-start text-primary">
+<span class="material-icons">arrow_back_ios</span>
+</button>
+<h1 class="text-lg font-semibold tracking-tight">Operations Management</h1>
+<button class="w-10 h-10 flex items-center justify-end text-slate-500">
+<span class="material-icons">more_horiz</span>
+</button>
+</div>
+</header>
+<main class="max-w-md mx-auto px-4 pb-24 pt-4 space-y-6">
+<!-- Operations Health Card -->
+<section class="bg-white dark:bg-slate-900/50 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">Operations Health</h2>
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase">Live</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<p class="text-xs text-slate-500 dark:text-slate-400">Delivery Success</p>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold">95%</span>
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs text-slate-500 dark:text-slate-400">Processing</p>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold">98%</span>
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs text-slate-500 dark:text-slate-400">Order Receiving</p>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold">99%</span>
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+</div>
+</div>
+<div class="space-y-1">
+<p class="text-xs text-slate-500 dark:text-slate-400">Avg Time</p>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold">3.6h</span>
+<div class="w-2 h-2 rounded-full bg-amber-400"></div>
+</div>
+</div>
+<div class="col-span-2 pt-2 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+<span class="text-xs text-slate-500 dark:text-slate-400">Customer Satisfaction</span>
+<div class="flex items-center gap-1">
+<span class="material-icons text-amber-400 text-sm">star</span>
+<span class="font-bold">4.75</span>
+<div class="w-2 h-2 rounded-full bg-primary ml-1"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Performance Metrics Chips -->
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<button class="whitespace-nowrap px-5 py-2.5 bg-primary text-white rounded-full text-sm font-medium shadow-md shadow-primary/20">Delivery Metrics</button>
+<button class="whitespace-nowrap px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-sm font-medium border border-slate-100 dark:border-slate-700">Processing</button>
+<button class="whitespace-nowrap px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full text-sm font-medium border border-slate-100 dark:border-slate-700">Order Activity</button>
+</div>
+<!-- Delivery & Logistics Card -->
+<div class="space-y-3">
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 px-1">Logistics</h3>
+<div class="bg-white dark:bg-slate-900/50 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between p-4 border-b border-slate-50 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+<span class="material-icons">local_shipping</span>
+</div>
+<span class="font-medium">Delivery Man Performance</span>
+</div>
+<span class="material-icons text-slate-300">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-500">
+<span class="material-icons">inventory_2</span>
+</div>
+<span class="font-medium">Top Suppliers</span>
+</div>
+<span class="material-icons text-slate-300">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Production & Processing Card -->
+<div class="space-y-3">
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 px-1">Processing</h3>
+<div class="bg-white dark:bg-slate-900/50 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between p-4 border-b border-slate-50 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons">precision_manufacturing</span>
+</div>
+<span class="font-medium">Product Processing Perf.</span>
+</div>
+<span class="material-icons text-slate-300">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-500">
+<span class="material-icons">storefront</span>
+</div>
+<span class="font-medium">Top Sellers &amp; Brands</span>
+</div>
+<span class="material-icons text-slate-300">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Order Management Card -->
+<div class="space-y-3">
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 px-1">Orders</h3>
+<div class="bg-white dark:bg-slate-900/50 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500">
+<span class="material-icons">receipt_long</span>
+</div>
+<span class="font-medium">Top Order Receiving Staff</span>
+</div>
+<span class="material-icons text-slate-300">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Employee Performance Card -->
+<div class="space-y-3">
+<h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 px-1">Human Resources</h3>
+<div class="bg-white dark:bg-slate-900/50 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between p-4 active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+<span class="material-icons">badge</span>
+</div>
+<div class="flex flex-col">
+<span class="font-medium">Top Employee Performance</span>
+<span class="text-[10px] text-slate-400">Based on monthly KPIs</span>
+</div>
+</div>
+<span class="material-icons text-slate-300">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Quick Summary Section -->
+<div class="grid grid-cols-3 gap-3">
+<div class="bg-primary/5 dark:bg-primary/10 p-3 rounded-lg border border-primary/10 text-center">
+<p class="text-[10px] font-bold text-primary uppercase mb-1">Delivery</p>
+<p class="text-lg font-bold text-slate-800 dark:text-white">1.2k</p>
+</div>
+<div class="bg-blue-500/5 dark:bg-blue-500/10 p-3 rounded-lg border border-blue-500/10 text-center">
+<p class="text-[10px] font-bold text-blue-500 uppercase mb-1">Processing</p>
+<p class="text-lg font-bold text-slate-800 dark:text-white">842</p>
+</div>
+<div class="bg-amber-500/5 dark:bg-amber-500/10 p-3 rounded-lg border border-amber-500/10 text-center">
+<p class="text-[10px] font-bold text-amber-500 uppercase mb-1">Order</p>
+<p class="text-lg font-bold text-slate-800 dark:text-white">3.1k</p>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Mockup -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-900/90 ios-blur border-t border-slate-200 dark:border-slate-800 pb-safe">
+<div class="max-w-md mx-auto px-6 h-16 flex items-center justify-between">
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-icons">dashboard</span>
+<span class="text-[10px]">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons">analytics</span>
+<span class="text-[10px]">Operations</span>
+</button>
+<div class="relative -top-4">
+<button class="w-12 h-12 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center">
+<span class="material-icons">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-icons">groups</span>
+<span class="text-[10px]">Staff</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-icons">settings</span>
+<span class="text-[10px]">Settings</span>
+</button>
+</div>
+</nav>
+</body></html>

@@ -111,10 +111,24 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
                     Expanded(
                         child: _buildOperationCard("Delivery", "$_delivery",
                             Icons.local_shipping, kNewMainColor, isDark)),
-                    const SizedBox(width: 8),
                     Expanded(
                         child: _buildOperationCard("Delayed", "$_delayed",
                             Icons.warning, Colors.red, isDark)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/approval_dashboard'),
+                        child: _buildOperationCard("Negotiations", "View",
+                            Icons.handshake, Colors.purple, isDark),
+                      ),
+                    ),
+                    const Expanded(child: SizedBox()), // Spacer
+                    const Expanded(child: SizedBox()), // Spacer
                   ],
                 ),
 

@@ -60,7 +60,8 @@ class _DeliveryManagerScreenState extends State<DeliveryManagerScreen> {
         orderId: orderId,
         adminId: _selectedAdminId!,
         taskType: 'delivery',
-        durationMinutes: duration));
+        durationMinutes: duration,
+        token: widget.token));
   }
 
   @override

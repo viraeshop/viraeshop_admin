@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -55,7 +56,8 @@ class _AgentSettlementScreenState extends State<AgentSettlementScreen> {
         amount: amount,
         receiptNo: _receiptNoController.text,
         receiptImage: _receiptImage!.path, // basic path for now
-        notes: _notesController.text));
+        notes: _notesController.text,
+        token: Hive.box('adminInfo').get('token')));
   }
 
   @override

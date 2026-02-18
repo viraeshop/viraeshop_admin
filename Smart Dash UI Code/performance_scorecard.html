@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Performance Scorecard - Viraeshop Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8c",
+                        "secondary": "#353d4d",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-secondary dark:text-gray-200 antialiased">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center p-4 justify-between max-w-md mx-auto">
+<div class="flex size-10 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined text-secondary dark:text-white">chevron_left</span>
+</div>
+<h2 class="text-secondary dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Performance Scorecard</h2>
+<div class="flex size-10 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center p-0 bg-transparent">
+<span class="material-symbols-outlined text-secondary dark:text-white">share</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-md mx-auto pb-24">
+<!-- Tabs Component -->
+<div class="px-4 py-2">
+<div class="flex border-b border-gray-100 dark:border-gray-800">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-400 pb-3 pt-4 flex-1" href="#">
+<p class="text-sm font-semibold">Today</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-primary pb-3 pt-4 flex-1" href="#">
+<p class="text-sm font-bold">Weekly</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-400 pb-3 pt-4 flex-1" href="#">
+<p class="text-sm font-semibold">Monthly</p>
+</a>
+</div>
+</div>
+<!-- Gauge Visual Section -->
+<section class="flex flex-col items-center justify-center py-8">
+<div class="relative flex items-center justify-center">
+<!-- Circular Progress SVG -->
+<svg class="w-48 h-48 transform -rotate-90">
+<circle class="text-gray-100 dark:text-gray-800" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" stroke-dasharray="552.92" stroke-dashoffset="66.35" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<!-- HeadlineText & Center Content -->
+<div class="absolute flex flex-col items-center justify-center">
+<h1 class="text-secondary dark:text-white text-[42px] font-bold leading-tight">88</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium -mt-1">Out of 100</p>
+</div>
+</div>
+<!-- MetaText -->
+<div class="mt-4 text-center">
+<p class="text-primary text-base font-bold px-4">Excellent Performance Score</p>
+<p class="text-gray-400 text-xs mt-1">Last updated: 2 mins ago</p>
+</div>
+</section>
+<!-- SectionHeader -->
+<section class="mt-4">
+<div class="flex items-center justify-between px-4 pb-2">
+<h3 class="text-secondary dark:text-white text-lg font-bold tracking-tight">Core Metrics Breakdown</h3>
+<span class="material-symbols-outlined text-gray-400 text-xl">info</span>
+</div>
+<!-- Metrics List -->
+<div class="px-4 space-y-4 pt-2">
+<!-- Reliability -->
+<div class="bg-white dark:bg-gray-900/50 p-4 rounded-xl shadow-sm border border-gray-50 dark:border-gray-800">
+<div class="flex justify-between items-end mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">verified_user</span>
+<span class="text-secondary dark:text-gray-200 font-semibold">Reliability</span>
+</div>
+<span class="text-secondary dark:text-white font-bold">94%</span>
+</div>
+<!-- Thin Progress Bar -->
+<div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 94%"></div>
+</div>
+<div class="flex justify-between mt-2">
+<p class="text-xs text-gray-500">System Uptime</p>
+<p class="text-xs text-primary font-medium">+1.2% ↑</p>
+</div>
+</div>
+<!-- Speed -->
+<div class="bg-white dark:bg-gray-900/50 p-4 rounded-xl shadow-sm border border-gray-50 dark:border-gray-800">
+<div class="flex justify-between items-end mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">bolt</span>
+<span class="text-secondary dark:text-gray-200 font-semibold">Speed</span>
+</div>
+<span class="text-secondary dark:text-white font-bold">82%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 82%"></div>
+</div>
+<div class="flex justify-between mt-2">
+<p class="text-xs text-gray-500">Response Latency</p>
+<p class="text-xs text-primary font-medium">+0.8% ↑</p>
+</div>
+</div>
+<!-- Accuracy -->
+<div class="bg-white dark:bg-gray-900/50 p-4 rounded-xl shadow-sm border border-gray-50 dark:border-gray-800">
+<div class="flex justify-between items-end mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">target</span>
+<span class="text-secondary dark:text-gray-200 font-semibold">Accuracy</span>
+</div>
+<span class="text-secondary dark:text-white font-bold">88%</span>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 88%"></div>
+</div>
+<div class="flex justify-between mt-2">
+<p class="text-xs text-gray-500">Data Integrity</p>
+<p class="text-xs text-red-400 font-medium">-0.4% ↓</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Smart Insights Card -->
+<section class="px-4 mt-8">
+<div class="bg-primary/10 dark:bg-primary/5 border border-primary/20 p-4 rounded-xl flex gap-3 items-start">
+<span class="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
+<div>
+<h4 class="text-primary font-bold text-sm">Smart Insight</h4>
+<p class="text-secondary dark:text-gray-300 text-xs mt-1 leading-relaxed">
+                        Your reliability score is at an all-time high this week. Focusing on reducing API latency could push your overall score above 90.
+                    </p>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-background-dark border-t border-gray-100 dark:border-gray-800 p-4 max-w-md mx-auto">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-colors shadow-lg shadow-primary/20">
+            Download Detailed Report
+        </button>
+</div>
+</body></html>

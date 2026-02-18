@@ -1,0 +1,270 @@
+<html class="light" lang="en"><head><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-background-light dark:bg-background-dark font-display text-[#111816] transition-colors duration-200">```html
+
+
+
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Top Selling Products Report - Viraeshop Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0cbb8c",
+                        "brand-green": "#0cbb8b",
+                        "secondary-dark": "#353d4d",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<div class="relative flex h-auto min-h-screen w-full flex-col max-w-[430px] mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl">
+<header class="sticky top-0 z-50 bg-white dark:bg-background-dark border-b border-gray-100 dark:border-white/10 px-4 py-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#111816] dark:text-white transition-colors">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<div>
+<h1 class="text-lg font-bold leading-tight dark:text-white">Top Selling Products</h1>
+<p class="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Viraeshop Analytics</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center size-10 rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined">emoji_events</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex gap-3 px-4 py-4 overflow-x-auto no-scrollbar bg-white dark:bg-background-dark border-b border-gray-100 dark:border-white/10">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-primary text-white px-4">
+<span class="text-sm font-semibold">This Month</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-[#f0f5f3] dark:bg-white/5 px-4 text-[#111816] dark:text-gray-300">
+<span class="text-sm font-medium">Category</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-[#f0f5f3] dark:bg-white/5 px-4 text-[#111816] dark:text-gray-300">
+<span class="text-sm font-medium">Price Range</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-[#f0f5f3] dark:bg-white/5 px-4 text-[#111816] dark:text-gray-300">
+<span class="text-sm font-medium">Rating</span>
+<span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="p-4">
+<div class="bg-[#10221d] rounded-2xl border border-white/10 p-6 shadow-2xl relative overflow-hidden">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-gray-400 text-xs font-semibold uppercase tracking-widest mb-1">Monthly Units Sold</h3>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-extrabold text-white tracking-tight">12,482</p>
+<div class="flex items-center text-brand-green bg-brand-green/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-xs font-bold">trending_up</span>
+<span class="text-[11px] font-bold ml-0.5">+12.4%</span>
+</div>
+</div>
+</div>
+<div class="size-10 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 text-brand-green shadow-inner">
+<span class="material-symbols-outlined">insights</span>
+</div>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between items-end text-xs font-bold tracking-wide">
+<span class="text-gray-300">IPHONE 15 PRO MAX</span>
+<span class="text-white">2,100</span>
+</div>
+<div class="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-[#0cbb8b] rounded-full shadow-[0_0_12px_rgba(12,187,139,0.3)] transition-all duration-1000" style="width: 85%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end text-xs font-bold tracking-wide">
+<span class="text-gray-300">SAMSUNG S24 ULTRA</span>
+<span class="text-white">1,850</span>
+</div>
+<div class="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-[#2ecc71] rounded-full transition-all duration-1000" style="width: 72%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-end text-xs font-bold tracking-wide">
+<span class="text-gray-300">MACBOOK AIR M3</span>
+<span class="text-white">1,420</span>
+</div>
+<div class="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-[#1abc9c] rounded-full transition-all duration-1000" style="width: 58%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 pb-6">
+<div class="bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden">
+<div class="px-4 py-3 border-b border-gray-100 dark:border-white/10">
+<h3 class="text-[#111816] dark:text-white text-base font-bold">Top 100 Products</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-gray-50 dark:bg-white/5 text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">
+<tr>
+<th class="py-3 px-4">Rank</th>
+<th class="py-3 px-2">Product</th>
+<th class="py-3 px-2 text-right">Sales</th>
+<th class="py-3 px-4 text-right">Revenue</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-50 dark:divide-white/5">
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-4">
+<div class="flex items-center justify-center size-7 rounded-full bg-yellow-400/20 text-yellow-700 dark:text-yellow-400 font-bold text-xs border border-yellow-400/30">1</div>
+</td>
+<td class="py-4 px-2">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111816] dark:text-white truncate max-w-[120px]">iPhone 15 Pro</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-yellow-500 fill-current">star</span>
+<span class="text-[10px] text-gray-500 font-medium">4.9 (1.2k)</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<span class="text-sm font-semibold dark:text-white">2.1k</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="text-sm font-bold text-primary">৳24.5M</span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-4">
+<div class="flex items-center justify-center size-7 rounded-full bg-gray-200/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 font-bold text-xs border border-gray-300/30">2</div>
+</td>
+<td class="py-4 px-2">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111816] dark:text-white truncate max-w-[120px]">S24 Ultra</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-yellow-500 fill-current">star</span>
+<span class="text-[10px] text-gray-500 font-medium">4.8 (840)</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<span class="text-sm font-semibold dark:text-white">1.8k</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="text-sm font-bold text-primary">৳18.2M</span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-4">
+<div class="flex items-center justify-center size-7 rounded-full bg-orange-400/20 text-orange-700 dark:text-orange-300 font-bold text-xs border border-orange-400/30">3</div>
+</td>
+<td class="py-4 px-2">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111816] dark:text-white truncate max-w-[120px]">MacBook Air</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-yellow-500 fill-current">star</span>
+<span class="text-[10px] text-gray-500 font-medium">4.9 (450)</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<span class="text-sm font-semibold dark:text-white">1.4k</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="text-sm font-bold text-primary">৳12.4M</span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-4">
+<div class="flex items-center justify-center size-7 rounded-full bg-[#f0f5f3] dark:bg-white/5 text-gray-500 dark:text-gray-400 font-bold text-xs">4</div>
+</td>
+<td class="py-4 px-2">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111816] dark:text-white truncate max-w-[120px]">Sony WH-1000XM5</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-yellow-500 fill-current">star</span>
+<span class="text-[10px] text-gray-500 font-medium">4.7 (2.1k)</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<span class="text-sm font-semibold dark:text-white">920</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="text-sm font-bold text-primary">৳4.8M</span>
+</td>
+</tr>
+<tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<td class="py-4 px-4">
+<div class="flex items-center justify-center size-7 rounded-full bg-[#f0f5f3] dark:bg-white/5 text-gray-500 dark:text-gray-400 font-bold text-xs">5</div>
+</td>
+<td class="py-4 px-2">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-[#111816] dark:text-white truncate max-w-[120px]">iPad Pro M2</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] text-yellow-500 fill-current">star</span>
+<span class="text-[10px] text-gray-500 font-medium">4.8 (310)</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<span class="text-sm font-semibold dark:text-white">840</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="text-sm font-bold text-primary">৳7.9M</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-white/5 gap-3 border-t border-gray-100 dark:border-white/10">
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center size-9 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex gap-1">
+<button class="flex items-center justify-center size-9 rounded-lg bg-primary text-white font-bold text-sm">1</button>
+<button class="flex items-center justify-center size-9 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 font-medium text-sm">2</button>
+<button class="flex items-center justify-center size-9 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 font-medium text-sm">3</button>
+<span class="px-1 text-gray-400">...</span>
+<button class="flex items-center justify-center size-9 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 font-medium text-sm">10</button>
+</div>
+<button class="flex items-center justify-center size-9 rounded-lg bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<p class="text-[12px] font-medium text-gray-500 dark:text-gray-400">Showing 1 - 5 of 100 products</p>
+</div>
+</div>
+</div>
+<div class="h-20 bg-background-light dark:bg-background-dark"></div>
+</div>
+</body></html>

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop_bloc/processing/processing_bloc.dart';
 import 'package:viraeshop_bloc/processing/processing_event.dart';
 import 'package:viraeshop_bloc/processing/processing_state.dart';
@@ -216,9 +217,10 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                       height: 56,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          context
-                              .read<ProcessingBloc>()
-                              .add(CompleteTaskEvent(widget.task!.id!));
+                          context.read<ProcessingBloc>().add(CompleteTaskEvent(
+                                taskId: widget.task!.id!,
+                                token: Hive.box('adminInfo').get('token'),
+                              ));
                         },
                         icon: const Icon(Icons.check_circle),
                         label: const Text("Mark as Complete"),
@@ -287,7 +289,10 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                     onPressed: () {
                       if (controller.text.isNotEmpty) {
                         context.read<ProcessingBloc>().add(ReportDelayEvent(
-                            widget.task!.id!, controller.text));
+                              taskId: widget.task!.id!,
+                              reason: controller.text,
+                              token: Hive.box('adminInfo').get('token'),
+                            ));
                         Navigator.pop(ctx);
                       }
                     },

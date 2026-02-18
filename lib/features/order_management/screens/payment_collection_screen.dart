@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_bloc/processing/processing_bloc.dart';
 import 'package:viraeshop_bloc/processing/processing_event.dart';
@@ -48,7 +49,9 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             _amountController.text.replaceAll(RegExp(r'[^0-9.]'), '')) ??
         0.0;
 
-    context.read<ProcessingBloc>().add(CompleteTaskEvent(widget.task!.id!,
+    context.read<ProcessingBloc>().add(CompleteTaskEvent(
+            taskId: widget.task!.id!,
+            token: Hive.box('adminInfo').get('token'),
             paymentDetails: {
               'amountCollected': collected,
               'method': _selectedMethod

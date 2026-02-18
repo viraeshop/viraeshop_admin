@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Predictive Analytics &amp; Alerts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#0cbb8c",
+                "background-light": "#f6f8f7",
+                "background-dark": "#10221d",
+              },
+              fontFamily: {
+                "display": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Top Navigation Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-white/80 dark:bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-slate-100 dark:border-slate-800">
+<div class="text-[#111816] dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+<span class="material-symbols-outlined">chevron_left</span>
+</div>
+<h2 class="text-[#111816] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Predictive Insights</h2>
+<div class="flex size-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full size-10 bg-transparent text-[#111816] dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</div>
+<main class="max-w-md mx-auto pb-24">
+<!-- Hero Forecast Card (Dark Themed Highlight) -->
+<div class="p-4">
+<div class="relative flex flex-col items-stretch justify-start rounded-xl overflow-hidden shadow-2xl bg-[#10221d] text-white p-6">
+<!-- Decorative background pattern -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div>
+<p class="text-primary text-xs font-bold uppercase tracking-wider mb-1">Smart BI Forecast</p>
+<h3 class="text-2xl font-bold leading-tight">Future Forecast</h3>
+</div>
+<div class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold border border-primary/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">bolt</span>
+                        AI Active
+                    </div>
+</div>
+<div class="mb-8 relative z-10">
+<p class="text-slate-400 text-sm font-normal">Next 7 Days Projected Revenue</p>
+<div class="flex items-baseline gap-2 mt-1">
+<p class="text-3xl font-bold tracking-tight">$12,450.00</p>
+<p class="text-primary text-sm font-medium">+18.5%</p>
+</div>
+</div>
+<!-- Forecast Chart -->
+<div class="grid h-32 grid-flow-col gap-3 items-end justify-items-center mb-4">
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary/40 rounded-t-sm w-full" style="height: 45%;"></div>
+<p class="text-slate-500 text-[10px] font-bold">MON</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary/50 rounded-t-sm w-full" style="height: 55%;"></div>
+<p class="text-slate-500 text-[10px] font-bold">TUE</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary/40 rounded-t-sm w-full" style="height: 40%;"></div>
+<p class="text-slate-500 text-[10px] font-bold">WED</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary/70 rounded-t-sm w-full" style="height: 75%;"></div>
+<p class="text-slate-500 text-[10px] font-bold">THU</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary/30 rounded-t-sm w-full" style="height: 30%;"></div>
+<p class="text-slate-500 text-[10px] font-bold">FRI</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary rounded-t-sm w-full shadow-[0_-4px_12px_rgba(12,187,140,0.4)]" style="height: 100%;"></div>
+<p class="text-primary text-[10px] font-bold">SAT</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-full">
+<div class="bg-primary/60 rounded-t-sm w-full" style="height: 65%;"></div>
+<p class="text-slate-500 text-[10px] font-bold">SUN</p>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+<span>View Full Analysis</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Section Header -->
+<div class="px-4 pt-6 pb-2 flex justify-between items-center">
+<h3 class="text-[#111816] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Smart Recommendations</h3>
+<button class="text-primary text-sm font-semibold">Dismiss All</button>
+</div>
+<!-- Recommendations List -->
+<div class="px-4 space-y-3">
+<!-- Recommendation 1 -->
+<div class="flex flex-col gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-start gap-4">
+<div class="text-orange-500 flex items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-950/30 shrink-0 size-12">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-[#111816] dark:text-white text-base font-bold leading-normal">Increase Stock</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-tight">Item <span class="font-semibold text-slate-700 dark:text-slate-200">'Organic Coffee'</span> likely to sell out in 3 days based on current velocity.</p>
+</div>
+</div>
+<div class="flex gap-2 justify-end pt-2">
+<button class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-lg">Ignore</button>
+<button class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm shadow-primary/20">Order Now</button>
+</div>
+</div>
+<!-- Recommendation 2 -->
+<div class="flex flex-col gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-start gap-4">
+<div class="text-blue-500 flex items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/30 shrink-0 size-12">
+<span class="material-symbols-outlined">campaign</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-[#111816] dark:text-white text-base font-bold leading-normal">Launch Campaign</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-tight">High engagement detected on 'Summer Collection'. Consider a 24h flash sale to boost conversions.</p>
+</div>
+</div>
+<div class="flex gap-2 justify-end pt-2">
+<button class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm shadow-primary/20">Create Promo</button>
+</div>
+</div>
+<!-- Recommendation 3 -->
+<div class="flex flex-col gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
+<div class="flex items-start gap-4">
+<div class="text-purple-500 flex items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30 shrink-0 size-12">
+<span class="material-symbols-outlined">sell</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-[#111816] dark:text-white text-base font-bold leading-normal">Optimize Pricing</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-tight">Competitor prices for 'Yoga Mats' dropped by 5%. Adjusting your price could maintain market share.</p>
+</div>
+</div>
+<div class="flex gap-2 justify-end pt-2">
+<button class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm shadow-primary/20">Review Pricing</button>
+</div>
+</div>
+</div>
+<!-- Confidence Score (Quick Badge) -->
+<div class="mx-4 mt-8 p-4 bg-primary/5 rounded-xl border border-primary/20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-sm font-medium text-slate-700 dark:text-slate-300">AI Confidence Score</span>
+</div>
+<span class="text-primary font-bold">94.2%</span>
+</div>
+</main>
+<!-- Navigation Tab Bar (iOS Style) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="text-[10px] font-bold">Predictive</span>
+</div>
+<div class="bg-primary size-12 rounded-full flex items-center justify-center -mt-8 shadow-lg shadow-primary/30 text-white">
+<span class="material-symbols-outlined">add</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">inventory</span>
+<span class="text-[10px] font-medium">Stock</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</div>
+</div>
+</body></html>

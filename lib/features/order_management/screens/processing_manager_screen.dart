@@ -56,7 +56,8 @@ class _ProcessingManagerScreenState extends State<ProcessingManagerScreen> {
         orderId: orderId,
         adminId: _selectedAdminId!,
         taskType: 'processing',
-        durationMinutes: duration));
+        durationMinutes: duration,
+        token: widget.token));
   }
 
   @override

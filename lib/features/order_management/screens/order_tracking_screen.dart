@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_api/apiCalls/order_lifecycle.dart';
 import 'package:intl/intl.dart';
@@ -14,14 +15,17 @@ class OrderTrackingScreen extends StatefulWidget {
 }
 
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
-  final OrderLifecycleApi _api = OrderLifecycleApi();
+  final OrderLifecycleApi _api = const OrderLifecycleApi();
   late Future<List<dynamic>> _timelineFuture;
 
   @override
   void initState() {
     super.initState();
     if (widget.orderId != null) {
-      _timelineFuture = _api.getTimeline(widget.orderId!);
+      _timelineFuture = _api.getTimeline(
+        orderId: widget.orderId!,
+        token: Hive.box('adminInfo').get('token'),
+      );
     } else {
       _timelineFuture = Future.value([]);
     }

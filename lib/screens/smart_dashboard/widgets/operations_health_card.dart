@@ -9,11 +9,11 @@ class OperationsHealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey[100]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,28 +27,90 @@ class OperationsHealthCard extends StatelessWidget {
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
-                  color: Colors.grey[600],
+                  color: Colors.grey[500],
                 ),
               ),
-              Icon(Icons.health_and_safety, color: const Color(0xFF0CBB8C)),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00C896).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  "LIVE",
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF00C896),
+                    letterSpacing: 1,
+                  ),
+                ),
+              )
             ],
           ),
-          const SizedBox(height: 20),
-          _buildMetricRow("Delivery Success", metrics.deliverySuccess,
-              const Color(0xFF0CBB8C)),
-          const SizedBox(height: 16),
-          _buildMetricRow(
-              "Processing Rate", metrics.processingRate, Colors.blue),
           const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
-                child: _buildInfoBlock(
-                    "Avg Processing Time", "${metrics.avgProcessingHours} hrs"),
+                child: _buildMetricBlock(
+                    "Delivery Success",
+                    "${metrics.deliverySuccess.toStringAsFixed(0)}%",
+                    const Color(0xFF00C896)),
               ),
               Expanded(
-                child: _buildInfoBlock(
-                    "Order Error Rate", "${metrics.orderErrorRate}%"),
+                child: _buildMetricBlock(
+                    "Processing",
+                    "${metrics.processingRate.toStringAsFixed(0)}%",
+                    const Color(0xFF00C896)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: _buildMetricBlock(
+                    "Order Receiving", "99%", const Color(0xFF00C896)),
+              ),
+              Expanded(
+                child: _buildMetricBlock(
+                    "Avg Time", "${metrics.avgProcessingHours}h", Colors.amber),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Divider(height: 1, color: Colors.grey[100]),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Customer Satisfaction",
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                ),
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    "4.75",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF111816),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const CircleAvatar(
+                    radius: 3,
+                    backgroundColor: Color(0xFF00C896),
+                  ),
+                ],
               ),
             ],
           ),
@@ -57,50 +119,36 @@ class OperationsHealthCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricRow(String label, double value, Color color) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-            ),
-            Text(
-              "${value.toStringAsFixed(1)}%",
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: value / 100,
-          backgroundColor: color.withOpacity(0.1),
-          valueColor: AlwaysStoppedAnimation<Color>(color),
-          borderRadius: BorderRadius.circular(4),
-          minHeight: 8,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoBlock(String label, String value) {
+  Widget _buildMetricBlock(String label, String value, Color dotColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
           style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF111816),
+            fontSize: 12,
+            color: Colors.grey[500],
           ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF111816),
+              ),
+            ),
+            const SizedBox(width: 6),
+            CircleAvatar(
+              radius: 4,
+              backgroundColor: dotColor,
+            ),
+          ],
         ),
       ],
     );

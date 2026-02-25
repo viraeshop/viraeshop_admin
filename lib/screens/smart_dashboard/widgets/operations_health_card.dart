@@ -71,7 +71,9 @@ class OperationsHealthCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildMetricBlock(
-                    "Order Receiving", "99%", const Color(0xFF00C896)),
+                    "Order Receiving",
+                    "${metrics.orderReceivingRate.toStringAsFixed(0)}%",
+                    const Color(0xFF00C896)),
               ),
               Expanded(
                 child: _buildMetricBlock(
@@ -98,7 +100,7 @@ class OperationsHealthCard extends StatelessWidget {
                   const Icon(Icons.star, color: Colors.amber, size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    "4.75",
+                    metrics.customerSatisfaction.toStringAsFixed(2),
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

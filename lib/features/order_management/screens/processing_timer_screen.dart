@@ -6,7 +6,6 @@ import 'package:viraeshop_bloc/processing/processing_bloc.dart';
 import 'package:viraeshop_bloc/processing/processing_event.dart';
 import 'package:viraeshop_bloc/processing/processing_state.dart';
 import 'package:viraeshop_api/models/orders/order_task.dart';
-import 'package:viraeshop_admin/components/styles/colors.dart';
 
 class ProcessingTimerScreen extends StatefulWidget {
   static const String path = '/processing_timer';
@@ -77,67 +76,91 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return BlocListener<ProcessingBloc, ProcessingState>(
       listener: (context, state) {
         if (state is ProcessingSuccess) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.message)));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: const Text("Task Completed!"),
+              backgroundColor: const Color(0xFF00C896)));
           Navigator.pop(context); // Go back on success
         } else if (state is ProcessingError) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.message)));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.message), backgroundColor: Colors.redAccent));
         }
       },
       child: Scaffold(
+        backgroundColor: const Color(0xFF0F172A), // Dark Theme Workspace
         appBar: AppBar(
-          title: const Text("Workspace"),
-          backgroundColor: kNewMainColor,
+          backgroundColor: const Color(0xFF0F172A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new,
+                color: Colors.white, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            "Workspace",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () {},
+            )
+          ],
         ),
         body: widget.task == null
-            ? const Center(child: Text("No active task selected"))
+            ? const Center(
+                child: Text("No active task selected",
+                    style: TextStyle(color: Colors.white)))
             : Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0, vertical: 16.0),
                 child: Column(
                   children: [
                     // Timer Section
                     Expanded(
-                      flex: 2,
+                      flex: 5,
                       child: Center(
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
                             SizedBox(
-                              width: 250,
-                              height: 250,
+                              width: 280,
+                              height: 280,
                               child: CircularProgressIndicator(
                                 value: _calculateProgress(),
-                                strokeWidth: 12,
-                                backgroundColor: Colors.grey[200],
+                                strokeWidth: 16,
+                                backgroundColor: const Color(0xFF1E293B),
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                     _remainingTime.inSeconds < 300
-                                        ? Colors.red
-                                        : kNewMainColor),
+                                        ? const Color(0xFFEF4444)
+                                        : const Color(0xFF00C896)),
                               ),
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  "Remaining",
-                                  style: theme.textTheme.bodySmall
-                                      ?.copyWith(color: Colors.grey),
+                                const Text(
+                                  "Remaining Time",
+                                  style: TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold),
                                 ),
+                                const SizedBox(height: 8),
                                 Text(
                                   _formatDuration(_remainingTime),
-                                  style: theme.textTheme.displayMedium
-                                      ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 48,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 2),
                                 ),
                               ],
                             ),
@@ -146,70 +169,76 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 32),
 
                     // Stats
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildStatCard(
                             "Target", "${widget.task!.durationMinutes} min"),
-                        const SizedBox(width: 40),
-                        _buildStatCard("Efficiency", "94%",
-                            color: kNewMainColor),
                       ],
                     ),
 
-                    const Spacer(),
+                    const Spacer(flex: 1),
 
                     // Task Info Card
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                          color:
-                              isDark ? const Color(0xFF1a3333) : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border:
-                              Border.all(color: Colors.grey.withOpacity(0.1)),
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFF334155)),
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4))
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10))
                           ]),
-                      child: Column(children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF334155),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.inventory_2_outlined,
+                                color: Colors.white, size: 28),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                        color: kNewMainColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(4)),
+                                        color: const Color(0xFF00C896)
+                                            .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(6)),
                                     child: Text(
                                         "Order #${widget.task!.orderId}",
                                         style: const TextStyle(
-                                            color: kNewMainColor,
-                                            fontSize: 10,
+                                            color: Color(0xFF00C896),
+                                            fontSize: 11,
                                             fontWeight: FontWeight.bold))),
-                                const SizedBox(height: 4),
-                                Text("Processing Task",
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                            fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 8),
+                                Text(
+                                    "${(widget.task!.taskType ?? 'Standard').toUpperCase()} TASK",
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold)),
                               ],
                             ),
-                            const Icon(Icons.inventory_2, color: Colors.grey)
-                          ],
-                        ),
-                      ]),
+                          ),
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
 
                     // Actions
                     SizedBox(
@@ -222,30 +251,44 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                                 token: Hive.box('adminInfo').get('token'),
                               ));
                         },
-                        icon: const Icon(Icons.check_circle),
+                        icon: const Icon(Icons.check_circle, size: 24),
                         label: const Text("Mark as Complete"),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: kNewMainColor,
-                            foregroundColor: Colors.white, // Text color
+                            backgroundColor: const Color(0xFF00C896),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
+                                borderRadius: BorderRadius.circular(16)),
                             textStyle: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
+                                fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
 
                     const SizedBox(height: 16),
 
-                    TextButton.icon(
-                      onPressed: () {
-                        // Show Dialog to input reason
-                        _showDelayDialog(context);
-                      },
-                      icon: const Icon(Icons.report_problem,
-                          color: Colors.redAccent),
-                      label: const Text("Report Delay",
-                          style: TextStyle(color: Colors.redAccent)),
-                    )
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: TextButton.icon(
+                        onPressed: () {
+                          _showDelayDialog(context);
+                        },
+                        icon: const Icon(Icons.report_problem_outlined,
+                            color: Color(0xFFF87171)),
+                        label: const Text("Report Delay",
+                            style: TextStyle(
+                                color: Color(0xFFF87171),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold)),
+                        style: TextButton.styleFrom(
+                          backgroundColor:
+                              const Color(0xFFFEF2F2).withOpacity(0.05),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -258,14 +301,16 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
       children: [
         Text(label.toUpperCase(),
             style: const TextStyle(
-                fontSize: 10,
-                color: Colors.grey,
+                fontSize: 11,
+                color: Color(0xFF94A3B8),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2)),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Text(value,
             style: TextStyle(
-                fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: color ?? Colors.white)),
       ],
     );
   }
@@ -275,17 +320,40 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: const Text("Report Delay"),
+              backgroundColor: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              title: const Text("Report Delay",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
               content: TextField(
                 controller: controller,
-                decoration:
-                    const InputDecoration(hintText: "Reason for delay..."),
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Reason for delay...",
+                  hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                  filled: true,
+                  fillColor: const Color(0xFF0F172A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                maxLines: 3,
               ),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text("Cancel")),
-                TextButton(
+                    child: const Text("Cancel",
+                        style: TextStyle(color: Color(0xFF94A3B8)))),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
                     onPressed: () {
                       if (controller.text.isNotEmpty) {
                         context.read<ProcessingBloc>().add(ReportDelayEvent(
@@ -296,7 +364,8 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                         Navigator.pop(ctx);
                       }
                     },
-                    child: const Text("Submit")),
+                    child: const Text("Submit",
+                        style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ));
   }

@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/reusable_widgets/notification_ticker.dart';
 import 'package:viraeshop_admin/screens/messages_screen/messages.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
+import 'package:viraeshop_admin/services/admin_chat_service.dart';
+import 'package:viraeshop_api/viraeshop_api.dart';
 
 class UsersMessagesScreen extends StatefulWidget {
   static const String path = '/messages';
@@ -16,11 +16,25 @@ class UsersMessagesScreen extends StatefulWidget {
 }
 
 class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
-  final GeneralCrud _generalCrud = GeneralCrud();
+  final AdminChatService _chatService = AdminChatService();
+  late Future<List<ChatModel>> _chatListFuture;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _refreshChats();
+    // Re-fetch the list when global message pushes in (simplest approach for immediate UI updates)
+    _chatService.onGlobalMessageReceived = (message) {
+      if (mounted) {
+        _refreshChats();
+      }
+    };
+  }
+
+  void _refreshChats() {
+    setState(() {
+      _chatListFuture = _chatService.fetchAllChats();
+    });
   }
 
   @override
@@ -42,9 +56,8 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
       body: SafeArea(
         child: Container(
           color: kBackgroundColor,
-          child: StreamBuilder<QuerySnapshot>(
-              stream:
-                  FirebaseFirestore.instance.collection('messages').orderBy('createdAt', descending: true).snapshots(),
+          child: FutureBuilder<List<ChatModel>>(
+              future: _chatListFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -61,36 +74,48 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                     ),
                   );
                 } else {
-                  final data = snapshot.data!.docs;
-                  List chatsList = [];
-                  for (var element in data) {
-                    chatsList.add(element.data());
+                  final chatsList = snapshot.data ?? [];
+                  if (chatsList.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No messages found',
+                        style: kProductNameStylePro,
+                      ),
+                    );
                   }
+
                   return ListView.builder(
-                    //reverse: true,
                     itemCount: chatsList.length,
                     itemBuilder: (context, i) {
-                      num totalMessage = chatsList[i]['totalUnread'];
-                      String name = chatsList[i]['name'];
+                      final chat = chatsList[i];
+                      final customer = chat.customer;
+                      final String name = customer != null
+                          ? "\${customer['firstName']} \${customer['lastName']}"
+                          : 'Unknown Customer';
+
+                      // Using a dummy ticker, or extract unread count from chat if added
+                      num totalMessage = 0;
+
                       return ListTile(
                         contentPadding: const EdgeInsets.all(10.0),
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => Message(
-                                name: chatsList[i]['name'],
-                                userId: chatsList[i]['userId'],
-                                totalUnreadMessages: totalMessage,
-                                customerToken: chatsList[i]['customerToken'],
+                                name: name,
+                                chatId: chat.id, // Pass the chat UUID
                               ),
                             ),
                           );
+                          _refreshChats(); // Refresh unread state upon returning
                         },
                         leading: CircleAvatar(
                           backgroundColor: kSubMainColor,
                           child: Text(
-                            name.characters.first,
+                            name.characters.isNotEmpty
+                                ? name.characters.first
+                                : '?',
                             style: kDrawerTextStyle2,
                           ),
                         ),
@@ -104,15 +129,20 @@ class _UsersMessagesScreenState extends State<UsersMessagesScreen> {
                           ],
                         ),
                         title: Text(
-                          '${chatsList[i]['name']}',
+                          name,
                           style: kProductNameStylePro,
                         ),
-                        subtitle: const Column(
+                        subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Tap to send message',
+                              chat.messages != null && chat.messages!.isNotEmpty
+                                  ? chat.messages!.first.content ??
+                                      'Sent an attachment'
+                                  : 'Tap to send message',
                               style: kProductNameStylePro,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

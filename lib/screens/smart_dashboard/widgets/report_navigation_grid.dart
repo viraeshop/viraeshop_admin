@@ -3,26 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/detailed_product_report_screen.dart';
 
 class ReportNavigationGrid extends StatelessWidget {
-  const ReportNavigationGrid({super.key});
+  final String token;
+  const ReportNavigationGrid({super.key, required this.token});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      // Use 2 columns on narrow, 3 on wide
       final isWide = constraints.maxWidth > 600;
       return GridView.count(
         crossAxisCount: isWide ? 3 : 2,
         shrinkWrap: true,
+        padding: EdgeInsets.zero,
         physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.8,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 1.6,
         children: [
           _buildNavCard(context, "Top Selling", Icons.trending_up,
-              const Color(0xFF0CBB8C)),
+              const Color(0xFF00C896)),
           _buildNavCard(context, "Top Viewed", Icons.visibility, Colors.blue),
-          _buildNavCard(context, "Top Discounted", Icons.sell, Colors.orange),
-          _buildNavCard(context, "Top Reviewed", Icons.reviews, Colors.amber),
+          _buildNavCard(
+              context, "Top Discounted", Icons.local_offer, Colors.orange),
+          _buildNavCard(
+              context, "Top Reviewed", Icons.chat_bubble, Colors.amber),
           _buildNavCard(
               context, "Top Returned", Icons.keyboard_return, Colors.red),
           _buildNavCard(context, "Categories", Icons.category, Colors.purple),
@@ -45,44 +48,38 @@ class ReportNavigationGrid extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => DetailedProductReportScreen(
-              token: "",
+              token: token,
               metric: metric,
             ),
           ),
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 2,
-              offset: Offset(0, 1),
-            )
-          ],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey[100]!),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 24),
-            const SizedBox(height: 8),
+            const Spacer(),
             Text(
               title,
               style: GoogleFonts.inter(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF111816),
               ),
             ),
+            const SizedBox(height: 2),
             Text(
               "Rank 1-25",
               style: GoogleFonts.inter(
-                fontSize: 10,
+                fontSize: 11,
                 color: Colors.grey[500],
               ),
             ),

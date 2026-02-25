@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:viraeshop_api/models/analytics/analytics_models.dart';
-import 'package:viraeshop_admin/screens/smart_dashboard/predictive_insights_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_bloc/viraeshop_bloc.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/predictive_insights_screen.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   final List<QuickAction> actions;
@@ -21,7 +21,6 @@ class QuickActionsWidget extends StatelessWidget {
           final action = actions[index];
           return InkWell(
             onTap: () {
-              // Navigation Logic
               if (action.label == 'Trends' || action.label == 'Alerts') {
                 Navigator.push(
                   context,
@@ -29,24 +28,12 @@ class QuickActionsWidget extends StatelessWidget {
                     builder: (context) => PredictiveInsightsScreen(
                         token: context.read<AnalyticsBloc>().state
                                 is BusinessHealthLoaded
-                            ? (context.read<AnalyticsBloc>().state
-                                        as BusinessHealthLoaded)
-                                    .data
-                                    .quickActions
-                                    .isNotEmpty
-                                ? "TOKEN_PLACEHOLDER"
-                                : "" // simplified logic
-                            : ""), // Ideally pass token from parent or AuthBloc
+                            ? "TOKEN_PLACEHOLDER"
+                            : ""),
                   ),
                 );
               } else if (action.label == 'Reports') {
-                // Switch tabs to Product Hub? Or specific screen?
-                // For now, let's navigate to Product Hub via TabController if possible,
-                // or just show snackbar as it's a tab.
-                // Better: Navigate to Detailed Report directly as a shortcut?
-                // Let's stick to Predictive for Trends/Alerts as requested.
-                DefaultTabController.of(context)
-                    ?.animateTo(1); // Switch to Products Tab
+                DefaultTabController.of(context)?.animateTo(1);
               }
             },
             child: Container(
@@ -62,9 +49,10 @@ class QuickActionsWidget extends StatelessWidget {
                 children: [
                   Icon(
                     _getIcon(action.label),
-                    color: const Color(0xFF0CBB8C),
+                    color: const Color(0xFF00C896),
+                    size: 28,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     action.label,
                     style: GoogleFonts.inter(
@@ -85,11 +73,11 @@ class QuickActionsWidget extends StatelessWidget {
   IconData _getIcon(String label) {
     switch (label) {
       case 'Reports':
-        return Icons.bar_chart;
+        return Icons.insert_chart_outlined;
       case 'Trends':
-        return Icons.trending_up;
+        return Icons.show_chart;
       case 'Alerts':
-        return Icons.notifications_active;
+        return Icons.warning_amber_rounded;
       default:
         return Icons.widgets;
     }

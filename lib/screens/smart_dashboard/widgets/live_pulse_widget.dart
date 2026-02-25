@@ -8,72 +8,101 @@ class LivePulseWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111816),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0CBB8C),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                "LIVE PULSE",
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                  color: const Color(0xFF0CBB8C),
-                ),
-              ),
-            ],
+          _buildPulseItem(
+            label: "Products",
+            status: pulse.productsStatus ?? "Healthy",
+            icon: Icons.inventory_2,
+            color: const Color(0xFF00C896),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildPulseItem("Active Products", "${pulse.products}"),
-              _buildPulseItem("Total Customers", "${pulse.customers}"),
-              _buildPulseItem("Delivery Active", "${pulse.delivery}"),
-              _buildPulseItem("Processing", "${pulse.processing}"),
-            ],
+          const SizedBox(width: 12),
+          _buildPulseItem(
+            label: "Delivery",
+            status: "${pulse.deliveryActive ?? pulse.delivery ?? 0} Active",
+            icon: Icons.local_shipping,
+            color: Colors.orange,
+          ),
+          const SizedBox(width: 12),
+          _buildPulseItem(
+            label: "Process",
+            status: "${pulse.processPending ?? pulse.processing ?? 0} Pend.",
+            icon: Icons.sync,
+            color: Colors.blue,
+          ),
+          const SizedBox(width: 12),
+          _buildPulseItem(
+            label: "Customers",
+            status: "${pulse.customersLive ?? pulse.customers ?? 0} Live",
+            icon: Icons.person,
+            color: Colors.purple,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPulseItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+  Widget _buildPulseItem({
+    required String label,
+    required String status,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[100]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
           ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[400],
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF111816),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            status,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

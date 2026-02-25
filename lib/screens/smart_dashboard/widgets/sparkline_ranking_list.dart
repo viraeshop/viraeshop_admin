@@ -13,14 +13,7 @@ class SparklineRankingList extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.grey[100]!),
       ),
       child: Column(
         children: rankings.map((product) => _buildRankItem(product)).toList(),
@@ -30,11 +23,12 @@ class SparklineRankingList extends StatelessWidget {
 
   Widget _buildRankItem(ProductRankModel product) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[100]!)),
+        border: Border(bottom: BorderSide(color: Colors.grey[50]!)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Rank
           SizedBox(
@@ -42,10 +36,10 @@ class SparklineRankingList extends StatelessWidget {
             child: Text(
               product.rank.toString().padLeft(2, '0'),
               style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: product.rank <= 3
-                    ? const Color(0xFF0CBB8C)
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: product.rank == 1
+                    ? const Color(0xFF00C896)
                     : Colors.grey[400],
               ),
               textAlign: TextAlign.center,
@@ -54,19 +48,20 @@ class SparklineRankingList extends StatelessWidget {
           const SizedBox(width: 12),
           // Image
           Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
+              shape: BoxShape.circle,
+              color: Colors.grey[100],
               image: DecorationImage(
                 image: NetworkImage(
-                    product.image ?? "https://via.placeholder.com/40"),
+                    product.image ?? "https://via.placeholder.com/44"),
                 fit: BoxFit.cover,
               ),
             ),
           ),
           const SizedBox(width: 12),
-          // Name & Stock
+          // Name & Subtitle
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,24 +69,24 @@ class SparklineRankingList extends StatelessWidget {
                 Text(
                   product.name,
                   style: GoogleFonts.inter(
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
                     color: const Color(0xFF111816),
                   ),
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 2),
                 RichText(
                   text: TextSpan(
                     style: GoogleFonts.inter(
-                        fontSize: 10, color: Colors.grey[600]),
+                        fontSize: 11, color: Colors.grey[500]),
                     children: [
-                      const TextSpan(text: "Stock • "),
+                      const TextSpan(text: "Category • "),
                       TextSpan(
                         text: "${product.stockLeft} Left",
-                        style: TextStyle(
-                          color: product.stockLeft < 10
-                              ? Colors.orange
-                              : const Color(0xFF0CBB8C),
+                        style: const TextStyle(
+                          color: Color(0xFF00C896),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -101,12 +96,14 @@ class SparklineRankingList extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 12),
           // Sales Count & Sparkline
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "${product.totalSold} units",
+                "${product.totalSold >= 1000 ? (product.totalSold / 1000).toStringAsFixed(1) + 'k' : product.totalSold} units",
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -115,24 +112,21 @@ class SparklineRankingList extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               SizedBox(
-                width: 60,
+                width: 48,
                 height: 20,
                 child: LineChart(
                   LineChartData(
-                    gridData: FlGridData(show: false),
-                    titlesData: FlTitlesData(show: false),
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(show: false),
                     borderData: FlBorderData(show: false),
                     lineBarsData: [
                       LineChartBarData(
                         spots: _getSpots(product.sparkline),
                         isCurved: true,
-                        color: const Color(0xFF0CBB8C),
+                        color: const Color(0xFF00C896).withOpacity(0.5),
                         barWidth: 2,
-                        dotData: FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: const Color(0xFF0CBB8C).withOpacity(0.1),
-                        ),
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
                       ),
                     ],
                   ),

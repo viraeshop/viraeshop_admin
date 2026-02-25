@@ -44,7 +44,7 @@ import 'package:viraeshop_admin/features/order_management/screens/active_deliver
 import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/delivery_manager_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/order_acceptance_screen.dart';
-import 'package:viraeshop_admin/features/order_management/screens/order_tracking_screen.dart';
+
 import 'package:viraeshop_admin/features/order_management/screens/payment_collection_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/processing_timer_screen.dart';
@@ -281,13 +281,6 @@ class _AppDrawerState extends State<AppDrawer> {
                           onTap: () => Navigator.pushNamed(
                               context, AgentSettlementScreen.path),
                         ),
-                      ListTile(
-                        contentPadding: const EdgeInsets.only(left: 30),
-                        leading: const Icon(Icons.track_changes, size: 20),
-                        title: const Text('Order Tracking'),
-                        onTap: () => Navigator.pushNamed(
-                            context, OrderTrackingScreen.path),
-                      ),
                     ],
                   ),
                   ReusableTile(

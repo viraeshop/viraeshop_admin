@@ -12,78 +12,72 @@ class TierSystemWidget extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildTierCard("GOLD", tiers.gold, const Color(0xFFFFD700),
-              [const Color(0xFFFFD700), const Color(0xFFB8860B)]),
+          _buildTierCard("Gold", "Rank 1-10", "> ${tiers.gold.threshold}",
+              Icons.workspace_premium, const Color(0xFF00C896),
+              isHighlight: true),
           const SizedBox(width: 12),
-          _buildTierCard("SILVER", tiers.silver, Colors.grey,
-              [const Color(0xFFC0C0C0), const Color(0xFFA9A9A9)]),
+          _buildTierCard("Silver", "Rank 11-30", "> ${tiers.silver.threshold}",
+              Icons.military_tech, Colors.grey[600]!,
+              isHighlight: false),
           const SizedBox(width: 12),
-          _buildTierCard("BRONZE", tiers.bronze, Colors.brown,
-              [const Color(0xFFCD7F32), const Color(0xFFA0522D)]),
-          const SizedBox(width: 12),
-          _buildTierCard("RISING", tiers.rising, Colors.blue,
-              [Colors.blue, Colors.blue.shade700]),
-          const SizedBox(width: 12),
-          _buildTierCard("NEW", tiers.newTier, const Color(0xFF0CBB8C),
-              [const Color(0xFF0CBB8C), const Color(0xFF0A9D75)]),
+          _buildTierCard("Bronze", "Rank 31-70", "> ${tiers.bronze.threshold}",
+              Icons.stars, Colors.orange,
+              isHighlight: false),
         ],
       ),
     );
   }
 
-  Widget _buildTierCard(
-      String label, TierStat stat, Color color, List<Color> gradient) {
+  Widget _buildTierCard(String title, String rankText, String thresholdText,
+      IconData icon, Color color,
+      {bool isHighlight = false}) {
     return Container(
       width: 140,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: isHighlight ? const Color(0xFF00C896) : Colors.grey[100]!,
+            width: isHighlight ? 1.5 : 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(Icons.stars, color: Colors.white.withOpacity(0.8), size: 20),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
-            "${stat.count}",
+            title,
             style: GoogleFonts.inter(
-              fontSize: 28,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: const Color(0xFF111816),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            "> ${stat.threshold} Spent",
+            rankText,
             style: GoogleFonts.inter(
-              fontSize: 10,
-              color: Colors.white.withOpacity(0.8),
+              fontSize: 12,
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            thresholdText,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isHighlight
+                  ? const Color(0xFF00C896)
+                  : const Color(0xFF111816),
             ),
           ),
         ],

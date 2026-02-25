@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:hive/hive.dart';
@@ -11,23 +9,19 @@ import 'package:viraeshop_admin/screens/messages_screen/widgets/chat_image_previ
 import 'package:viraeshop_admin/screens/messages_screen/widgets/guest_chat_bubble.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/image_bubble.dart';
 import 'package:viraeshop_admin/screens/messages_screen/widgets/me_chat_bubble.dart';
-import 'package:viraeshop_admin/settings/general_crud.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:viraeshop_admin/services/admin_chat_service.dart';
 import 'package:chat_bubbles/chat_bubbles.dart';
-import 'package:viraeshop_api/apiCalls/messages.dart';
+import 'package:viraeshop_api/viraeshop_api.dart';
 
 import '../../configs/image_picker.dart';
 
 class Message extends StatefulWidget {
   final String name;
-  final String userId;
-  final num totalUnreadMessages;
-  final String customerToken;
-  const Message({super.key, 
+  final String chatId;
+  const Message({
+    super.key,
     required this.name,
-    required this.userId,
-    required this.totalUnreadMessages,
-    required this.customerToken,
+    required this.chatId,
   });
 
   @override
@@ -35,19 +29,42 @@ class Message extends StatefulWidget {
 }
 
 class _MessageState extends State<Message> {
-  final GeneralCrud _generalCrud = GeneralCrud();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final TextEditingController _controller = TextEditingController();
-  late User userAuthInfo;
+  final AdminChatService _chatService = AdminChatService();
+  List<MessageModel> _messages = [];
+  bool _isLoading = true;
   Map adminInfo = Hive.box('adminInfo').toMap();
   final String placeholderImage =
       'https://www.clipartmax.com/png/small/150-1509532_say-hi-to-us-avatar-support.png';
+
   @override
   void initState() {
-    // TODO: implement initState
-    updateRead(widget.userId, widget.totalUnreadMessages);
-    userAuthInfo = _auth.currentUser!;
     super.initState();
+    _loadHistory();
+    _setupSocketListener();
+  }
+
+  Future<void> _loadHistory() async {
+    final history = await _chatService.fetchChatHistory(widget.chatId);
+    if (mounted) {
+      setState(() {
+        // Reverse because UI builds from bottom
+        _messages = history.reversed.toList();
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _setupSocketListener() {
+    _chatService.socket.on("receive_message", (data) {
+      if (mounted && data != null) {
+        final newMessage = MessageModel.fromJson(data);
+        if (newMessage.chatId == widget.chatId) {
+          setState(() {
+            _messages.insert(0, newMessage);
+          });
+        }
+      }
+    });
   }
 
   final TextEditingController messageController = TextEditingController();
@@ -88,120 +105,85 @@ class _MessageState extends State<Message> {
                 alignment: Alignment.topCenter,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: _generalCrud.getChatMessages(widget.userId),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        if (kDebugMode) {
-                          print(snapshot.error);
-                        }
-                        return const Center(
-                          child: Text(
-                            'Failed to Fetch messages',
-                            style: kBigErrorTextStyle,
-                          ),
-                        );
-                      } else if (snapshot.connectionState ==
-                          ConnectionState.active) {
-                        final messages = snapshot.data?.docs ?? [];
-                        if (messages.isNotEmpty) {
-                          return ListView.builder(
-                            itemCount: messages.length,
-                            //shrinkWrap: true,
-                            reverse: true,
-                            itemBuilder: (context, i) {
-                              Timestamp timestamp = messages[i].get('date');
-                              String time = GetTimeAgo.parse(timestamp.toDate());
-                              Map<String, dynamic> data =
-                                  messages[i].data() as Map<String, dynamic>;
-                              bool isImage = data['isImage'] ?? false;
-                              if (messages[i].get('sender') == userAuthInfo.uid) {
-                                if (isImage) {
-                                  return ChatImageWidget(
-                                    profileImage: adminInfo['profileImage'] ??
-                                        placeholderImage,
-                                    isGuest: false,
-                                    url: data['imageLink'],
-                                    time: time,
-                                  );
-                                } else {
-                                  return MeChatBubble(
-                                    profileImage: adminInfo['profileImage'] ??
-                                        placeholderImage,
-                                    message: messages[i].get('message') ?? '',
-                                    time: time,
-                                  );
-                                }
-                              } else {
-                                if (isImage) {
-                                  return ChatImageWidget(
-                                    isGuest: true,
-                                    url: data['imageLink'],
-                                    time: time,
-                                    profileImage:
-                                        data['profileImage'] ?? placeholderImage,
-                                  );
-                                } else {
-                                  return GuestMessage(
-                                    profileImage:
-                                        data['profileImage'] ?? placeholderImage,
-                                    message: messages[i].get('message'),
-                                    time: time,
-                                    customerName: widget.name,
-                                  );
-                                }
-                              }
-                            },
-                          );
-                        } else {
-                          return const Center(
-                            child: Text(
-                              'No messages yet',
-                              style: kProductNameStylePro,
-                            ),
-                          );
-                        }
-                      } else {
-                        return Center(
+                  child: _isLoading
+                      ? Center(
                           child: LoadingAnimationWidget.bouncingBall(
                             color: kNewMainColor,
                             size: 40,
                           ),
-                        );
-                      }
-                    },
-                  ),
+                        )
+                      : (_messages.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No messages yet',
+                                style: kProductNameStylePro,
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _messages.length,
+                              reverse: true,
+                              itemBuilder: (context, i) {
+                                final msg = _messages[i];
+                                DateTime msgTime =
+                                    msg.createdAt ?? DateTime.now();
+                                String time = GetTimeAgo.parse(msgTime);
+                                bool isAdmin = msg.senderType == 'admin';
+                                bool isImage = msg.type == 'image';
+
+                                if (isAdmin) {
+                                  if (isImage) {
+                                    return ChatImageWidget(
+                                      profileImage: adminInfo['profileImage'] ??
+                                          placeholderImage,
+                                      isGuest: false,
+                                      url: msg.content ?? '',
+                                      time: time,
+                                    );
+                                  } else {
+                                    return MeChatBubble(
+                                      profileImage: adminInfo['profileImage'] ??
+                                          placeholderImage,
+                                      message: msg.content ?? '',
+                                      time: time,
+                                    );
+                                  }
+                                } else {
+                                  if (isImage) {
+                                    return ChatImageWidget(
+                                      isGuest: true,
+                                      url: msg.content ?? '',
+                                      time: time,
+                                      profileImage: placeholderImage,
+                                    );
+                                  } else {
+                                    return GuestMessage(
+                                      profileImage: placeholderImage,
+                                      message: msg.content ?? '',
+                                      time: time,
+                                      customerName: widget.name,
+                                    );
+                                  }
+                                }
+                              },
+                            )),
                 ),
               ),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: MessageBar(
                   sendButtonColor: kNewMainColor,
-                  onTextChanged: null,
+                  onTextChanged: (_) {},
                   onSend: (_) async {
-                    String message = _;
-                    await FirebaseFirestore.instance
-                        .collection('messages')
-                        .doc(widget.userId)
-                        .collection('messages')
-                        .add({
-                      'message': message,
-                      'sender': userAuthInfo.uid,
-                      'date': Timestamp.now(),
-                      'isFromCustomer': false,
-                      'isInitialMessage': false,
-                      'tokens': widget.customerToken,
-                      'adminName': adminInfo['name'],
-                      'profileImage':
-                          adminInfo['profileImage'] ?? placeholderImage,
-                    });
-                    try {
-                      await MessageCalls().sendNotificationFromCustomer({
-                        'message': message,
-                      });
-                    } catch (e) {
-                      debugPrint(e.toString());
-                    }
+                    String messageText = _;
+                    final newMessage = MessageModel(
+                      id: "",
+                      chatId: widget.chatId,
+                      senderType: 'admin',
+                      senderId: adminInfo['adminId']?.toString() ?? 'admin',
+                      content: messageText,
+                      type: 'text',
+                    );
+                    _chatService.sendMessage(newMessage);
                   },
                   actions: [
                     Padding(
@@ -213,16 +195,17 @@ class _MessageState extends State<Message> {
                           size: 24,
                         ),
                         onTap: () {
-                          ImagePickerService imagePickerService = ImagePickerService();
+                          ImagePickerService imagePickerService =
+                              ImagePickerService();
                           imagePickerService.pickImage(context).then((image) {
-                            if(image != null){
+                            if (image != null) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) {
                                     return ChatImagePreview(
-                                      image: image!,
-                                      customerId: widget.userId,
+                                      image: image,
+                                      customerId: widget.chatId,
                                     );
                                   },
                                 ),
@@ -243,29 +226,5 @@ class _MessageState extends State<Message> {
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => false;
-}
-
-Future<void> updateRead(String docId, num readMessages) async {
-  await FirebaseFirestore.instance
-      .collection('messages')
-      .doc(docId)
-      .update({'totalUnreadMessages': 0});
-  DocumentReference documentReference =
-      FirebaseFirestore.instance.collection('notifications').doc('newMessages');
-  return FirebaseFirestore.instance.runTransaction((transaction) async {
-    // Get the document
-    DocumentSnapshot snapshot = await transaction.get(documentReference);
-
-    if (!snapshot.exists) {
-      throw Exception("not found!");
-    }
-    var data = snapshot.get('totalMessages');
-    var newTotal = data - readMessages;
-    // Perform an update on the document
-    transaction.update(documentReference, {'totalMessages': newTotal});
-    // Return the new count
-    return newTotal;
-  });
 }

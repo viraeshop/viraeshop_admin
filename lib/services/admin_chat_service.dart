@@ -10,6 +10,9 @@ class AdminChatService {
       'http://localhost:3000'; // Admin usually web/desktop
   static const String _apiUrl = '$_baseUrl/api/chat';
 
+  // Global listener for new messages when looking at lists
+  Function(MessageModel)? onGlobalMessageReceived;
+
   void connect(String token) {
     socket = IO.io(
         _baseUrl,
@@ -22,6 +25,13 @@ class AdminChatService {
     socket.connect();
 
     socket.onConnect((_) => print('Admin Connected to Socket'));
+
+    // Global listener for generic 'receive_message'
+    socket.on('receive_message', (data) {
+      if (data != null && onGlobalMessageReceived != null) {
+        onGlobalMessageReceived!(MessageModel.fromJson(data));
+      }
+    });
   }
 
   void joinChat(String chatId) {
@@ -54,6 +64,40 @@ class AdminChatService {
       return [];
     } catch (e) {
       print("Error fetching pending chats: $e");
+      return [];
+    }
+  }
+
+  Future<List<ChatModel>> fetchAllChats() async {
+    try {
+      final response = await http.get(Uri.parse('$_apiUrl/admin/all'));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['status'] == true) {
+          final List data = json['data'];
+          return data.map((e) => ChatModel.fromJson(e)).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching all chats: $e");
+      return [];
+    }
+  }
+
+  Future<List<MessageModel>> fetchChatHistory(String chatId) async {
+    try {
+      final response = await http.get(Uri.parse('$_apiUrl/$chatId/history'));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['status'] == true) {
+          final List data = json['data'];
+          return data.map((e) => MessageModel.fromJson(e)).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print("Error fetching chat history: $e");
       return [];
     }
   }

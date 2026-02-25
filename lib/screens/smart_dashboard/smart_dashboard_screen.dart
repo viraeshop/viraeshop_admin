@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:viraeshop_admin/screens/smart_dashboard/tabs/business_overview_tab.dart';
-import 'package:viraeshop_admin/screens/smart_dashboard/tabs/customer_intelligence_tab.dart';
-import 'package:viraeshop_admin/screens/smart_dashboard/tabs/operations_management_tab.dart';
-import 'package:viraeshop_admin/screens/smart_dashboard/tabs/product_intelligence_hub.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/customer_intelligence_screen.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/operations_management_screen.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/product_intelligence_screen.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/widgets/live_pulse_widget.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/widgets/quick_actions_widget.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/widgets/snapshot_grid.dart';
 import 'package:viraeshop_bloc/viraeshop_bloc.dart';
+import 'package:viraeshop_api/models/analytics/analytics_models.dart';
 
 class SmartDashboardScreen extends StatefulWidget {
   static const String path = '/smart_dashboard';
@@ -17,85 +20,265 @@ class SmartDashboardScreen extends StatefulWidget {
   State<SmartDashboardScreen> createState() => _SmartDashboardScreenState();
 }
 
-class _SmartDashboardScreenState extends State<SmartDashboardScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    // Initial Load
     context.read<AnalyticsBloc>().add(LoadBusinessHealth(widget.token));
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F8F7), // background-light
+      backgroundColor: const Color(0xFFF9FAFB), // Match the light background
       appBar: AppBar(
-        title: Text(
-          'Smart Dashboard',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF111816),
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Business Insights',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: const Color(0xFF111816),
+              ),
+            ),
+            Text(
+              '9:41 AM • Viraeshop Admin',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF9FAFB),
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF111816)),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: const Color(0xFF0CBB8C), // Primary
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF0CBB8C),
-          isScrollable: true,
-          tabs: const [
-            Tab(text: "Overview"),
-            Tab(text: "Products"),
-            Tab(text: "Customers"),
-            Tab(text: "Operations"),
+        leading: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Container(
+              decoration: BoxDecoration(
+                  color: const Color(0xFF00C896).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.dashboard,
+                  color: Color(0xFF00C896), size: 20),
+            )),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none, color: Colors.black87),
+            onPressed: () {},
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(
+              backgroundColor: const Color(0xFF00C896),
+              radius: 16,
+              child: Text("VA",
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
+      ),
+      body: BlocBuilder<AnalyticsBloc, AnalyticsState>(
+        builder: (context, state) {
+          if (state is AnalyticsLoading) {
+            return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF00C896)));
+          } else if (state is AnalyticsError) {
+            return Center(child: Text('Error: ${state.message}'));
+          } else if (state is BusinessHealthLoaded) {
+            final data = state.data;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader("Today's Snapshot", isLive: true),
+                  const SizedBox(height: 16),
+                  SnapshotGrid(snapshot: data.snapshot),
+                  const SizedBox(height: 24),
+                  _buildSectionHeader("Live Pulse"),
+                  const SizedBox(height: 16),
+                  LivePulseWidget(pulse: data.livePulse),
+                  const SizedBox(height: 24),
+                  _buildSectionHeader("Quick Actions"),
+                  const SizedBox(height: 16),
+                  QuickActionsWidget(actions: data.quickActions),
+                  const SizedBox(height: 24),
+                  _buildSectionHeader("Main Categories"),
+                  const SizedBox(height: 16),
+                  _buildMainCategoriesGrid(context),
+                  const SizedBox(height: 24),
+                  _buildSectionHeader("Top Performers"),
+                  const SizedBox(height: 16),
+                  _buildTopPerformersList(data.topPerformers),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            );
+          }
+          return const Center(child: Text('Please wait...'));
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {bool isLive = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1F2937),
+          ),
+        ),
+        if (isLive)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00C896).withOpacity(0.15),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              "LIVE",
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF00C896),
+                letterSpacing: 1,
+              ),
+            ),
+          )
+      ],
+    );
+  }
+
+  Widget _buildMainCategoriesGrid(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 2.5,
+      children: [
+        _buildCategoryCard(
+            "Products", Icons.assignment_turned_in_outlined, Colors.blue, () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      ProductIntelligenceScreen(token: widget.token)));
+        }),
+        _buildCategoryCard("Customers", Icons.people_alt, Colors.green, () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      CustomerIntelligenceScreen(token: widget.token)));
+        }),
+        _buildCategoryCard("Operations", Icons.settings_outlined, Colors.orange,
+            () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      OperationsManagementScreen(token: widget.token)));
+        }),
+        _buildCategoryCard("Finance", Icons.payments_outlined, Colors.purple,
+            () {
+          // Placeholder for Finance screen
+        }),
+      ],
+    );
+  }
+
+  Widget _buildCategoryCard(
+      String label, IconData icon, Color iconColor, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
+                child: Icon(icon, color: iconColor, size: 20)),
+            const SizedBox(width: 12),
+            Text(label,
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: const Color(0xFF111816))),
           ],
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                context
-                    .read<AnalyticsBloc>()
-                    .add(LoadBusinessHealth(widget.token));
-                break;
-              case 1:
-                context
-                    .read<AnalyticsBloc>()
-                    .add(LoadProductIntelligence(widget.token));
-                break;
-              case 2:
-                context
-                    .read<AnalyticsBloc>()
-                    .add(LoadCustomerIntelligence(widget.token));
-                break;
-              case 3:
-                context
-                    .read<AnalyticsBloc>()
-                    .add(LoadOperationsHealth(widget.token));
-                break;
-            }
-          },
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          BusinessOverviewTab(token: widget.token),
-          ProductIntelligenceHub(token: widget.token),
-          CustomerIntelligenceTab(token: widget.token),
-          OperationsManagementTab(token: widget.token),
-        ],
+    );
+  }
+
+  Widget _buildTopPerformersList(TopPerformers perf) {
+    return Column(
+      children: [
+        _buildPerformerTile("Top Product", perf.product,
+            Icons.phone_android_outlined, const Color(0xFF00C896)),
+        const SizedBox(height: 12),
+        _buildPerformerTile(
+            "Top Customer", perf.customer, Icons.person, Colors.blue),
+        const SizedBox(height: 12),
+        _buildPerformerTile("Top Delivery", perf.delivery,
+            Icons.electric_moped_outlined, Colors.orange),
+        const SizedBox(height: 12),
+        _buildPerformerTile("Top Processing", perf.processing,
+            Icons.kitchen_outlined, const Color(0xFF00C896)),
+        const SizedBox(height: 12),
+        _buildPerformerTile("Top Order Receiver", "Karim",
+            Icons.perm_contact_calendar_outlined, Colors.purple),
+      ],
+    );
+  }
+
+  Widget _buildPerformerTile(
+      String label, String value, IconData icon, Color color) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+              color: color.withOpacity(0.1), shape: BoxShape.circle),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        title: Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500)),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text(value,
+              style: GoogleFonts.inter(
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF111816),
+                  fontSize: 14)),
+        ),
+        trailing: const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
       ),
     );
   }

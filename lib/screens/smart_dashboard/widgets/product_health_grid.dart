@@ -8,75 +8,45 @@ class ProductHealthGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildHealthCard(
+    return Row(
+      children: [
+        Expanded(
+          child: _buildHealthCard(
             "HOT",
             health.hot,
-            "+12%",
-            const Color(0xFF0CBB8C), // Primary
-            Colors.white,
+            health.hotTrend,
+            const Color(0xFF00C896),
           ),
-          const SizedBox(width: 12),
-          _buildHealthCard(
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildHealthCard(
             "STEADY",
             health.steady,
-            "-0.4%",
+            health.steadyTrend,
             Colors.amber,
-            Colors.white,
           ),
-          const SizedBox(width: 12),
-          _buildHealthCard(
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildHealthCard(
             "COOLING",
             health.cooling,
-            "-5.2%",
+            health.coolingTrend,
             Colors.blue,
-            Colors.white,
           ),
-          const SizedBox(width: 12),
-          _buildHealthCard(
-            "RISK",
-            health.risk,
-            "High",
-            Colors.orange,
-            Colors.white,
-          ),
-          const SizedBox(width: 12),
-          _buildHealthCard(
-            "SLEEPING",
-            health.sleeping,
-            "Crit.",
-            Colors.red,
-            Colors.white,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildHealthCard(
-    String label,
-    int count,
-    String trend,
-    Color color,
-    Color bgColor,
-  ) {
+  Widget _buildHealthCard(String label, int count, String? trend, Color color) {
     return Container(
-      width: 110,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[100]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,29 +67,31 @@ class ProductHealthGrid extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF111816).withOpacity(0.8),
+                  color: const Color(0xFF111816),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             "$count",
             style: GoogleFonts.inter(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF111816),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            trend,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: color,
+          if (trend != null && trend.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              trend,
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
-          ),
+          ]
         ],
       ),
     );

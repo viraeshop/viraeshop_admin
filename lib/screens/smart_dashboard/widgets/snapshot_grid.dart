@@ -16,43 +16,49 @@ class SnapshotGrid extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 1.5,
+        childAspectRatio: 1.4,
         children: [
           _buildCard(
-            title: "Total Sales",
+            title: "SALES",
             value: "৳${snapshot.sales.toStringAsFixed(0)}",
-            icon: Icons.attach_money,
-            color: const Color(0xFF0CBB8C),
+            trend: snapshot.salesTrend ?? "+0%",
+            trendPrefix: Icons.trending_up,
+            trendColor: const Color(0xFF00C896),
           ),
           _buildCard(
-            title: "Orders Today",
+            title: "ORDERS",
             value: "${snapshot.orders}",
-            icon: Icons.shopping_bag_outlined,
-            color: Colors.blue,
+            trend: snapshot.ordersTrend ?? "+0%",
+            trendPrefix: Icons.trending_up,
+            trendColor: const Color(0xFF00C896),
           ),
           _buildCard(
-            title: "New Customers",
-            value: "+${snapshot.newCustomers}",
-            icon: Icons.person_add_outlined,
-            color: Colors.purple,
-          ),
-          _buildCard(
-            title: "Delivery Rate",
+            title: "DELIVERY RATE",
             value: "${snapshot.deliveryRate}%",
-            icon: Icons.local_shipping_outlined,
-            color: Colors.orange,
+            trend: snapshot.deliveryTrend ?? "Target met",
+            trendPrefix: Icons.check_circle,
+            trendColor: const Color(0xFF00C896),
           ),
           _buildCard(
-            title: "Processing Rate",
+            title: "PROCESSING RATE",
             value: "${snapshot.processingRate}%",
-            icon: Icons.inventory_2_outlined,
-            color: Colors.teal,
+            trend: snapshot.processingTrend ?? "Optimal",
+            trendPrefix: Icons.eco,
+            trendColor: const Color(0xFF00C896),
           ),
           _buildCard(
-            title: "Est. Margin",
+            title: "MARGINS",
             value: "${snapshot.margin}%",
-            icon: Icons.trending_up,
-            color: Colors.green,
+            trend: snapshot.marginTrend ?? "+0%",
+            trendPrefix: Icons.trending_up,
+            trendColor: const Color(0xFF00C896),
+          ),
+          _buildCard(
+            title: "CUSTOMERS",
+            value: "${snapshot.newCustomers}",
+            trend: snapshot.customersTrend ?? "New today",
+            trendPrefix: Icons.group_add,
+            trendColor: const Color(0xFF00C896),
           ),
         ],
       );
@@ -62,47 +68,53 @@ class SnapshotGrid extends StatelessWidget {
   Widget _buildCard({
     required String title,
     required String value,
-    required IconData icon,
-    required Color color,
+    required String trend,
+    required IconData trendPrefix,
+    required Color trendColor,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[100]!),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[600],
-                ),
-              ),
-              Icon(icon, color: color, size: 20),
-            ],
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[500],
+              letterSpacing: 1,
+            ),
           ),
+          const SizedBox(height: 8),
           Text(
             value,
             style: GoogleFonts.inter(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
               color: const Color(0xFF111816),
             ),
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              Icon(trendPrefix, color: trendColor, size: 12),
+              const SizedBox(width: 4),
+              Text(
+                trend,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: trendColor,
+                ),
+              ),
+            ],
           ),
         ],
       ),

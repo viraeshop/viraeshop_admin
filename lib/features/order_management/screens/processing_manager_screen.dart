@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop_admin/components/styles/colors.dart';
+
 import 'package:viraeshop_api/models/orders/orders.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_bloc/orders/orders_bloc.dart';
@@ -24,15 +24,24 @@ class ProcessingManagerScreen extends StatefulWidget {
 }
 
 class _ProcessingManagerScreenState extends State<ProcessingManagerScreen> {
-  final TextEditingController _durationController =
-      TextEditingController(text: "30"); // Default 30 mins
-  String? _selectedAdminId;
+  // Store multiple controllers and selections per order instead of one global set
+  final Map<String, TextEditingController> _durationControllers = {};
+  final Map<String, String?> _selectedAdmins = {};
+
   int _pendingCount = 0;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _durationControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   void _fetchData() {
@@ -44,17 +53,20 @@ class _ProcessingManagerScreenState extends State<ProcessingManagerScreen> {
   }
 
   void _assignTask(String orderId) {
-    if (_selectedAdminId == null || _durationController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Select processor and duration")));
+    if (_selectedAdmins[orderId] == null ||
+        _durationControllers[orderId]?.text.isEmpty == true) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Select processor and duration",
+              style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.redAccent));
       return;
     }
 
-    final duration = int.tryParse(_durationController.text) ?? 30;
+    final duration = int.tryParse(_durationControllers[orderId]!.text) ?? 30;
 
     context.read<ProcessingBloc>().add(AssignTaskEvent(
         orderId: orderId,
-        adminId: _selectedAdminId!,
+        adminId: _selectedAdmins[orderId]!,
         taskType: 'processing',
         durationMinutes: duration,
         token: widget.token));
@@ -62,49 +74,98 @@ class _ProcessingManagerScreenState extends State<ProcessingManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return MultiBlocListener(
       listeners: [
         BlocListener<ProcessingBloc, ProcessingState>(
             listener: (context, state) {
           if (state is ProcessingSuccess) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text("Task Assigned Successfully!"),
+                backgroundColor: const Color(0xFF00C896)));
             _fetchData(); // Refresh list
           }
         })
       ],
       child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
         appBar: AppBar(
-          title: const Text("Processing Manager"),
-          backgroundColor: kNewMainColor,
+          backgroundColor: const Color(0xFFF8FAFC),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new,
+                color: Color(0xFF1E293B), size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            "Overview",
+            style: TextStyle(
+              color: Color(0xFF1E293B),
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          centerTitle: true,
+          actions: [
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.05), blurRadius: 10)
+                  ]),
+              child: const Icon(Icons.notifications_outlined,
+                  color: Color(0xFF1E293B), size: 18),
+            ),
+          ],
         ),
         body: Column(
           children: [
-            // Stats
+            // Stats Header
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
                   Expanded(
-                    child: _statCard(
-                        "Pending", "$_pendingCount", Colors.orange, isDark),
+                    child: _statCard("Pending Orders", "$_pendingCount",
+                        const Color(0xFFFACC15), Icons.hourglass_top),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _statCard("Active", "--", Colors.blue, isDark),
+                    child: _statCard("Active Tasks", "--",
+                        const Color(0xFF3B82F6), Icons.engineering),
                   ),
                 ],
               ),
             ),
 
+            // Tab Filters (Mocked for visual match)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  _filterChip("All Jobs", true),
+                  const SizedBox(width: 8),
+                  _filterChip("High Priority", false),
+                  const SizedBox(width: 8),
+                  _filterChip("Standard", false),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Main List
             Expanded(
               child: BlocBuilder<OrdersBloc, OrderState>(
                 builder: (context, state) {
                   if (state is LoadingOrderState) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFF00C896)));
                   }
                   if (state is FetchedOrdersState) {
                     final orders = state.orderList;
@@ -114,16 +175,37 @@ class _ProcessingManagerScreenState extends State<ProcessingManagerScreen> {
                       }
                     });
 
-                    if (orders.isEmpty)
-                      return const Center(
-                          child: Text("No Pending Assignments"));
+                    if (orders.isEmpty) {
+                      return Center(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.inventory_2_outlined,
+                              size: 60, color: Color(0xFFCBD5E1)),
+                          const SizedBox(height: 16),
+                          const Text("No pending assignments",
+                              style: TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ));
+                    }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
                       itemCount: orders.length,
                       itemBuilder: (context, index) {
-                        return _buildAssignmentCard(
-                            orders[index], isDark, theme);
+                        final order = orders[index];
+                        // Initialize local state for each order map if not present
+                        final oid = order.orderId.toString();
+                        if (!_durationControllers.containsKey(oid)) {
+                          _durationControllers[oid] =
+                              TextEditingController(text: "30");
+                        }
+
+                        return _buildAssignmentCard(order);
                       },
                     );
                   }
@@ -137,124 +219,224 @@ class _ProcessingManagerScreenState extends State<ProcessingManagerScreen> {
     );
   }
 
-  Widget _statCard(String label, String value, Color color, bool isDark) {
+  Widget _statCard(String label, String value, Color iconColor, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withOpacity(0.1))),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(),
-              style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey)),
-          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF64748B))),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 14),
+              )
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(value,
-              style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold, color: color)),
+              style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E293B))),
         ],
       ),
     );
   }
 
-  Widget _buildAssignmentCard(Orders order, bool isDark, ThemeData theme) {
+  Widget _filterChip(String label, bool isSelected) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withOpacity(0.1))),
+        color: isSelected ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : const Color(0xFF64748B),
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAssignmentCard(Orders order) {
+    final oid = order.orderId.toString();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 15,
+                offset: const Offset(0, 6))
+          ]),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Order Info
-          ListTile(
-            title: Text("Order #${order.orderId}",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle:
-                Text("${order.items.length} Items • ${order.shippingAddress}"),
-            trailing: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4)),
-                child: const Text("Urgent",
-                    style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold))),
+          // Header Portion
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Order #${order.orderId}",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: Color(0xFF1E293B))),
+                    const SizedBox(height: 4),
+                    Text("${order.items.length} Items • Standard Processing",
+                        style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox.shrink(),
+              ],
+            ),
           ),
 
-          const Divider(height: 1),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-          // Assignment Form
+          // Assignment Form Portion
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text("Assign To",
+                    style: TextStyle(
+                        color: Color(0xFF1E293B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                BlocBuilder<AdminBloc, AdminState>(
+                  builder: (context, state) {
+                    List<AdminModel> admins = [];
+                    if (state is FetchedAdminsState) {
+                      admins = state.adminList ?? [];
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedAdmins[oid],
+                          icon: const Icon(Icons.keyboard_arrow_down,
+                              color: Color(0xFF94A3B8)),
+                          hint: const Text("Select Processor Profile",
+                              style: TextStyle(
+                                  color: Color(0xFF94A3B8), fontSize: 14)),
+                          items: admins
+                              .map((admin) => DropdownMenuItem(
+                                    value: admin.adminId.toString(),
+                                    child: Text(admin.name,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14)),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() => _selectedAdmins[oid] = val);
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text("Target Duration",
+                    style: TextStyle(
+                        color: Color(0xFF1E293B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
-                        flex: 2,
-                        child: BlocBuilder<AdminBloc, AdminState>(
-                          builder: (context, state) {
-                            List<AdminModel> admins = [];
-                            if (state is FetchedAdminsState) {
-                              admins = state.adminList ?? [];
-                            }
-                            // Filter only processors if needed, assuming all admins for now
-
-                            return DropdownButtonFormField<String>(
-                              initialValue: _selectedAdminId,
-                              hint: const Text("Select Processor"),
-                              items: admins
-                                  .map((admin) => DropdownMenuItem(
-                                        value: admin.adminId.toString(),
-                                        child: Text(admin.name),
-                                      ))
-                                  .toList(),
-                              onChanged: (val) =>
-                                  setState(() => _selectedAdminId = val),
-                              decoration: const InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 0),
-                                border: OutlineInputBorder(),
-                              ),
-                            );
-                          },
-                        )),
+                      flex: 2,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: TextField(
+                          controller: _durationControllers[oid],
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            suffixText: "Mins",
+                            suffixStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF94A3B8)),
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
-                      flex: 1,
-                      child: TextField(
-                        controller: _durationController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Mins",
-                          border: OutlineInputBorder(),
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      flex: 3,
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _assignTask(oid),
+                          icon: const Icon(Icons.play_arrow, size: 18),
+                          label: const Text("Start Assignment",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00C896),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                     )
                   ],
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _assignTask(order.orderId.toString()),
-                    icon: const Icon(Icons.timer),
-                    label: const Text("Assign & Start Timer"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kNewMainColor,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                )
               ],
             ),
           )

@@ -137,43 +137,7 @@ class _OperationsManagementScreenState
             return const Center(child: Text('Calculating metrics...'));
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          backgroundColor: const Color(0xFF00C896),
-          child: const Icon(Icons.add, color: Colors.white),
-          elevation: 4,
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _bottomNavIndex,
-          onTap: (idx) {
-            setState(() {
-              _bottomNavIndex = idx;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF00C896),
-          unselectedItemColor: Colors.grey[400],
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedLabelStyle:
-              GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold),
-          unselectedLabelStyle:
-              GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w500),
-          items: const [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined), label: "Home"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.assignment_outlined), label: "Orders"),
-            // Empty space for FAB
-            BottomNavigationBarItem(
-                icon: Icon(Icons.add, color: Colors.transparent), label: ""),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2_outlined), label: "Products"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline), label: "Profile"),
-          ],
-        ));
+        );
   }
 
   Widget _buildFilterChips() {

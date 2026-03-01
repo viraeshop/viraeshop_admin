@@ -5,7 +5,7 @@ import 'package:viraeshop_admin/components/styles/text_styles.dart';
 import 'package:viraeshop_admin/screens/admins/password_screen.dart';
 
 class PermissionPage extends StatefulWidget {
-  const PermissionPage({Key? key}): super(key: key);
+  const PermissionPage({Key? key}) : super(key: key);
   @override
   State<PermissionPage> createState() => _PermissionPageState();
 }
@@ -22,6 +22,11 @@ class _PermissionPageState extends State<PermissionPage> {
     'isDeleteEmployee': false,
     'isManageDue': false,
     'isEditCustomer': false,
+    'canAcceptOrders': false,
+    'canManageProcessing': false,
+    'canManageDelivery': false,
+    'canProcessOrders': false,
+    'canDeliverOrders': false,
   };
   @override
   Widget build(BuildContext context) {
@@ -73,6 +78,11 @@ class _PermissionPageState extends State<PermissionPage> {
                           bools['isManageDue'] = status;
                           bools['isDeleteEmployee'] = status;
                           bools['isEditCustomer'] = status;
+                          bools['canAcceptOrders'] = status;
+                          bools['canManageProcessing'] = status;
+                          bools['canManageDelivery'] = status;
+                          bools['canProcessOrders'] = status;
+                          bools['canDeliverOrders'] = status;
                         });
                       },
                     ),
@@ -176,10 +186,10 @@ class _PermissionPageState extends State<PermissionPage> {
                       onChanged: bools['isAdmin'] == true
                           ? null
                           : (status) {
-                        setState(() {
-                          bools['isEditCustomer'] = status;
-                        });
-                      },
+                              setState(() {
+                                bools['isEditCustomer'] = status;
+                              });
+                            },
                     ),
                   ),
                   ListTile(
@@ -218,10 +228,10 @@ class _PermissionPageState extends State<PermissionPage> {
                       onChanged: bools['isAdmin'] == true
                           ? null
                           : (status) {
-                        setState(() {
-                          bools['isDeleteEmployee'] = status;
-                        });
-                      },
+                              setState(() {
+                                bools['isDeleteEmployee'] = status;
+                              });
+                            },
                     ),
                   ),
                   ListTile(
@@ -239,10 +249,10 @@ class _PermissionPageState extends State<PermissionPage> {
                       onChanged: bools['isAdmin'] == true
                           ? null
                           : (status) {
-                        setState(() {
-                          bools['isDeleteCustomer'] = status;
-                        });
-                      },
+                              setState(() {
+                                bools['isDeleteCustomer'] = status;
+                              });
+                            },
                     ),
                   ),
                   ListTile(
@@ -260,12 +270,87 @@ class _PermissionPageState extends State<PermissionPage> {
                       onChanged: bools['isAdmin'] == true
                           ? null
                           : (status) {
-                        setState(() {
-                          bools['isManageDue'] = status;
-                        });
-                      },
+                              setState(() {
+                                bools['isManageDue'] = status;
+                              });
+                            },
                     ),
                   ),
+                  const Divider(
+                      color: Colors.grey,
+                      thickness: 1,
+                      indent: 20,
+                      endIndent: 20),
+                  const Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text("ORDER MANAGEMENT PERMISSIONS",
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blueGrey)),
+                  ),
+                  ListTile(
+                    title:
+                        const Text('Accept Orders', style: kProductNameStyle),
+                    trailing: Switch(
+                      activeColor: kMainColor,
+                      value: bools['canAcceptOrders']!,
+                      onChanged: bools['isAdmin'] == true
+                          ? null
+                          : (status) =>
+                              setState(() => bools['canAcceptOrders'] = status),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Manage Processing',
+                        style: kProductNameStyle),
+                    trailing: Switch(
+                      activeColor: kMainColor,
+                      value: bools['canManageProcessing']!,
+                      onChanged: bools['isAdmin'] == true
+                          ? null
+                          : (status) => setState(
+                              () => bools['canManageProcessing'] = status),
+                    ),
+                  ),
+                  ListTile(
+                    title:
+                        const Text('Manage Delivery', style: kProductNameStyle),
+                    trailing: Switch(
+                      activeColor: kMainColor,
+                      value: bools['canManageDelivery']!,
+                      onChanged: bools['isAdmin'] == true
+                          ? null
+                          : (status) => setState(
+                              () => bools['canManageDelivery'] = status),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Process Orders (Tasks)',
+                        style: kProductNameStyle),
+                    trailing: Switch(
+                      activeColor: kMainColor,
+                      value: bools['canProcessOrders']!,
+                      onChanged: bools['isAdmin'] == true
+                          ? null
+                          : (status) => setState(
+                              () => bools['canProcessOrders'] = status),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Deliver Orders (Agent)',
+                        style: kProductNameStyle),
+                    trailing: Switch(
+                      activeColor: kMainColor,
+                      value: bools['canDeliverOrders']!,
+                      onChanged: bools['isAdmin'] == true
+                          ? null
+                          : (status) => setState(
+                              () => bools['canDeliverOrders'] = status),
+                    ),
+                  ),
+                  const SizedBox(height: 80),
                 ],
               ),
               Align(
@@ -284,6 +369,11 @@ class _PermissionPageState extends State<PermissionPage> {
                       'isDeleteEmployee': bools['isDeleteEmployee'],
                       'isManageDue': bools['isManageDue'],
                       'isEditCustomer': bools['isEditCustomer'],
+                      'canAcceptOrders': bools['canAcceptOrders'],
+                      'canManageProcessing': bools['canManageProcessing'],
+                      'canManageDelivery': bools['canManageDelivery'],
+                      'canProcessOrders': bools['canProcessOrders'],
+                      'canDeliverOrders': bools['canDeliverOrders'],
                     }).whenComplete(() {
                       Navigator.push(
                         context,

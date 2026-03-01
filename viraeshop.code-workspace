@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../viraeshop"
+		},
+		{
+			"path": "../viraeshop-api"
+		},
+		{
+			"path": "../viraeshop-bloc"
+		},
+		{
+			"path": "../viraeshop-server"
+		}
+	],
+	"settings": {}
+}

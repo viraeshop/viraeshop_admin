@@ -1,39 +1,42 @@
 class RolePermissions {
-// Manager Screens
-  static bool canAccessOrderAcceptance(String role) {
-    return ['super_admin', 'order_manager'].contains(role);
+  // Manager Screens
+  static bool canAccessSuperAdminDashboard(Map<String, dynamic> p) {
+    return p['isAdmin'] == true ||
+        p['canAcceptOrders'] == true ||
+        p['canManageProcessing'] == true ||
+        p['canManageDelivery'] == true;
   }
 
-  static bool canAccessProcessingManager(String role) {
-    return ['super_admin', 'processing_manager'].contains(role);
+  static bool canAccessOrderAcceptance(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canAcceptOrders'] == true;
   }
 
-  static bool canAccessDeliveryManager(String role) {
-    return ['super_admin', 'delivery_manager'].contains(role);
+  static bool canAccessProcessingManager(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canManageProcessing'] == true;
   }
 
-  static bool canAccessSuperAdminDashboard(String role) {
-    return role == 'super_admin';
+  static bool canAccessDeliveryManager(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canManageDelivery'] == true;
   }
 
-// Agent/Staff Screens
-  static bool canAccessProcessingTimer(String role) {
-    return ['processor', 'processing_manager', 'super_admin'].contains(role);
+  // Agent/Staff Screens
+  static bool canAccessProcessingTimer(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canProcessOrders'] == true;
   }
 
-  static bool canAccessActiveDelivery(String role) {
-    return ['driver', 'delivery_manager', 'super_admin'].contains(role);
+  static bool canAccessActiveDelivery(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canDeliverOrders'] == true;
   }
 
-  static bool canAccessPaymentCollection(String role) {
-    return ['driver', 'delivery_manager', 'super_admin'].contains(role);
+  static bool canAccessPaymentCollection(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canDeliverOrders'] == true;
   }
 
-  static bool canAccessAgentSettlement(String role) {
-    return ['driver', 'processor', 'super_admin'].contains(role);
+  static bool canAccessAgentSettlement(Map<String, dynamic> p) {
+    return p['isAdmin'] == true || p['canDeliverOrders'] == true;
   }
 
-  static bool canAccessOrderTracking(String role) {
+  static bool canAccessOrderTracking(Map<String, dynamic> p) {
     return true; // Everyone
   }
 }

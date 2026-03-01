@@ -45,7 +45,6 @@ import 'package:viraeshop_admin/features/order_management/screens/agent_settleme
 import 'package:viraeshop_admin/features/order_management/screens/delivery_manager_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/order_acceptance_screen.dart';
 
-import 'package:viraeshop_admin/features/order_management/screens/payment_collection_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/processing_timer_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/super_admin_dashboard.dart';
@@ -82,6 +81,7 @@ class _AppDrawerState extends State<AppDrawer> {
       isTransactions = true,
       isMakeAdmin = true,
       isManageDue = true;
+  Map<String, dynamic> adminPermissions = {};
   String name = '', email = '';
   // String newMessages = '';
   // String newOrders = '';
@@ -96,6 +96,7 @@ class _AppDrawerState extends State<AppDrawer> {
     isMakeAdmin = Hive.box('adminInfo').get('isMakeAdmin');
     isTransactions = Hive.box('adminInfo').get('isTransactions');
     isManageDue = Hive.box('adminInfo').get('isManageDue');
+    adminPermissions = Hive.box('adminInfo').toMap().cast<String, dynamic>();
     // newMessages = widget.totalMessages;
     // newOrders = widget.newOrders;
     super.initState();
@@ -203,84 +204,142 @@ class _AppDrawerState extends State<AppDrawer> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ExpansionTile(
-                    title: const Text('Order Management'),
-                    leading:
-                        const Icon(Icons.shopping_cart, color: kNewMainColor),
+                    title: const Text(
+                      'Order Management',
+                      style: kDrawerTextStyle2,
+                    ),
+                    leading: const Icon(Icons.shopping_cart,
+                        color: kBackgroundColor),
+                    textColor: kBackgroundColor,
+                    iconColor: kBackgroundColor,
+                    collapsedTextColor: kBackgroundColor,
+                    collapsedIconColor: kBackgroundColor,
                     children: [
+                      // --- CONTROL CENTER ---
                       if (RolePermissions.canAccessSuperAdminDashboard(
-                          'super_admin')) // Replace with actual role check
+                          adminPermissions))
+                        const Padding(
+                          padding:
+                              EdgeInsets.only(left: 20, top: 10, bottom: 5),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("CONTROL CENTER",
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white70,
+                                    letterSpacing: 1.1)),
+                          ),
+                        ),
+                      if (RolePermissions.canAccessSuperAdminDashboard(
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.dashboard, size: 20),
-                          title: const Text('Super Admin Dashboard'),
+                          leading: const Icon(Icons.dashboard_customize,
+                              size: 20, color: Colors.white),
+                          title: const Text('Admin Dashboard',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, SuperAdminDashboard.path),
                         ),
                       if (RolePermissions.canAccessOrderAcceptance(
-                          'super_admin'))
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading:
-                              const Icon(Icons.check_circle_outline, size: 20),
-                          title: const Text('Order Acceptance'),
+                          leading: const Icon(Icons.playlist_add_check,
+                              size: 20, color: Colors.white),
+                          title: const Text('Order Acceptance',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, OrderAcceptanceScreen.path),
                         ),
                       if (RolePermissions.canAccessProcessingManager(
-                          'super_admin'))
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.precision_manufacturing,
-                              size: 20),
-                          title: const Text('Processing Manager'),
+                          leading: const Icon(Icons.assignment_ind,
+                              size: 20, color: Colors.white),
+                          title: const Text('Processing Manager',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, ProcessingManagerScreen.path),
                         ),
                       if (RolePermissions.canAccessDeliveryManager(
-                          'super_admin'))
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.local_shipping, size: 20),
-                          title: const Text('Delivery Manager'),
+                          leading: const Icon(Icons.local_shipping,
+                              size: 20, color: Colors.white),
+                          title: const Text('Delivery Manager',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, DeliveryManagerScreen.path),
                         ),
+
+                      const Divider(
+                          color: Colors.white24,
+                          indent: 20,
+                          endIndent: 20,
+                          height: 20),
+
+                      // --- MY WORKPLACE ---
                       if (RolePermissions.canAccessProcessingTimer(
-                          'super_admin'))
+                              adminPermissions) ||
+                          RolePermissions.canAccessActiveDelivery(
+                              adminPermissions))
+                        const Padding(
+                          padding: EdgeInsets.only(left: 20, top: 5, bottom: 5),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("MY WORKPLACE",
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white70,
+                                    letterSpacing: 1.1)),
+                          ),
+                        ),
+                      if (RolePermissions.canAccessProcessingTimer(
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.timer, size: 20),
-                          title: const Text('Processing Timer'),
+                          leading: const Icon(Icons.timer_outlined,
+                              size: 20, color: Colors.white),
+                          title: const Text('Tasks for Me',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, ProcessingTimerScreen.path),
                         ),
                       if (RolePermissions.canAccessActiveDelivery(
-                          'super_admin'))
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.navigation, size: 20),
-                          title: const Text('Active Delivery'),
+                          leading: const Icon(Icons.delivery_dining,
+                              size: 20, color: Colors.white),
+                          title: const Text('Orders to Deliver',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, ActiveDeliveryScreen.path),
                         ),
-                      if (RolePermissions.canAccessPaymentCollection(
-                          'super_admin'))
+                      if (RolePermissions.canAccessActiveDelivery(
+                          adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.attach_money, size: 20),
-                          title: const Text('Payment Collection'),
-                          onTap: () => Navigator.pushNamed(
-                              context, PaymentCollectionScreen.path),
-                        ),
-                      if (RolePermissions.canAccessAgentSettlement(
-                          'super_admin'))
-                        ListTile(
-                          contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.account_balance, size: 20),
-                          title: const Text('Agent Settlement'),
+                          leading: const Icon(Icons.account_balance_wallet,
+                              size: 20, color: Colors.white),
+                          title: const Text('Settlement Desk',
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 14)),
                           onTap: () => Navigator.pushNamed(
                               context, AgentSettlementScreen.path),
                         ),
+                      const SizedBox(height: 10),
                     ],
                   ),
                   ReusableTile(

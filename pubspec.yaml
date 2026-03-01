@@ -81,7 +81,7 @@ dependencies:
     path: ../viraeshop-bloc
   badges: ^3.1.2
   printing: ^5.14.2
-  fl_chart: ^1.1.1
+  fl_chart: ^1.1.0
   google_fonts: ^6.1.0
 dependency_overrides:
 #  xml: ^6.2.2

@@ -7,6 +7,11 @@ import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_bloc/dashboard/dashboard_bloc.dart';
 import 'package:viraeshop_bloc/dashboard/dashboard_event.dart';
 import 'package:viraeshop_bloc/dashboard/dashboard_state.dart';
+import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/delivery_manager_screen.dart';
+import 'package:viraeshop_admin/features/order_management/screens/manage_orders_screen.dart';
+import 'package:viraeshop_admin/utils/role_permissions.dart';
+import 'package:viraeshop_admin/components/custom_widgets.dart'; // For showMyDialog
 
 class SuperAdminDashboard extends StatefulWidget {
   static const String path = '/super_admin_dashboard';
@@ -42,6 +47,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
   // Admin Profile info from Hive
   String _adminName = "Admin";
   String _adminImage = "";
+  Map<String, dynamic> _adminPermissions = {};
 
   final token = Hive.box('adminInfo').get('token');
 
@@ -69,6 +75,10 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
           _adminImage = images[0]['url'] ?? '';
         });
       }
+
+      setState(() {
+        _adminPermissions = box.toMap().cast<String, dynamic>();
+      });
     } catch (e) {
       debugPrint("Could not load admin info: $e");
     }
@@ -129,8 +139,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
           padding: EdgeInsets.only(left: 16.0),
           child: CircleAvatar(
             backgroundColor: Color(0xFFE2FBE9), // Light green tint
-            child: Icon(Icons.storefront,
-                color: Color(0xFF00C896), size: 20),
+            child: Icon(Icons.storefront, color: Color(0xFF00C896), size: 20),
           ),
         ),
         // NOTE: Strictly no notification bell per requirements.
@@ -284,7 +293,15 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             onPressed: () {
-                              // Navigate to order approval
+                              if (RolePermissions.canAccessOrderAcceptance(
+                                  _adminPermissions)) {
+                                Navigator.pushNamed(
+                                    context, ManageOrdersScreen.path);
+                              } else {
+                                showMyDialog(
+                                    'You do not have permission to view orders.',
+                                    context);
+                              }
                             },
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -370,7 +387,17 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            if (RolePermissions.canAccessProcessingManager(
+                                _adminPermissions)) {
+                              Navigator.pushNamed(
+                                  context, ProcessingManagerScreen.path);
+                            } else {
+                              showMyDialog(
+                                  'You do not have permission to manage processing.',
+                                  context);
+                            }
+                          },
                           icon: const Icon(Icons.sync, size: 16),
                           label: Text("Processing ($_processing)",
                               style:
@@ -388,7 +415,17 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            if (RolePermissions.canAccessDeliveryManager(
+                                _adminPermissions)) {
+                              Navigator.pushNamed(
+                                  context, DeliveryManagerScreen.path);
+                            } else {
+                              showMyDialog(
+                                  'You do not have permission to manage delivery.',
+                                  context);
+                            }
+                          },
                           icon: const Icon(Icons.local_shipping, size: 16),
                           label: Text("Out for Delivery ($_delivery)",
                               style:

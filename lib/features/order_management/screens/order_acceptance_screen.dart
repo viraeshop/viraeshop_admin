@@ -5,11 +5,13 @@ import 'package:viraeshop_bloc/orders/orders_bloc.dart';
 import 'package:viraeshop_bloc/orders/orders_event.dart';
 import 'package:viraeshop_bloc/orders/orders_state.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 
 class OrderAcceptanceScreen extends StatefulWidget {
   static const String path = '/order_acceptance';
-  final String token;
-  const OrderAcceptanceScreen({super.key, this.token = ''});
+  final String? token;
+  const OrderAcceptanceScreen({super.key, this.token});
 
   @override
   State<OrderAcceptanceScreen> createState() => _OrderAcceptanceScreenState();
@@ -17,22 +19,46 @@ class OrderAcceptanceScreen extends StatefulWidget {
 
 class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
   final PageController _pageController = PageController(viewportFraction: 1.0);
+  String? _token;
+  int? _initialOrderId;
+  String _status = 'Pending';
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _fetchPendingOrders();
+    _token = widget.token ?? Hive.box('adminInfo').get('token') ?? '';
+    // Fetching will move to didChangeDependencies to handle arguments correctly
   }
 
-  void _fetchPendingOrders() {
-    context.read<OrdersBloc>().add(
-        GetOrdersEvent(token: widget.token, data: const {'status': 'Pending'}));
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      if (args != null) {
+        if (args.containsKey('orderId')) {
+          _initialOrderId = args['orderId'];
+        }
+        if (args.containsKey('status')) {
+          _status = args['status'];
+        }
+      }
+      _fetchOrders(); // Fetch after setting status
+      _isInitialized = true;
+    }
+  }
+
+  void _fetchOrders() {
+    context
+        .read<OrdersBloc>()
+        .add(GetOrdersEvent(token: _token ?? '', data: {'status': _status}));
   }
 
   void _confirmOrder(String orderId) {
     context.read<OrdersBloc>().add(UpdateOrderEvent(
         orderId: orderId,
-        token: widget.token,
+        token: _token ?? '',
         orderModel: const {'orderStatus': 'Confirmed'}));
   }
 
@@ -41,6 +67,12 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url);
     }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -78,7 +110,7 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
               content: Text("Order Confirmed Successfully!"),
               backgroundColor: Color(0xFF00C896),
             ));
-            _fetchPendingOrders(); // Refresh list
+            _fetchOrders(); // Refresh list
           }
           if (state is OnErrorOrderState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -96,9 +128,23 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
           if (state is FetchedOrdersState) {
             final orders = state.orderList;
             if (orders.isEmpty) {
-              return const Center(
-                  child: Text("No Pending Orders To Accept",
-                      style: TextStyle(color: Color(0xFF64748B))));
+              return Center(
+                  child: Text("No $_status Orders To Accept",
+                      style: const TextStyle(color: Color(0xFF64748B))));
+            }
+
+            // Handle jumping to initial order if provided
+            if (_initialOrderId != null) {
+              final index =
+                  orders.indexWhere((o) => o.orderId == _initialOrderId);
+              if (index != -1) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_pageController.hasClients) {
+                    _pageController.jumpToPage(index);
+                  }
+                  _initialOrderId = null; // Only jump once
+                });
+              }
             }
 
             return PageView.builder(
@@ -111,9 +157,9 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
             );
           }
 
-          return const Center(
-              child: Text("Load Pending Orders",
-                  style: TextStyle(color: Color(0xFF64748B))));
+          return Center(
+              child: Text("Load $_status Orders",
+                  style: const TextStyle(color: Color(0xFF64748B))));
         },
       ),
     );
@@ -155,9 +201,9 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "PENDING APPROVAL",
-                      style: TextStyle(
+                    Text(
+                      _status.toUpperCase(),
+                      style: const TextStyle(
                         color: Color(0xFF00C896),
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
@@ -267,7 +313,8 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text("${order.total}",
+                        Text(
+                            "৳ ${NumberFormat('#,##0.00').format(order.total)}",
                             style: const TextStyle(
                                 color: Color(0xFF00C896),
                                 fontWeight: FontWeight.w800,
@@ -319,65 +366,80 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
             ),
           ),
 
-          // Bottom Action Row
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: SizedBox(
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Accept Order logic if different from Confirm, typically means acknowledged by a sub-agent.
-                        // For now, doing nothing or refreshing.
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF1F5F9),
-                        foregroundColor: const Color(0xFF1E293B),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+          // Bottom Action Row (Only show if pending)
+          if (order.orderStatus.toLowerCase() == 'pending')
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Accept Order logic
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          foregroundColor: const Color(0xFF1E293B),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                      ),
-                      child: const Text("Accept Order",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 3,
-                  child: SizedBox(
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () => _confirmOrder(order.orderId.toString()),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00C896),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Confirm Order",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 15)),
-                          SizedBox(width: 8),
-                          Icon(Icons.check_circle, size: 20),
-                        ],
+                        child: const Text("Accept Order",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15)),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 3,
+                    child: SizedBox(
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            _confirmOrder(order.orderId.toString()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00C896),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Confirm Order",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 15)),
+                            SizedBox(width: 8),
+                            Icon(Icons.check_circle, size: 20),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: Text(
+                  "Order Status: ${order.orderStatus.toUpperCase()}",
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ],
-            ),
-          )
+              ),
+            )
         ],
       ),
     );

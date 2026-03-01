@@ -80,6 +80,11 @@ class _LoginPageState extends State<LoginPage> {
                         'isDeleteCustomer': adminInfo.isDeleteCustomer,
                         'isDeleteEmployee': adminInfo.isDeleteEmployee,
                         'isEditCustomer': adminInfo.isEditCustomer,
+                        'canAcceptOrders': adminInfo.canAcceptOrders,
+                        'canManageProcessing': adminInfo.canManageProcessing,
+                        'canManageDelivery': adminInfo.canManageDelivery,
+                        'canProcessOrders': adminInfo.canProcessOrders,
+                        'canDeliverOrders': adminInfo.canDeliverOrders,
                         'active': adminInfo.active,
                         'token': token ?? '',
                       });
@@ -101,7 +106,10 @@ class _LoginPageState extends State<LoginPage> {
                     // shrinkWrap: true,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Login', style: kProductNameStyle,),
+                      const Text(
+                        'Login',
+                        style: kProductNameStyle,
+                      ),
                       const SizedBox(
                         height: 10.0,
                       ),
@@ -167,7 +175,8 @@ class _LoginPageState extends State<LoginPage> {
                                 email: _emailController.text,
                                 password: _passwordController.text,
                               );
-                              token = (await _userCredential.user!.getIdToken())!;
+                              token =
+                                  (await _userCredential.user!.getIdToken())!;
                               adminBloc.add(GetAdminEvent(
                                   adminId: _userCredential.user!.uid,
                                   token: token));
@@ -190,13 +199,11 @@ class _LoginPageState extends State<LoginPage> {
                                 showMyDialog(
                                     'You have entered a wrong password',
                                     context);
-                              }else {
+                              } else {
                                 setState(() {
                                   _isStart = false;
                                 });
-                                showMyDialog(
-                                    e.message!,
-                                    context);
+                                showMyDialog(e.message!, context);
                               }
                             }
                           },

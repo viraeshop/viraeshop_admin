@@ -40,6 +40,7 @@ import 'package:viraeshop_admin/features/order_management/screens/payment_collec
 import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/order_tracking_screen.dart';
 import 'package:viraeshop_admin/screens/approval_dashboard_screen.dart'; // Added Import
+import 'package:viraeshop_admin/features/order_management/screens/manage_orders_screen.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
@@ -373,6 +374,7 @@ class _MyAppState extends State<MyApp> {
         OrderTrackingScreen.path: (context) => const OrderTrackingScreen(),
         ApprovalDashboardScreen.path: (context) =>
             const ApprovalDashboardScreen(),
+        ManageOrdersScreen.path: (context) => const ManageOrdersScreen(),
       },
     );
   }

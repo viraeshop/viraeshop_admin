@@ -13,6 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:viraeshop_api/apiCalls/home_ads.dart';
 import 'package:viraeshop_api/apiCalls/notifications/barrel.dart';
+import 'package:viraeshop_bloc/viraeshop_bloc.dart';
 import 'package:viraeshop_bloc/admin/admin_bloc.dart';
 import 'package:viraeshop_bloc/adverts/adverts_bloc.dart';
 import 'package:viraeshop_bloc/adverts/barrel.dart';
@@ -41,6 +42,8 @@ import 'package:viraeshop_admin/features/order_management/screens/agent_settleme
 import 'package:viraeshop_admin/features/order_management/screens/order_tracking_screen.dart';
 import 'package:viraeshop_admin/screens/approval_dashboard_screen.dart'; // Added Import
 import 'package:viraeshop_admin/features/order_management/screens/manage_orders_screen.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/smart_dashboard_screen.dart';
+import 'package:viraeshop_bloc/processing/processing_bloc.dart';
 import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/reusable_widgets/hive/shops_model.dart';
 import 'package:viraeshop_admin/reusable_widgets/shopping_cart.dart';
@@ -288,6 +291,12 @@ void main() async {
             orderCalls: const OrderCalls(),
           ),
         ),
+        BlocProvider(
+          create: (BuildContext context) => ProcessingBloc(),
+        ),
+        BlocProvider(
+          create: (BuildContext context) => AnalyticsBloc(),
+        ),
       ], child: const MyApp()),
     ),
   );
@@ -366,7 +375,8 @@ class _MyAppState extends State<MyApp> {
         ProcessingManagerScreen.path: (context) =>
             const ProcessingManagerScreen(),
         DeliveryManagerScreen.path: (context) => const DeliveryManagerScreen(),
-        ProcessingTimerScreen.path: (context) => const ProcessingTimerScreen(),
+        ProcessingTimerScreen.path: (context) =>
+            const ProcessingTimerScreen(orderId: ''),
         ActiveDeliveryScreen.path: (context) => const ActiveDeliveryScreen(),
         PaymentCollectionScreen.path: (context) =>
             const PaymentCollectionScreen(),
@@ -375,6 +385,7 @@ class _MyAppState extends State<MyApp> {
         ApprovalDashboardScreen.path: (context) =>
             const ApprovalDashboardScreen(),
         ManageOrdersScreen.path: (context) => const ManageOrdersScreen(),
+        SmartDashboardScreen.path: (context) => const SmartDashboardScreen(),
       },
     );
   }

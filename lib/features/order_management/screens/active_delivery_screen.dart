@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
 import 'package:viraeshop_admin/features/order_management/screens/payment_collection_screen.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
 import 'package:viraeshop_api/models/orders/order_task.dart';
+import 'package:viraeshop_bloc/orders/barrel.dart';
+import 'package:viraeshop_admin/reusable_widgets/orders/delivery_timer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ActiveDeliveryScreen extends StatelessWidget {
@@ -38,8 +42,10 @@ class ActiveDeliveryScreen extends StatelessWidget {
       );
     }
 
-    final pendingAmount =
-        order!.due != 0.0 ? order!.due : (order!.codAmountToCollect ?? 0.0);
+    final pendingAmount = (order!.due != 0.0)
+        ? order!.due.toDouble()
+        : (order!.codAmountToCollect ?? order!.subTotal.toDouble());
+    final displayAmount = pendingAmount < 0 ? 0.0 : pendingAmount;
     final bool isCOD =
         order!.paymentMethod?.toLowerCase() == 'cash' || pendingAmount > 0;
 
@@ -150,7 +156,17 @@ class ActiveDeliveryScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 16),
-
+ 
+                // Timer Card
+                (() {
+                  final activeTask = task ?? order!.deliveryTask;
+                  if (activeTask != null && (activeTask.taskStatus == 'active' || activeTask.taskStatus == 'pending')) {
+                    return Center(child: DeliveryTimer(task: activeTask));
+                  }
+                  return const SizedBox.shrink();
+                })(),
+                const SizedBox(height: 16),
+ 
                 // 2. Collection Alert (Only if pending amount > 0 or COD)
                 if (isCOD)
                   Container(
@@ -166,7 +182,7 @@ class ActiveDeliveryScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "${pendingAmount.toStringAsFixed(0)} BDT",
+                          "${displayAmount.toStringAsFixed(0)} BDT",
                           style: const TextStyle(
                             color: Color(0xFF00C896),
                             fontSize: 28,
@@ -562,13 +578,26 @@ class ActiveDeliveryScreen extends StatelessWidget {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (task == null) return;
+                        // 1. Persist "reached" state so app can re-route on relaunch
+                        final token = Hive.box('adminInfo').get('token');
+                        context.read<OrdersBloc>().add(
+                          UpdateOrderEvent(
+                            orderId: order!.orderId!,
+                            orderModel: {
+                              'orderStage': 'delivery',
+                              'notificationType': 'admin2Customer',
+                              'reachedCustomer': true,
+                            },
+                            token: token,
+                          ),
+                        );
+                        // 2. Navigate to payment collection
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PaymentCollectionScreen(
                               order: order!,
-                              task: task!,
+                              task: task,
                             ),
                           ),
                         );

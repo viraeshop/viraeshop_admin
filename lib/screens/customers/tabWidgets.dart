@@ -471,7 +471,10 @@ class _SalesTabState extends State<SalesTab> {
 
 class OrdersTab extends StatefulWidget {
   final String userId;
-  const OrdersTab({Key? key, this.userId = ''}) : super(key: key);
+  final OrderStages? stage;
+  final bool? isManagerView;
+  const OrdersTab({Key? key, this.userId = '', this.stage, this.isManagerView})
+      : super(key: key);
 
   @override
   _OrdersTabState createState() => _OrdersTabState();
@@ -485,19 +488,24 @@ class _OrdersTabState extends State<OrdersTab> {
   final ScrollController _scrollController = ScrollController();
   int offset = 0;
   bool isProductEnd = false;
+
   @override
   void initState() {
     final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    OrderStages currentStage = orderProvider.currentStage;
+    OrderStages currentStage = widget.stage ?? orderProvider.currentStage;
     orders.clear();
     Map<String, dynamic> filterInfo = {
       'filterType': orderFilter(currentStage),
       'filterData': {
-        if (currentStage == OrderStages.order) 'customerId': widget.userId,
-        if (currentStage == OrderStages.admin) 'adminId': widget.userId,
+        if (currentStage == OrderStages.order && widget.userId.isNotEmpty)
+          'customerId': widget.userId,
+        if (currentStage == OrderStages.admin && widget.userId.isNotEmpty)
+          'adminId': widget.userId,
         if (currentStage == OrderStages.processing) 'isAll': true,
         if (currentStage == OrderStages.receiving) 'status': 'pending',
-        if (currentStage == OrderStages.delivery) 'status': 'pending',
+        if (currentStage == OrderStages.delivery && widget.userId.isEmpty) 'status': 'pending',
+        if (currentStage == OrderStages.delivery && widget.userId.isNotEmpty)
+          'deliveryBoyId': widget.userId,
       }
     };
     getOrders(
@@ -505,8 +513,11 @@ class _OrdersTabState extends State<OrdersTab> {
       context: context,
     );
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      Provider.of<OrderProvider>(context, listen: false)
-          .updateFilterInfo(filterInfo);
+      if (widget.stage == null) {
+        // Only update provider if this tab is the "primary" one (no explicit stage)
+        Provider.of<OrderProvider>(context, listen: false)
+            .updateFilterInfo(filterInfo);
+      }
     });
     _scrollController.addListener(() {
       if (_scrollController.position.atEdge &&
@@ -518,7 +529,7 @@ class _OrdersTabState extends State<OrdersTab> {
           onUpdate = true;
         });
         getOrders(
-          data: orderProvider.filterInfo,
+          data: filterInfo, // Use the local filterInfo for pagination
           context: context,
         );
       }
@@ -584,10 +595,10 @@ class _OrdersTabState extends State<OrdersTab> {
           shrinkWrap: true,
           controller: _scrollController,
           itemBuilder: (BuildContext context, int i) {
-            OrderStages currentStage =
+            OrderStages currentStage = widget.stage ??
                 Provider.of<OrderProvider>(context, listen: false).currentStage;
             bool processorSeen = true;
-            if(currentStage == OrderStages.admin) {
+            if (currentStage == OrderStages.admin) {
               for (var a in orders[i].admin) {
                 if (kDebugMode) {
                   print(a);
@@ -599,12 +610,12 @@ class _OrdersTabState extends State<OrdersTab> {
                   }
                 }
               }
-            } else if(currentStage == OrderStages.processing) {
-              processorSeen =  orders[i].processed;
-            } else if(currentStage == OrderStages.receiving) {
-              processorSeen =  orders[i].received;
-            } else if (currentStage == OrderStages.order){
-              processorSeen =  orders[i].seen;
+            } else if (currentStage == OrderStages.processing) {
+              processorSeen = orders[i].processed;
+            } else if (currentStage == OrderStages.receiving) {
+              processorSeen = orders[i].received;
+            } else if (currentStage == OrderStages.order) {
+              processorSeen = orders[i].seen;
             }
             List<Items> items = orders[i].items;
             String description = '';
@@ -619,17 +630,22 @@ class _OrdersTabState extends State<OrdersTab> {
             return OrderTranzCard(
               key: ValueKey(orders[i].orderId),
               onTap: () {
+                Provider.of<OrderProvider>(context, listen: false)
+                    .updateOrderStage(currentStage);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) {
-                      return OrderProducts(
-                        processorSeen: processorSeen,
-                        userId: widget.userId,
-                        customerInfo: orders[i].customer.toJson(),
-                        orderInfo: orders[i].toJson(),
-                        onGetAdmins: currentStage == OrderStages.processing,
-                      );
+                        return OrderProducts(
+                          processorSeen: processorSeen,
+                          userId: widget.userId,
+                          customerInfo: orders[i].customer.toJson(),
+                          orderInfo: orders[i].toJson(),
+                          onGetAdmins: currentStage == OrderStages.processing,
+                          isManagerView: widget.isManagerView ??
+                              (widget.userId.isEmpty ||
+                                  widget.userId == 'null'),
+                        );
                     },
                   ),
                 );
@@ -639,22 +655,33 @@ class _OrdersTabState extends State<OrdersTab> {
               employeeName: 'Riyadh',
               customerName: orders[i].customer.name,
               isTransaction: false,
-              isAdmin: currentStage != OrderStages.delivery,
-              processingStatus: getStatusMessage(currentStage, orders[i], processorSeen),
+              isAdmin: currentStage != OrderStages.delivery, // Always show status text
+              processingStatus:
+                  getStatusMessage(currentStage, orders[i], processorSeen),
               desc: description,
               id: orders[i].orderId,
-              status: orders[i].delayDelivery &&
-                      currentStage == OrderStages.delivery
-                  ? Icons.pending
-                  : orders[i].onDelivery && currentStage == OrderStages.delivery
-                      ? Icons.local_shipping
-                      : null,
-              statusColor: orders[i].delayDelivery &&
-                      currentStage == OrderStages.delivery
-                  ? kRedColor
-                  : orders[i].onDelivery && currentStage == OrderStages.delivery
-                      ? kNewBrownColor
-                      : null,
+              status: currentStage == OrderStages.delivery
+                  ? (orders[i].deliveryTask?.taskStatus?.toLowerCase() == 'pending'
+                      ? Icons.pending
+                      : (orders[i].deliveryStatus.toLowerCase() == 'delivered'
+                          ? Icons.check_circle
+                          : (orders[i].deliveryStatus.toLowerCase() == 'reached'
+                              ? Icons.person_pin
+                              : (orders[i].deliveryStatus.toLowerCase() == 'in transit'
+                                  ? Icons.local_shipping
+                                  : Icons.assignment))))
+                  : null,
+              statusColor: currentStage == OrderStages.delivery
+                  ? (orders[i].deliveryStatus.toLowerCase() == 'pending'
+                      ? kRedColor
+                      : (orders[i].deliveryStatus.toLowerCase() == 'delivered'
+                          ? kMainColor
+                          : (orders[i].deliveryStatus.toLowerCase() == 'reached'
+                              ? indigo500
+                              : (orders[i].deliveryStatus.toLowerCase() == 'in transit'
+                                  ? kNewBrownColor
+                                  : orangeA200))))
+                  : null,
             );
           },
         );
@@ -677,30 +704,46 @@ class _OrdersTabState extends State<OrdersTab> {
       return const LoadingWidget();
     });
   }
-  String getStatusMessage (OrderStages currentStage, Orders order, bool processed) {
-    if(!processed) {
+
+  String getStatusMessage(
+      OrderStages currentStage, Orders order, bool processed) {
+    if (!processed) {
       return 'New';
     } else {
-      if(currentStage == OrderStages.admin || currentStage == OrderStages.processing) {
-        if(order.processingStatus == 'confirmed'){
+      if (currentStage == OrderStages.admin ||
+          currentStage == OrderStages.processing) {
+        print(order.processingStatus);
+        if (order.processingStatus == 'confirmed') {
           return 'Confirmed';
-        } else if(order.processingStatus == 'failed') {
+        } else if (order.processingStatus == 'failed') {
           return 'Failed';
         } else {
           return 'Pending';
         }
-      } else if(currentStage == OrderStages.order){
-        if(order.orderStatus == 'confirmed'){
+      } else if (currentStage == OrderStages.order) {
+        if (order.orderStatus.toLowerCase() == 'confirmed') {
           return 'Confirmed';
-        } else if(order.orderStatus == 'failed') {
+        } else if (order.orderStatus.toLowerCase() == 'failed') {
           return 'Failed';
-        } else {
+        } else if (order.orderStatus.toLowerCase() == 'success'){
+          return 'Success';
+        }else {
           return 'Pending';
+        }
+      } else if (currentStage == OrderStages.delivery) {
+        if (order.deliveryStatus.toLowerCase() == 'delivered') {
+          return 'Delivered';
+        } else if (order.deliveryStatus.toLowerCase() == 'reached') {
+          return 'Reached';
+        } else if (order.onDelivery) {
+          return 'In Transit';
+        } else {
+          return 'Assigned';
         }
       } else {
-        if(order.receiveStatus == 'completed'){
+        if (order.receiveStatus == 'completed') {
           return 'Completed';
-        } else if(order.receiveStatus == 'failed') {
+        } else if (order.receiveStatus == 'failed') {
           return 'Failed';
         } else {
           return 'Pending';

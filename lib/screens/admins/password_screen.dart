@@ -146,12 +146,16 @@ class _PasswordScreenState extends State<PasswordScreen> {
                               'isDeleteEmployee': adminInfo['isDeleteEmployee'],
                               'isManageDue': adminInfo['isManageDue'],
                               'isEditCustomer': adminInfo['isEditCustomer'],
+                              'mobile': adminInfo['mobile'],
                             };
                             try {
-                              final user = await NetworkUtility.registerUserEmail(
-                                  adminInfo['email'], _passwordController.text);
+                              final user =
+                                  await NetworkUtility.registerUserEmail(
+                                      adminInfo['email'],
+                                      _passwordController.text);
                               adminMap['adminId'] = user.user!.uid;
-                              final jWTToken = Hive.box('adminInfo').get('token');
+                              final jWTToken =
+                                  Hive.box('adminInfo').get('token');
                               adminBloc.add(
                                 AddAdminEvent(
                                   token: jWTToken,

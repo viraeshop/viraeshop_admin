@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop_bloc/processing/processing_bloc.dart';
-import 'package:viraeshop_bloc/processing/processing_event.dart';
-import 'package:viraeshop_bloc/processing/processing_state.dart';
+import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
 import 'package:viraeshop_api/models/orders/order_task.dart';
+import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
 
 class PaymentCollectionScreen extends StatefulWidget {
   static const String path = '/payment_collection';
@@ -29,8 +28,15 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   void initState() {
     super.initState();
     if (widget.order != null) {
-      _amountToCollect =
-          widget.order!.codAmountToCollect ?? widget.order!.total.toDouble();
+      // Prioritize due balance, fallback to codAmountToCollect or subTotal
+      _amountToCollect = (widget.order!.due != 0.0)
+          ? widget.order!.due.toDouble()
+          : (widget.order!.codAmountToCollect ??
+              widget.order!.subTotal.toDouble());
+
+      // Ensure amount is not negative
+      if (_amountToCollect < 0) _amountToCollect = 0.0;
+
       _amountController.text = _amountToCollect.toStringAsFixed(0);
     }
     _amountController.addListener(() {
@@ -55,13 +61,16 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
 
     final collected = double.tryParse(_amountController.text) ?? 0.0;
 
-    context.read<ProcessingBloc>().add(CompleteTaskEvent(
-            taskId: widget.task!.id!,
-            token: Hive.box('adminInfo').get('token'),
-            paymentDetails: {
-              'amountCollected': collected,
-              'method': _selectedMethod
-            }));
+    context.read<OrdersBloc>().add(UpdateOrderEvent(
+          orderId: widget.order!.orderId!.toString(),
+          token: Hive.box('adminInfo').get('token'),
+          orderModel: {
+            'deliveryStatus': 'completed',
+            'notificationType': 'admin2Customer',
+            'paymentMethod': _selectedMethod,
+            'codAmountCollected': collected,
+          },
+        ));
   }
 
   @override
@@ -70,14 +79,53 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
     bool isPartial = currentInput < _amountToCollect;
     double diff = _amountToCollect - currentInput;
 
-    return BlocListener<ProcessingBloc, ProcessingState>(
+    return BlocListener<OrdersBloc, OrderState>(
       listener: (context, state) {
-        if (state is ProcessingSuccess) {
+        if (state is RequestFinishedOrderState &&
+            state.response.message == 'Task Completed') {
+          // Store context's navigator before popping
+          final navigator = Navigator.of(context);
+          
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text("Delivery Completed Successfully!"),
-              backgroundColor: const Color(0xFF00C896)));
+            content: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Delivery Completed!",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text("Funds added to your cash in hand.",
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.9))),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            backgroundColor: const Color(0xFF1E293B), // Dark Navy for premium look
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'DEPOSIT NOW',
+              textColor: const Color(0xFF00C896), // Teal accent
+              onPressed: () {
+                navigator.pushNamed(AgentSettlementScreen.path);
+              },
+            ),
+          ));
           Navigator.popUntil(context, (route) => route.isFirst);
-        } else if (state is ProcessingError) {
+        } else if (state is OnErrorOrderState) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.message), backgroundColor: Colors.redAccent));
         }

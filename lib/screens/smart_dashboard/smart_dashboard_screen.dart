@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/customer_intelligence_screen.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/operations_management_screen.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/product_intelligence_screen.dart';
@@ -12,19 +13,22 @@ import 'package:viraeshop_api/models/analytics/analytics_models.dart';
 
 class SmartDashboardScreen extends StatefulWidget {
   static const String path = '/smart_dashboard';
-  final String token;
+  final String? token;
 
-  const SmartDashboardScreen({super.key, required this.token});
+  const SmartDashboardScreen({super.key, this.token});
 
   @override
   State<SmartDashboardScreen> createState() => _SmartDashboardScreenState();
 }
 
 class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
+  late String _token;
+
   @override
   void initState() {
     super.initState();
-    context.read<AnalyticsBloc>().add(LoadBusinessHealth(widget.token));
+    _token = widget.token ?? Hive.box('adminInfo').get('token') ?? '';
+    context.read<AnalyticsBloc>().add(LoadBusinessHealth(_token));
   }
 
   @override
@@ -161,38 +165,32 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
   }
 
   Widget _buildMainCategoriesGrid(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 2.5,
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
       children: [
         _buildCategoryCard(
-            "Products", Icons.assignment_turned_in_outlined, Colors.blue, () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) =>
-                      ProductIntelligenceScreen(token: widget.token)));
-        }),
-        _buildCategoryCard("Customers", Icons.people_alt, Colors.green, () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) =>
-                      CustomerIntelligenceScreen(token: widget.token)));
-        }),
-        _buildCategoryCard("Operations", Icons.settings_outlined, Colors.orange,
+            "Products", Icons.assignment_turned_in_outlined, Colors.blue, 2.5,
             () {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) =>
-                      OperationsManagementScreen(token: widget.token)));
+                  builder: (_) => ProductIntelligenceScreen(token: _token)));
         }),
-        _buildCategoryCard("Finance", Icons.payments_outlined, Colors.purple,
+        _buildCategoryCard("Customers", Icons.people_alt, Colors.green, 2.5, () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => CustomerIntelligenceScreen(token: _token)));
+        }),
+        _buildCategoryCard(
+            "Operations", Icons.settings_outlined, Colors.orange, 2.5, () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => OperationsManagementScreen(token: _token)));
+        }),
+        _buildCategoryCard("Finance", Icons.payments_outlined, Colors.purple, 2.5,
             () {
           // Placeholder for Finance screen
         }),
@@ -200,33 +198,38 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
     );
   }
 
-  Widget _buildCategoryCard(
-      String label, IconData icon, Color iconColor, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+  Widget _buildCategoryCard(String label, IconData icon, Color iconColor,
+      double aspectRatio, VoidCallback onTap) {
+    return LayoutBuilder(builder: (context, constraints) {
+      final width = (constraints.maxWidth - 16) / 2;
+      return InkWell(
+        onTap: onTap,
+        child: Container(
+          width: width,
+          height: width / aspectRatio,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
+                  child: Icon(icon, color: iconColor, size: 20)),
+              const SizedBox(width: 12),
+              Text(label,
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: const Color(0xFF111816))),
+            ],
+          ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
-                child: Icon(icon, color: iconColor, size: 20)),
-            const SizedBox(width: 12),
-            Text(label,
-                style: GoogleFonts.inter(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: const Color(0xFF111816))),
-          ],
-        ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildTopPerformersList(TopPerformers perf) {

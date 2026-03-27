@@ -33,7 +33,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   DateTime endDate = DateTime.now();
   Map<String, dynamic> totalReport = {};
   List<Map<String, dynamic>> customersTotalOrdersInfo = [];
-  List<String> statusList = ['Pending', 'Completed', 'Failed'];
+  List<String> statusList = ['Pending', 'In Transit', 'Reached', 'Delivered'];
   bool isLoading = true;
   bool onDateSelected = false;
   bool onError = false;
@@ -255,41 +255,48 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           ),
                           Consumer<OrderProvider>(
                               builder: (context, provider, any) {
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: List.generate(
-                                statusList.length,
-                                (index) => OrderChips(
-                                  width: 140.0,
-                                  title: statusList[index],
-                                  isSelected:
-                                      status == statusList[index].toLowerCase(),
-                                  onTap: () {
-                                    setState(() {
-                                      status = statusList[index].toLowerCase();
-                                      offset = 0;
-                                    });
-                                    Map<String, dynamic> filterInfo = {
-                                      'filterType': deliveryAndReceiveStatus,
-                                      'filterData': {
-                                        'status': status,
-                                        if (onDateSelected)
-                                          'date': {
-                                            'startDate':
-                                                beginDate.toIso8601String(),
-                                            'endDate': endDate.toIso8601String(),
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(
+                                  statusList.length,
+                                  (index) => Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: OrderChips(
+                                      width: 140.0,
+                                      title: statusList[index],
+                                      isSelected:
+                                          status == statusList[index].toLowerCase(),
+                                      onTap: () {
+                                        setState(() {
+                                          status = statusList[index].toLowerCase();
+                                          offset = 0;
+                                        });
+                                        Map<String, dynamic> filterInfo = {
+                                          'filterType': deliveryAndReceiveStatus,
+                                          'filterData': {
+                                            'status': status,
+                                            if (onDateSelected)
+                                              'date': {
+                                                'startDate':
+                                                    beginDate.toIso8601String(),
+                                                'endDate': endDate.toIso8601String(),
+                                              },
                                           },
+                                          'offSet': offset,
+                                        };
+                                        getOrders(
+                                          data: filterInfo,
+                                          context: context,
+                                        );
+                                        Provider.of<OrderProvider>(context,
+                                                listen: false)
+                                            .updateFilterInfo(filterInfo);
                                       },
-                                      'offSet': offset,
-                                    };
-                                    getOrders(
-                                      data: filterInfo,
-                                      context: context,
-                                    );
-                                    Provider.of<OrderProvider>(context,
-                                            listen: false)
-                                        .updateFilterInfo(filterInfo);
-                                  },
+                                    ),
+                                  ),
                                 ),
                               ),
                             );

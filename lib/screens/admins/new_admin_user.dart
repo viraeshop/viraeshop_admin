@@ -12,6 +12,7 @@ class NewAdmin extends StatelessWidget {
   NewAdmin({Key? key}) : super(key: key);
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _iDController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final labelStyle = const TextStyle(
@@ -27,7 +28,7 @@ class NewAdmin extends StatelessWidget {
         leading: IconButton(
           onPressed: () {
             final adminBloc = BlocProvider.of<AdminBloc>(context);
-            if(adminBloc.state is! FetchedAdminsState){
+            if (adminBloc.state is! FetchedAdminsState) {
               final jWTToken = Hive.box('adminInfo').get('token');
               adminBloc.add(GetAdminsEvent(token: jWTToken));
             }
@@ -60,11 +61,11 @@ class NewAdmin extends StatelessWidget {
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: _nameController,
-                        validator: (value){
+                        validator: (value) {
                           if (value == null || value.isEmpty) {
-                              return 'Please enter the name';
-                            }
-                            return null;
+                            return 'Please enter the name';
+                          }
+                          return null;
                         },
                         decoration: InputDecoration(
                           enabledBorder: const UnderlineInputBorder(
@@ -86,11 +87,11 @@ class NewAdmin extends StatelessWidget {
                       ),
                       TextFormField(
                         controller: _emailController,
-                        validator: (value){
+                        validator: (value) {
                           if (value == null || value.isEmpty) {
-                              return 'Please enter the email address';
-                            }
-                            return null;
+                            return 'Please enter the email address';
+                          }
+                          return null;
                         },
                         decoration: InputDecoration(
                           enabledBorder: const UnderlineInputBorder(
@@ -110,6 +111,33 @@ class NewAdmin extends StatelessWidget {
                       const SizedBox(
                         height: 20,
                       ),
+                      TextFormField(
+                        controller: _mobileController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter the mobile number';
+                          }
+                          return null;
+                        },
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          enabledBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: kSubMainColor,
+                            ),
+                          ),
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: kMainColor,
+                            ),
+                          ),
+                          labelText: "Mobile Number",
+                          labelStyle: labelStyle,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
                     ],
                   ),
                 ),
@@ -121,6 +149,7 @@ class NewAdmin extends StatelessWidget {
                         Hive.box('newAdmin').putAll({
                           'email': _emailController.text,
                           'name': _nameController.text,
+                          'mobile': _mobileController.text,
                           //'adminId': _iDController.text,
                         }).whenComplete(() {
                           Navigator.push(

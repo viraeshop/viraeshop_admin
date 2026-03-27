@@ -39,4 +39,8 @@ class RolePermissions {
   static bool canAccessOrderTracking(Map<String, dynamic> p) {
     return true; // Everyone
   }
+
+  static bool canAccessSmartDashboard(Map<String, dynamic> p) {
+    return p['isAdmin'] == true;
+  }
 }

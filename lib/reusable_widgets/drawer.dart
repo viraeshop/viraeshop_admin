@@ -40,14 +40,8 @@ import '../screens/new_non_inventory.dart';
 import '../screens/orders/delivery_screen.dart';
 import '../screens/orders/delivery_screen.dart';
 import '../screens/products/category_screen.dart';
-import 'package:viraeshop_admin/features/order_management/screens/active_delivery_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
-import 'package:viraeshop_admin/features/order_management/screens/delivery_manager_screen.dart';
-import 'package:viraeshop_admin/features/order_management/screens/order_acceptance_screen.dart';
-
-import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
-import 'package:viraeshop_admin/features/order_management/screens/processing_timer_screen.dart';
-import 'package:viraeshop_admin/features/order_management/screens/super_admin_dashboard.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/smart_dashboard_screen.dart';
 import 'package:viraeshop_admin/utils/role_permissions.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -215,124 +209,84 @@ class _AppDrawerState extends State<AppDrawer> {
                     collapsedTextColor: kBackgroundColor,
                     collapsedIconColor: kBackgroundColor,
                     children: [
-                      // --- CONTROL CENTER ---
-                      if (RolePermissions.canAccessSuperAdminDashboard(
-                          adminPermissions))
-                        const Padding(
-                          padding:
-                              EdgeInsets.only(left: 20, top: 10, bottom: 5),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text("CONTROL CENTER",
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white70,
-                                    letterSpacing: 1.1)),
-                          ),
-                        ),
-                      if (RolePermissions.canAccessSuperAdminDashboard(
-                          adminPermissions))
-                        ListTile(
+                      // Existing tiles moved here
+                      Consumer<GeneralProvider>(builder: (context, item, any) {
+                        return ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.dashboard_customize,
-                              size: 20, color: Colors.white),
-                          title: const Text('Admin Dashboard',
+                          leading: const Icon(FontAwesomeIcons.shoppingBag,
+                              size: 18, color: Colors.white),
+                          trailing: item.newOrders != '0'
+                              ? NotificationTicker(value: item.newOrders)
+                              : null,
+                          title: const Text('Orders',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 14)),
-                          onTap: () => Navigator.pushNamed(
-                              context, SuperAdminDashboard.path),
-                        ),
-                      if (RolePermissions.canAccessOrderAcceptance(
-                          adminPermissions))
-                        ListTile(
-                          contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.playlist_add_check,
-                              size: 20, color: Colors.white),
-                          title: const Text('Order Acceptance',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 14)),
-                          onTap: () => Navigator.pushNamed(
-                              context, OrderAcceptanceScreen.path),
-                        ),
-                      if (RolePermissions.canAccessProcessingManager(
-                          adminPermissions))
-                        ListTile(
-                          contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.assignment_ind,
-                              size: 20, color: Colors.white),
-                          title: const Text('Processing Manager',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 14)),
-                          onTap: () => Navigator.pushNamed(
-                              context, ProcessingManagerScreen.path),
-                        ),
-                      if (RolePermissions.canAccessDeliveryManager(
-                          adminPermissions))
-                        ListTile(
-                          contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.local_shipping,
-                              size: 20, color: Colors.white),
-                          title: const Text('Delivery Manager',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 14)),
-                          onTap: () => Navigator.pushNamed(
-                              context, DeliveryManagerScreen.path),
-                        ),
-
-                      const Divider(
-                          color: Colors.white24,
-                          indent: 20,
-                          endIndent: 20,
-                          height: 20),
-
-                      // --- MY WORKPLACE ---
-                      if (RolePermissions.canAccessProcessingTimer(
-                              adminPermissions) ||
-                          RolePermissions.canAccessActiveDelivery(
-                              adminPermissions))
-                        const Padding(
-                          padding: EdgeInsets.only(left: 20, top: 5, bottom: 5),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text("MY WORKPLACE",
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white70,
-                                    letterSpacing: 1.1)),
-                          ),
-                        ),
-                      if (RolePermissions.canAccessProcessingTimer(
-                          adminPermissions))
-                        ListTile(
-                          contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.timer_outlined,
-                              size: 20, color: Colors.white),
-                          title: const Text('Tasks for Me',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 14)),
-                          onTap: () => Navigator.pushNamed(
-                              context, ProcessingTimerScreen.path),
-                        ),
-                      if (RolePermissions.canAccessActiveDelivery(
-                          adminPermissions))
-                        ListTile(
-                          contentPadding: const EdgeInsets.only(left: 30),
-                          leading: const Icon(Icons.delivery_dining,
-                              size: 20, color: Colors.white),
-                          title: const Text('Orders to Deliver',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 14)),
-                          onTap: () => Navigator.pushNamed(
-                              context, ActiveDeliveryScreen.path),
-                        ),
+                          onTap: () {
+                            Provider.of<OrderProvider>(context, listen: false)
+                                .updateOrderStage(OrderStages.order);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const OrderRoutineReport(
+                                  title: 'Orders',
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }),
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 30),
+                        leading: const Icon(FontAwesomeIcons.shoppingBag,
+                            size: 18, color: Colors.white),
+                        trailing: widget.processingOrdersCount != '0' &&
+                                widget.processingOrdersCount.isNotEmpty
+                            ? NotificationTicker(
+                                value: widget.processingOrdersCount)
+                            : null,
+                        title: const Text('Processing',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14)),
+                        onTap: () {
+                          Provider.of<OrderProvider>(context, listen: false)
+                              .updateOrderStage(OrderStages.processing);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProcessingScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 30),
+                        leading: const Icon(FontAwesomeIcons.bagShopping,
+                            size: 18, color: Colors.white),
+                        trailing: widget.receivedOrdersCount != '0' &&
+                                widget.receivedOrdersCount.isNotEmpty
+                            ? NotificationTicker(
+                                value: widget.receivedOrdersCount)
+                            : null,
+                        title: const Text('Delivery',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14)),
+                        onTap: () {
+                          Provider.of<OrderProvider>(context, listen: false)
+                              .updateOrderStage(OrderStages.receiving);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DeliveryScreen(),
+                            ),
+                          );
+                        },
+                      ),
                       if (RolePermissions.canAccessActiveDelivery(
                           adminPermissions))
                         ListTile(
                           contentPadding: const EdgeInsets.only(left: 30),
                           leading: const Icon(Icons.account_balance_wallet,
-                              size: 20, color: Colors.white),
+                              size: 18, color: Colors.white),
                           title: const Text('Settlement Desk',
                               style:
                                   TextStyle(color: Colors.white, fontSize: 14)),
@@ -342,6 +296,14 @@ class _AppDrawerState extends State<AppDrawer> {
                       const SizedBox(height: 10),
                     ],
                   ),
+                  if (RolePermissions.canAccessSmartDashboard(adminPermissions))
+                    ReusableTile(
+                      icon: Icons.insights_outlined,
+                      title: 'Smart Dashboard',
+                      onTap: () {
+                        Navigator.pushNamed(context, SmartDashboardScreen.path);
+                      },
+                    ),
                   ReusableTile(
                     icon: Icons.dashboard_outlined,
                     // selected: true,
@@ -350,64 +312,6 @@ class _AppDrawerState extends State<AppDrawer> {
                       Provider.of<AdsProvider>(context, listen: false)
                           .updateDrawerWidget('Tab Widget');
                       Navigator.pop(context);
-                    },
-                  ),
-                  Consumer<GeneralProvider>(builder: (context, item, any) {
-                    return ReusableTile(
-                      ticker: item.newOrders != '0'
-                          ? NotificationTicker(value: item.newOrders)
-                          : const SizedBox(),
-                      icon: FontAwesomeIcons.shoppingBag,
-                      title: 'Orders',
-                      onTap: () {
-                        Provider.of<OrderProvider>(context, listen: false)
-                            .updateOrderStage(OrderStages.order);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const OrderRoutineReport(
-                              title: 'Orders',
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-                  ReusableTile(
-                    ticker: widget.processingOrdersCount != '0' &&
-                            widget.processingOrdersCount.isNotEmpty
-                        ? NotificationTicker(
-                            value: widget.processingOrdersCount)
-                        : const SizedBox(),
-                    icon: FontAwesomeIcons.shoppingBag,
-                    title: 'Processing',
-                    onTap: () {
-                      Provider.of<OrderProvider>(context, listen: false)
-                          .updateOrderStage(OrderStages.processing);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProcessingScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  ReusableTile(
-                    ticker: widget.receivedOrdersCount != '0' &&
-                            widget.receivedOrdersCount.isNotEmpty
-                        ? NotificationTicker(value: widget.receivedOrdersCount)
-                        : const SizedBox(),
-                    icon: FontAwesomeIcons.bagShopping,
-                    title: 'Delivery',
-                    onTap: () {
-                      Provider.of<OrderProvider>(context, listen: false)
-                          .updateOrderStage(OrderStages.receiving);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DeliveryScreen(),
-                        ),
-                      );
                     },
                   ),
                   // ReusableTile(

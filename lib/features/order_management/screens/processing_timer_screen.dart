@@ -2,34 +2,35 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
-import 'package:viraeshop_bloc/processing/processing_bloc.dart';
-import 'package:viraeshop_bloc/processing/processing_event.dart';
-import 'package:viraeshop_bloc/processing/processing_state.dart';
-import 'package:viraeshop_api/models/orders/order_task.dart';
+import 'package:viraeshop_bloc/items/barrel.dart';
+import 'package:viraeshop_api/models/items/items.dart';
 
 class ProcessingTimerScreen extends StatefulWidget {
   static const String path = '/processing_timer';
-  final OrderTask? task;
+  final Items? product;
+  final String orderId;
 
-  const ProcessingTimerScreen({super.key, this.task});
+  const ProcessingTimerScreen({super.key, required this.orderId, this.product});
 
   @override
   State<ProcessingTimerScreen> createState() => _ProcessingTimerScreenState();
 }
 
 class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
-  late Timer _timer;
-  late Duration _remainingTime;
-  late Duration _totalDuration;
+  Timer? _timer;
+  Duration _remainingTime = Duration.zero;
+  Duration _totalDuration = Duration.zero;
+  bool _hasSent70PercentWarning = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.task == null) return;
+    if (widget.product == null) return;
 
     // Initialize Timer Logic
-    final startTime = widget.task!.startTime ?? DateTime.now();
-    _totalDuration = Duration(minutes: widget.task!.durationMinutes ?? 60);
+    final startTime = widget.product!.startedAt ?? DateTime.now();
+    _totalDuration = Duration(minutes: widget.product!.estimatedTime);
     final deadline = startTime.add(_totalDuration);
 
     final now = DateTime.now();
@@ -48,8 +49,27 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
         setState(() {
           if (_remainingTime.inSeconds > 0) {
             _remainingTime = _remainingTime - const Duration(seconds: 1);
+
+            // 70% Warning condition
+            if (_totalDuration.inSeconds > 0) {
+              final double progress =
+                  1.0 - (_remainingTime.inSeconds / _totalDuration.inSeconds);
+              if (progress >= 0.7 && !_hasSent70PercentWarning) {
+                _hasSent70PercentWarning = true;
+                context.read<OrderItemsBloc>().add(
+                      TriggerTimerNotificationEvent(
+                        id: widget.product!.id,
+                        type: 'warning',
+                        token: Hive.box('adminInfo').get('token'),
+                      ),
+                    );
+              }
+            }
           } else {
-            _timer.cancel();
+            _timer?.cancel();
+            // Do NOT auto-trigger timeout notification or delay dialog here.
+            // The background server cron job will handle sending the timeout push notification.
+            // And the user has to explicitly click "Report Delay" to submit the delayed status.
           }
         });
       }
@@ -58,7 +78,7 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -66,26 +86,40 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+
+    if (duration.inDays > 0) {
+      String twoDigitHours = twoDigits(duration.inHours.remainder(24));
+      return "${twoDigits(duration.inDays)}:$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds";
+    } else if (duration.inHours > 0) {
+      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    } else {
+      return "${twoDigits(duration.inMinutes)}:$twoDigitSeconds";
+    }
   }
 
   double _calculateProgress() {
-    if (_totalDuration.inSeconds == 0) return 0.0;
+    if (_totalDuration.inSeconds <= 0) return 0.0;
     return _remainingTime.inSeconds / _totalDuration.inSeconds;
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ProcessingBloc, ProcessingState>(
+    return BlocListener<OrderItemsBloc, OrderItemState>(
       listener: (context, state) {
-        if (state is ProcessingSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: const Text("Task Completed!"),
-              backgroundColor: const Color(0xFF00C896)));
-          Navigator.pop(context); // Go back on success
-        } else if (state is ProcessingError) {
+        if (state is RequestFinishedOrderItemState && _isSubmitting) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Update Successful!"),
+              backgroundColor: Color(0xFF00C896)));
+          setState(() {
+            _isSubmitting = false;
+          });
+          Navigator.pop(context); // Go back on explicit success
+        } else if (state is OnErrorOrderItemState && _isSubmitting) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.message), backgroundColor: Colors.redAccent));
+          setState(() {
+            _isSubmitting = false;
+          });
         }
       },
       child: Scaffold(
@@ -114,204 +148,151 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
             )
           ],
         ),
-        body: widget.task == null
+        body: widget.product == null
             ? const Center(
                 child: Text("No active task selected",
-                    style: TextStyle(color: Colors.white)))
-            : Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0, vertical: 16.0),
-                child: Column(
-                  children: [
-                    // Timer Section
-                    Expanded(
-                      flex: 5,
-                      child: Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              width: 280,
-                              height: 280,
-                              child: CircularProgressIndicator(
-                                value: _calculateProgress(),
-                                strokeWidth: 16,
-                                backgroundColor: const Color(0xFF1E293B),
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    _remainingTime.inSeconds < 300
-                                        ? const Color(0xFFEF4444)
-                                        : const Color(0xFF00C896)),
-                              ),
-                            ),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  "Remaining Time",
-                                  style: TextStyle(
-                                      color: Color(0xFF94A3B8),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _formatDuration(_remainingTime),
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 2),
-                                ),
-                              ],
-                            ),
-                          ],
+                    style: TextStyle(color: Colors.white, fontSize: 18)))
+            : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      // Context Header
+                      Text(
+                        "${widget.product!.productName}",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          letterSpacing: 1.1,
                         ),
                       ),
-                    ),
+                      Text(
+                        "Order #${widget.orderId}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 40),
 
-                    const SizedBox(height: 32),
-
-                    // Stats
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildStatCard(
-                            "Target", "${widget.task!.durationMinutes} min"),
-                      ],
-                    ),
-
-                    const Spacer(flex: 1),
-
-                    // Task Info Card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFF334155)),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10))
-                          ]),
-                      child: Row(
+                      // Circular Timer
+                      Stack(
+                        alignment: Alignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF334155),
-                              borderRadius: BorderRadius.circular(12),
+                          SizedBox(
+                            width: 240,
+                            height: 240,
+                            child: CircularProgressIndicator(
+                              value: _calculateProgress(),
+                              strokeWidth: 12,
+                              backgroundColor: const Color(0xFF1E293B),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF38BDF8)),
                             ),
-                            child: const Icon(Icons.inventory_2_outlined,
-                                color: Colors.white, size: 28),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                        color: const Color(0xFF00C896)
-                                            .withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(6)),
-                                    child: Text(
-                                        "Order #${widget.task!.orderId}",
-                                        style: const TextStyle(
-                                            color: Color(0xFF00C896),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold))),
-                                const SizedBox(height: 8),
-                                Text(
-                                    "${(widget.task!.taskType ?? 'Standard').toUpperCase()} TASK",
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _formatDuration(_remainingTime),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  fontFeatures: [FontFeature.tabularFigures()],
+                                ),
+                              ),
+                              const Text(
+                                "REMAINING",
+                                style: TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 12,
+                                  letterSpacing: 2,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
 
-                    const SizedBox(height: 32),
+                      const SizedBox(height: 60),
 
-                    // Actions
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          context.read<ProcessingBloc>().add(CompleteTaskEvent(
-                                taskId: widget.task!.id!,
-                                token: Hive.box('adminInfo').get('token'),
-                              ));
-                        },
-                        icon: const Icon(Icons.check_circle, size: 24),
-                        label: const Text("Mark as Complete"),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00C896),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                            textStyle: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
+                      // Action Buttons
+                      Column(
+                        children: [
+                          _buildActionButton(
+                            label: "MARK AS COMPLETE",
+                            icon: Icons.check_circle_outline,
+                            color: const Color(0xFF00C896),
+                            onTap: () {
+                              setState(() {
+                                widget.product!.processingStatus = 'completed';
+                                _isSubmitting = true;
+                              });
+                              context.read<OrderItemsBloc>().add(
+                                    UpdateOrderItemEvent(
+                                      token: Hive.box('adminInfo').get('token'),
+                                      orderModel: {
+                                        'id': widget.product!.id,
+                                        'itemInfo': {
+                                          'processingStatus': 'completed',
+                                        },
+                                      },
+                                    ),
+                                  );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildActionButton(
+                            label: "REPORT DELAY",
+                            icon: Icons.history_rounded,
+                            color: const Color(0xFFEF4444),
+                            onTap: () => _showDelayDialog(context),
+                          ),
+                        ],
                       ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: TextButton.icon(
-                        onPressed: () {
-                          _showDelayDialog(context);
-                        },
-                        icon: const Icon(Icons.report_problem_outlined,
-                            color: Color(0xFFF87171)),
-                        label: const Text("Report Delay",
-                            style: TextStyle(
-                                color: Color(0xFFF87171),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold)),
-                        style: TextButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFFFEF2F2).withOpacity(0.05),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
       ),
     );
   }
 
-  Widget _buildStatCard(String label, String value, {Color? color}) {
-    return Column(
-      children: [
-        Text(label.toUpperCase(),
-            style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF94A3B8),
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2)),
-        const SizedBox(height: 8),
-        Text(value,
-            style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: color ?? Colors.white)),
-      ],
+  Widget _buildActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 20),
+        label: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
     );
   }
 
@@ -356,11 +337,23 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                     ),
                     onPressed: () {
                       if (controller.text.isNotEmpty) {
-                        context.read<ProcessingBloc>().add(ReportDelayEvent(
-                              taskId: widget.task!.id!,
-                              reason: controller.text,
-                              token: Hive.box('adminInfo').get('token'),
-                            ));
+                        setState(() {
+                          widget.product!.processingStatus = 'delayed';
+                          widget.product!.note = controller.text;
+                          _isSubmitting = true;
+                        });
+                        context.read<OrderItemsBloc>().add(
+                              UpdateOrderItemEvent(
+                                token: Hive.box('adminInfo').get('token'),
+                                orderModel: {
+                                  'id': widget.product!.id,
+                                  'itemInfo': {
+                                    'processingStatus': 'delayed',
+                                    'note': controller.text,
+                                  },
+                                },
+                              ),
+                            );
                         Navigator.pop(ctx);
                       }
                     },

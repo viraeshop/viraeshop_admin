@@ -20,6 +20,8 @@ import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viraeshop_bloc/suppliers/barrel.dart';
 
+import 'package:viraeshop_admin/screens/orders/order_provider.dart';
+
 import '../customers/tabWidgets.dart';
 
 class EditUserScreen extends StatefulWidget {
@@ -40,12 +42,18 @@ class _EditUserScreenState extends State<EditUserScreen> {
     const Tab(text: 'Orders'),
     const Tab(text: 'Sales'),
   ];
+  OrderStages currentStage = OrderStages.order;
   @override
   void initState() {
     // TODO: implement initState
     if (!widget.selfAdmin) {
       tabs.add(const Tab(text: 'Permissions'));
     }
+    if (widget.adminInfo['canDeliverOrders'] == true ||
+        widget.adminInfo['isAdmin'] == true) {
+      tabs.add(const Tab(text: 'Delivery'));
+    }
+    currentStage = Provider.of<OrderProvider>(context, listen: false).currentStage;
     super.initState();
   }
 
@@ -185,17 +193,28 @@ class _EditUserScreenState extends State<EditUserScreen> {
                     email: widget.adminInfo['email'],
                     name: widget.adminInfo['name'],
                     isActive: widget.adminInfo['active'],
+                    mobile: widget.adminInfo['mobile'] ?? '',
                     isSelf: widget.selfAdmin,
                     adminId: widget.adminInfo['adminId'],
                     supplier: widget.adminInfo['Suppliers'] ?? [],
                   ),
                   OrdersTab(
                     userId: widget.adminInfo['adminId'],
+                    stage: currentStage == OrderStages.admin ? OrderStages.admin : OrderStages.order,
                   ),
                   SalesTab(userId: widget.adminInfo['adminId'], isAdmin: true),
                   if (!widget.selfAdmin)
                     PermissionTab(
                       adminModel: AdminModel.fromJson(widget.adminInfo),
+                    ),
+                  if (widget.adminInfo['canDeliverOrders'] == true ||
+                      widget.adminInfo['isAdmin'] == true)
+                    OrdersTab(
+                      userId: widget.adminInfo['adminId'],
+                      stage: OrderStages.delivery,
+                      isManagerView:
+                          (Hive.box('adminInfo').get('isAdmin') ?? false) &&
+                              !widget.selfAdmin,
                     ),
                 ],
               ),
@@ -210,6 +229,7 @@ class _EditUserScreenState extends State<EditUserScreen> {
 class InfoTab extends StatefulWidget {
   final String name;
   final String email;
+  final String mobile;
   final String adminId;
   final bool isActive;
   final bool isSelf;
@@ -219,6 +239,7 @@ class InfoTab extends StatefulWidget {
     required this.adminId,
     required this.email,
     required this.isActive,
+    required this.mobile,
     required this.isSelf,
     required this.supplier,
     Key? key,
@@ -232,6 +253,7 @@ class _InfoTabState extends State<InfoTab> {
   final ScrollController _scrollController = ScrollController();
   late TextEditingController nameController;
   late TextEditingController emailController;
+  late TextEditingController mobileController;
   bool isActive = true;
   List<Suppliers> suppliers = [];
   List<String?> supplierId = [];
@@ -256,6 +278,7 @@ class _InfoTabState extends State<InfoTab> {
     }
     nameController = TextEditingController(text: widget.name);
     emailController = TextEditingController(text: widget.email);
+    mobileController = TextEditingController(text: widget.mobile);
     isActive = widget.isActive;
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       Provider.of<AdminProvider>(context, listen: false)
@@ -264,6 +287,8 @@ class _InfoTabState extends State<InfoTab> {
           .updateEmail(widget.email);
       Provider.of<AdminProvider>(context, listen: false)
           .saveExistingEmail(widget.email);
+      Provider.of<AdminProvider>(context, listen: false)
+          .updateMobile(widget.mobile);
       Provider.of<AdminProvider>(context, listen: false)
           .updateActive(widget.isActive);
     });
@@ -395,6 +420,33 @@ class _InfoTabState extends State<InfoTab> {
                   },
                 ),
                 const SizedBox(
+                  height: 20,
+                ),
+                TextField(
+                  style: kProductNameStylePro,
+                  controller: mobileController,
+                  readOnly: widget.isSelf,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: kSubMainColor,
+                      ),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: kMainColor,
+                      ),
+                    ),
+                    labelText: "Mobile Number",
+                    labelStyle: kProductNameStylePro,
+                  ),
+                  onChanged: (value) {
+                    Provider.of<AdminProvider>(context, listen: false)
+                        .updateMobile(value);
+                  },
+                ),
+                const SizedBox(
                   height: 40,
                 ),
                 if (suppliers.isNotEmpty && isAdmin && !widget.isSelf)
@@ -467,7 +519,9 @@ class _InfoTabState extends State<InfoTab> {
                       ),
                     ),
                   )
-                else if (suppliers.isEmpty && onErrorSupplier && isAdmin &&
+                else if (suppliers.isEmpty &&
+                    onErrorSupplier &&
+                    isAdmin &&
                     !widget.isSelf)
                   Row(
                     children: [
@@ -479,8 +533,7 @@ class _InfoTabState extends State<InfoTab> {
                         onPressed: () {
                           final supplierBloc =
                               BlocProvider.of<SuppliersBloc>(context);
-                          final token =
-                              Hive.box('adminInfo').get('token');
+                          final token = Hive.box('adminInfo').get('token');
                           supplierBloc.add(
                             GetSuppliersEvent(
                               token: token,
@@ -548,11 +601,15 @@ class _PermissionTabState extends State<PermissionTab> {
       isTransaction = false,
       isMakeCustomer = false,
       isMakeAdmin = false,
-      //isLoading = false,
       isDeleteCustomer = false,
       isDeleteEmployee = false,
       isManageDue = false,
-      isEditCustomer = false;
+      isEditCustomer = false,
+      canAcceptOrders = false,
+      canManageProcessing = false,
+      canManageDelivery = false,
+      canProcessOrders = false,
+      canDeliverOrders = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -566,6 +623,11 @@ class _PermissionTabState extends State<PermissionTab> {
     isDeleteEmployee = widget.adminModel.isDeleteEmployee;
     isDeleteCustomer = widget.adminModel.isDeleteCustomer;
     isEditCustomer = widget.adminModel.isEditCustomer;
+    canAcceptOrders = widget.adminModel.canAcceptOrders;
+    canManageProcessing = widget.adminModel.canManageProcessing;
+    canManageDelivery = widget.adminModel.canManageDelivery;
+    canProcessOrders = widget.adminModel.canProcessOrders;
+    canDeliverOrders = widget.adminModel.canDeliverOrders;
     super.initState();
   }
 
@@ -577,212 +639,266 @@ class _PermissionTabState extends State<PermissionTab> {
       height: MediaQuery.of(context).size.height,
       child: Stack(
         children: [
-          Column(
-            children: [
-              ListTile(
-                // leading: Icon(Icons.dark_mode),
-                title: const Text(
-                  'Administrator',
-                  style: kProductNameStyle,
-                ),
-                onTap: () {
-                  // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                },
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isAdmin,
-                  onChanged: (status) {
-                    setState(() {
-                      isAdmin = status;
-                      isInventory = status;
-                      isProduct = status;
-                      isTransaction = status;
-                      isMakeAdmin = status;
-                      isMakeCustomer = status;
-                      isDeleteEmployee = status;
-                      isDeleteCustomer = status;
-                      isManageDue = status;
-                      isEditCustomer = status;
-                    });
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Administrator',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
                   },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isAdmin,
+                    onChanged: (status) {
+                      setState(() {
+                        isAdmin = status;
+                        isInventory = status;
+                        isProduct = status;
+                        isTransaction = status;
+                        isMakeAdmin = status;
+                        isMakeCustomer = status;
+                        isDeleteEmployee = status;
+                        isDeleteCustomer = status;
+                        isManageDue = status;
+                        isEditCustomer = status;
+                        canAcceptOrders = status;
+                        canManageProcessing = status;
+                        canManageDelivery = status;
+                        canProcessOrders = status;
+                        canDeliverOrders = status;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              ListTile(
-                // leading: Icon(Icons.dark_mode),
-                title: const Text(
-                  'Create and Edit products',
-                  style: kProductNameStyle,
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Create and Edit products',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isProduct,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isProduct = status;
+                            });
+                          },
+                  ),
                 ),
-                onTap: () {
-                  // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                },
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isProduct,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isProduct = status;
-                          });
-                        },
+                ListTile(
+                  title: const Text(
+                    'Manage Inventory',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {},
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isInventory,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isInventory = status;
+                            });
+                          },
+                  ),
                 ),
-              ),
-              ListTile(
-                title: const Text(
-                  'Manage Inventory',
-                  style: kProductNameStyle,
+                ListTile(
+                  title: const Text(
+                    'View Transactions',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {},
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isTransaction,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isTransaction = status;
+                            });
+                          },
+                  ),
                 ),
-                onTap: () {},
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isInventory,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isInventory = status;
-                          });
-                        },
+                ListTile(
+                  title: const Text(
+                    'Create Customers',
+                    style: kProductNameStyle,
+                  ),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isMakeCustomer,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isMakeCustomer = status;
+                            });
+                          },
+                  ),
                 ),
-              ),
-              ListTile(
-                title: const Text(
-                  'View Transactions',
-                  style: kProductNameStyle,
+                ListTile(
+                  title: const Text(
+                    'Edit Customers',
+                    style: kProductNameStyle,
+                  ),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isEditCustomer,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isEditCustomer = status;
+                            });
+                          },
+                  ),
                 ),
-                onTap: () {},
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isTransaction,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isTransaction = status;
-                          });
-                        },
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Create Employee',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isMakeAdmin,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isMakeAdmin = status;
+                            });
+                          },
+                  ),
                 ),
-              ),
-              ListTile(
-                title: const Text(
-                  'Create Customers',
-                  style: kProductNameStyle,
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Delete Employee',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isDeleteEmployee,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isDeleteEmployee = status;
+                            });
+                          },
+                  ),
                 ),
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isMakeCustomer,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isMakeCustomer = status;
-                          });
-                        },
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Delete Customer',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isDeleteCustomer,
+                    onChanged: isAdmin == true
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isDeleteCustomer = status;
+                            });
+                          },
+                  ),
                 ),
-              ),
-              ListTile(
-                title: const Text(
-                  'Edit Customers',
-                  style: kProductNameStyle,
+                ListTile(
+                  // leading: Icon(Icons.dark_mode),
+                  title: const Text(
+                    'Manage Due',
+                    style: kProductNameStyle,
+                  ),
+                  onTap: () {
+                    // Provider.of<Configs>(context, listen: false).toggleDarkMode();
+                  },
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: isManageDue,
+                    onChanged: isAdmin
+                        ? null
+                        : (status) {
+                            setState(() {
+                              isManageDue = status;
+                            });
+                          },
+                  ),
                 ),
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isEditCustomer,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isEditCustomer = status;
-                          });
-                        },
+                const Divider(color: Colors.grey, thickness: 1, indent: 20, endIndent: 20),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Text("ORDER MANAGEMENT PERMISSIONS",
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
                 ),
-              ),
-              ListTile(
-                // leading: Icon(Icons.dark_mode),
-                title: const Text(
-                  'Create Employee',
-                  style: kProductNameStyle,
+                ListTile(
+                  title: const Text('Accept Orders', style: kProductNameStyle),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: canAcceptOrders,
+                    onChanged: isAdmin == true ? null : (status) => setState(() => canAcceptOrders = status),
+                  ),
                 ),
-                onTap: () {
-                  // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                },
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isMakeAdmin,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isMakeAdmin = status;
-                          });
-                        },
+                ListTile(
+                  title: const Text('Manage Processing', style: kProductNameStyle),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: canManageProcessing,
+                    onChanged: isAdmin == true ? null : (status) => setState(() => canManageProcessing = status),
+                  ),
                 ),
-              ),
-              ListTile(
-                // leading: Icon(Icons.dark_mode),
-                title: const Text(
-                  'Delete Employee',
-                  style: kProductNameStyle,
+                ListTile(
+                  title: const Text('Manage Delivery', style: kProductNameStyle),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: canManageDelivery,
+                    onChanged: isAdmin == true ? null : (status) => setState(() => canManageDelivery = status),
+                  ),
                 ),
-                onTap: () {
-                  // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                },
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isDeleteEmployee,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isDeleteEmployee = status;
-                          });
-                        },
+                ListTile(
+                  title: const Text('Process Orders (Tasks)', style: kProductNameStyle),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: canProcessOrders,
+                    onChanged: isAdmin == true ? null : (status) => setState(() => canProcessOrders = status),
+                  ),
                 ),
-              ),
-              ListTile(
-                // leading: Icon(Icons.dark_mode),
-                title: const Text(
-                  'Delete Customer',
-                  style: kProductNameStyle,
+                ListTile(
+                  title: const Text('Deliver Orders (Agent)', style: kProductNameStyle),
+                  trailing: Switch(
+                    activeColor: kMainColor,
+                    value: canDeliverOrders,
+                    onChanged: isAdmin == true ? null : (status) => setState(() => canDeliverOrders = status),
+                  ),
                 ),
-                onTap: () {
-                  // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                },
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isDeleteCustomer,
-                  onChanged: isAdmin == true
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isDeleteCustomer = status;
-                          });
-                        },
-                ),
-              ),
-              ListTile(
-                // leading: Icon(Icons.dark_mode),
-                title: const Text(
-                  'Manage Due',
-                  style: kProductNameStyle,
-                ),
-                onTap: () {
-                  // Provider.of<Configs>(context, listen: false).toggleDarkMode();
-                },
-                trailing: Switch(
-                  activeColor: kMainColor,
-                  value: isManageDue,
-                  onChanged: isAdmin
-                      ? null
-                      : (status) {
-                          setState(() {
-                            isManageDue = status;
-                          });
-                        },
-                ),
-              ),
-            ],
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
           Align(
             alignment: Alignment.bottomCenter,
@@ -801,10 +917,16 @@ class _PermissionTabState extends State<PermissionTab> {
                     'isDeleteCustomer': isDeleteCustomer,
                     'isManageDue': isManageDue,
                     'isDeleteEmployee': isDeleteEmployee,
+                    'canAcceptOrders': canAcceptOrders,
+                    'canManageProcessing': canManageProcessing,
+                    'canManageDelivery': canManageDelivery,
+                    'canProcessOrders': canProcessOrders,
+                    'canDeliverOrders': canDeliverOrders,
                     'adminId': widget.adminModel.adminId,
                     'name': admin.name,
                     'email': admin.email,
                     'active': admin.active,
+                    'mobile': admin.mobile,
                   };
                   admin.updateAdminInfo(info);
                   if (widget.adminModel.email != admin.email) {

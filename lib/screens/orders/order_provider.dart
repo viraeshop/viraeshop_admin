@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_api/models/items/items.dart';
 
 enum Values {
@@ -187,6 +188,37 @@ class OrderProvider extends ChangeNotifier {
 
   void updateFilterInfo(Map<String, dynamic> filterInfo) {
     this.filterInfo = filterInfo;
+    notifyListeners();
+  }
+
+  void batchUpdateSupplierItems(int supplierId,
+      {String? adminId,
+      AdminModel? adminModel,
+      int? estimatedTime,
+      String? processingStatus,
+      DateTime? startedAt}) {
+    for (var product in orderProducts) {
+      if (product.supplierId == supplierId) {
+        if (adminId != null) product.adminId = adminId;
+        if (adminModel != null) product.adminModel = adminModel;
+        if (estimatedTime != null) product.estimatedTime = estimatedTime;
+        if (processingStatus != null)
+          product.processingStatus = processingStatus;
+        if (startedAt != null) product.startedAt = startedAt;
+      }
+    }
+    notifyListeners();
+  }
+
+  void batchUpdateItemsByIds(List<dynamic> ids,
+      {String? processingStatus, DateTime? startedAt}) {
+    final stringIds = ids.map((e) => e.toString()).toList();
+    for (var product in orderProducts) {
+      if (stringIds.contains(product.id.toString())) {
+        if (processingStatus != null) product.processingStatus = processingStatus;
+        if (startedAt != null) product.startedAt = startedAt;
+      }
+    }
     notifyListeners();
   }
 }

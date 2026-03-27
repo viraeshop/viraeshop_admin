@@ -110,7 +110,7 @@ Widget architect() {
                             backgroundColor: kSubMainColor,
                             radius: 40.0,
                             child: Text(
-                              user.substring(0, 2),
+                              user.length >= 2 ? user.substring(0, 2) : user,
                               style: kDrawerTextStyle2,
                             ),
                           ),
@@ -147,6 +147,9 @@ Widget architect() {
           );
         } else if (state is OnErrorAdminState) {
           String error = state.message;
+          if(kDebugMode){
+            print('error details: ${state.message}');
+          }
           return Center(
             child: Text(
               error,

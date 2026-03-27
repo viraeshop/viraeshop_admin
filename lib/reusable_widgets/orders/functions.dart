@@ -15,3 +15,18 @@ void getOrders(
     ),
   );
 }
+
+void orderUpdate(
+    {required BuildContext context,
+    required Map<String, dynamic> data,
+    required String orderId,
+    token}) {
+  final orderBloc = BlocProvider.of<OrdersBloc>(context);
+  orderBloc.add(
+    UpdateOrderEvent(
+      orderId: orderId,
+      orderModel: data,
+      token: token,
+    ),
+  );
+}

@@ -913,6 +913,7 @@ class _PermissionTabState extends State<PermissionTab> {
                     'isProducts': isProduct,
                     'isTransactions': isTransaction,
                     'isMakeCustomer': isMakeCustomer,
+                    'isEditCustomer': isEditCustomer,
                     'isMakeAdmin': isMakeAdmin,
                     'isDeleteCustomer': isDeleteCustomer,
                     'isManageDue': isManageDue,

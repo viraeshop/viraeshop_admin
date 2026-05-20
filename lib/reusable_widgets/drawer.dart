@@ -41,8 +41,11 @@ import '../screens/orders/delivery_screen.dart';
 import '../screens/orders/delivery_screen.dart';
 import '../screens/products/category_screen.dart';
 import 'package:viraeshop_admin/features/order_management/screens/agent_settlement_screen.dart';
+import 'package:viraeshop_admin/screens/orders/emergency_issues_screen.dart';
+import 'package:viraeshop_admin/screens/orders/awaiting_decision_screen.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/smart_dashboard_screen.dart';
 import 'package:viraeshop_admin/utils/role_permissions.dart';
+
 
 class AppDrawer extends StatefulWidget {
   var info;
@@ -281,6 +284,38 @@ class _AppDrawerState extends State<AppDrawer> {
                           );
                         },
                       ),
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 30),
+                        leading: const Icon(Icons.report_problem,
+                            size: 18, color: Colors.white),
+                        title: const Text('Emergency & Supplier Issues',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14)),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const EmergencyIssuesScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 30),
+                        leading: const Icon(Icons.timer,
+                            size: 18, color: Colors.white),
+                        title: const Text('Awaiting Customer Decision',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 14)),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AwaitingDecisionScreen(),
+                            ),
+                          );
+                        },
+                      ),
                       if (RolePermissions.canAccessActiveDelivery(
                           adminPermissions))
                         ListTile(
@@ -296,6 +331,7 @@ class _AppDrawerState extends State<AppDrawer> {
                       const SizedBox(height: 10),
                     ],
                   ),
+
                   if (RolePermissions.canAccessSmartDashboard(adminPermissions))
                     ReusableTile(
                       icon: Icons.insights_outlined,

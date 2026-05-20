@@ -534,11 +534,12 @@ class _UserTransactionScreenState extends State<UserTransactionScreen> {
                 ),
               ),
               SafeArea(
+                bottom: false,
                 child: FractionallySizedBox(
                   alignment: Alignment.bottomCenter,
-                  heightFactor: 0.31,
+                  heightFactor: 0.30,
                   child: Padding(
-                    padding: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.only(top: 15.0, left: 15.0, right: 15.0),
                     child: SingleChildScrollView(
                       child: Column(
                         children: [

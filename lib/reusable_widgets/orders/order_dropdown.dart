@@ -58,6 +58,8 @@ List<DropdownMenuItem<String>>? dropdownItemsGenerator(OrderStages stages) {
     List<String> itemsTitle = [
       'All',
       'Pending',
+      'Assigned',
+      'Processing',
       'Confirmed',
       'Canceled',
     ];

@@ -404,9 +404,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
       ],
       child: SizedBox(
         height: currentStage == OrderStages.processing
-            ? 577
+            ? 760
             : currentStage == OrderStages.admin
-                ? 440
+                ? 580
                 : 370,
         width: double.infinity,
         child: Stack(
@@ -511,20 +511,39 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                       .toString(),
                                   onDelete: onOrderStage && !disable
                                       ? () {
-                                          setState(
-                                            () {
-                                              isLoading = true;
-                                              onDelete = true;
-                                            },
-                                          );
-                                          final orderBloc =
-                                              BlocProvider.of<OrderItemsBloc>(
-                                                  context);
-                                          orderBloc.add(
-                                            DeleteOrderItemEvent(
-                                              orderId:
-                                                  widget.product.id.toString(),
-                                              token: jWTToken,
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              title: const Text('Delete Item'),
+                                              content: const Text('Are you sure you want to remove this item from the order? This will update the order totals.'),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(ctx),
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(ctx);
+                                                    setState(
+                                                      () {
+                                                        isLoading = true;
+                                                        onDelete = true;
+                                                      },
+                                                    );
+                                                    final orderBloc =
+                                                        BlocProvider.of<OrderItemsBloc>(
+                                                            context);
+                                                    orderBloc.add(
+                                                      DeleteOrderItemEvent(
+                                                        orderId:
+                                                            widget.product.id.toString(),
+                                                        token: jWTToken,
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: const Text('Delete', style: TextStyle(color: kRedColor)),
+                                                ),
+                                              ],
                                             ),
                                           );
                                         }
@@ -631,29 +650,113 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       ),
                       Row(
                         //crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: currentStage == OrderStages.order
-                            ? MainAxisAlignment.start
-                            : MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           if (currentStage == OrderStages.order ||
                               currentStage == OrderStages.processing)
-                            Expanded(
-                              child: SizedBox(
-                                width: 100,
-                                child: DropdownButtonFormField(
-                                  //underline: const SizedBox(),
-                                  decoration: const InputDecoration(
-                                    hintText: 'Select',
-                                    border: InputBorder.none,
+                            Container(
+                              height: 40.0,
+                              decoration: BoxDecoration(
+                                  color: currentStage == OrderStages.order &&
+                                          dropdownValue == 'confirmed'
+                                      ? const Color(0xFF10B981)
+                                          .withOpacity(0.12)
+                                      : currentStage == OrderStages.order &&
+                                              dropdownValue == 'failed'
+                                          ? const Color(0xFFEF4444)
+                                              .withOpacity(0.12)
+                                          : Colors.white,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                      color: kNewMainColor.withOpacity(0.5),
+                                      width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]),
+                              padding:
+                                  const EdgeInsets.only(left: 12.0, right: 8.0),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  icon: const Padding(
+                                    padding: EdgeInsets.only(left: 4.0),
+                                    child: Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: kNewMainColor,
+                                        size: 20),
                                   ),
-                                  borderRadius: BorderRadius.circular(10.0),
+                                  hint: const Text('Status',
+                                      style: TextStyle(
+                                          color: kSubMainColor,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600)),
+                                  borderRadius: BorderRadius.circular(12.0),
                                   dropdownColor: Colors.white,
-                                  iconEnabledColor: kSubMainColor,
                                   items: generateItems(
                                       widget.product.productSupplier?.admins ??
                                           [],
                                       context),
                                   value: dropdownValue,
+                                  selectedItemBuilder: (BuildContext context) {
+                                    OrderStages currentStage =
+                                        Provider.of<OrderProvider>(context,
+                                                listen: false)
+                                            .currentStage;
+                                    return generateItems(
+                                            widget.product.productSupplier
+                                                    ?.admins ??
+                                                [],
+                                            context)
+                                        .map<Widget>((DropdownMenuItem item) {
+                                      Color textColor;
+                                      String displayText = '';
+
+                                      if (item.value == 'confirmed') {
+                                        textColor = const Color(0xFF10B981);
+                                      } else if (item.value == 'failed' ||
+                                          item.value == 'canceled') {
+                                        textColor = const Color(0xFFEF4444);
+                                      } else {
+                                        textColor = kNewMainColor;
+                                      }
+
+                                      if (currentStage != OrderStages.order &&
+                                          currentStage != OrderStages.admin) {
+                                        List admins = widget.product
+                                                .productSupplier?.admins ??
+                                            [];
+                                        var admin = admins.firstWhere(
+                                            (e) => e['adminId'] == item.value,
+                                            orElse: () => null);
+                                        displayText = admin != null
+                                            ? admin['name']
+                                            : (item.value.toString())
+                                                .capitalize();
+                                      } else {
+                                        displayText = item.value
+                                            .toString()
+                                            .split(' ')
+                                            .map((e) => e.capitalize())
+                                            .join(' ');
+                                      }
+
+                                      return Container(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          displayText,
+                                          style: TextStyle(
+                                            color: textColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'SourceSans',
+                                            fontSize: 14.0,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
                                   onChanged: currentStage ==
                                               OrderStages.order ||
                                           (currentStage ==
@@ -667,124 +770,122 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                       OrderStages.order ||
                                                   currentStage ==
                                                       OrderStages.admin;
-                                          setState(() {
-                                            dropdownValue =
-                                                (value ?? '') as String?;
-                                            if (onOrderOrAdminStage) {
-                                              isLoading = true;
-                                            }
-                                          });
-                                          if (onOrderOrAdminStage) {
-                                            if (currentStage ==
-                                                    OrderStages.admin &&
-                                                (value == 'mark as complete' ||
-                                                    value == 'report delay')) {
-                                              if (value == 'mark as complete') {
-                                                productUpdate(
-                                                  context: context,
-                                                  data: {
-                                                    'id': widget.product.id,
-                                                    'itemInfo': {
-                                                      'processingStatus':
-                                                          'completed',
+                                          if (value == 'failed') {
+                                            showDialog(
+                                              context: context,
+                                              builder: (ctx) => AlertDialog(
+                                                title: const Text('Mark as Out of Stock?'),
+                                                content: const Text('This will mark the item as "Failed". This is a terminal state and will exclude the item from delivery calculations.'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(ctx);
+                                                      setState(() {
+                                                        dropdownValue = widget.product.availability != null 
+                                                          ? (widget.product.availability! ? 'confirmed' : 'failed')
+                                                          : null;
+                                                      });
                                                     },
-                                                  },
-                                                );
-                                              } else {
-                                                _showDelayDialog(context);
-                                              }
-                                              setState(() {
-                                                isLoading = false;
-                                              });
-                                            } else {
-                                              productUpdate(
-                                                context: context,
-                                                data: {
-                                                  'id': widget.product.id,
-                                                  'itemInfo': {
-                                                    if (onOrderStage)
-                                                      'availability':
-                                                          value == 'confirmed',
-                                                    if (currentStage ==
-                                                        OrderStages.admin)
-                                                      'processingStatus': value,
-                                                  },
-                                                },
-                                              );
-                                            }
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(ctx);
+                                                      _executeStatusUpdate(value, onOrderOrAdminStage);
+                                                    },
+                                                    child: const Text('Confirm', style: TextStyle(color: kRedColor)),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          } else {
+                                            _executeStatusUpdate(value, onOrderOrAdminStage);
                                           }
                                         }
                                       : null,
                                 ),
                               ),
                             ),
-                          const SizedBox(
-                            width: 10.0,
-                          ),
+                          // Flexible spacing is handled by SpaceBetween now. No need for fixed SizedBox except between interactive icons if they cluster
                           if (onOrderStage ||
-                              currentStage == OrderStages.processing)
-                            OutlinedIconWidget(
-                              onTap: (onOrderStage && !disable) ||
-                                      (currentStage == OrderStages.processing &&
-                                          !disable)
-                                  ? () async {
-                                      setState(() {
-                                        onPhone = !onPhone;
-                                        if (onLocation) onLocation = false;
-                                      });
-                                      if (onPhone) {
-                                        String mobile =
-                                            '+880${currentStage == OrderStages.processing ? widget.product.adminModel?.mobile : widget.product.productSupplier?.mobile}';
-                                        final url = Uri.parse('tel:$mobile');
-                                        if (await canLaunchUrl(url)) {
-                                          await launchUrl(url);
+                              currentStage == OrderStages.processing) ...[
+                            if (!onPhone && !onLocation)
+                              const Spacer(), // Pushes icons to the right but spaceBetween does this too. Wrap them in a Row.
+                            if (onPhone || onLocation)
+                              const SizedBox(width: 10.0),
+                            Expanded(
+                              // Text expansion if phone or loc is tapped
+                              child: Text(
+                                onPhone
+                                    ? '+880${currentStage == OrderStages.processing ? widget.product.adminModel?.mobile : widget.product.productSupplier?.mobile ?? ''}'
+                                    : onLocation
+                                        ? widget.product.productSupplier
+                                                ?.address ??
+                                            ''
+                                        : '',
+                                overflow: TextOverflow.ellipsis,
+                                style: kProductNameStylePro,
+                                maxLines: 3,
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                OutlinedIconWidget(
+                                  height: 40.0,
+                                  width: 40.0,
+                                  borderWidth: 1.5,
+                                  borderRadius: 12.0,
+                                  color: onPhone
+                                      ? kRedColor.withOpacity(0.8)
+                                      : kNewMainColor.withOpacity(0.5),
+                                  onTap: (onOrderStage && !disable) ||
+                                          (currentStage ==
+                                                  OrderStages.processing &&
+                                              !disable)
+                                      ? () async {
+                                          setState(() {
+                                            onPhone = !onPhone;
+                                            if (onLocation) onLocation = false;
+                                          });
+                                          if (onPhone) {
+                                            String mobile =
+                                                '+880${currentStage == OrderStages.processing ? widget.product.adminModel?.mobile : widget.product.productSupplier?.mobile}';
+                                            final url =
+                                                Uri.parse('tel:$mobile');
+                                            if (await canLaunchUrl(url)) {
+                                              await launchUrl(url);
+                                            }
+                                          }
                                         }
-                                      }
-                                    }
-                                  : null,
-                              iconData: Icons.call,
+                                      : null,
+                                  iconData: Icons.call,
+                                ),
+                                if (onOrderStage)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10.0),
+                                    child: OutlinedIconWidget(
+                                      height: 40.0,
+                                      width: 40.0,
+                                      borderWidth: 1.5,
+                                      borderRadius: 12.0,
+                                      color: onLocation
+                                          ? kRedColor.withOpacity(0.8)
+                                          : kNewMainColor.withOpacity(0.5),
+                                      onTap: onOrderStage && !disable
+                                          ? () {
+                                              setState(() {
+                                                onLocation = !onLocation;
+                                                if (onPhone) onPhone = false;
+                                              });
+                                            }
+                                          : null,
+                                      iconData: Icons.location_pin,
+                                    ),
+                                  ),
+                              ],
                             ),
-                          const SizedBox(
-                            width: 10.0,
-                          ),
-                          if (onPhone &&
-                              (onOrderStage ||
-                                  currentStage == OrderStages.processing))
-                            Expanded(
-                              child: Text(
-                                '+880${currentStage == OrderStages.processing ? widget.product.adminModel?.mobile : widget.product.productSupplier?.mobile ?? ''}',
-                                overflow: TextOverflow.ellipsis,
-                                style: kProductNameStylePro,
-                                maxLines: 3,
-                              ),
-                            ),
-                          const SizedBox(
-                            width: 10.0,
-                          ),
-                          if (onOrderStage)
-                            OutlinedIconWidget(
-                              onTap: onOrderStage && !disable
-                                  ? () {
-                                      setState(() {
-                                        onLocation = !onLocation;
-                                        if (onPhone) onPhone = false;
-                                      });
-                                    }
-                                  : null,
-                              iconData: Icons.location_pin,
-                            ),
-                          const SizedBox(
-                            width: 10.0,
-                          ),
-                          if (onLocation && onOrderStage)
-                            Expanded(
-                              child: Text(
-                                widget.product.productSupplier?.address ?? '',
-                                overflow: TextOverflow.ellipsis,
-                                style: kProductNameStylePro,
-                                maxLines: 3,
-                              ),
-                            ),
+                          ],
                           if ((currentStage == OrderStages.receiving &&
                                   widget.orderInfo['receiveStatus'] ==
                                       'pending') ||
@@ -957,7 +1058,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       const SizedBox(
                         height: 10.0,
                       ),
-                      if (currentStage == OrderStages.processing &&
+                      if ((currentStage == OrderStages.processing ||
+                              currentStage == OrderStages.admin) &&
                           widget.product.startedAt != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 20.0),
@@ -1005,6 +1107,197 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ],
                           ),
                         ),
+                      if (currentStage == OrderStages.processing)
+                        if (widget.product.processingStatus == 'failed' ||
+                            widget.product.processingStatus == 'delayed')
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Container(
+                              padding: const EdgeInsets.all(15),
+                              decoration: BoxDecoration(
+                                color: kNewMainColor.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                    color: kNewMainColor.withOpacity(0.1)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        widget.product.processingStatus ==
+                                                'failed'
+                                            ? Icons.report_problem_rounded
+                                            : Icons.history_rounded,
+                                        color: widget.product
+                                                    .processingStatus ==
+                                                'failed'
+                                            ? kRedColor
+                                            : kSubMainColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        widget.product.processingStatus ==
+                                                'failed'
+                                            ? "UNAVAILABLE - PENDING DECISION"
+                                            : "DELAY REQUESTED",
+                                        style: TextStyle(
+                                          color: widget.product
+                                                      .processingStatus ==
+                                                  'failed'
+                                              ? kRedColor
+                                              : kSubMainColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (widget.product.note != null &&
+                                      widget.product.note!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10.0),
+                                      child: Text(
+                                        "Reason: ${widget.product.note}",
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 15),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            if (widget.product
+                                                    .processingStatus ==
+                                                'failed') {
+                                              final nextStatus =
+                                                  'failed_accepted';
+                                              productUpdate(
+                                                context: context,
+                                                data: {
+                                                  'id': widget.product.id,
+                                                  'itemInfo': {
+                                                    'processingStatus':
+                                                        nextStatus,
+                                                  },
+                                                },
+                                              );
+                                              Provider.of<OrderProvider>(
+                                                      context,
+                                                      listen: false)
+                                                  .batchUpdateItemsByIds(
+                                                      [widget.product.id],
+                                                      processingStatus:
+                                                          nextStatus);
+                                            } else {
+                                              _showExtensionDialog(context);
+                                            }
+                                          },
+                                          child: Text(
+                                              widget.product.processingStatus ==
+                                                      'failed'
+                                                  ? "CUSTOMER ACCEPTED"
+                                                  : "ACCEPT EXTENSION",
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: kNewMainColor,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () {
+                                            _showCustomerTimerPicker(context);
+                                          },
+                                          child: const Text(
+                                            "NEEDS TIME",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.orange,
+                                            side: const BorderSide(
+                                                color: Colors.orange),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () {
+                                            if (widget.product
+                                                    .processingStatus ==
+                                                'failed') {
+                                              productUpdate(
+                                                context: context,
+                                                data: {
+                                                  'id': widget.product.id,
+                                                  'itemInfo': {
+                                                    'processingStatus':
+                                                        'failed_canceled',
+                                                  },
+                                                },
+                                              );
+                                              Provider.of<OrderProvider>(
+                                                      context,
+                                                      listen: false)
+                                                  .batchUpdateItemsByIds(
+                                                      [widget.product.id],
+                                                      processingStatus:
+                                                          'failed_canceled');
+                                            }
+                                          },
+                                          child: Text(
+                                              widget.product.processingStatus ==
+                                                      'failed'
+                                                  ? "CANCEL ITEM"
+                                                  : "REASSIGN",
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10)),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: kRedColor,
+                                            side: const BorderSide(
+                                                color: kRedColor),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 10),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       if (currentStage == OrderStages.processing)
                         Padding(
                           padding: const EdgeInsets.all(20.0),
@@ -1116,80 +1409,157 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       if (currentStage == OrderStages.admin)
                         Padding(
                           padding: const EdgeInsets.all(20.0),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton.icon(
-                              onPressed: widget.product.processingStatus == 'completed'
-                                  ? null
-                                  : () {
-                                      if (widget.product.startedAt == null) {
-                                        final now = DateTime.now();
-                                        productUpdate(
-                                          context: context,
-                                          data: {
-                                            'id': _getRelatedProductIds(),
-                                            'itemInfo': {
-                                              'processingStatus': 'processing',
-                                              'startedAt': now.toIso8601String(),
+                          child: widget.product.processingStatus == 'completed'
+                              ? SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton.icon(
+                                    onPressed: null,
+                                    icon: const Icon(Icons.check_circle_outline),
+                                    label: const Text('COMPLETED',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.2)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey.shade400,
+                                      disabledBackgroundColor: Colors.grey.shade300,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : widget.product.startedAt == null
+                                  ? SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          final now = DateTime.now();
+                                          productUpdate(
+                                            context: context,
+                                            data: {
+                                              'id': _getRelatedProductIds(),
+                                              'itemInfo': {
+                                                'processingStatus': 'processing',
+                                                'startedAt':
+                                                    now.toIso8601String(),
+                                              },
                                             },
-                                          },
-                                        );
-                                        Provider.of<OrderProvider>(context,
-                                                listen: false)
-                                            .batchUpdateSupplierItems(
-                                          widget.product.supplierId,
-                                          startedAt: now,
-                                          processingStatus: 'processing',
-                                        );
-                                      }
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProcessingTimerScreen(
-                                            product: widget.product,
-                                            orderId: widget.orderId,
+                                          );
+                                          Provider.of<OrderProvider>(context,
+                                                  listen: false)
+                                              .batchUpdateSupplierItems(
+                                            widget.product.supplierId,
+                                            startedAt: now,
+                                            processingStatus: 'processing',
+                                          );
+                                        },
+                                        icon: const Icon(Icons.play_arrow_rounded),
+                                        label: const Text('START',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 1.2)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: kNewMainColor,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(15),
                                           ),
                                         ),
-                                      ).then((_) => setState(() {}));
-                                    },
-                              icon: Icon(
-                                widget.product.processingStatus == 'completed'
-                                    ? Icons.check_circle_outline
-                                    : widget.product.startedAt == null
-                                        ? Icons.play_arrow_rounded
-                                        : Icons.timer_outlined,
-                              ),
-                              label: Text(
-                                widget.product.processingStatus == 'completed'
-                                    ? 'Completed'
-                                    : widget.product.startedAt == null
-                                        ? 'START'
-                                        : 'PROCESSING',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: widget.product
-                                            .processingStatus ==
-                                        'completed'
-                                    ? Colors.grey.shade400
-                                    : widget.product.startedAt == null
-                                        ? kNewMainColor
-                                        : kSubMainColor,
-                                disabledBackgroundColor: Colors.grey.shade300,
-                                foregroundColor: Colors.white,
-                                disabledForegroundColor: Colors.white70,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                elevation: 0,
-                              ),
-                            ),
-                          ),
+                                      ),
+                                    )
+                                  : Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              productUpdate(
+                                                context: context,
+                                                data: {
+                                                  'id': widget.product.id,
+                                                  'itemInfo': {
+                                                    'processingStatus':
+                                                        'completed',
+                                                  },
+                                                },
+                                              );
+                                              Provider.of<OrderProvider>(context,
+                                                      listen: false)
+                                                  .batchUpdateItemsByIds(
+                                                      [widget.product.id],
+                                                      processingStatus:
+                                                          'completed');
+                                            },
+                                            child: const Text('COMPLETE',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF10B981),
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () => _showDelayDialog(context),
+                                            child: const Text('DELAY',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10)),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFFF59E0B),
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () {
+                                              productUpdate(
+                                                context: context,
+                                                data: {
+                                                  'id': widget.product.id,
+                                                  'itemInfo': {
+                                                    'processingStatus': 'failed',
+                                                  },
+                                                },
+                                              );
+                                              Provider.of<OrderProvider>(context,
+                                                      listen: false)
+                                                  .batchUpdateItemsByIds(
+                                                      [widget.product.id],
+                                                      processingStatus:
+                                                          'failed');
+                                            },
+                                            child: const Text('UNAVAIL.',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10)),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: const Color(0xFFEF4444),
+                                              side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                         ),
                     ],
                   ),
@@ -1310,8 +1680,80 @@ class _OrderProductCardState extends State<OrderProductCard> {
     );
   }
 
+  void _showCustomerTimerPicker(BuildContext context) {
+    Duration tempDuration = const Duration(hours: 2); // Default to 2 hours
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => Container(
+        height: 300,
+        color: Colors.white,
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey[300]!,
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  CupertinoButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      setState(() {
+                        isLoading = true;
+                      });
+                      Navigator.pop(context);
+                      
+                      final newDeadline = DateTime.now().add(tempDuration).toIso8601String();
+
+                      productUpdate(
+                        context: context,
+                        data: {
+                          'id': widget.product.id,
+                          'itemInfo': {
+                            'customerDecisionDeadline': newDeadline,
+                            'customerDecisionAlerted': false,
+                          },
+                        },
+                      );
+                      // Update local state via OrderProvider if needed, though productUpdate triggers refresh
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .batchUpdateItemsByIds(
+                            [widget.product.id],
+                          );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: CupertinoTimerPicker(
+                mode: CupertinoTimerPickerMode.hm,
+                initialTimerDuration: tempDuration,
+                onTimerDurationChanged: (duration) {
+                  tempDuration = duration;
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _startProgressTimer() {
-    if (currentStage == OrderStages.processing &&
+    if ((currentStage == OrderStages.processing ||
+            currentStage == OrderStages.admin) &&
         widget.product.startedAt != null) {
       _progressTimer?.cancel();
       _progressTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -1322,6 +1764,88 @@ class _OrderProductCardState extends State<OrderProductCard> {
         }
       });
     }
+  }
+
+  void _showExtensionDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text("Additional Time Required",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Enter additional minutes for this task:",
+                      style: TextStyle(fontSize: 14)),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: "Minutes (e.g. 15)",
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text("Cancel")),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kNewMainColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () {
+                      final additionalMins = int.tryParse(controller.text);
+                      if (additionalMins != null) {
+                        final now = DateTime.now();
+                        final pauseDuration = now.difference(
+                            widget.product.delayedAt ?? now);
+                        
+                        // Shift startedAt forward by the time spent in paused mode
+                        final newStartedAt =
+                            (widget.product.startedAt ?? now).add(pauseDuration);
+                        final newEstimatedTime =
+                            widget.product.estimatedTime + additionalMins;
+
+                        productUpdate(
+                          context: context,
+                          data: {
+                            'id': widget.product.id,
+                            'itemInfo': {
+                              'processingStatus': 'processing',
+                              'estimatedTime': newEstimatedTime,
+                              'startedAt': newStartedAt.toIso8601String(),
+                              'delayedAt': null,
+                              'note': null,
+                            },
+                          },
+                        );
+                        Provider.of<OrderProvider>(context, listen: false)
+                            .batchUpdateItemsByIds(
+                          [widget.product.id],
+                          processingStatus: 'processing',
+                          estimatedTime: newEstimatedTime,
+                          startedAt: newStartedAt,
+                        );
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    child: const Text("Accept & Continue",
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ));
   }
 
   void _showDelayDialog(BuildContext context) {
@@ -1364,7 +1888,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                           borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () {
-                      if (controller.text.isNotEmpty) {
+                        final now = DateTime.now();
                         productUpdate(
                           context: context,
                           data: {
@@ -1372,11 +1896,14 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             'itemInfo': {
                               'processingStatus': 'delayed',
                               'note': controller.text,
+                              'delayedAt': now.toIso8601String(),
                             },
                           },
                         );
+                        Provider.of<OrderProvider>(context, listen: false)
+                            .batchUpdateItemsByIds([widget.product.id],
+                                processingStatus: 'delayed', delayedAt: now);
                         Navigator.pop(ctx);
-                      }
                     },
                     child: const Text("Submit",
                         style: TextStyle(fontWeight: FontWeight.bold))),
@@ -1388,7 +1915,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
     if (widget.product.startedAt == null || widget.product.estimatedTime <= 0) {
       return 0.0;
     }
-    final now = DateTime.now();
+    final now = widget.product.processingStatus == 'delayed'
+        ? (widget.product.delayedAt ?? DateTime.now())
+        : DateTime.now();
     final elapsed = now.difference(widget.product.startedAt!).inSeconds;
     final total = widget.product.estimatedTime * 60;
     final progress = elapsed / total;
@@ -1399,12 +1928,19 @@ class _OrderProductCardState extends State<OrderProductCard> {
     if (widget.product.startedAt == null || widget.product.estimatedTime <= 0) {
       return "";
     }
-    final now = DateTime.now();
+    final isPaused = widget.product.processingStatus == 'delayed';
+    final now = isPaused
+        ? (widget.product.delayedAt ?? DateTime.now())
+        : DateTime.now();
     final total = widget.product.estimatedTime * 60;
     final elapsed = now.difference(widget.product.startedAt!).inSeconds;
     final remaining = total - elapsed;
 
     if (remaining <= 0) return "OVERDUE";
+    if (isPaused) {
+      final duration = Duration(seconds: remaining);
+      return "${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, "0")} PAUSED";
+    }
 
     final duration = Duration(seconds: remaining);
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -1420,6 +1956,48 @@ class _OrderProductCardState extends State<OrderProductCard> {
       return "${twoDigits(duration.inMinutes)}:$twoDigitSeconds LEFT";
     }
   }
+
+  void _executeStatusUpdate(dynamic value, bool onOrderOrAdminStage) {
+    setState(() {
+      dropdownValue = (value ?? '') as String?;
+      if (onOrderOrAdminStage) {
+        isLoading = true;
+      }
+    });
+
+    if (onOrderOrAdminStage) {
+      if (currentStage == OrderStages.admin &&
+          (value == 'mark as complete' || value == 'report delay')) {
+        if (value == 'mark as complete') {
+          productUpdate(
+            context: context,
+            data: {
+              'id': widget.product.id,
+              'itemInfo': {
+                'processingStatus': 'completed',
+              },
+            },
+          );
+        } else {
+          _showDelayDialog(context);
+        }
+        setState(() {
+          isLoading = false;
+        });
+      } else {
+        productUpdate(
+          context: context,
+          data: {
+            'id': widget.product.id,
+            'itemInfo': {
+              if (onOrderStage) 'availability': value == 'confirmed',
+              if (currentStage == OrderStages.admin) 'processingStatus': value,
+            },
+          },
+        );
+      }
+    }
+  }
 }
 
 class OutlinedIconWidget extends StatelessWidget {
@@ -1431,6 +2009,7 @@ class OutlinedIconWidget extends StatelessWidget {
     this.width = 30.0,
     this.color = const Color(0xff979797),
     this.borderWidth = 1.0,
+    this.borderRadius = 7.0,
   }) : super(key: key);
 
   final IconData iconData;
@@ -1439,6 +2018,7 @@ class OutlinedIconWidget extends StatelessWidget {
   final double? width;
   final Color color;
   final double borderWidth;
+  final double borderRadius;
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -1447,7 +2027,7 @@ class OutlinedIconWidget extends StatelessWidget {
         height: height,
         width: width,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(7.0),
+            borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
               color: color,
               width: borderWidth,
@@ -1502,30 +2082,51 @@ class DropDownMenuWidget extends StatelessWidget {
   }
 }
 
-List<DropdownMenuItem> generateItems(List admins, BuildContext context) {
-  List<DropdownMenuItem> items = [];
+List<DropdownMenuItem<String>> generateItems(
+    List admins, BuildContext context) {
+  List<DropdownMenuItem<String>> items = [];
   OrderStages currentStage = Provider.of<OrderProvider>(context).currentStage;
   if (currentStage == OrderStages.order || currentStage == OrderStages.admin) {
     List<String> titles = currentStage == OrderStages.admin
         ? ['Mark As Complete', 'Report Delay']
         : ['Confirmed', 'Failed'];
     items = titles.map((e) {
-      return DropdownMenuItem(
+      Color textColor;
+      Color bgColor = Colors.transparent;
+      if (e == 'Confirmed') {
+        textColor = const Color(0xFF10B981); // Emerald Green
+        bgColor = const Color(0xFF10B981).withOpacity(0.1);
+      } else if (e == 'Failed' || e == 'Canceled') {
+        textColor = const Color(0xFFEF4444); // Red
+        bgColor = const Color(0xFFEF4444).withOpacity(0.1);
+      } else {
+        textColor = const Color(0xFFF59E0B); // Amber for Pending
+        bgColor = const Color(0xFFF59E0B).withOpacity(0.1);
+      }
+      return DropdownMenuItem<String>(
         value: e.toLowerCase(),
-        child: Text(
-          e,
-          style: TextStyle(
-            color: e == 'Failed' ? kRedColor : kNewMainColor,
-            fontSize: 20.0,
-            fontFamily: 'SourceSans',
-            letterSpacing: 1.3,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Text(
+            e,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 15.0,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'SourceSans',
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       );
     }).toList();
   } else {
     items = admins.map((e) {
-      return DropdownMenuItem(
+      return DropdownMenuItem<String>(
         value: e['adminId'],
         child: Text(
           e['name'],
@@ -1553,4 +2154,3 @@ void productUpdate(
     ),
   );
 }
-

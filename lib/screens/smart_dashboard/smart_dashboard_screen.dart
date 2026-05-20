@@ -10,6 +10,8 @@ import 'package:viraeshop_admin/screens/smart_dashboard/widgets/quick_actions_wi
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/snapshot_grid.dart';
 import 'package:viraeshop_bloc/viraeshop_bloc.dart';
 import 'package:viraeshop_api/models/analytics/analytics_models.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:viraeshop_admin/features/order_management/screens/processing_manager_screen.dart';
 
 class SmartDashboardScreen extends StatefulWidget {
   static const String path = '/smart_dashboard';
@@ -193,6 +195,14 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
         _buildCategoryCard("Finance", Icons.payments_outlined, Colors.purple, 2.5,
             () {
           // Placeholder for Finance screen
+        }),
+        _buildCategoryCard(
+            "Supplier Prep", FontAwesomeIcons.folderOpen, const Color(0xFF8B5E3C), 2.5,
+            () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => ProcessingManagerScreen(token: _token)));
         }),
       ],
     );

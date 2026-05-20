@@ -6,7 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_api/models/items/items.dart';
-import 'package:viraeshop_api/models/admin/admins.dart'; 
+import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_bloc/orders/barrel.dart';
 import 'package:viraeshop_bloc/admin/barrel.dart';
 import 'package:viraeshop_bloc/transactions/transactions_bloc.dart';
@@ -15,7 +15,7 @@ import 'package:viraeshop_admin/configs/boxes.dart';
 import 'package:viraeshop_admin/configs/configs.dart';
 import 'package:viraeshop_admin/reusable_widgets/orders/delivery_timer.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
-import 'package:viraeshop_admin/reusable_widgets/orders/order_chips.dart';
+
 import 'package:viraeshop_admin/screens/customers/preferences.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 
@@ -50,6 +50,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
   AdminModel? selectedAgent;
   DateTime? estimatedArrival;
   Duration selectedDuration = const Duration(hours: 3);
+  bool _shouldPopOnSuccess = true;
   @override
   void initState() {
     // TODO: implement initState
@@ -61,14 +62,15 @@ class _OrdersDetailsState extends State<OrdersDetails> {
       buttonTitles = ['Deliver', 'Delay', 'Failed'];
     }
     addressController.text = widget.orderInfo['shippingAddress'];
-    discountController.text = widget.orderInfo['discount'].toString();
-    deliveryFeeController.text = widget.orderInfo['deliveryFee'].toString();
-    advanceController.text = widget.orderInfo['advance'].toString();
-    
+    final provider = Provider.of<OrderProvider>(context, listen: false);
+    deliveryFeeController.text = provider.deliveryFee.toString();
+    discountController.text = provider.discount.toString();
+    advanceController.text = provider.advance.toString();
+
     // Fetch admins to get delivery agents
     final adminBloc = BlocProvider.of<AdminBloc>(context);
     adminBloc.add(GetAdminsEvent(token: jWTToken));
-    
+
     super.initState();
   }
 
@@ -103,7 +105,11 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                     isLoading = false;
                   });
                   toast(context: context, title: state.response.message);
-                  Navigator.pop(context);
+                  if (_shouldPopOnSuccess) {
+                    Navigator.pop(context);
+                  } else {
+                    _shouldPopOnSuccess = true; // reset
+                  }
                 } else if (state is OnErrorOrderState) {
                   setState(() {
                     isLoading = false;
@@ -144,13 +150,13 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                     deliveryAgents = (state.adminList ?? [])
                         .where((admin) => admin.canDeliverOrders == true)
                         .toList();
-                    
+
                     // Pre-select if already assigned
                     if (widget.orderInfo['deliveryBoyId'] != null) {
                       try {
-                         selectedAgent = deliveryAgents.firstWhere(
-                          (element) => element.adminId == widget.orderInfo['deliveryBoyId']
-                        );
+                        selectedAgent = deliveryAgents.firstWhere((element) =>
+                            element.adminId ==
+                            widget.orderInfo['deliveryBoyId']);
                       } catch (e) {
                         // Not found or not in list
                       }
@@ -193,8 +199,7 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 widget.customerInfo['name'],
@@ -203,12 +208,10 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                               TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    onEditCustomerInfo =
-                                        !onEditCustomerInfo;
+                                    onEditCustomerInfo = !onEditCustomerInfo;
                                   });
                                   if (onEditCustomerInfo &&
-                                      widget.orderInfo[
-                                              'shippingAddress'] !=
+                                      widget.orderInfo['shippingAddress'] !=
                                           addressController.text) {
                                     Provider.of<OrderProvider>(context)
                                         .updateOrderInfo(
@@ -271,36 +274,50 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                   const SizedBox(
                     height: 10.0,
                   ),
-                  Consumer<OrderProvider>(
-                      builder: (context, provider, any) {
+                  Consumer<OrderProvider>(builder: (context, provider, any) {
                     return Column(
                       children: [
                         TextRow(
-                          title: 'Delivery-Fee',
-                          controller: deliveryFeeController,
-                        ),
-                        TextRow(
-                          title: 'Total',
+                          orderId: widget.orderInfo['orderId'].toString(),
+                          title: 'Original Price',
                           isEditable: false,
-                          subTitle: provider.total.toString(),
+                          subTitle: '${provider.total}',
                         ),
                         TextRow(
+                          orderId: widget.orderInfo['orderId'].toString(),
                           title: 'Discount',
                           controller: discountController,
+                          subTitle: '${provider.discount}',
                         ),
                         TextRow(
-                          title: 'Sub-total',
+                          orderId: widget.orderInfo['orderId'].toString(),
+                          title: 'Sub-Total',
                           isEditable: false,
-                          subTitle: provider.subTotal.toString(),
+                          subTitle: '${provider.subTotal}',
                         ),
                         TextRow(
+                          orderId: widget.orderInfo['orderId'].toString(),
+                          title: 'Delivery Fee',
+                          controller: deliveryFeeController,
+                          subTitle: '${provider.deliveryFee}',
+                        ),
+                        TextRow(
+                          orderId: widget.orderInfo['orderId'].toString(),
+                          title: 'Grand Total',
+                          isEditable: false,
+                          subTitle: '${provider.totalAmount}',
+                        ),
+                        TextRow(
+                          orderId: widget.orderInfo['orderId'].toString(),
                           title: 'Advance',
                           controller: advanceController,
+                          subTitle: '${provider.advance}',
                         ),
                         TextRow(
+                          orderId: widget.orderInfo['orderId'].toString(),
                           title: 'Due',
                           isEditable: false,
-                          subTitle: provider.due.toString(),
+                          subTitle: '${provider.due}',
                         ),
                         const SizedBox(
                           height: 20.0,
@@ -309,368 +326,407 @@ class _OrdersDetailsState extends State<OrdersDetails> {
                     );
                   }),
                   // Assign Delivery Agent Section
-                  if (Provider.of<OrderProvider>(context, listen: false).currentStage == OrderStages.delivery || 
-                      Provider.of<OrderProvider>(context, listen: false).currentStage == OrderStages.receiving)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Assignment',
-                        style: kSansTextStyleBigBlack,
-                      ),
-                      const SizedBox(height: 10.0),
-                      
-                      // Delivery Timer for Admins
-                      (() {
-                        try {
-                          final ordersObj = Orders.fromJson(widget.orderInfo);
-                          final deliveryTask = ordersObj.deliveryTask;
-                          if (deliveryTask != null && (deliveryTask.taskStatus == 'active' || deliveryTask.taskStatus == 'pending')) {
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: Center(child: DeliveryTimer(task: deliveryTask)),
-                            );
-                          }
-                        } catch (e) {
-                          debugPrint("Error parsing orders for timer: $e");
-                        }
-                        return const SizedBox.shrink();
-                      })(),
- 
-                      Container(
-                        padding: const EdgeInsets.all(20.0),
-                        decoration: BoxDecoration(
-                          color: const Color(0xffF8FAFC),
-                          borderRadius: BorderRadius.circular(24.0),
-                          border: Border.all(color: const Color(0xffE2E8F0)),
+                  if (Provider.of<OrderProvider>(context, listen: false)
+                              .currentStage ==
+                          OrderStages.delivery ||
+                      Provider.of<OrderProvider>(context, listen: false)
+                              .currentStage ==
+                          OrderStages.receiving)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Assignment',
+                          style: kSansTextStyleBigBlack,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'SELECT DELIVERY PERSON',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xff64748B),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xffE2E8F0)),
-                              ),
-                              child: DropdownButtonFormField<AdminModel>(
-                                isExpanded: true,
-                                decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  border: InputBorder.none,
-                                  prefixIcon: Icon(Icons.person, color: Color(0xff94A3B8), size: 20),
+                        const SizedBox(height: 10.0),
+
+                        // Delivery Timer for Admins
+                        (() {
+                          try {
+                            final ordersObj = Orders.fromJson(widget.orderInfo);
+                            final deliveryTask = ordersObj.deliveryTask;
+                            if (deliveryTask != null &&
+                                (deliveryTask.taskStatus == 'active' ||
+                                    deliveryTask.taskStatus == 'pending')) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16.0),
+                                child: Center(
+                                    child: DeliveryTimer(task: deliveryTask)),
+                              );
+                            }
+                          } catch (e) {
+                            debugPrint("Error parsing orders for timer: $e");
+                          }
+                          return const SizedBox.shrink();
+                        })(),
+
+                        Container(
+                          padding: const EdgeInsets.all(20.0),
+                          decoration: BoxDecoration(
+                            color: const Color(0xffF8FAFC),
+                            borderRadius: BorderRadius.circular(24.0),
+                            border: Border.all(color: const Color(0xffE2E8F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'SELECT DELIVERY PERSON',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xff64748B),
+                                  letterSpacing: 0.5,
                                 ),
-                                icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xff64748B)),
-                                value: selectedAgent,
-                                hint: const Text('Select Agent', style: TextStyle(color: Color(0xff94A3B8))),
-                                items: deliveryAgents.map((agent) {
-                                  return DropdownMenuItem<AdminModel>(
-                                    value: agent,
-                                    child: Text('${agent.name} (Active)', 
-                                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xff1E293B))),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedAgent = value;
-                                  });
-                                  if (value != null) {
-                                    Provider.of<OrderProvider>(context, listen: false)
-                                        .updateOrderInfo('deliveryBoyId', value.adminId);
-                                  }
-                                },
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            const Text(
-                              'EXPECTED DELIVERY TIME',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xff64748B),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            InkWell(
-                              onTap: () => _showTimerPicker(context),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              const SizedBox(height: 12),
+                              Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: const Color(0xffE2E8F0)),
+                                  border: Border.all(
+                                      color: const Color(0xffE2E8F0)),
                                 ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.access_time_filled, color: Color(0xff94A3B8), size: 20),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      '${selectedDuration.inHours} Hours',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xff1E293B),
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                            InkWell(
-                              onTap: selectedAgent == null ? null : () {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                final arrivalTime = DateTime.now().add(selectedDuration);
-                                final orderBloc = BlocProvider.of<OrdersBloc>(context);
-                                
-                                Map<String, dynamic> updateData = {
-                                  'orderStage': 'delivery',
-                                  'notificationType': 'admin2Customer',
-                                  'deliveryBoyId': selectedAgent?.adminId,
-                                  'estimatedArrival': arrivalTime.toIso8601String(),
-                                  'durationMinutes': selectedDuration.inMinutes,
-                                  'onDelivery': true,
-                                };
-                                
-                                orderBloc.add(
-                                  UpdateOrderEvent(
-                                    orderId: widget.orderInfo['orderId'].toString(),
-                                    orderModel: updateData,
-                                    token: jWTToken,
+                                child: DropdownButtonFormField<AdminModel>(
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 10),
+                                    border: InputBorder.none,
+                                    prefixIcon: Icon(Icons.person,
+                                        color: Color(0xff94A3B8), size: 20),
                                   ),
-                                );
-                              },
-                              child: Container(
-                                height: 56,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: selectedAgent == null ? Colors.grey : const Color(0xff10B981),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    if (selectedAgent != null)
-                                    BoxShadow(
-                                      color: const Color(0xff10B981).withOpacity(0.2),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    )
-                                  ],
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.local_shipping, color: Colors.white),
-                                    SizedBox(width: 12),
-                                    Text(
-                                      'Start Delivery Run',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
+                                  icon: const Icon(Icons.keyboard_arrow_down,
+                                      color: Color(0xff64748B)),
+                                  value: selectedAgent,
+                                  hint: const Text('Select Agent',
+                                      style:
+                                          TextStyle(color: Color(0xff94A3B8))),
+                                  items: deliveryAgents.map((agent) {
+                                    return DropdownMenuItem<AdminModel>(
+                                      value: agent,
+                                      child: Text('${agent.name} (Active)',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xff1E293B))),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedAgent = value;
+                                    });
+                                    if (value != null) {
+                                      Provider.of<OrderProvider>(context,
+                                              listen: false)
+                                          .updateOrderInfo(
+                                              'deliveryBoyId', value.adminId);
+                                    }
+                                  },
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 24),
+                              const Text(
+                                'EXPECTED DELIVERY TIME',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xff64748B),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              InkWell(
+                                onTap: () => _showTimerPicker(context),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 14),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: const Color(0xffE2E8F0)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.access_time_filled,
+                                          color: Color(0xff94A3B8), size: 20),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        '${selectedDuration.inHours} Hours',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xff1E293B),
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              InkWell(
+                                onTap: selectedAgent == null
+                                    ? null
+                                    : () {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                        final arrivalTime = DateTime.now()
+                                            .add(selectedDuration);
+                                        final orderBloc =
+                                            BlocProvider.of<OrdersBloc>(
+                                                context);
+
+                                        Map<String, dynamic> updateData = {
+                                          'orderStage': 'delivery',
+                                          'notificationType': 'admin2Employee',
+                                          'deliveryBoyId':
+                                              selectedAgent?.adminId,
+                                          'estimatedArrival':
+                                              arrivalTime.toIso8601String(),
+                                          'durationMinutes':
+                                              selectedDuration.inMinutes,
+                                          'deliveryStatus': 'assigned'
+                                        };
+
+                                        orderBloc.add(
+                                          UpdateOrderEvent(
+                                            orderId: widget.orderInfo['orderId']
+                                                .toString(),
+                                            orderModel: updateData,
+                                            token: jWTToken,
+                                          ),
+                                        );
+                                      },
+                                child: Container(
+                                  height: 56,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: selectedAgent == null
+                                        ? Colors.grey
+                                        : const Color(0xff10B981),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      if (selectedAgent != null)
+                                        BoxShadow(
+                                          color: const Color(0xff10B981)
+                                              .withOpacity(0.2),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 4),
+                                        )
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.local_shipping,
+                                          color: Colors.white),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        'Start Delivery Run',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20.0),
-                    ],
-                  ),
+                        const SizedBox(height: 20.0),
+                      ],
+                    ),
                 ],
               ),
             ),
           ),
         ),
-        bottomNavigationBar: (widget.orderInfo['orderStatus'] == 'success' || 
-            (Provider.of<OrderProvider>(context, listen: false).currentStage != OrderStages.delivery &&
-             Provider.of<OrderProvider>(context, listen: false).currentStage != OrderStages.receiving))
+        bottomNavigationBar: (widget.orderInfo['orderStatus'] == 'success' ||
+                (Provider.of<OrderProvider>(context, listen: false)
+                            .currentStage !=
+                        OrderStages.delivery &&
+                    Provider.of<OrderProvider>(context, listen: false)
+                            .currentStage !=
+                        OrderStages.receiving))
             ? SafeArea(
-          child: SizedBox(
-            height: 100,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (widget.orderInfo['orderStatus'] != 'success')
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceEvenly,
-                            children: List.generate(
-                                buttonTitles.length,
-                                    (index) => Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 10.0),
-                                  child: OrderChips(
-                                    title: buttonTitles[index],
-                                    onTap: () {
-                                      final orderProvider =
-                                      Provider.of<
-                                          OrderProvider>(
-                                          context,
-                                          listen: false);
-                                      final orderBloc =
-                                      BlocProvider.of<
-                                          OrdersBloc>(
-                                          context);
-                                      OrderStages currentStage =
-                                          orderProvider
-                                              .currentStage;
-                                      setState(() {
-                                        selected =
-                                        buttonTitles[index];
-                                        isLoading = true;
-                                      });
-                                      if (currentStage ==
-                                          OrderStages.order) {
-                                        Map<String, dynamic>
-                                        orderInfo = {
-                                          'orderStage': 'order',
-                                          'notificationType':
-                                          'admin2Customer',
-                                          'orderStatus':
-                                          buttonTitles[index]
-                                              .toLowerCase(),
-                                          'adminId': adminId,
-                                          if (buttonTitles[index]
-                                              .toLowerCase() ==
-                                              'confirmed')
-                                            'processingStatus':
-                                            'pending',
-                                          if (buttonTitles[index]
-                                              .toLowerCase() ==
-                                              'confirmed')
-                                            'incrementProcessingCount':
-                                            true,
-                                        };
-                                        orderBloc.add(
-                                          UpdateOrderEvent(
-                                            orderId: widget
-                                                .orderInfo[
-                                            'orderId']
-                                                .toString(),
-                                            orderModel: orderInfo,
-                                            token: jWTToken,
-                                          ),
-                                        );
-                                      } else if (currentStage ==
-                                          OrderStages.delivery) {
-                                        orderBloc.add(
-                                          UpdateOrderEvent(
-                                            orderId: widget
-                                                .orderInfo[
-                                            'orderId']
-                                                .toString(),
-                                            orderModel: {
-                                              'orderStage':
-                                              'delivery',
-                                              'notificationType':
-                                              'admin2Customer',
-                                              if (buttonTitles[
-                                              index] ==
-                                                  'Failed')
-                                                'deliveryStatus':
-                                                buttonTitles[
-                                                index]
-                                                    .toLowerCase(),
-                                              if (buttonTitles[
-                                              index] ==
-                                                  'Failed')
-                                                'orderStatus':
-                                                'failed',
-                                              if (buttonTitles[
-                                              index] ==
-                                                  'Deliver')
-                                                'onDelivery':
-                                                true,
-                                              if (buttonTitles[
-                                              index] ==
-                                                  'Delay')
-                                                'delayDelivery':
-                                                true,
-                                            },
-                                            token: jWTToken,
-                                          ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
+                  child: widget.orderInfo['orderStatus'] == 'success'
+                      ? const Text(
+                          'Order Delivered Successfully..',
+                          style: kProductNameStylePro,
+                          textAlign: TextAlign.center,
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildStatusButton(
+                                  title: 'Confirmed',
+                                  color: Colors.green.shade600,
+                                  onTap: () => _handleStatusAction('confirmed'),
+                                ),
+                                _buildStatusButton(
+                                  title: 'Pending',
+                                  color: Colors.orange.shade600,
+                                  onTap: () => _handleStatusAction('pending'),
+                                ),
+                                _buildStatusButton(
+                                  title: 'Canceled',
+                                  color: Colors.red.shade600,
+                                  onTap: () => _handleStatusAction('canceled'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Consumer<OrderProvider>(
+                                builder: (context, provider, any) {
+                              if (provider.currentStage == OrderStages.order ||
+                                  provider.currentStage ==
+                                      OrderStages.delivery) {
+                                return SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(
+                                          0xFF0D9488), // Teal/Green Custom Solid
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 2,
+                                    ),
+                                    onPressed: () {
+                                      if (deliveryFeeController
+                                          .text.isNotEmpty) {
+                                        provider.updateValue(
+                                          updatingValue: Values.deliveryFee,
+                                          values: {
+                                            'deliveryFee': num.tryParse(
+                                                    deliveryFeeController
+                                                        .text) ??
+                                                0
+                                          },
                                         );
                                       }
-                                    },
-                                    isSelected:
-                                    buttonTitles[index] ==
-                                        selected,
-                                    width: 100,
-                                    height: 50,
-                                  ),
-                                )),
-                          ),
-                          // const SizedBox(
-                          //   width: 10,
-                          // ),
-                          Consumer<OrderProvider>(
-                              builder: (context, provider, any) {
-                                if (provider.currentStage ==
-                                    OrderStages.order ||
-                                    provider.currentStage ==
-                                        OrderStages.delivery) {
-                                  return OrderChips(
-                                    width: 100,
-                                    height: 50,
-                                    title: 'Update',
-                                    onTap: () {
+                                      if (discountController.text.isNotEmpty) {
+                                        provider.updateValue(
+                                          updatingValue: Values.discount,
+                                          values: {
+                                            'discount': num.tryParse(
+                                                    discountController.text) ??
+                                                0
+                                          },
+                                        );
+                                      }
+                                      if (advanceController.text.isNotEmpty) {
+                                        provider.updateValue(
+                                          updatingValue: Values.advance,
+                                          values: {
+                                            'advance': num.tryParse(
+                                                    advanceController.text) ??
+                                                0
+                                          },
+                                        );
+                                      }
+
                                       setState(() {
                                         isLoading = true;
+                                        _shouldPopOnSuccess = false;
                                       });
                                       final orderBloc =
-                                      BlocProvider.of<OrdersBloc>(
-                                          context);
+                                          BlocProvider.of<OrdersBloc>(context,
+                                              listen: false);
                                       orderBloc.add(
                                         UpdateOrderEvent(
-                                          orderId: widget
-                                              .orderInfo['orderId']
+                                          orderId: widget.orderInfo['orderId']
                                               .toString(),
                                           orderModel: provider.orderInfo,
                                           token: jWTToken,
                                         ),
                                       );
                                     },
-                                    isSelected: false,
-                                  );
-                                } else {
-                                  return const SizedBox();
-                                }
-                              }),
-                        ],
-                      ),
-                    ],
-                  )
-                else if (widget.orderInfo['orderStatus'] == 'success')
-                  const Text(
-                    'Order Delivered Successfully..',
-                    style: kProductNameStylePro,
-                  ),
-              ],
-            ),
+                                    child: const Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            }),
+                          ],
+                        ),
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildStatusButton(
+      {required String title,
+      required Color color,
+      required VoidCallback onTap}) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-        ) : null,
+          onPressed: onTap,
+          child: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleStatusAction(String status) {
+    setState(() {
+      isLoading = true;
+      _shouldPopOnSuccess = true;
+    });
+
+    final orderBloc = BlocProvider.of<OrdersBloc>(context, listen: false);
+    print('status: $status');
+    Map<String, dynamic> data = {
+      'orderStage': 'order',
+      'notificationType': 'admin2Customer',
+      'orderStatus': status,
+      'adminId': adminId,
+      if (status == 'confirmed') 'processingStatus': 'pending',
+      if (status == 'confirmed') 'incrementProcessingCount': true,
+    };
+
+    orderBloc.add(
+      UpdateOrderEvent(
+        orderId: widget.orderInfo['orderId'].toString(),
+        orderModel: data,
+        token: jWTToken,
       ),
     );
   }
@@ -731,11 +787,13 @@ class TextRow extends StatefulWidget {
     this.isEditable = true,
     this.subTitle = '',
     this.controller,
+    required this.orderId,
   }) : super(key: key);
   final String title;
   final bool isEditable;
   final String? subTitle;
   final TextEditingController? controller;
+  final String orderId;
 
   @override
   State<TextRow> createState() => _TextRowState();
@@ -743,131 +801,156 @@ class TextRow extends StatefulWidget {
 
 class _TextRowState extends State<TextRow> {
   bool onEdit = false;
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus && mounted && onEdit) {
+        setState(() {
+          onEdit = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _syncToProvider(String value) {
+    Values? valType;
+    String key = '';
+
+    if (widget.title == 'Delivery Fee') {
+      valType = Values.deliveryFee;
+      key = 'deliveryFee';
+    } else if (widget.title == 'Discount') {
+      valType = Values.discount;
+      key = 'discount';
+    } else if (widget.title == 'Advance') {
+      valType = Values.advance;
+      key = 'advance';
+    }
+
+    if (valType != null) {
+      num parseVal = num.tryParse(value) ?? 0;
+      context
+          .read<OrderProvider>()
+          .updateValue(updatingValue: valType, values: {
+        key: parseVal,
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          '${widget.title}:',
-          style: kBlackTenorStyle,
-        ),
-        Row(
-          children: [
-            if (onEdit)
-              SizedBox(
-                width: 100,
-                child: TextField(
-                  controller: widget.controller,
-                  style: kBlackTenorStyle,
-                  cursorColor: kNewMainColor,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(10.0),
-                  ),
-                ),
-              )
-            else
-              Text(
-                '${widget.isEditable ? widget.controller!.text : widget.subTitle}$bdtSign',
-                style: kBlackTenorStyle,
-              ),
-            const SizedBox(
-              width: 10.0,
+    bool isGrandTotal = widget.title == 'Grand Total';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          vertical: 6.0, horizontal: 10.0), // subtle padding
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '${widget.title}:',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              color: isGrandTotal ? Colors.black87 : Colors.grey.shade600,
+              fontWeight: isGrandTotal ? FontWeight.w700 : FontWeight.w600,
+              fontSize: isGrandTotal ? 16 : 14,
             ),
-            Consumer<OrderProvider>(builder: (context, provider, any) {
-              return IconButton(
-                onPressed: widget.isEditable
-                    ? () {
-                        if (onEdit) {
-                          switch (widget.title) {
-                            case 'Delivery-Fee':
-                              num deliveryFee = provider.deliveryFee,
-                                  total = provider.total,
-                                  subTotal = provider.subTotal, due = provider.due;
-                              deliveryFee = num.parse(
-                                  widget.controller!.text.isNotEmpty
-                                      ? widget.controller!.text
-                                      : '0');
-                              total -= provider.deliveryFee;
-                              subTotal -= provider.deliveryFee;
-                              if(due > 0)due -= provider.deliveryFee;
-                              total += deliveryFee;
-                              subTotal += deliveryFee;
-                              due += deliveryFee;
-                              provider.updateValue(
-                                  updatingValue: Values.deliveryFee,
-                                  values: {
-                                    'deliveryFee': deliveryFee,
-                                    'total': total,
-                                    'subTotal': subTotal,
-                                    'due': due,
-                                  });
-                              provider.updateOrderInfo(
-                                  'deliveryFee', deliveryFee);
-                              provider.updateOrderInfo('total', total);
-                              provider.updateOrderInfo('subTotal', subTotal);
-                              break;
-                            case 'Discount':
-                              num discount = provider.discount,
-                                  total = provider.total,
-                                  subTotal = provider.subTotal, due = provider.due;
-                              discount = num.parse(
-                                  widget.controller!.text.isNotEmpty
-                                      ? widget.controller!.text
-                                      : '0');
-                              total -= provider.discount;
-                              subTotal += provider.discount;
-                              if(due > 0)due += provider.discount;
-                              total += discount;
-                              subTotal -= discount;
-                              if(due > 0)due -= discount;
-                              provider.updateValue(
-                                  updatingValue: Values.discount,
-                                  values: {
-                                    'discount': discount,
-                                    'total': total,
-                                    'subTotal': subTotal,
-                                    'due': due,
-                                  });
-                              provider.updateOrderInfo('discount', discount);
-                              provider.updateOrderInfo('total', total);
-                              provider.updateOrderInfo('subTotal', subTotal);
-                              break;
-                            case 'Advance':
-                              num advance = provider.advance,
-                                  due = provider.due,
-                                  subTotal = provider.subTotal;
-                              advance = num.parse(
-                                  widget.controller!.text.isNotEmpty
-                                      ? widget.controller!.text
-                                      : '0');
-                              due = subTotal - advance;
-                              provider.updateValue(
-                                  updatingValue: Values.advance,
-                                  values: {
-                                    'advance': advance,
-                                    'due': due,
-                                  });
-                              provider.updateOrderInfo('advance', advance);
-                              provider.updateOrderInfo('due', due);
-                              break;
-                          }
-                        }
-                        setState(() {
-                          onEdit = !onEdit;
-                        });
-                      }
-                    : null,
-                icon: Icon(
-                  onEdit ? Icons.done : Icons.edit,
+          ),
+          SizedBox(
+            width:
+                130, // strictly enforce width to trap values in a rigid column
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: onEdit
+                      ? TextField(
+                          controller: widget.controller,
+                          focusNode: _focusNode,
+                          autofocus: true,
+                          textAlign: TextAlign.right,
+                          onChanged: _syncToProvider,
+                          onTap: () {
+                            if (widget.controller?.text == '0' ||
+                                widget.controller?.text == '0.0') {
+                              widget.controller?.selection = TextSelection(
+                                baseOffset: 0,
+                                extentOffset: widget.controller!.text.length,
+                              );
+                            }
+                          },
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: isGrandTotal
+                                ? const Color(0xFF0D9488)
+                                : Colors.black,
+                            fontWeight: isGrandTotal
+                                ? FontWeight.w800
+                                : FontWeight.w700,
+                            fontSize: isGrandTotal ? 18 : 15,
+                          ),
+                          cursorColor: kNewMainColor,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        )
+                      : Text(
+                          '${widget.isEditable ? widget.controller!.text : widget.subTitle}$bdtSign',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: isGrandTotal
+                                ? const Color(0xFF0D9488)
+                                : Colors.black,
+                            fontWeight: isGrandTotal
+                                ? FontWeight.w800
+                                : FontWeight.w700,
+                            fontSize: isGrandTotal ? 18 : 15,
+                          ),
+                        ),
                 ),
-              );
-            }),
-          ],
-        )
-      ],
+                SizedBox(
+                  width:
+                      35, // rigidly lock the edit icon spacing so non-editable rows don't collapse leftwards
+                  child: (!onEdit && widget.isEditable)
+                      ? Transform.translate(
+                          offset: const Offset(
+                              4, 0), // neatly dock against right edge
+                          child: IconButton(
+                            onPressed: () {
+                              if (widget.controller?.text == '0' ||
+                                  widget.controller?.text == '0.0') {
+                                widget.controller?.clear();
+                              }
+                              setState(() {
+                                onEdit = true;
+                              });
+                            },
+                            icon: const Icon(Icons.edit, size: 18),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            splashRadius: 20,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
@@ -883,8 +966,8 @@ class DeliveryOptions extends StatelessWidget {
       elevation: 5.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.0)),
       child: Container(
-        height: 150.0,
-        width: 120.0,
+        height: 100.0,
+        width: 100.0,
         decoration: BoxDecoration(
           color: kBackgroundColor,
           borderRadius: BorderRadius.circular(18.0),

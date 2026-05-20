@@ -25,7 +25,10 @@ class OrderProvider extends ChangeNotifier {
       deliveryFee = 0,
       subTotal = 0,
       quantity = 0,
+      totalAmount = 0,
       total = 0;
+
+  bool isDiscountManuallyEdited = false;
   void onChangeQuantity(bool value, int index) {
     isChangeQuantity[index] = value;
     notifyListeners();
@@ -63,35 +66,43 @@ class OrderProvider extends ChangeNotifier {
   }
 
   void _recalculateTotals() {
-    subTotal = 0;
-    total = 0;
-    discount = 0;
+    num itemTotalOriginal = 0;
+    num totalDiscountAmount = 0;
     quantity = 0;
 
     for (var product in orderProducts) {
       if (product.availability == true) {
-        subTotal += product.editableProductPrice;
-        total += product.editableOriginalPrice;
-        discount += product.editableDiscount;
+        itemTotalOriginal += product.editableOriginalPrice;
+        totalDiscountAmount += product.editableDiscount;
         quantity += product.editableQuantity;
       }
     }
+
+    if (!isDiscountManuallyEdited) {
+      discount = totalDiscountAmount;
+    }
+
+    // 1. Base amount (Original Price total)
+    num finalTotalAmount = itemTotalOriginal; 
+    
+    // 2. Sub-total (Original - Discount) -> This is the selling price total
+    num currentSubTotal = finalTotalAmount - discount;
+    
+    // 3. Grand Total (Sub-total + Delivery Fee)
+    num finalGrandTotal = currentSubTotal + deliveryFee;
+    
+    // 4. Due amount (Grand Total - Advance)
+    num finalDue = finalGrandTotal - advance;
+
+    // Sync back to Provider variables
+    this.totalAmount = finalGrandTotal; // TotalAmount is the Payable Grand Total
+    this.subTotal = currentSubTotal;    // SubTotal is Original - Discount
+    this.total = finalTotalAmount;      // Total is Original Price
+    this.due = finalDue;
   }
 
   void recalculateTotals() {
-    subTotal = 0;
-    total = 0;
-    discount = 0;
-    quantity = 0;
-
-    for (var product in orderProducts) {
-      if (product.availability == true) {
-        subTotal += product.editableProductPrice;
-        total += product.editableOriginalPrice;
-        discount += product.editableDiscount;
-        quantity += product.editableQuantity;
-      }
-    }
+    _recalculateTotals();
     notifyListeners();
   }
 
@@ -143,6 +154,7 @@ class OrderProvider extends ChangeNotifier {
     discount = 0;
     advance = 0;
     due = 0;
+    isDiscountManuallyEdited = false;
     notifyListeners();
   }
 
@@ -151,33 +163,51 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateOrderValues(
-      {required num advance, discount, deliveryFee, subTotal, total, due}) {
-    this.total = total;
-    this.deliveryFee = deliveryFee;
-    this.subTotal = subTotal;
-    this.discount = discount;
-    this.advance = advance;
-    this.due = due;
+  void updateOrderValues({
+    num? advance,
+    num? discount,
+    num? deliveryFee,
+    num? subTotal,
+    num? total,
+    num? due,
+  }) {
+    if (total != null) this.total = total;
+    if (deliveryFee != null) this.deliveryFee = deliveryFee;
+    if (subTotal != null) this.subTotal = subTotal;
+    if (discount != null) {
+      this.discount = discount;
+      if (this.discount != 0) {
+        isDiscountManuallyEdited = true;
+      }
+    }
+    if (advance != null) this.advance = advance;
+    if (due != null) this.due = due;
+
     notifyListeners();
   }
 
   void updateValue(
       {required Values updatingValue, required Map<String, dynamic> values}) {
     if (updatingValue == Values.deliveryFee) {
-      deliveryFee = values['deliveryFee'];
-      total = values['total'];
-      subTotal = values['subTotal'];
-      due = values['due'];
+      deliveryFee = values['deliveryFee'] ?? deliveryFee;
     } else if (updatingValue == Values.advance) {
-      advance = values['advance'];
-      due = values['due'];
+      advance = values['advance'] ?? advance;
     } else if (updatingValue == Values.discount) {
-      discount = values['discount'];
-      total = values['total'];
-      subTotal = values['subTotal'];
-      due = values['due'];
+      discount = values['discount'] ?? discount;
+      isDiscountManuallyEdited = true;
     }
+
+    _recalculateTotals();
+
+    orderInfo['deliveryFee'] = deliveryFee;
+    orderInfo['discount'] = discount;
+    orderInfo['advance'] = advance;
+    orderInfo['total'] = total;     // Original Price
+    orderInfo['subTotal'] = subTotal; // Selling Price (Original - Discount)
+    orderInfo['price'] = subTotal;    // Also used as Selling Price
+    orderInfo['due'] = due;
+    orderInfo['payable'] = totalAmount; // Grand Total
+
     notifyListeners();
   }
 
@@ -196,6 +226,7 @@ class OrderProvider extends ChangeNotifier {
       AdminModel? adminModel,
       int? estimatedTime,
       String? processingStatus,
+      DateTime? delayedAt,
       DateTime? startedAt}) {
     for (var product in orderProducts) {
       if (product.supplierId == supplierId) {
@@ -205,18 +236,25 @@ class OrderProvider extends ChangeNotifier {
         if (processingStatus != null)
           product.processingStatus = processingStatus;
         if (startedAt != null) product.startedAt = startedAt;
+        if (delayedAt != null) product.delayedAt = delayedAt;
       }
     }
     notifyListeners();
   }
 
   void batchUpdateItemsByIds(List<dynamic> ids,
-      {String? processingStatus, DateTime? startedAt}) {
+      {String? processingStatus,
+      int? estimatedTime,
+      DateTime? delayedAt,
+      DateTime? startedAt}) {
     final stringIds = ids.map((e) => e.toString()).toList();
     for (var product in orderProducts) {
       if (stringIds.contains(product.id.toString())) {
-        if (processingStatus != null) product.processingStatus = processingStatus;
+        if (processingStatus != null)
+          product.processingStatus = processingStatus;
         if (startedAt != null) product.startedAt = startedAt;
+        if (delayedAt != null) product.delayedAt = delayedAt;
+        if (estimatedTime != null) product.estimatedTime = estimatedTime;
       }
     }
     notifyListeners();

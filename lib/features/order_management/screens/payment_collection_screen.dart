@@ -20,6 +20,7 @@ class PaymentCollectionScreen extends StatefulWidget {
 
 class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
   String _selectedMethod = 'Cash';
   bool _handoverConfirmed = false;
   double _amountToCollect = 0.0;
@@ -47,6 +48,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
   @override
   void dispose() {
     _amountController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
@@ -54,6 +56,14 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
     if (!_handoverConfirmed) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Please confirm product handover",
+              style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.redAccent));
+      return;
+    }
+
+    if (_otpController.text.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Please enter the 4-digit Delivery OTP",
               style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.redAccent));
       return;
@@ -69,6 +79,7 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
             'notificationType': 'admin2Customer',
             'paymentMethod': _selectedMethod,
             'codAmountCollected': collected,
+            'otp': _otpController.text, // Pass the OTP to the server
           },
         ));
   }
@@ -250,7 +261,52 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
+
+                        // OTP Input Box
+                        const Text("DELIVERY VERIFICATION (OTP)",
+                            style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0)),
+                        const SizedBox(height: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4))
+                              ]),
+                          child: TextField(
+                            controller: _otpController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 4,
+                            style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: 8.0),
+                            textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              counterText: "",
+                              hintText: "0000",
+                              hintStyle: TextStyle(color: Colors.grey[300]),
+                              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF00C896)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 20),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
 
                         const Text("PAYMENT DETAILS",
                             style: TextStyle(
@@ -499,27 +555,43 @@ class _PaymentCollectionScreenState extends State<PaymentCollectionScreen> {
                       ),
                       child: SizedBox(
                         height: 54,
-                        child: ElevatedButton(
-                          onPressed: _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00C896),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(27),
-                            ),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Complete Delivery",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold)),
-                              SizedBox(width: 8),
-                              Icon(Icons.check_circle, size: 20),
-                            ],
-                          ),
+                        child: BlocBuilder<OrdersBloc, OrderState>(
+                          builder: (context, state) {
+                            final bool isLoading = state is LoadingOrderState;
+                            
+                            return ElevatedButton(
+                              onPressed: isLoading ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF00C896),
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor: const Color(0xFF00C896).withOpacity(0.6),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(27),
+                                ),
+                              ),
+                              child: isLoading 
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 3,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text("Complete Delivery",
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold)),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.check_circle, size: 20),
+                                    ],
+                                  ),
+                            );
+                          },
                         ),
                       ),
                     ),

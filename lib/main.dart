@@ -71,6 +71,7 @@ import 'package:viraeshop_api/apiCalls/supplier_invoice.dart';
 import 'package:viraeshop_api/apiCalls/suppliers.dart';
 import 'package:viraeshop_api/apiCalls/tokens.dart';
 import 'package:viraeshop_api/apiCalls/transactions.dart';
+import 'package:viraeshop_api/viraeshop_api.dart';
 import 'components/styles/colors.dart';
 import 'components/styles/text_styles.dart';
 import 'firebase_options.dart';
@@ -302,6 +303,8 @@ void main() async {
   );
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
   @override
@@ -330,7 +333,16 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Register global auth error handler
+    onAuthError = () {
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        LoginPage.path,
+        (route) => false,
+      );
+    };
+
     return MaterialApp(
+      navigatorKey: navigatorKey,
       builder: (context, widget) => ResponsiveWrapper.builder(
         BouncingScrollWrapper.builder(context, widget!),
         maxWidth: 1200,

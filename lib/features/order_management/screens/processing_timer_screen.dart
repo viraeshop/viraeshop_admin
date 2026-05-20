@@ -9,8 +9,9 @@ class ProcessingTimerScreen extends StatefulWidget {
   static const String path = '/processing_timer';
   final Items? product;
   final String orderId;
+  final bool isLastProduct;
 
-  const ProcessingTimerScreen({super.key, required this.orderId, this.product});
+  const ProcessingTimerScreen({super.key, required this.orderId, this.product, this.isLastProduct = false});
 
   @override
   State<ProcessingTimerScreen> createState() => _ProcessingTimerScreenState();
@@ -229,21 +230,25 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                             icon: Icons.check_circle_outline,
                             color: const Color(0xFF00C896),
                             onTap: () {
-                              setState(() {
-                                widget.product!.processingStatus = 'completed';
-                                _isSubmitting = true;
-                              });
-                              context.read<OrderItemsBloc>().add(
-                                    UpdateOrderItemEvent(
-                                      token: Hive.box('adminInfo').get('token'),
-                                      orderModel: {
-                                        'id': widget.product!.id,
-                                        'itemInfo': {
-                                          'processingStatus': 'completed',
+                              if (widget.isLastProduct) {
+                                _showHubTransitDialog(context);
+                              } else {
+                                setState(() {
+                                  widget.product!.processingStatus = 'completed';
+                                  _isSubmitting = true;
+                                });
+                                context.read<OrderItemsBloc>().add(
+                                      UpdateOrderItemEvent(
+                                        token: Hive.box('adminInfo').get('token'),
+                                        orderModel: {
+                                          'id': widget.product!.id,
+                                          'itemInfo': {
+                                            'processingStatus': 'completed',
+                                          },
                                         },
-                                      },
-                                    ),
-                                  );
+                                      ),
+                                    );
+                              }
                             },
                           ),
                           const SizedBox(height: 16),
@@ -361,5 +366,99 @@ class _ProcessingTimerScreenState extends State<ProcessingTimerScreen> {
                         style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ));
+  }
+
+  void _showHubTransitDialog(BuildContext context) {
+    Duration tempDuration = const Duration(hours: 1); // Default
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          "Final Batch Complete",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "This is the final product for your batch. Please set the estimated time to reach the Receive/Delivery Hub.",
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Theme(
+                data: ThemeData.dark(),
+                child: SizedBox(
+                   height: 150,
+                   child: Material(
+                     color: Colors.transparent,
+                     child: Padding(
+                       padding: const EdgeInsets.only(top: 10),
+                       child: Center(
+                         child: TextFormField(
+                           initialValue: "60",
+                           keyboardType: TextInputType.number,
+                           style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                           textAlign: TextAlign.center,
+                           decoration: const InputDecoration(
+                             border: InputBorder.none,
+                             suffixText: "min",
+                             suffixStyle: TextStyle(color: Colors.white70, fontSize: 16)
+                           ),
+                           onChanged: (val) {
+                             tempDuration = Duration(minutes: int.tryParse(val) ?? 60);
+                           },
+                         ),
+                       ),
+                     ),
+                   ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel", style: TextStyle(color: Color(0xFF94A3B8))),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C896),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                widget.product!.processingStatus = 'completed';
+                _isSubmitting = true;
+              });
+              context.read<OrderItemsBloc>().add(
+                UpdateOrderItemEvent(
+                  token: Hive.box('adminInfo').get('token'),
+                  orderModel: {
+                    'id': widget.product!.id,
+                    'itemInfo': {
+                      'processingStatus': 'completed',
+                      'hubDurationMinutes': tempDuration.inMinutes,
+                    },
+                  },
+                ),
+              );
+            },
+            child: const Text("Confirm & Submit", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 }

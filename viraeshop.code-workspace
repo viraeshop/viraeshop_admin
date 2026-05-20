@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../viraeshop-server"
+		},
+		{
+			"path": "../viraeshop-landing"
 		}
 	],
 	"settings": {

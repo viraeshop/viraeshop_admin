@@ -33,7 +33,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
   DateTime endDate = DateTime.now();
   Map<String, dynamic> totalReport = {};
   List<Map<String, dynamic>> customersTotalOrdersInfo = [];
-  List<String> statusList = ['Pending', 'In Transit', 'Reached', 'Delivered'];
+  List<String> get statusList => deliveryAndReceiveStatus == 'receiveStatus'
+      ? ['Pending', 'Received', 'Failed']
+      : ['Pending', 'Assigned', 'In Transit', 'Reached', 'Delivered'];
   bool isLoading = true;
   bool onDateSelected = false;
   bool onError = false;
@@ -210,7 +212,7 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                   Map<String, dynamic> filterInfo = {
                                     'filterType': deliveryAndReceiveStatus,
                                     'filterData': {
-                                      'status': status,
+                                      'status': status == 'received' ? 'received' : status,
                                       if (onDateSelected)
                                         'date': {
                                           'startDate':
@@ -246,6 +248,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                                             listen: false)
                                         .updateOrderStage(OrderStages.delivery);
                                   }
+                                  setState(() {
+                                    status = 'pending';
+                                  });
                                 },
                               ),
                             ],
@@ -306,7 +311,9 @@ class _DeliveryScreenState extends State<DeliveryScreen> {
                           ),
                           LimitedBox(
                             maxHeight: screenSize.height * 0.45,
-                            child: const OrdersTab(),
+                            child: const OrdersTab(
+                              isManagerView: true,
+                            ),
                           ),
                         ],
                       ),

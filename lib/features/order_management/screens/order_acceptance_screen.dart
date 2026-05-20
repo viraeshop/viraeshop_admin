@@ -314,7 +314,7 @@ class _OrderAcceptanceScreenState extends State<OrderAcceptanceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                            "৳ ${NumberFormat('#,##0.00').format(order.total)}",
+                            "৳ ${NumberFormat('#,##0.00').format(order.grandTotal)}",
                             style: const TextStyle(
                                 color: Color(0xFF00C896),
                                 fontWeight: FontWeight.w800,

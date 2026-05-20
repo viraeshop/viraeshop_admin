@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_bloc/customers/barrel.dart';
@@ -10,7 +9,6 @@ import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
 
 import '../../components/styles/colors.dart';
-import '../../components/styles/text_styles.dart';
 import '../../reusable_widgets/loading_widget.dart';
 import '../../reusable_widgets/on_error_widget.dart';
 import '../../reusable_widgets/orders/functions.dart';
@@ -62,19 +60,7 @@ class _CustomerOrdersState extends State<CustomerOrders> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: kBackgroundColor,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(FontAwesomeIcons.chevronLeft),
-          color: kBlackColor,
-        ),
-        title: Text(
-          widget.title,
-          style: kTotalSalesStyle,
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: kBackgroundColor,
       body: BlocListener<CustomersBloc, CustomerState>(
         listener: (context, state) {
           if (state is FetchedCustomerState) {
@@ -110,7 +96,6 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                     ),
                   )
                 : Container(
-                    padding: const EdgeInsets.all(10.0),
                     height: screenSize.height,
                     width: screenSize.width,
                     child: Column(
@@ -118,6 +103,8 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                         CustomerOrderInfoCard(
                           customerInfo: customerInfo,
                           orderInfo: widget.info,
+                          title: widget.title,
+                          onBack: () => Navigator.pop(context),
                         ),
                         const SizedBox(
                           height: 10.0,
@@ -173,7 +160,7 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                           }),
                         ),
                         const SizedBox(
-                          height: 10.0,
+                          height: 8.0,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -209,10 +196,9 @@ class _CustomerOrdersState extends State<CustomerOrders> {
                           }),
                         ),
                         const SizedBox(
-                          height: 20.0,
+                          height: 8.0,
                         ),
-                        LimitedBox(
-                          maxHeight: screenSize.height * 0.46,
+                        Expanded(
                           child: OrdersTab(userId: customerInfo['customerId']),
                         )
                       ],

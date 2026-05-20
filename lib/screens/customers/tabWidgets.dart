@@ -13,6 +13,7 @@ import 'package:viraeshop_admin/configs/functions.dart';
 import 'package:viraeshop_admin/filters/orderFilters.dart';
 import 'package:viraeshop_admin/reusable_widgets/on_error_widget.dart';
 import 'package:viraeshop_admin/screens/orders/order_products.dart';
+
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_api/models/items/items.dart';
 import 'package:viraeshop_api/models/orders/orders.dart';
@@ -504,8 +505,11 @@ class _OrdersTabState extends State<OrdersTab> {
         if (currentStage == OrderStages.processing) 'isAll': true,
         if (currentStage == OrderStages.receiving) 'status': 'pending',
         if (currentStage == OrderStages.delivery && widget.userId.isEmpty) 'status': 'pending',
-        if (currentStage == OrderStages.delivery && widget.userId.isNotEmpty)
+        if (currentStage == OrderStages.delivery && widget.userId.isNotEmpty) ...{
           'deliveryBoyId': widget.userId,
+          // If a delivery boy is viewing, we don't strictly filter by 'pending' 
+          // unless they manually choose a filter, so they see all assigned tasks.
+        },
       }
     };
     getOrders(
@@ -570,6 +574,14 @@ class _OrdersTabState extends State<OrdersTab> {
           isLoading = false;
           errorMessage = state.message;
         });
+      } else if (state is RequestFinishedOrderState) {
+        // Auto-refresh the list after a successful update (e.g. Starting Delivery)
+        orders.clear();
+        Map<String, dynamic> filterInfo = Provider.of<OrderProvider>(context, listen: false).filterInfo;
+        getOrders(
+          data: filterInfo,
+          context: context,
+        );
       }
       // } else if (state is FetchedOrdersState) {
       //   setState(() {
@@ -591,6 +603,7 @@ class _OrdersTabState extends State<OrdersTab> {
           orders = state.orderList.toList();
         }
         return ListView.builder(
+          padding: EdgeInsets.zero, // Erases the massive default top padding usually injected by layout bounds
           itemCount: onUpdate ? orders.length + 1 : orders.length,
           shrinkWrap: true,
           controller: _scrollController,
@@ -629,6 +642,7 @@ class _OrdersTabState extends State<OrdersTab> {
             }
             return OrderTranzCard(
               key: ValueKey(orders[i].orderId),
+              order: orders[i],
               onTap: () {
                 Provider.of<OrderProvider>(context, listen: false)
                     .updateOrderStage(currentStage);
@@ -636,23 +650,25 @@ class _OrdersTabState extends State<OrdersTab> {
                   context,
                   MaterialPageRoute(
                     builder: (context) {
-                        return OrderProducts(
-                          processorSeen: processorSeen,
-                          userId: widget.userId,
-                          customerInfo: orders[i].customer.toJson(),
-                          orderInfo: orders[i].toJson(),
-                          onGetAdmins: currentStage == OrderStages.processing,
-                          isManagerView: widget.isManagerView ??
-                              (widget.userId.isEmpty ||
-                                  widget.userId == 'null'),
-                        );
+
+                      return OrderProducts(
+                        processorSeen: processorSeen,
+                        userId: widget.userId,
+                        customerInfo: orders[i].customer.toJson(),
+                        orderInfo: orders[i].toJson(),
+                        onGetAdmins: currentStage == OrderStages.processing,
+                        isManagerView: widget.isManagerView ??
+                            (Hive.box('adminInfo').get('canManageDelivery') ?? false),
+                      );
                     },
                   ),
                 );
               },
               date: date,
-              price: orders[i].price.toString(),
-              employeeName: 'Riyadh',
+              price: orders[i].subTotal.toString(),
+              employeeName: orders[i].creatorAdmin != null 
+                  ? orders[i].creatorAdmin!['name']?.toString() ?? 'System'
+                  : (orders[i].isFromCustomer ? 'Customer' : 'System'),
               customerName: orders[i].customer.name,
               isTransaction: false,
               isAdmin: currentStage != OrderStages.delivery, // Always show status text
@@ -712,22 +728,35 @@ class _OrdersTabState extends State<OrdersTab> {
     } else {
       if (currentStage == OrderStages.admin ||
           currentStage == OrderStages.processing) {
-        print(order.processingStatus);
-        if (order.processingStatus == 'confirmed') {
+        // print('processingStatus: ${order.processingStatus}');
+        if (order.processingStatus.toLowerCase() == 'confirmed') {
           return 'Confirmed';
-        } else if (order.processingStatus == 'failed') {
+        } else if (order.processingStatus.toLowerCase() == 'assigned') {
+          return 'Assigned';
+        } else if (order.processingStatus.toLowerCase() == 'processing') {
+          return 'Processing';
+        } else if (order.processingStatus.toLowerCase() == 'failed') {
           return 'Failed';
         } else {
           return 'Pending';
         }
       } else if (currentStage == OrderStages.order) {
+        // print('order Status: ${order.orderStatus}');
         if (order.orderStatus.toLowerCase() == 'confirmed') {
           return 'Confirmed';
         } else if (order.orderStatus.toLowerCase() == 'failed') {
           return 'Failed';
         } else if (order.orderStatus.toLowerCase() == 'success'){
           return 'Success';
-        }else {
+        }else if (order.orderStatus.toLowerCase() == 'received') {
+          return 'Received';
+        } else if (order.orderStatus.toLowerCase() == 'out for delivery') {
+          return 'Out for delivery';
+        } else if (order.orderStatus.toLowerCase() == 'delivered') {
+          return 'Delivered';
+        } else if (order.orderStatus.toLowerCase() == 'cancelled') {
+          return 'Cancelled';
+        } else {
           return 'Pending';
         }
       } else if (currentStage == OrderStages.delivery) {
@@ -735,14 +764,18 @@ class _OrdersTabState extends State<OrdersTab> {
           return 'Delivered';
         } else if (order.deliveryStatus.toLowerCase() == 'reached') {
           return 'Reached';
-        } else if (order.onDelivery) {
+        } else if (order.deliveryStatus.toLowerCase() == 'in transit') {
           return 'In Transit';
-        } else {
+        } else if (order.deliveryStatus.toLowerCase() == 'assigned') {
           return 'Assigned';
+        } else if (order.deliveryStatus.toLowerCase() == 'pending') {
+          return 'Pending';
+        } else {
+          return 'Processing';
         }
       } else {
-        if (order.receiveStatus == 'completed') {
-          return 'Completed';
+        if (order.receiveStatus.toLowerCase() == 'received') {
+          return 'Received';
         } else if (order.receiveStatus == 'failed') {
           return 'Failed';
         } else {
@@ -776,5 +809,6 @@ class FetchingMoreLoadingIndicator extends StatelessWidget {
         ],
       ),
     );
+
   }
 }

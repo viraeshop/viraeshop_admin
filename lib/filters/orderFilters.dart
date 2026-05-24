@@ -10,6 +10,10 @@ String orderFilter (OrderStages stage){
       return 'deliveryStatus';
     case OrderStages.admin:
       return 'adminId';
+    case OrderStages.emergency:
+      return 'emergency';
+    case OrderStages.awaitingCustomer:
+      return 'awaitingCustomer';
     default:
       return 'default';
   }

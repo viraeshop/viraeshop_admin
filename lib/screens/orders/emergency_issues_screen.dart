@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:viraeshop_admin/components/styles/colors.dart';
@@ -33,7 +34,7 @@ class _EmergencyIssuesScreenState extends State<EmergencyIssuesScreen> {
       'offSet': 0,
     };
     Provider.of<OrderProvider>(context, listen: false).updateFilterInfo(filterInfo);
-    Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.processing);
+    Provider.of<OrderProvider>(context, listen: false).updateOrderStage(OrderStages.emergency);
     getOrders(data: filterInfo, context: context);
     setState(() {
       isLoading = false;
@@ -70,7 +71,10 @@ class _EmergencyIssuesScreenState extends State<EmergencyIssuesScreen> {
                     const SizedBox(height: 10.0),
                     LimitedBox(
                       maxHeight: screenSize.height * 0.85,
-                      child: const OrdersTab(),
+                      child: OrdersTab(
+                        userId: Hive.box('adminInfo').get('adminId', defaultValue: ''),
+                        stage: OrderStages.emergency,
+                      ),
                     ),
                   ],
                 ),

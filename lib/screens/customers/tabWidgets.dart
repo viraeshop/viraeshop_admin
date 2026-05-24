@@ -507,8 +507,6 @@ class _OrdersTabState extends State<OrdersTab> {
         if (currentStage == OrderStages.delivery && widget.userId.isEmpty) 'status': 'pending',
         if (currentStage == OrderStages.delivery && widget.userId.isNotEmpty) ...{
           'deliveryBoyId': widget.userId,
-          // If a delivery boy is viewing, we don't strictly filter by 'pending' 
-          // unless they manually choose a filter, so they see all assigned tasks.
         },
       }
     };
@@ -650,7 +648,6 @@ class _OrdersTabState extends State<OrdersTab> {
                   context,
                   MaterialPageRoute(
                     builder: (context) {
-
                       return OrderProducts(
                         processorSeen: processorSeen,
                         userId: widget.userId,
@@ -662,7 +659,13 @@ class _OrdersTabState extends State<OrdersTab> {
                       );
                     },
                   ),
-                );
+                ).then((_) {
+                  Map<String, dynamic> filterInfo = Provider.of<OrderProvider>(context, listen: false).filterInfo;
+                  getOrders(
+                    data: filterInfo,
+                    context: context,
+                  );
+                });
               },
               date: date,
               price: orders[i].subTotal.toString(),

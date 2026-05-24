@@ -9,7 +9,7 @@ enum Values {
   discount,
 }
 
-enum OrderStages { order, processing, receiving, delivery, admin }
+enum OrderStages { order, processing, receiving, delivery, admin, emergency, awaitingCustomer }
 
 enum EditingOperation { all, supplyAdmins }
 
@@ -106,8 +106,12 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateProcessingStatus(String status, int index) {
+  void updateProcessingStatus(String status, int index,
+      {bool clearCustomerDecisionDeadline = false}) {
     orderProducts[index].processingStatus = status;
+    if (clearCustomerDecisionDeadline) {
+      orderProducts[index].customerDecisionDeadline = null;
+    }
     notifyListeners();
   }
 
@@ -246,7 +250,9 @@ class OrderProvider extends ChangeNotifier {
       {String? processingStatus,
       int? estimatedTime,
       DateTime? delayedAt,
-      DateTime? startedAt}) {
+      DateTime? startedAt,
+      DateTime? customerDecisionDeadline,
+      bool clearCustomerDecisionDeadline = false}) {
     final stringIds = ids.map((e) => e.toString()).toList();
     for (var product in orderProducts) {
       if (stringIds.contains(product.id.toString())) {
@@ -255,6 +261,11 @@ class OrderProvider extends ChangeNotifier {
         if (startedAt != null) product.startedAt = startedAt;
         if (delayedAt != null) product.delayedAt = delayedAt;
         if (estimatedTime != null) product.estimatedTime = estimatedTime;
+        if (clearCustomerDecisionDeadline) {
+          product.customerDecisionDeadline = null;
+        } else if (customerDecisionDeadline != null) {
+          product.customerDecisionDeadline = customerDecisionDeadline;
+        }
       }
     }
     notifyListeners();

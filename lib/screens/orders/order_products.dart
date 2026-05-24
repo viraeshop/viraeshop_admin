@@ -22,7 +22,6 @@ import 'package:viraeshop_bloc/items/barrel.dart';
 import '../../components/styles/colors.dart';
 import '../../components/styles/text_styles.dart';
 import '../../configs/boxes.dart';
-import '../../filters/orderFilters.dart';
 import '../../reusable_widgets/orders/functions.dart';
 import '../../reusable_widgets/orders/order_product_card.dart';
 import '../../reusable_widgets/send_button.dart';
@@ -158,11 +157,6 @@ class _OrderProductsState extends State<OrderProducts> {
           backgroundColor: kBackgroundColor,
           leading: IconButton(
             onPressed: () {
-              Map<String, dynamic> filterInfo = Provider.of<OrderProvider>(context, listen: false).filterInfo;
-              getOrders(
-                data: filterInfo,
-                context: context,
-              );
               Navigator.pop(context);
             },
             icon: const Icon(FontAwesomeIcons.chevronLeft),
@@ -173,11 +167,15 @@ class _OrderProductsState extends State<OrderProducts> {
                 ? 'Orders'
                 : currentStage == OrderStages.admin
                     ? 'Admin Order'
-                    : currentStage == OrderStages.processing
-                        ? 'Processing Order'
-                        : currentStage == OrderStages.receiving
-                            ? 'Receiving Order'
-                            : 'Delivery Order',
+                    : currentStage == OrderStages.emergency
+                        ? 'Emergency Issues'
+                        : currentStage == OrderStages.awaitingCustomer
+                            ? 'Awaiting Decision'
+                            : currentStage == OrderStages.processing
+                                ? 'Processing Order'
+                                : currentStage == OrderStages.receiving
+                                    ? 'Receiving Order'
+                                    : 'Delivery Order',
             style: kTotalSalesStyle,
           ),
           centerTitle: true,
@@ -290,7 +288,10 @@ class _OrderProductsState extends State<OrderProducts> {
             child: Stack(
               children: [
                 FractionallySizedBox(
-                  heightFactor: 0.84,
+                  heightFactor: (currentStage == OrderStages.emergency ||
+                                 currentStage == OrderStages.awaitingCustomer)
+                      ? 1.0
+                      : 0.84,
                   child: Consumer<OrderProvider>(
                       builder: (context, provider, any) {
                     List<Items> products = provider.orderProducts;
@@ -302,15 +303,14 @@ class _OrderProductsState extends State<OrderProducts> {
                         item.adminModel?.adminId == widget.userId
                       ).toList();
                     }
-
+                    
                     // EMERGENCY & AWAITING DECISION LOGIC: Show only affected items
-                    final String? filterType = provider.filterInfo['filterType'];
-                    if (filterType == 'emergency') {
+                    if (currentStage == OrderStages.emergency) {
                       products = products.where((item) => 
                         item.processingStatus.toLowerCase() == 'delayed' || 
                         item.processingStatus.toLowerCase() == 'failed'
                       ).toList();
-                    } else if (filterType == 'awaitingCustomer') {
+                    } else if (currentStage == OrderStages.awaitingCustomer) {
                       products = products.where((item) => 
                         item.customerDecisionDeadline != null
                       ).toList();
@@ -342,7 +342,9 @@ class _OrderProductsState extends State<OrderProducts> {
                   }),
                 ),
                 if (!(widget.orderInfo['receiveStatus'] != 'pending' &&
-                    currentStage == OrderStages.receiving))
+                    currentStage == OrderStages.receiving) &&
+                    currentStage != OrderStages.emergency &&
+                    currentStage != OrderStages.awaitingCustomer)
                   SafeArea(
                     child: Align(
                       alignment: Alignment.bottomCenter,

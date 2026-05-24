@@ -21,7 +21,6 @@ import 'package:viraeshop_admin/reusable_widgets/orders/functions.dart';
 import 'package:viraeshop_admin/screens/orders/order_provider.dart';
 import 'package:viraeshop_api/models/admin/admins.dart';
 import 'package:viraeshop_api/models/items/items.dart';
-import 'package:viraeshop_admin/features/order_management/screens/processing_timer_screen.dart';
 
 import '../../components/styles/colors.dart';
 
@@ -94,7 +93,10 @@ class _OrderProductCardState extends State<OrderProductCard> {
     if (onOrderStage && widget.product.availability != null) {
       dropdownValue = widget.product.availability! ? 'confirmed' : 'failed';
     }
-    if ((!onOrderStage && currentStage != OrderStages.admin) &&
+    final bool isAdminOrEmergency = currentStage == OrderStages.admin ||
+        currentStage == OrderStages.emergency ||
+        currentStage == OrderStages.awaitingCustomer;
+    if ((!onOrderStage && !isAdminOrEmergency) &&
         (widget.product.productSupplier?.admins.isNotEmpty ?? false)) {
       if (widget.product.effectiveAdminId == null ||
           widget.product.effectiveAdminId!.isEmpty) {
@@ -106,10 +108,15 @@ class _OrderProductCardState extends State<OrderProductCard> {
         dropdownValue = isValid ? widget.product.effectiveAdminId : null;
       }
     }
-    if (currentStage == OrderStages.admin &&
+    if (isAdminOrEmergency &&
         (widget.product.processingStatus != 'pending' &&
             widget.product.processingStatus.isNotEmpty)) {
       dropdownValue = widget.product.processingStatus;
+      if (dropdownValue == 'completed') {
+        dropdownValue = 'mark as complete';
+      } else if (dropdownValue == 'delayed') {
+        dropdownValue = 'report delay';
+      }
     }
     if (widget.product.estimatedTime > 0) {
       selectedDuration = Duration(minutes: widget.product.estimatedTime);
@@ -165,9 +172,13 @@ class _OrderProductCardState extends State<OrderProductCard> {
     // Subscribe to OrderProvider so sibling cards rebuild on batch updates
     context.watch<OrderProvider>();
 
+    final bool isAdminOrEmergency = currentStage == OrderStages.admin ||
+        currentStage == OrderStages.emergency ||
+        currentStage == OrderStages.awaitingCustomer;
+
     if (widget.product.effectiveAdminId != _lastAdminId) {
       _lastAdminId = widget.product.effectiveAdminId;
-      if ((!onOrderStage && currentStage != OrderStages.admin) &&
+      if ((!onOrderStage && !isAdminOrEmergency) &&
           (widget.product.productSupplier?.admins.isNotEmpty ?? false)) {
         if (_lastAdminId == null || _lastAdminId!.isEmpty) {
           dropdownValue = null;
@@ -186,10 +197,15 @@ class _OrderProductCardState extends State<OrderProductCard> {
     }
     if (widget.product.processingStatus != _lastProcessingStatus) {
       _lastProcessingStatus = widget.product.processingStatus;
-      if (currentStage == OrderStages.admin &&
+      if (isAdminOrEmergency &&
           (_lastProcessingStatus != 'pending' &&
               _lastProcessingStatus.isNotEmpty)) {
         dropdownValue = _lastProcessingStatus;
+        if (dropdownValue == 'completed') {
+          dropdownValue = 'mark as complete';
+        } else if (dropdownValue == 'delayed') {
+          dropdownValue = 'report delay';
+        }
       }
       if (currentStage == OrderStages.processing) {
         currentStatus = _lastProcessingStatus;
@@ -212,8 +228,10 @@ class _OrderProductCardState extends State<OrderProductCard> {
           }
         }, listener: (context, state) {
           if (state is RequestFinishedOrderItemState) {
-            if (!(currentStage == OrderStages.admin &&
-                    dropdownValue == 'failed') ||
+            final bool isAdminOrEmergency = currentStage == OrderStages.admin ||
+                currentStage == OrderStages.emergency ||
+                currentStage == OrderStages.awaitingCustomer;
+            if (!(isAdminOrEmergency && dropdownValue == 'failed') ||
                 !(currentStage == OrderStages.receiving &&
                     status[statusIndex] == 'Failed') ||
                 currentStage == OrderStages.processing) {
@@ -224,9 +242,14 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 isLoading = false;
               });
             }
-            if (currentStage == OrderStages.admin) {
+            if (isAdminOrEmergency) {
               Provider.of<OrderProvider>(context, listen: false)
-                  .updateProcessingStatus(dropdownValue ?? '', widget.index);
+                  .updateProcessingStatus(
+                dropdownValue ?? '',
+                widget.index,
+                clearCustomerDecisionDeadline:
+                    currentStage == OrderStages.awaitingCustomer,
+              );
               if (dropdownValue == 'failed') {
                 orderUpdate(
                   context: context,
@@ -403,11 +426,20 @@ class _OrderProductCardState extends State<OrderProductCard> {
         ),
       ],
       child: SizedBox(
-        height: currentStage == OrderStages.processing
-            ? 760
-            : currentStage == OrderStages.admin
-                ? 580
-                : 370,
+        height: (currentStage == OrderStages.processing
+                ? 760
+                : currentStage == OrderStages.admin
+                    ? 580
+                    : currentStage == OrderStages.emergency
+                        ? (widget.product.startedAt != null ? 682 : 560)
+                        : currentStage == OrderStages.awaitingCustomer
+                            ? (widget.product.customerDecisionDeadline != null
+                                ? (widget.product.startedAt != null ? 710 : 650)
+                                : (widget.product.startedAt != null
+                                    ? 620
+                                    : 560))
+                            : 370) +
+            (widget.orderInfo['customer'] is Map ? 64.0 : 0.0),
         width: double.infinity,
         child: Stack(
           //fit: StackFit.,
@@ -515,10 +547,12 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                             context: context,
                                             builder: (ctx) => AlertDialog(
                                               title: const Text('Delete Item'),
-                                              content: const Text('Are you sure you want to remove this item from the order? This will update the order totals.'),
+                                              content: const Text(
+                                                  'Are you sure you want to remove this item from the order? This will update the order totals.'),
                                               actions: [
                                                 TextButton(
-                                                  onPressed: () => Navigator.pop(ctx),
+                                                  onPressed: () =>
+                                                      Navigator.pop(ctx),
                                                   child: const Text('Cancel'),
                                                 ),
                                                 TextButton(
@@ -531,17 +565,21 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                       },
                                                     );
                                                     final orderBloc =
-                                                        BlocProvider.of<OrderItemsBloc>(
+                                                        BlocProvider.of<
+                                                                OrderItemsBloc>(
                                                             context);
                                                     orderBloc.add(
                                                       DeleteOrderItemEvent(
-                                                        orderId:
-                                                            widget.product.id.toString(),
+                                                        orderId: widget
+                                                            .product.id
+                                                            .toString(),
                                                         token: jWTToken,
                                                       ),
                                                     );
                                                   },
-                                                  child: const Text('Delete', style: TextStyle(color: kRedColor)),
+                                                  child: const Text('Delete',
+                                                      style: TextStyle(
+                                                          color: kRedColor)),
                                                 ),
                                               ],
                                             ),
@@ -724,7 +762,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                       }
 
                                       if (currentStage != OrderStages.order &&
-                                          currentStage != OrderStages.admin) {
+                                          currentStage != OrderStages.admin &&
+                                          currentStage !=
+                                              OrderStages.emergency &&
+                                          currentStage !=
+                                              OrderStages.awaitingCustomer) {
                                         List admins = widget.product
                                                 .productSupplier?.admins ??
                                             [];
@@ -762,28 +804,46 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                           (currentStage ==
                                                   OrderStages.processing &&
                                               !disable) ||
-                                          (currentStage == OrderStages.admin &&
+                                          ((currentStage == OrderStages.admin ||
+                                                  currentStage ==
+                                                      OrderStages.emergency ||
+                                                  currentStage ==
+                                                      OrderStages
+                                                          .awaitingCustomer) &&
                                               !disable)
                                       ? (dynamic value) {
                                           bool onOrderOrAdminStage =
                                               currentStage ==
                                                       OrderStages.order ||
                                                   currentStage ==
-                                                      OrderStages.admin;
+                                                      OrderStages.admin ||
+                                                  currentStage ==
+                                                      OrderStages.emergency ||
+                                                  currentStage ==
+                                                      OrderStages
+                                                          .awaitingCustomer;
                                           if (value == 'failed') {
                                             showDialog(
                                               context: context,
                                               builder: (ctx) => AlertDialog(
-                                                title: const Text('Mark as Out of Stock?'),
-                                                content: const Text('This will mark the item as "Failed". This is a terminal state and will exclude the item from delivery calculations.'),
+                                                title: const Text(
+                                                    'Mark as Out of Stock?'),
+                                                content: const Text(
+                                                    'This will mark the item as "Failed". This is a terminal state and will exclude the item from delivery calculations.'),
                                                 actions: [
                                                   TextButton(
                                                     onPressed: () {
                                                       Navigator.pop(ctx);
                                                       setState(() {
-                                                        dropdownValue = widget.product.availability != null 
-                                                          ? (widget.product.availability! ? 'confirmed' : 'failed')
-                                                          : null;
+                                                        dropdownValue = widget
+                                                                    .product
+                                                                    .availability !=
+                                                                null
+                                                            ? (widget.product
+                                                                    .availability!
+                                                                ? 'confirmed'
+                                                                : 'failed')
+                                                            : null;
                                                       });
                                                     },
                                                     child: const Text('Cancel'),
@@ -791,15 +851,20 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                   TextButton(
                                                     onPressed: () {
                                                       Navigator.pop(ctx);
-                                                      _executeStatusUpdate(value, onOrderOrAdminStage);
+                                                      _executeStatusUpdate(
+                                                          value,
+                                                          onOrderOrAdminStage);
                                                     },
-                                                    child: const Text('Confirm', style: TextStyle(color: kRedColor)),
+                                                    child: const Text('Confirm',
+                                                        style: TextStyle(
+                                                            color: kRedColor)),
                                                   ),
                                                 ],
                                               ),
                                             );
                                           } else {
-                                            _executeStatusUpdate(value, onOrderOrAdminStage);
+                                            _executeStatusUpdate(
+                                                value, onOrderOrAdminStage);
                                           }
                                         }
                                       : null,
@@ -984,6 +1049,7 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             }),
                         ],
                       ),
+
                       if (currentStage == OrderStages.processing)
                         Padding(
                           padding: const EdgeInsets.only(top: 15.0),
@@ -1059,7 +1125,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
                         height: 10.0,
                       ),
                       if ((currentStage == OrderStages.processing ||
-                              currentStage == OrderStages.admin) &&
+                              currentStage == OrderStages.admin ||
+                              currentStage == OrderStages.emergency ||
+                              currentStage == OrderStages.awaitingCustomer) &&
                           widget.product.startedAt != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 20.0),
@@ -1107,76 +1175,81 @@ class _OrderProductCardState extends State<OrderProductCard> {
                             ],
                           ),
                         ),
-                      if (currentStage == OrderStages.processing)
-                        if (widget.product.processingStatus == 'failed' ||
-                            widget.product.processingStatus == 'delayed')
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 20.0),
-                            child: Container(
-                              padding: const EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                color: kNewMainColor.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                    color: kNewMainColor.withOpacity(0.1)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
+                      // ─── ISSUE BANNER (processing | emergency | awaitingCustomer) ───
+                      if ((currentStage == OrderStages.processing ||
+                              currentStage == OrderStages.emergency ||
+                              currentStage == OrderStages.awaitingCustomer) &&
+                          (widget.product.processingStatus == 'failed' ||
+                              widget.product.processingStatus == 'delayed'))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Container(
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: kNewMainColor.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                  color: kNewMainColor.withOpacity(0.1)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      widget.product.processingStatus ==
+                                              'failed'
+                                          ? Icons.report_problem_rounded
+                                          : Icons.history_rounded,
+                                      color: widget.product.processingStatus ==
+                                              'failed'
+                                          ? kRedColor
+                                          : kSubMainColor,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
                                         widget.product.processingStatus ==
                                                 'failed'
-                                            ? Icons.report_problem_rounded
-                                            : Icons.history_rounded,
-                                        color: widget.product
-                                                    .processingStatus ==
-                                                'failed'
-                                            ? kRedColor
-                                            : kSubMainColor,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        widget.product.processingStatus ==
-                                                'failed'
-                                            ? "UNAVAILABLE - PENDING DECISION"
+                                            ? "ITEM UNAVAILABLE"
                                             : "DELAY REQUESTED",
                                         style: TextStyle(
-                                          color: widget.product
-                                                      .processingStatus ==
-                                                  'failed'
-                                              ? kRedColor
-                                              : kSubMainColor,
+                                          color:
+                                              widget.product.processingStatus ==
+                                                      'failed'
+                                                  ? kRedColor
+                                                  : kSubMainColor,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  if (widget.product.note != null &&
-                                      widget.product.note!.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10.0),
-                                      child: Text(
-                                        "Reason: ${widget.product.note}",
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontStyle: FontStyle.italic),
-                                      ),
                                     ),
+                                  ],
+                                ),
+                                if (widget.product.note != null &&
+                                    widget.product.note!.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                      "Employee note: ${widget.product.note}",
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                // ─── Processing-only sub-actions ───
+                                if (currentStage == OrderStages.processing) ...[
                                   const SizedBox(height: 15),
                                   Row(
                                     children: [
                                       Expanded(
                                         child: ElevatedButton(
                                           onPressed: () {
-                                            if (widget.product
-                                                    .processingStatus ==
+                                            if (widget
+                                                    .product.processingStatus ==
                                                 'failed') {
-                                              final nextStatus =
+                                              const nextStatus =
                                                   'failed_accepted';
                                               productUpdate(
                                                 context: context,
@@ -1191,22 +1264,13 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                               Provider.of<OrderProvider>(
                                                       context,
                                                       listen: false)
-                                                  .batchUpdateItemsByIds(
-                                                      [widget.product.id],
-                                                      processingStatus:
-                                                          nextStatus);
+                                                  .batchUpdateItemsByIds([
+                                                widget.product.id
+                                              ], processingStatus: nextStatus);
                                             } else {
                                               _showExtensionDialog(context);
                                             }
                                           },
-                                          child: Text(
-                                              widget.product.processingStatus ==
-                                                      'failed'
-                                                  ? "CUSTOMER ACCEPTED"
-                                                  : "ACCEPT EXTENSION",
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 10)),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: kNewMainColor,
                                             foregroundColor: Colors.white,
@@ -1217,21 +1281,21 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                   BorderRadius.circular(10),
                                             ),
                                           ),
+                                          child: Text(
+                                              widget.product.processingStatus ==
+                                                      'failed'
+                                                  ? "CUSTOMER ACCEPTED"
+                                                  : "ACCEPT EXTENSION",
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10)),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: OutlinedButton(
-                                          onPressed: () {
-                                            _showCustomerTimerPicker(context);
-                                          },
-                                          child: const Text(
-                                            "NEEDS TIME",
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 10),
-                                            textAlign: TextAlign.center,
-                                          ),
+                                          onPressed: () =>
+                                              _showCustomerTimerPicker(context),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor: Colors.orange,
                                             side: const BorderSide(
@@ -1243,14 +1307,21 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                   BorderRadius.circular(10),
                                             ),
                                           ),
+                                          child: const Text(
+                                            "NEEDS TIME",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10),
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: OutlinedButton(
                                           onPressed: () {
-                                            if (widget.product
-                                                    .processingStatus ==
+                                            if (widget
+                                                    .product.processingStatus ==
                                                 'failed') {
                                               productUpdate(
                                                 context: context,
@@ -1271,14 +1342,6 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                           'failed_canceled');
                                             }
                                           },
-                                          child: Text(
-                                              widget.product.processingStatus ==
-                                                      'failed'
-                                                  ? "CANCEL ITEM"
-                                                  : "REASSIGN",
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 10)),
                                           style: OutlinedButton.styleFrom(
                                             foregroundColor: kRedColor,
                                             side: const BorderSide(
@@ -1290,15 +1353,276 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                   BorderRadius.circular(10),
                                             ),
                                           ),
+                                          child: Text(
+                                              widget.product.processingStatus ==
+                                                      'failed'
+                                                  ? "CANCEL ITEM"
+                                                  : "REASSIGN",
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10)),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ],
-                              ),
+                              ],
                             ),
                           ),
-                      if (currentStage == OrderStages.processing)
+                        ),
+
+                      // ─── AWAITING CUSTOMER: decision countdown ───
+                      if (currentStage == OrderStages.awaitingCustomer &&
+                          widget.product.customerDecisionDeadline != null)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          child: Builder(builder: (ctx) {
+                            final deadline =
+                                widget.product.customerDecisionDeadline!;
+                            final now = DateTime.now();
+                            final expired = now.isAfter(deadline);
+                            final remaining = expired
+                                ? Duration.zero
+                                : deadline.difference(now);
+                            final hh =
+                                remaining.inHours.toString().padLeft(2, '0');
+                            final mm = (remaining.inMinutes % 60)
+                                .toString()
+                                .padLeft(2, '0');
+                            final ss = (remaining.inSeconds % 60)
+                                .toString()
+                                .padLeft(2, '0');
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: expired
+                                    ? kRedColor.withOpacity(0.08)
+                                    : Colors.orange.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: expired
+                                      ? kRedColor.withOpacity(0.4)
+                                      : Colors.orange.withOpacity(0.4),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    expired
+                                        ? Icons.phone_missed_rounded
+                                        : Icons.timer_outlined,
+                                    color: expired ? kRedColor : Colors.orange,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: expired
+                                        ? const Text(
+                                            "⚠️  CALL BACK REQUIRED",
+                                            style: TextStyle(
+                                              color: kRedColor,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                              letterSpacing: 0.8,
+                                            ),
+                                          )
+                                        : Text(
+                                            "Customer decides in  $hh:$mm:$ss",
+                                            style: const TextStyle(
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+
+                      // ─── ADMIN ACTION PANEL (emergency | awaitingCustomer) ───
+                      if ((currentStage == OrderStages.emergency ||
+                              currentStage == OrderStages.awaitingCustomer) &&
+                          (widget.product.processingStatus == 'failed' ||
+                              widget.product.processingStatus == 'delayed'))
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "ADMIN ACTIONS",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.1,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              // Row 1: Primary resolution actions
+                              Row(
+                                children: [
+                                  if (widget.product.processingStatus ==
+                                      'delayed')
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () =>
+                                            _showExtensionDialog(context),
+                                        icon: const Icon(Icons.more_time,
+                                            size: 14),
+                                        label: const Text("ACCEPT EXT.",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: kNewMainColor,
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  if (widget.product.processingStatus ==
+                                      'failed')
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () =>
+                                            _showRemoveItemDialog(context),
+                                        icon: const Icon(
+                                            Icons.remove_shopping_cart,
+                                            size: 14),
+                                        label: const Text("REMOVE ITEM",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: kRedColor,
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () =>
+                                          _showReassignDialog(context),
+                                      icon: const Icon(Icons.swap_horiz,
+                                          size: 14),
+                                      label: const Text("REASSIGN",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10)),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: kSubMainColor,
+                                        side: BorderSide(
+                                            color:
+                                                kSubMainColor.withOpacity(0.6)),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              // Row 2: Customer outcome / deferral
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () =>
+                                          _showCustomerTimerPicker(context),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.orange,
+                                        side: const BorderSide(
+                                            color: Colors.orange),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text("NEEDS TIME",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () =>
+                                          _showCancelItemDialog(context),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: kRedColor,
+                                        side:
+                                            const BorderSide(color: kRedColor),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text("CANCEL ITEM",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () =>
+                                          _showCancelOrderDialog(context),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor:
+                                            const Color(0xFF7C3AED),
+                                        side: const BorderSide(
+                                            color: Color(0xFF7C3AED)),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      child: const Text("CANCEL ORDER",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 10),
+                                          textAlign: TextAlign.center),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      if (currentStage != OrderStages.emergency &&
+                          currentStage != OrderStages.awaitingCustomer)
                         Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Consumer<OrderProvider>(
@@ -1315,8 +1639,6 @@ class _OrderProductCardState extends State<OrderProductCard> {
                               height: 50,
                               child: Builder(
                                 builder: (context) {
-                                  print(
-                                      'DEBUG BUTTON STATE: effectiveAdminId: "${widget.product.effectiveAdminId}", dropdownValue: "$dropdownValue", hasNewProcessor: $hasNewProcessor');
                                   return ElevatedButton.icon(
                                     onPressed: isButtonEnabled
                                         ? () {
@@ -1415,14 +1737,16 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                   height: 50,
                                   child: ElevatedButton.icon(
                                     onPressed: null,
-                                    icon: const Icon(Icons.check_circle_outline),
+                                    icon:
+                                        const Icon(Icons.check_circle_outline),
                                     label: const Text('COMPLETED',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 1.2)),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.grey.shade400,
-                                      disabledBackgroundColor: Colors.grey.shade300,
+                                      disabledBackgroundColor:
+                                          Colors.grey.shade300,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(15),
@@ -1442,7 +1766,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                             data: {
                                               'id': _getRelatedProductIds(),
                                               'itemInfo': {
-                                                'processingStatus': 'processing',
+                                                'processingStatus':
+                                                    'processing',
                                                 'startedAt':
                                                     now.toIso8601String(),
                                               },
@@ -1456,7 +1781,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                             processingStatus: 'processing',
                                           );
                                         },
-                                        icon: const Icon(Icons.play_arrow_rounded),
+                                        icon: const Icon(
+                                            Icons.play_arrow_rounded),
                                         label: const Text('START',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold,
@@ -1465,7 +1791,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                           backgroundColor: kNewMainColor,
                                           foregroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(15),
+                                            borderRadius:
+                                                BorderRadius.circular(15),
                                           ),
                                         ),
                                       ),
@@ -1485,23 +1812,27 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                   },
                                                 },
                                               );
-                                              Provider.of<OrderProvider>(context,
+                                              Provider.of<OrderProvider>(
+                                                      context,
                                                       listen: false)
-                                                  .batchUpdateItemsByIds(
-                                                      [widget.product.id],
-                                                      processingStatus:
-                                                          'completed');
+                                                  .batchUpdateItemsByIds([
+                                                widget.product.id
+                                              ], processingStatus: 'completed');
                                             },
                                             child: const Text('COMPLETE',
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 10)),
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFF10B981),
+                                              backgroundColor:
+                                                  const Color(0xFF10B981),
                                               foregroundColor: Colors.white,
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12),
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                             ),
                                           ),
@@ -1509,17 +1840,22 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: ElevatedButton(
-                                            onPressed: () => _showDelayDialog(context),
+                                            onPressed: () =>
+                                                _showDelayDialog(context),
                                             child: const Text('DELAY',
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 10)),
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFFF59E0B),
+                                              backgroundColor:
+                                                  const Color(0xFFF59E0B),
                                               foregroundColor: Colors.white,
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12),
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                             ),
                                           ),
@@ -1533,27 +1869,34 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                                 data: {
                                                   'id': widget.product.id,
                                                   'itemInfo': {
-                                                    'processingStatus': 'failed',
+                                                    'processingStatus':
+                                                        'failed',
                                                   },
                                                 },
                                               );
-                                              Provider.of<OrderProvider>(context,
+                                              Provider.of<OrderProvider>(
+                                                      context,
                                                       listen: false)
-                                                  .batchUpdateItemsByIds(
-                                                      [widget.product.id],
-                                                      processingStatus:
-                                                          'failed');
+                                                  .batchUpdateItemsByIds([
+                                                widget.product.id
+                                              ], processingStatus: 'failed');
                                             },
                                             child: const Text('UNAVAIL.',
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 10)),
                                             style: OutlinedButton.styleFrom(
-                                              foregroundColor: const Color(0xFFEF4444),
-                                              side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              foregroundColor:
+                                                  const Color(0xFFEF4444),
+                                              side: const BorderSide(
+                                                  color: Color(0xFFEF4444),
+                                                  width: 1.5),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12),
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                             ),
                                           ),
@@ -1561,6 +1904,72 @@ class _OrderProductCardState extends State<OrderProductCard> {
                                       ],
                                     ),
                         ),
+                      // ─── CUSTOMER CONTACT DETAILS ───
+                      if (widget.orderInfo['customer'] is Map) ...[
+                        const SizedBox(height: 10.0),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0, vertical: 8.0),
+                            decoration: BoxDecoration(
+                              color: kNewMainColor.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(
+                                color: kNewMainColor.withOpacity(0.1),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Customer: ${widget.orderInfo['customer']['name'] ?? ''}",
+                                        style:
+                                            kSansTextStyleSmallBlack.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4.0),
+                                      Text(
+                                        "Phone: ${widget.orderInfo['customer']['mobile'] ?? ''}",
+                                        style: kProductNameStylePro.copyWith(
+                                          fontSize: 13.0,
+                                          color: kSubMainColor.withOpacity(0.8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                OutlinedIconWidget(
+                                  height: 40.0,
+                                  width: 40.0,
+                                  borderWidth: 1.5,
+                                  borderRadius: 12.0,
+                                  color: kNewMainColor.withOpacity(0.8),
+                                  onTap: () async {
+                                    final String mobile = widget
+                                            .orderInfo['customer']['mobile'] ??
+                                        '';
+                                    if (mobile.isNotEmpty) {
+                                      final url = Uri.parse('tel:$mobile');
+                                      if (await canLaunchUrl(url)) {
+                                        await launchUrl(url);
+                                      }
+                                    }
+                                  },
+                                  iconData: Icons.call,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1713,8 +2122,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
                         isLoading = true;
                       });
                       Navigator.pop(context);
-                      
-                      final newDeadline = DateTime.now().add(tempDuration).toIso8601String();
+
+                      final deadlineDateTime = DateTime.now().add(tempDuration);
+                      final newDeadline = deadlineDateTime.toIso8601String();
 
                       productUpdate(
                         context: context,
@@ -1726,11 +2136,11 @@ class _OrderProductCardState extends State<OrderProductCard> {
                           },
                         },
                       );
-                      // Update local state via OrderProvider if needed, though productUpdate triggers refresh
                       Provider.of<OrderProvider>(context, listen: false)
                           .batchUpdateItemsByIds(
-                            [widget.product.id],
-                          );
+                        [widget.product.id],
+                        customerDecisionDeadline: deadlineDateTime,
+                      );
                     },
                   ),
                 ],
@@ -1753,7 +2163,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
 
   void _startProgressTimer() {
     if ((currentStage == OrderStages.processing ||
-            currentStage == OrderStages.admin) &&
+            currentStage == OrderStages.admin ||
+            currentStage == OrderStages.emergency ||
+            currentStage == OrderStages.awaitingCustomer) &&
         widget.product.startedAt != null) {
       _progressTimer?.cancel();
       _progressTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -1764,6 +2176,236 @@ class _OrderProductCardState extends State<OrderProductCard> {
         }
       });
     }
+  }
+
+  // ─── Reassign employee (emergency / awaitingCustomer) ───
+  void _showReassignDialog(BuildContext context) {
+    final List admins = widget.product.productSupplier?.admins ?? [];
+    if (admins.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('No employees available for this supplier.')),
+      );
+      return;
+    }
+
+    String? selectedAdminId;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Reassign Employee',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                  'Select a new employee to handle this item. A notification will be sent to them.',
+                  style: TextStyle(fontSize: 13)),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                hint: const Text('Choose employee'),
+                value: selectedAdminId,
+                items: admins.map<DropdownMenuItem<String>>((e) {
+                  return DropdownMenuItem<String>(
+                    value: e['adminId'] as String,
+                    child: Text(e['name'] as String),
+                  );
+                }).toList(),
+                onChanged: (v) => setDialogState(() => selectedAdminId = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kNewMainColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: selectedAdminId == null
+                  ? null
+                  : () {
+                      Navigator.pop(ctx);
+                      setState(() => isLoading = true);
+                      // Update item: new adminId + reset to pending
+                      // Server auto-sends push notification to new employee (via itemInfo.adminId handling)
+                      productUpdate(
+                        context: context,
+                        data: {
+                          'id': widget.product.id,
+                          'itemInfo': {
+                            'adminId': selectedAdminId,
+                            'processingStatus': 'pending',
+                            'delayedAt': null,
+                            'note': null,
+                            if (currentStage == OrderStages.awaitingCustomer)
+                              'customerDecisionDeadline': null,
+                          },
+                        },
+                      );
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .batchUpdateItemsByIds(
+                        [widget.product.id],
+                        processingStatus: 'pending',
+                        clearCustomerDecisionDeadline:
+                            currentStage == OrderStages.awaitingCustomer,
+                      );
+                    },
+              child: const Text('Reassign',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Remove item (customer accepted unavailability) ───
+  void _showRemoveItemDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Item from Order',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          'The customer has accepted that "${widget.product.productName}" is unavailable. '
+          'This will permanently remove the item from the order and recalculate the totals.',
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kRedColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isLoading = true;
+                onDelete = true;
+              });
+              final orderBloc = BlocProvider.of<OrderItemsBloc>(context);
+              orderBloc.add(DeleteOrderItemEvent(
+                orderId: widget.product.id.toString(),
+                token: jWTToken,
+              ));
+            },
+            child: const Text('Remove Item',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Cancel item only (customer rejects, keep rest of order) ───
+  void _showCancelItemDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel This Item',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          'The customer wants to cancel "${widget.product.productName}" but keep the rest of the order. '
+          'This will remove the item and recalculate the order totals.',
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kRedColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isLoading = true;
+                onDelete = true;
+              });
+              final orderBloc = BlocProvider.of<OrderItemsBloc>(context);
+              orderBloc.add(DeleteOrderItemEvent(
+                orderId: widget.product.id.toString(),
+                token: jWTToken,
+              ));
+            },
+            child: const Text('Cancel Item',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Cancel entire order ───
+  void _showCancelOrderDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel Entire Order',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text(
+          'The customer wants to cancel the entire order. This action cannot be undone.',
+          style: TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Go Back')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7C3AED),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() => isLoading = true);
+              orderUpdate(
+                context: context,
+                data: const {
+                  'orderStatus': 'canceled',
+                  'notificationType': 'admin2Customer',
+                },
+                orderId: widget.orderId,
+                token: jWTToken,
+              );
+            },
+            child: const Text('Cancel Order',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showExtensionDialog(BuildContext context) {
@@ -1810,12 +2452,12 @@ class _OrderProductCardState extends State<OrderProductCard> {
                       final additionalMins = int.tryParse(controller.text);
                       if (additionalMins != null) {
                         final now = DateTime.now();
-                        final pauseDuration = now.difference(
-                            widget.product.delayedAt ?? now);
-                        
+                        final pauseDuration =
+                            now.difference(widget.product.delayedAt ?? now);
+
                         // Shift startedAt forward by the time spent in paused mode
-                        final newStartedAt =
-                            (widget.product.startedAt ?? now).add(pauseDuration);
+                        final newStartedAt = (widget.product.startedAt ?? now)
+                            .add(pauseDuration);
                         final newEstimatedTime =
                             widget.product.estimatedTime + additionalMins;
 
@@ -1829,6 +2471,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                               'startedAt': newStartedAt.toIso8601String(),
                               'delayedAt': null,
                               'note': null,
+                              if (currentStage == OrderStages.awaitingCustomer)
+                                'customerDecisionDeadline': null,
                             },
                           },
                         );
@@ -1838,6 +2482,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
                           processingStatus: 'processing',
                           estimatedTime: newEstimatedTime,
                           startedAt: newStartedAt,
+                          clearCustomerDecisionDeadline:
+                              currentStage == OrderStages.awaitingCustomer,
                         );
                         Navigator.pop(ctx);
                       }
@@ -1888,22 +2534,27 @@ class _OrderProductCardState extends State<OrderProductCard> {
                           borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: () {
-                        final now = DateTime.now();
-                        productUpdate(
-                          context: context,
-                          data: {
-                            'id': widget.product.id,
-                            'itemInfo': {
-                              'processingStatus': 'delayed',
-                              'note': controller.text,
-                              'delayedAt': now.toIso8601String(),
-                            },
+                      final now = DateTime.now();
+                      productUpdate(
+                        context: context,
+                        data: {
+                          'id': widget.product.id,
+                          'itemInfo': {
+                            'processingStatus': 'delayed',
+                            'note': controller.text,
+                            'delayedAt': now.toIso8601String(),
+                            if (currentStage == OrderStages.awaitingCustomer)
+                              'customerDecisionDeadline': null,
                           },
-                        );
-                        Provider.of<OrderProvider>(context, listen: false)
-                            .batchUpdateItemsByIds([widget.product.id],
-                                processingStatus: 'delayed', delayedAt: now);
-                        Navigator.pop(ctx);
+                        },
+                      );
+                      Provider.of<OrderProvider>(context, listen: false)
+                          .batchUpdateItemsByIds([widget.product.id],
+                              processingStatus: 'delayed',
+                              delayedAt: now,
+                              clearCustomerDecisionDeadline:
+                                  currentStage == OrderStages.awaitingCustomer);
+                      Navigator.pop(ctx);
                     },
                     child: const Text("Submit",
                         style: TextStyle(fontWeight: FontWeight.bold))),
@@ -1966,7 +2617,9 @@ class _OrderProductCardState extends State<OrderProductCard> {
     });
 
     if (onOrderOrAdminStage) {
-      if (currentStage == OrderStages.admin &&
+      if ((currentStage == OrderStages.admin ||
+              currentStage == OrderStages.emergency ||
+              currentStage == OrderStages.awaitingCustomer) &&
           (value == 'mark as complete' || value == 'report delay')) {
         if (value == 'mark as complete') {
           productUpdate(
@@ -1975,6 +2628,8 @@ class _OrderProductCardState extends State<OrderProductCard> {
               'id': widget.product.id,
               'itemInfo': {
                 'processingStatus': 'completed',
+                if (currentStage == OrderStages.awaitingCustomer)
+                  'customerDecisionDeadline': null,
               },
             },
           );
@@ -1991,7 +2646,12 @@ class _OrderProductCardState extends State<OrderProductCard> {
             'id': widget.product.id,
             'itemInfo': {
               if (onOrderStage) 'availability': value == 'confirmed',
-              if (currentStage == OrderStages.admin) 'processingStatus': value,
+              if (currentStage == OrderStages.admin ||
+                  currentStage == OrderStages.emergency ||
+                  currentStage == OrderStages.awaitingCustomer)
+                'processingStatus': value,
+              if (currentStage == OrderStages.awaitingCustomer)
+                'customerDecisionDeadline': null,
             },
           },
         );
@@ -2085,10 +2745,16 @@ class DropDownMenuWidget extends StatelessWidget {
 List<DropdownMenuItem<String>> generateItems(
     List admins, BuildContext context) {
   List<DropdownMenuItem<String>> items = [];
-  OrderStages currentStage = Provider.of<OrderProvider>(context).currentStage;
-  if (currentStage == OrderStages.order || currentStage == OrderStages.admin) {
-    List<String> titles = currentStage == OrderStages.admin
-        ? ['Mark As Complete', 'Report Delay']
+  OrderStages currentStage =
+      Provider.of<OrderProvider>(context, listen: false).currentStage;
+  if (currentStage == OrderStages.order ||
+      currentStage == OrderStages.admin ||
+      currentStage == OrderStages.emergency ||
+      currentStage == OrderStages.awaitingCustomer) {
+    List<String> titles = (currentStage == OrderStages.admin ||
+            currentStage == OrderStages.emergency ||
+            currentStage == OrderStages.awaitingCustomer)
+        ? ['Mark As Complete', 'Report Delay', 'Failed']
         : ['Confirmed', 'Failed'];
     items = titles.map((e) {
       Color textColor;

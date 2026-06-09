@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:viraeshop_api/models/analytics/analytics_models.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viraeshop_bloc/viraeshop_bloc.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/predictive_insights_screen.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/detailed_product_report_screen.dart';
 
 class QuickActionsWidget extends StatelessWidget {
   final List<QuickAction> actions;
-  const QuickActionsWidget({super.key, required this.actions});
+  final String token;
+  const QuickActionsWidget({super.key, required this.actions, required this.token});
 
   @override
   Widget build(BuildContext context) {
@@ -26,14 +26,19 @@ class QuickActionsWidget extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => PredictiveInsightsScreen(
-                        token: context.read<AnalyticsBloc>().state
-                                is BusinessHealthLoaded
-                            ? "TOKEN_PLACEHOLDER"
-                            : ""),
+                        token: token),
                   ),
                 );
               } else if (action.label == 'Reports') {
-                DefaultTabController.of(context)?.animateTo(1);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailedProductReportScreen(
+                      token: token,
+                      metric: 'sales',
+                    ),
+                  ),
+                );
               }
             },
             child: Container(

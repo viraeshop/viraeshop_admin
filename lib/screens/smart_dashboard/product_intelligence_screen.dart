@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:viraeshop_admin/screens/smart_dashboard/detailed_product_report_screen.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/product_health_grid.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/report_navigation_grid.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/sparkline_ranking_list.dart';
@@ -93,7 +94,15 @@ class _ProductIntelligenceScreenState extends State<ProductIntelligenceScreen> {
                         Center(
                           child: ElevatedButton(
                             onPressed: () {
-                              // Navigate to Detailed Report
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DetailedProductReportScreen(
+                                    token: widget.token,
+                                    metric: 'sales',
+                                  ),
+                                ),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,

@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/customer_intelligence_screen.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/operations_management_screen.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/product_intelligence_screen.dart';
+import 'package:viraeshop_admin/screens/expense_history.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/live_pulse_widget.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/quick_actions_widget.dart';
 import 'package:viraeshop_admin/screens/smart_dashboard/widgets/snapshot_grid.dart';
@@ -113,7 +114,7 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
                   const SizedBox(height: 24),
                   _buildSectionHeader("Quick Actions"),
                   const SizedBox(height: 16),
-                  QuickActionsWidget(actions: data.quickActions),
+                  QuickActionsWidget(actions: data.quickActions, token: _token),
                   const SizedBox(height: 24),
                   _buildSectionHeader("Main Categories"),
                   const SizedBox(height: 16),
@@ -194,7 +195,10 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
         }),
         _buildCategoryCard("Finance", Icons.payments_outlined, Colors.purple, 2.5,
             () {
-          // Placeholder for Finance screen
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const ExpenseHistory()));
         }),
         _buildCategoryCard(
             "Supplier Prep", FontAwesomeIcons.folderOpen, const Color(0xFF8B5E3C), 2.5,

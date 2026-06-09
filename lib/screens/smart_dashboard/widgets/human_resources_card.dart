@@ -5,7 +5,12 @@ import 'package:viraeshop_admin/screens/smart_dashboard/employee_scorecard_scree
 
 class HumanResourcesCard extends StatelessWidget {
   final EmployeeScorecard scorecard;
-  const HumanResourcesCard({super.key, required this.scorecard});
+  final String token;
+  const HumanResourcesCard({
+    super.key,
+    required this.scorecard,
+    required this.token,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +55,7 @@ class HumanResourcesCard extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => EmployeeScorecardScreen(
-                        token: ""), // Token handling needed
+                        token: token),
                   ),
                 );
               },

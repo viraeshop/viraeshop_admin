@@ -155,7 +155,7 @@ class _PredictiveInsightsScreenState extends State<PredictiveInsightsScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                "\$${forecast.next7DaysRevenue.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}.00",
+                "BDT ${forecast.next7DaysRevenue.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}.00",
                 style: GoogleFonts.inter(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

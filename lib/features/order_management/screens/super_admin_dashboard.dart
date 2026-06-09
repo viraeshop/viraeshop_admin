@@ -743,7 +743,7 @@ class _SuperAdminDashboardState extends State<SuperAdminDashboard> {
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
         maxY: maxVal,
-        barTouchData: const BarTouchData(enabled: false),
+        barTouchData: BarTouchData(enabled: false),
         titlesData: FlTitlesData(
           show: true,
           bottomTitles: AxisTitles(
